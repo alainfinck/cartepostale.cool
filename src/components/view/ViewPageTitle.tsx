@@ -21,7 +21,7 @@ const wordReveal = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, ease: [0.22, 0.61, 0.36, 1] },
+    transition: { duration: 0.4, ease: [0.22, 0.61, 0.36, 1] as const },
   },
 }
 
@@ -30,7 +30,7 @@ const lineReveal = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: [0.22, 0.61, 0.36, 1] },
+    transition: { duration: 0.5, ease: [0.22, 0.61, 0.36, 1] as const },
   },
 }
 
@@ -62,7 +62,7 @@ export default function ViewPageTitle({ title, senderName }: ViewPageTitleProps)
         variants={lineReveal}
         initial="hidden"
         animate="visible"
-        transition={{ delay: 0.35, duration: 0.5, ease: [0.22, 0.61, 0.36, 1] }}
+        transition={{ delay: 0.35, duration: 0.5, ease: [0.22, 0.61, 0.36, 1] as const }}
       >
         De la part de <span className="font-semibold text-teal-600">{senderName}</span>
       </motion.p>

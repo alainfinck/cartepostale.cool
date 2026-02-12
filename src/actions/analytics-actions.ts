@@ -3,8 +3,8 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { headers } from 'next/headers'
-// ua-parser-js v2: call as function (uaString) => IResult
-import UAParser from 'ua-parser-js'
+// ua-parser-js: use named export (no default in ESM)
+import { UAParser } from 'ua-parser-js'
 
 export interface RecordPostcardViewParams {
     postcardId: number
