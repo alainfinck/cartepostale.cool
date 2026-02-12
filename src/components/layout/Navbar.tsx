@@ -1,15 +1,23 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Mail, Menu, X, LogIn, Plus, Compass } from 'lucide-react'
+import { Mail, Menu, X, LogIn, Plus, Compass, LayoutDashboard } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export const Navbar = () => {
     const pathname = usePathname()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null)
+
+    useEffect(() => {
+        fetch('/api/users/me', { credentials: 'include' })
+            .then((res) => res.ok)
+            .then(setIsLoggedIn)
+            .catch(() => setIsLoggedIn(false))
+    }, [])
 
     const isActive = (path: string) => pathname === path
 
@@ -58,12 +66,24 @@ export const Navbar = () => {
 
                         <div className="h-6 w-px bg-stone-300 mx-2"></div>
 
-                        <Link
-                            href="/admin"
-                            className="text-stone-500 hover:text-stone-800 font-bold flex items-center gap-2 text-sm"
-                        >
-                            <LogIn size={18} /> Connexion
-                        </Link>
+                        {isLoggedIn ? (
+                            <Link
+                                href="/espace-client"
+                                className={cn(
+                                    "font-bold flex items-center gap-2 text-sm",
+                                    pathname.startsWith('/espace-client') ? 'text-teal-600' : 'text-stone-500 hover:text-stone-800'
+                                )}
+                            >
+                                <LayoutDashboard size={18} /> Mon espace
+                            </Link>
+                        ) : (
+                            <Link
+                                href="/connexion"
+                                className="text-stone-500 hover:text-stone-800 font-bold flex items-center gap-2 text-sm"
+                            >
+                                <LogIn size={18} /> Connexion
+                            </Link>
+                        )}
 
                         <Link href="/editor">
                             <Button
@@ -88,7 +108,11 @@ export const Navbar = () => {
                         <Link href="/showcase" onClick={() => setIsMobileMenuOpen(false)} className="block w-full text-left px-3 py-2 text-stone-600 font-medium hover:bg-stone-50 rounded-lg">Découvrir</Link>
                         <Link href="/business" onClick={() => setIsMobileMenuOpen(false)} className="block w-full text-left px-3 py-2 text-stone-600 font-medium hover:bg-stone-50 rounded-lg">Agences & Pro</Link>
                         <Link href="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="block w-full text-left px-3 py-2 text-stone-600 font-medium hover:bg-stone-50 rounded-lg">Tarifs</Link>
-                        <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="block w-full text-left px-3 py-2 text-stone-600 font-medium hover:bg-stone-50 rounded-lg">Connexion</Link>
+                        {isLoggedIn ? (
+                            <Link href="/espace-client" onClick={() => setIsMobileMenuOpen(false)} className="block w-full text-left px-3 py-2 text-teal-600 font-medium hover:bg-teal-50 rounded-lg">Mon espace</Link>
+                        ) : (
+                            <Link href="/connexion" onClick={() => setIsMobileMenuOpen(false)} className="block w-full text-left px-3 py-2 text-stone-600 font-medium hover:bg-stone-50 rounded-lg">Connexion</Link>
+                        )}
                         <Link href="/editor" onClick={() => setIsMobileMenuOpen(false)} className="block w-full text-left px-3 py-2 text-orange-600 font-bold hover:bg-orange-50 rounded-lg">Créer une carte</Link>
                     </div>
                 </div>

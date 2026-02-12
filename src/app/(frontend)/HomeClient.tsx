@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Postcard } from '@/types'
-import { Plus, Compass, ExternalLink, Heart, Library, Instagram, Mail, Sun } from 'lucide-react'
+import { Plus, Compass, ExternalLink, Heart, Library, Instagram, Mail, Sun, Sparkles, Zap, Wallet, Share2, Image } from 'lucide-react'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 
@@ -79,48 +79,125 @@ export default function Home() {
 
   return (
     <>
-      <div className="relative bg-teal-900 h-[500px] flex items-center overflow-hidden">
+      <div className="relative bg-teal-900 min-h-[560px] lg:min-h-[520px] flex items-center overflow-hidden">
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
-            className="w-full h-full object-cover opacity-40 mix-blend-overlay"
+            className="w-full h-full object-cover opacity-35 mix-blend-overlay"
             alt="Ocean background"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-teal-900/90 via-teal-800/80 to-orange-500/40"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-teal-900/95 via-teal-800/85 to-teal-900/70" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-teal-950/50" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full text-center sm:text-left">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full text-orange-200 text-sm font-semibold mb-6 border border-white/10">
-              <Sun size={16} className="text-orange-400" /> Édition Été 2024
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-12 lg:gap-8">
+            {/* Contenu à gauche */}
+            <div className="max-w-2xl text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-orange-200 text-sm font-semibold mb-6 border border-white/10 shadow-lg">
+                <Sun size={18} className="text-orange-400" /> Édition Été 2024
+              </div>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-5 leading-tight drop-shadow-lg">
+                Envoyez un coin de <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-amber-200">paradis.</span>
+              </h1>
+              <p className="text-teal-50 text-lg md:text-xl leading-relaxed max-w-lg mx-auto lg:mx-0">
+                Le charme d&apos;une carte manuscrite, livrée instantanément. Capturez vos souvenirs de voyage et partagez-les avec style.
+              </p>
             </div>
-            <h1 className="text-5xl md:text-7xl font-serif font-bold text-white mb-6 leading-tight drop-shadow-lg">
-              Envoyez un coin de <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-amber-200">paradis.</span>
-            </h1>
-            <p className="text-teal-50 text-xl mb-10 leading-relaxed max-w-lg">
-              Le charme d&apos;une carte manuscrite, livrée instantanément. Capturez vos souvenirs de voyage et partagez-les avec style.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/editor">
+
+            {/* Boutons à droite */}
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-4 lg:min-w-[280px] lg:shrink-0 justify-center items-center lg:items-end">
+              <Link href="/editor" className="w-full sm:w-auto lg:w-full">
                 <Button
-                  className="bg-orange-500 text-white px-8 py-8 rounded-full font-bold text-lg hover:bg-orange-600 transition-all shadow-lg shadow-orange-900/20 inline-flex items-center justify-center gap-2 hover:transform hover:-translate-y-1 h-auto"
+                  className="w-full bg-orange-500 text-white px-8 py-7 rounded-2xl font-bold text-lg hover:bg-orange-600 transition-all shadow-xl shadow-orange-900/30 inline-flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] h-auto border-0"
                 >
-                  Commencer <Plus size={20} />
+                  Commencer <Plus size={22} strokeWidth={2.5} />
                 </Button>
               </Link>
-              <Link href="/showcase">
+              <Link href="/showcase" className="w-full sm:w-auto lg:w-full">
                 <Button
                   variant="ghost"
-                  className="bg-white/10 backdrop-blur-sm text-white border border-white/20 px-8 py-8 rounded-full font-bold text-lg hover:bg-white/20 transition-all inline-flex items-center justify-center gap-2 h-auto"
+                  className="w-full bg-white/10 backdrop-blur-sm text-white border-2 border-white/25 px-8 py-7 rounded-2xl font-bold text-lg hover:bg-white/20 hover:border-white/40 transition-all inline-flex items-center justify-center gap-2 h-auto"
                 >
-                  Comment ça marche <Compass size={20} />
+                  Comment ça marche <Compass size={22} strokeWidth={2.5} />
                 </Button>
               </Link>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Arguments : carte virtuelle, innovant, pratique, pas cher, social, partage */}
+      <section className="relative bg-gradient-to-b from-stone-50/80 to-[#fdfbf7] border-b border-stone-100 overflow-hidden">
+        {/* Fond décoratif */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 left-0 w-[500px] h-[400px] bg-teal-200/30 rounded-full blur-3xl -translate-x-1/2" />
+          <div className="absolute bottom-20 right-0 w-[400px] h-[350px] bg-orange-200/25 rounded-full blur-3xl translate-x-1/3" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-100/20 rounded-full blur-3xl" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+          <div className="text-center mb-14 md:mb-16">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-stone-800 mb-3">
+              La carte postale réinventée
+            </h2>
+            <p className="text-stone-500 text-lg md:text-xl max-w-2xl mx-auto">
+              Moderne, simple, et faite pour partager.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+            <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white/90 backdrop-blur border border-stone-100 shadow-lg shadow-stone-200/50 hover:shadow-xl hover:shadow-teal-200/30 hover:border-teal-200/60 transition-all duration-300 hover:-translate-y-1">
+              <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-100 to-teal-200 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Mail className="w-8 h-8 text-teal-600" />
+              </div>
+              <h3 className="text-xl font-bold text-stone-800 mb-3 font-serif">Carte postale virtuelle</h3>
+              <p className="text-stone-600 text-base leading-relaxed">Créez une vraie carte en quelques clics depuis votre téléphone ou ordinateur. Plus besoin de chercher timbre ni boîte aux lettres.</p>
+            </div>
+
+            <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white/90 backdrop-blur border border-stone-100 shadow-lg shadow-stone-200/50 hover:shadow-xl hover:shadow-orange-200/30 hover:border-orange-200/60 transition-all duration-300 hover:-translate-y-1">
+              <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Sparkles className="w-8 h-8 text-orange-600" />
+              </div>
+              <h3 className="text-xl font-bold text-stone-800 mb-3 font-serif">Nouveau & innovant</h3>
+              <p className="text-stone-600 text-base leading-relaxed">Une façon moderne de garder le charme du papier : message personnel, photos, vidéos et même localisation sur la carte.</p>
+            </div>
+
+            <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white/90 backdrop-blur border border-stone-100 shadow-lg shadow-stone-200/50 hover:shadow-xl hover:shadow-teal-200/30 hover:border-teal-200/60 transition-all duration-300 hover:-translate-y-1">
+              <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-100 to-teal-200 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Zap className="w-8 h-8 text-teal-600" />
+              </div>
+              <h3 className="text-xl font-bold text-stone-800 mb-3 font-serif">Pratique</h3>
+              <p className="text-stone-600 text-base leading-relaxed">Envoyez depuis n&apos;importe où, à n&apos;importe quel moment. Idéal en voyage : une connexion suffit pour faire plaisir.</p>
+            </div>
+
+            <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white/90 backdrop-blur border border-stone-100 shadow-lg shadow-stone-200/50 hover:shadow-xl hover:shadow-orange-200/30 hover:border-orange-200/60 transition-all duration-300 hover:-translate-y-1">
+              <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Wallet className="w-8 h-8 text-orange-600" />
+              </div>
+              <h3 className="text-xl font-bold text-stone-800 mb-3 font-serif">Pas cher</h3>
+              <p className="text-stone-600 text-base leading-relaxed">Moins coûteux qu&apos;une carte classique + timbre + envoi. Tarifs clairs, sans mauvaise surprise.</p>
+            </div>
+
+            <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white/90 backdrop-blur border border-stone-100 shadow-lg shadow-stone-200/50 hover:shadow-xl hover:shadow-teal-200/30 hover:border-teal-200/60 transition-all duration-300 hover:-translate-y-1">
+              <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-100 to-teal-200 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Share2 className="w-8 h-8 text-teal-600" />
+              </div>
+              <h3 className="text-xl font-bold text-stone-800 mb-3 font-serif">100 % social</h3>
+              <p className="text-stone-600 text-base leading-relaxed">Partagez avec vos proches, gardez le lien. Reliez la carte à vos réseaux ou envoyez un lien pour la consulter en ligne.</p>
+            </div>
+
+            <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white/90 backdrop-blur border border-stone-100 shadow-lg shadow-stone-200/50 hover:shadow-xl hover:shadow-orange-200/30 hover:border-orange-200/60 transition-all duration-300 hover:-translate-y-1">
+              <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Image className="w-8 h-8 text-orange-600" />
+              </div>
+              <h3 className="text-xl font-bold text-stone-800 mb-3 font-serif">Vos photos, votre carte</h3>
+              <p className="text-stone-600 text-base leading-relaxed">Mettez vos plus belles photos sur la carte, ajoutez un message à la main (style manuscrit) et envoyez. Simple et personnel.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-[#fdfbf7]">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between mb-16 text-center sm:text-left gap-4">
