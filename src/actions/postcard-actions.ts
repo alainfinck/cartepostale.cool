@@ -18,6 +18,70 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
     try {
         const payload = await getPayload({ config })
 
+        // Handle images
+        let frontImageId: number | undefined;
+        let frontImageURL: string | undefined;
+
+        if (data.frontImage) {
+            if (data.frontImage.startsWith('data:image')) {
+                // Base64 upload
+                const [meta, base64Data] = data.frontImage.split(',');
+                const mime = meta.match(/:(.*?);/)?.[1] || 'image/png';
+                const extension = mime.split('/')[1] || 'png';
+                const buffer = Buffer.from(base64Data, 'base64');
+                
+                const media = await payload.create({
+                    collection: 'media',
+                    data: {
+                        alt: `Front Image for postcard ${data.recipientName || 'unnamed'}`,
+                    },
+                    file: {
+                        data: buffer,
+                        mimetype: mime,
+                        name: `postcard-front-${Date.now()}.${extension}`,
+                        size: buffer.length,
+                    },
+                })
+                frontImageId = media.id as number;
+            } else if (data.frontImage.startsWith('http')) {
+                // External URL (template)
+                frontImageURL = data.frontImage;
+            }
+        }
+
+        // Handle mediaItems (album)
+        const processedMediaItems = [];
+        if (data.mediaItems && Array.isArray(data.mediaItems)) {
+            for (const item of data.mediaItems) {
+                if (item.url && item.url.startsWith('data:')) {
+                    const [meta, base64Data] = item.url.split(',');
+                    const mime = meta.match(/:(.*?);/)?.[1] || 'image/png';
+                    const extension = mime.split('/')[1] || 'png';
+                    const buffer = Buffer.from(base64Data, 'base64');
+                    
+                    const media = await payload.create({
+                        collection: 'media',
+                        data: {
+                            alt: `Album item for postcard`,
+                        },
+                        file: {
+                            data: buffer,
+                            mimetype: mime,
+                            name: `postcard-album-${Date.now()}.${extension}`,
+                            size: buffer.length,
+                        },
+                    })
+                    processedMediaItems.push({
+                        media: media.id,
+                        type: item.type || 'image'
+                    });
+                } else if (item.media) {
+                    // Already have a media ID
+                    processedMediaItems.push(item);
+                }
+            }
+        }
+
         // Generate a unique public ID
         let publicId = generatePublicId()
         let isUnique = false
@@ -46,13 +110,20 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
             throw new Error('Could not generate a unique ID. Please try again.')
         }
 
+        // Remove processed fields from spread data to avoid validation errors
+        const { frontImage, mediaItems, id, ...cleanData } = data;
+
         // Create the postcard record
         const newPostcard = await payload.create({
             collection: 'postcards',
             data: {
-                ...data,
+                ...cleanData,
+                frontImage: frontImageId,
+                frontImageURL: frontImageURL,
+                mediaItems: processedMediaItems,
                 publicId,
-                date: new Date().toISOString(), // Ensure date is set if not provided
+                date: new Date().toISOString(),
+                status: 'published', // Automatically publish when created from editor
             },
         })
 

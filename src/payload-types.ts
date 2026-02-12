@@ -217,9 +217,10 @@ export interface Postcard {
         id?: string | null;
       }[]
     | null;
-  recipientName: string;
-  senderName: string;
-  location: string;
+  recipientName?: string | null;
+  senderName?: string | null;
+  senderEmail?: string | null;
+  location?: string | null;
   coords?: {
     lat?: number | null;
     lng?: number | null;
@@ -432,6 +433,7 @@ export interface PostcardsSelect<T extends boolean = true> {
       };
   recipientName?: T;
   senderName?: T;
+  senderEmail?: T;
   location?: T;
   coords?:
     | T

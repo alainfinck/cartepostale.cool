@@ -264,7 +264,7 @@ const STATS = [
   { value: '100%', label: 'Gratuit' },
 ]
 
-export default function ShowcasePage() {
+export default function GalerieClient() {
   const [postcards, setPostcards] = useState<Postcard[]>([])
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'premium' | 'classic'>('all')
 

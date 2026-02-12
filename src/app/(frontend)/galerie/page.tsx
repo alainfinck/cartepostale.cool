@@ -1,6 +1,6 @@
 import React from 'react'
 import { Metadata } from 'next'
-import ShowcaseClient from './ShowcaseClient'
+import GalerieClient from './GalerieClient'
 
 export const metadata: Metadata = {
     title: 'Galerie & Inspiration - Les Plus Belles Cartes',
@@ -19,6 +19,6 @@ export const metadata: Metadata = {
     },
 }
 
-export default function ShowcasePage() {
-    return <ShowcaseClient />
+export default function GaleriePage() {
+    return <GalerieClient />
 }

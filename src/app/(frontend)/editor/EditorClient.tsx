@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Upload,
@@ -140,6 +140,13 @@ export default function EditorPage() {
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
   const showBack = currentStep === 'redaction'
 
+  // Auto-publish when reaching preview step
+  useEffect(() => {
+    if (currentStep === 'preview' && !shareUrl && !isPublishing && !shareError) {
+      handlePublish()
+    }
+  }, [currentStep, shareUrl, isPublishing, shareError])
+
   const canGoNext = () => {
     switch (currentStep) {
       case 'photo':
@@ -202,16 +209,24 @@ export default function EditorPage() {
 
   const handleAlbumUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newItems = Array.from(e.target.files).map((file: File) => ({
-        id: Date.now() + Math.random().toString(),
-        type: file.type.startsWith('video') ? 'video' : 'image',
-        url: URL.createObjectURL(file), // Note: In a real app, this would be an upload URL
-      })) as Postcard['mediaItems']
+      const files = Array.from(e.target.files)
+      
+      files.forEach(file => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          const newItem = {
+            id: Date.now() + Math.random().toString(),
+            type: file.type.startsWith('video') ? 'video' : 'image',
+            url: reader.result as string,
+          } as any
 
-      setMediaItems((prev) => {
-        const updated = [...(prev || []), ...(newItems || [])]
-        setIsPremium(updated.length > 0)
-        return updated
+          setMediaItems((prev) => {
+            const updated = [...(prev || []), newItem]
+            setIsPremium(updated.length > 0)
+            return updated
+          })
+        }
+        reader.readAsDataURL(file)
       })
     }
   }
@@ -364,15 +379,67 @@ export default function EditorPage() {
                 </div>
               </div>
               <PostcardView postcard={currentPostcard} flipped={showBack} className="w-full h-auto aspect-[3/2] shadow-xl rounded-xl border border-stone-100" />
-              <div className="mt-4 flex flex-col items-center">
+              <div className="mt-4 flex flex-col items-center gap-4">
                 <p className="text-stone-400 text-[10px] uppercase tracking-widest font-bold">L&apos;aperçu se met à jour en temps réel</p>
-                <button
-                  onClick={() => setShowFullscreen(true)}
-                  className="mt-3 text-stone-500 hover:text-teal-600 text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-colors group"
-                >
-                  <Maximize2 size={14} className="group-hover:scale-110 transition-transform" />
-                  Voir en plein écran
-                </button>
+                
+                <div className="flex flex-col w-full gap-3">
+                  <Button
+                    onClick={() => setShowFullscreen(true)}
+                    variant="outline"
+                    className="w-full text-stone-600 border-stone-200 hover:bg-stone-50 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 h-10 transition-all group"
+                  >
+                    <Maximize2 size={14} className="group-hover:scale-110 transition-transform" />
+                    Aperçu en plein écran
+                  </Button>
+
+                  {/* Step 2 specific continue button */}
+                  {currentStep === 'redaction' && (
+                    <Button
+                      onClick={goNext}
+                      disabled={!canGoNext()}
+                      className={cn(
+                        'w-full rounded-xl font-bold flex items-center justify-center gap-2 py-6 h-auto transition-all shadow-lg shadow-teal-100',
+                        canGoNext()
+                          ? 'bg-teal-500 hover:bg-teal-600 text-white'
+                          : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                      )}
+                    >
+                      Continuer
+                      <ChevronRight size={18} />
+                    </Button>
+                  )}
+
+                  {/* Step 3 sharing options in left panel */}
+                  {currentStep === 'preview' && shareUrl && (
+                    <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-3 text-center">Partager votre création</p>
+                      
+                      <div className="flex gap-2 mb-4">
+                        <input
+                          type="text"
+                          readOnly
+                          value={shareUrl}
+                          className="flex-1 bg-stone-50 border border-stone-100 rounded-lg px-3 text-xs text-stone-600 focus:outline-none py-2"
+                        />
+                        <Button onClick={copyToClipboard} variant="ghost" size="sm" className="text-teal-600 hover:bg-teal-50 h-8">
+                          <Copy size={12} className="mr-1" /> Copier
+                        </Button>
+                      </div>
+
+                      <div className="flex justify-center gap-3">
+                        <a href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#25D366] text-white rounded-full hover:opacity-90 transition-opacity shadow-sm">
+                          <Share2 size={16} />
+                        </a>
+                        <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#1877F2] text-white rounded-full hover:opacity-90 transition-opacity shadow-sm">
+                          <Facebook size={16} />
+                        </a>
+                        <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Regarde ma carte postale !`)}&url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#1DA1F2] text-white rounded-full hover:opacity-90 transition-opacity shadow-sm">
+                          <Twitter size={16} />
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -810,12 +877,14 @@ export default function EditorPage() {
                   <h2 className="text-2xl font-serif font-bold text-stone-800">
                     Votre carte est prête !
                   </h2>
-                  <button
+                  <Button
                     onClick={() => setShowFullscreen(true)}
-                    className="text-teal-600 hover:text-teal-700 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                    variant="ghost"
+                    size="sm"
+                    className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 font-bold flex items-center gap-1.5 transition-colors"
                   >
                     <Maximize2 size={14} /> Aperçu plein écran
-                  </button>
+                  </Button>
                 </div>
                 <p className="text-stone-500 mb-6 text-sm">
                   Vérifiez le rendu final. Cliquez sur la carte pour la retourner.
@@ -953,14 +1022,24 @@ export default function EditorPage() {
                             </p>
                           </div>
                         </div>
-                        <div className="max-w-md">
+                        <div className="max-w-md flex gap-2">
                           <input
                             type="email"
                             value={senderEmail}
                             onChange={(e) => setSenderEmail(e.target.value)}
                             placeholder="votre@email.com"
-                            className="w-full rounded-xl border border-stone-200 px-4 py-3 text-base focus:border-teal-500 focus:ring-teal-500 bg-white shadow-sm transition-all"
+                            className="flex-1 rounded-xl border border-stone-200 px-4 py-3 text-base focus:border-teal-500 focus:ring-teal-500 bg-white shadow-sm transition-all"
                           />
+                          <Button 
+                            variant="secondary"
+                            className="rounded-xl h-auto px-5 bg-teal-500 hover:bg-teal-600 text-white border-0"
+                            onClick={() => {
+                              // Simple feedback since it's autosaved
+                              alert("Email enregistré !")
+                            }}
+                          >
+                            Valider
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -1002,88 +1081,79 @@ export default function EditorPage() {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
 
-                {!shareUrl && (
-                  <div className="flex flex-col gap-4">
-                    <Button
-                      onClick={handlePublish}
-                      disabled={isPublishing}
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-base py-5 h-auto shadow-md shadow-orange-100 flex items-center justify-center gap-2.5 transition-all hover:-translate-y-0.5 disabled:opacity-70"
-                    >
-                      {isPublishing ? (
-                        <>
-                          <RefreshCw size={18} className="animate-spin" /> Envoi en cours...
-                        </>
+            {!shareUrl && (
+              <div className="mt-8">
+                {/* Mobile Card Preview — always visible below editor on small screens */}
+                <div className="lg:hidden">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Eye size={14} className="text-teal-500" />
+                    <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+                      Aperçu de votre carte
+                    </span>
+                    <div className="flex items-center gap-1.5 ml-auto text-stone-400 text-[10px] font-medium">
+                      {(isPublishing || shareUrl) ? (
+                        <div className="flex items-center gap-1 text-teal-600">
+                          {isPublishing ? (
+                            <RefreshCw size={10} className="animate-spin" />
+                          ) : (
+                            <Check size={10} />
+                          )}
+                          <span>{isPublishing ? 'Création...' : 'Prête !'}</span>
+                        </div>
                       ) : (
                         <>
-                          <Send size={18} /> Envoyer ma carte postale
+                          <RefreshCw size={10} className="animate-spin" style={{ animationDuration: '3s' }} />
+                          Temps réel
                         </>
                       )}
-                    </Button>
+                    </div>
                   </div>
-                )}
+                  <div className="flex justify-center">
+                    <div className="transform scale-[0.85] origin-top">
+                      <PostcardView postcard={currentPostcard} flipped={showBack} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="flex items-center justify-between mt-6">
+                  <Button
+                    variant="ghost"
+                    onClick={goPrev}
+                    disabled={currentStepIndex === 0}
+                    className={cn(
+                      'rounded-full font-semibold flex items-center gap-2 transition-all',
+                      currentStepIndex === 0
+                        ? 'opacity-0 pointer-events-none'
+                        : 'text-stone-600 hover:text-stone-800 hover:bg-stone-100'
+                    )}
+                  >
+                    <ChevronLeft size={18} />
+                    Retour
+                  </Button>
+
+                  {currentStep !== 'preview' && (
+                    <Button
+                      onClick={goNext}
+                      disabled={!canGoNext()}
+                      className={cn(
+                        'rounded-full font-bold flex items-center gap-2 px-6 py-5 h-auto transition-all',
+                        canGoNext()
+                          ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-md shadow-teal-200 hover:-translate-y-0.5'
+                          : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                      )}
+                    >
+                      Continuer
+                      <ChevronRight size={18} />
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
-
-
-          {!shareUrl && (
-            <div>
-
-              {/* Mobile Card Preview — always visible below editor on small screens */}
-              <div className="lg:hidden mt-8">
-                <div className="flex items-center gap-2 mb-3">
-                  <Eye size={14} className="text-teal-500" />
-                  <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
-                    Aperçu de votre carte
-                  </span>
-                  <div className="flex items-center gap-1.5 ml-auto text-stone-400 text-[10px] font-medium">
-                    <RefreshCw size={10} className="animate-spin" style={{ animationDuration: '3s' }} />
-                    Temps réel
-                  </div>
-                </div>
-                <div className="flex justify-center">
-                  <div className="transform scale-[0.85] origin-top">
-                    <PostcardView postcard={currentPostcard} flipped={showBack} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Navigation Buttons */}
-              <div className="flex items-center justify-between mt-6">
-                <Button
-                  variant="ghost"
-                  onClick={goPrev}
-                  disabled={currentStepIndex === 0}
-                  className={cn(
-                    'rounded-full font-semibold flex items-center gap-2 transition-all',
-                    currentStepIndex === 0
-                      ? 'opacity-0 pointer-events-none'
-                      : 'text-stone-600 hover:text-stone-800 hover:bg-stone-100'
-                  )}
-                >
-                  <ChevronLeft size={18} />
-                  Retour
-                </Button>
-
-                {currentStep !== 'preview' && (
-                  <Button
-                    onClick={goNext}
-                    disabled={!canGoNext()}
-                    className={cn(
-                      'rounded-full font-bold flex items-center gap-2 px-6 py-5 h-auto transition-all',
-                      canGoNext()
-                        ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-md shadow-teal-200 hover:-translate-y-0.5'
-                        : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-                    )}
-                  >
-                    Continuer
-                    <ChevronRight size={18} />
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -1100,11 +1170,11 @@ export default function EditorPage() {
           >
             <X size={28} />
           </button>
-          <div onClick={(e) => e.stopPropagation()} className="flex items-center justify-center min-h-full py-12">
+          <div onClick={(e) => e.stopPropagation()} className="flex items-center justify-center min-h-full py-2 w-full h-full">
             <PostcardView
               postcard={currentPostcard}
               flipped={showBack}
-              className="w-[95vw] max-w-[1600px] hover:scale-100 aspect-[3/2] h-auto cursor-default shadow-2xl"
+              className="w-auto h-auto max-w-full max-h-[95vh] aspect-[3/2] shadow-2xl hover:scale-100 cursor-default"
             />
           </div>
         </div>

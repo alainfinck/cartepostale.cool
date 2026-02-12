@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     description: 'Découvrez l\'histoire de CartePostale.cool, notre mission pour reconnecter les gens à travers des souvenirs tangibles.',
 }
 
-export default function AboutPage() {
+export default function AProposPage() {
     return (
         <div className="bg-[#fdfbf7] min-h-screen">
             {/* Hero Section */}

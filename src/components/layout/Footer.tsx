@@ -23,10 +23,10 @@ export const Footer = () => {
                 </div>
                 <div className="flex flex-wrap justify-center gap-8 mb-8 text-stone-500 font-medium">
                     <Link href="/" className="hover:text-teal-600 transition-colors">Accueil</Link>
-                    <Link href="/showcase" className="hover:text-teal-600 transition-colors">Découvrir</Link>
+                    <Link href="/galerie" className="hover:text-teal-600 transition-colors">Découvrir</Link>
                     <Link href="/business" className="hover:text-teal-600 transition-colors">Solutions Pro</Link>
                     <Link href="/pricing" className="hover:text-teal-600 transition-colors">Tarifs</Link>
-                    <Link href="/about" className="hover:text-teal-600 transition-colors">À propos</Link>
+                    <Link href="/a-propos" className="hover:text-teal-600 transition-colors">À propos</Link>
                     <Link href="/contact" className="hover:text-teal-600 transition-colors">Contact</Link>
                 </div>
 

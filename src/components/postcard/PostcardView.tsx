@@ -69,24 +69,30 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
         if (!portalRoot || !isAlbumOpen || !hasMedia) return null;
 
         return createPortal(
-            <div className="fixed inset-0 z-[150] bg-black/95 backdrop-blur-md flex items-center justify-center p-4">
-                <button
-                    onClick={() => setIsAlbumOpen(false)}
-                    className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors"
+            <div 
+                className="fixed inset-0 z-[150] bg-black/95 backdrop-blur-md flex items-center justify-center p-4"
+                onClick={() => setIsAlbumOpen(false)}
+            >
+                <div 
+                    className="w-full max-w-4xl flex flex-col items-center relative"
+                    onClick={(e) => e.stopPropagation()}
                 >
-                    <X size={32} />
-                </button>
+                    <button
+                        onClick={() => setIsAlbumOpen(false)}
+                        className="absolute -top-10 right-0 text-white/50 hover:text-white transition-colors"
+                    >
+                        <X size={32} />
+                    </button>
 
-                <div className="w-full max-w-5xl flex flex-col items-center">
                     <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden shadow-2xl flex items-center justify-center mb-6">
                         {postcard.mediaItems![currentMediaIndex].type === 'video' ? (
-                            <video controls autoPlay className="max-w-full max-h-[80vh]">
+                            <video controls autoPlay className="max-w-full max-h-[70vh]">
                                 <source src={postcard.mediaItems![currentMediaIndex].url} />
                             </video>
                         ) : (
                             <img
                                 src={postcard.mediaItems![currentMediaIndex].url}
-                                className="max-w-full max-h-[80vh] object-contain"
+                                className="max-w-full max-h-[70vh] object-contain"
                                 alt="Album item"
                             />
                         )}
@@ -138,15 +144,21 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
         if (!portalRoot || !isMapOpen || !(postcard.coords || postcard.location)) return null;
 
         return createPortal(
-            <div className="fixed inset-0 z-[150] bg-stone-900/95 backdrop-blur-md flex items-center justify-center p-4">
-                <button
-                    onClick={() => setIsMapOpen(false)}
-                    className="absolute top-6 right-6 text-white hover:text-red-400 transition-colors z-[110]"
+            <div 
+                className="fixed inset-0 z-[150] bg-stone-900/95 backdrop-blur-md flex items-center justify-center p-4"
+                onClick={() => setIsMapOpen(false)}
+            >
+                <div 
+                    className="w-full max-w-4xl h-[60vh] bg-white rounded-2xl overflow-hidden shadow-2xl relative"
+                    onClick={(e) => e.stopPropagation()}
                 >
-                    <X size={48} />
-                </button>
+                    <button
+                        onClick={() => setIsMapOpen(false)}
+                        className="absolute top-4 right-4 bg-white/80 hover:bg-white text-stone-500 hover:text-red-500 p-2 rounded-full transition-all z-[110] shadow-md border border-stone-100"
+                    >
+                        <X size={24} />
+                    </button>
 
-                <div className="w-full h-full max-w-[95vw] max-h-[90vh] bg-white rounded-2xl overflow-hidden shadow-2xl relative">
                     <iframe
                         title="Full Map"
                         width="100%"
@@ -185,11 +197,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                 className="w-full h-full object-cover"
                             />
 
-                            {/* Branding at top-left */}
-                            <div className="absolute top-6 left-6 bg-stone-900/40 backdrop-blur-md text-white/90 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase shadow-lg border border-white/10 flex items-center gap-2 z-20">
-                                <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse" />
-                                cartepostale.cool
-                            </div>
+
 
                             {postcard.location && (
                                 <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-sm text-teal-900 px-4 py-2 rounded-lg text-sm font-bold shadow-lg flex items-center gap-2 transform transition-transform group-hover:scale-105">
@@ -203,6 +211,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
 
                         {/* Back of Card */}
                         <div className="absolute w-full h-full backface-hidden rotate-y-180 rounded-xl shadow-2xl paper-texture border border-stone-200 p-5 sm:p-8 flex">
+                            {/* Small branding bottom-left */}
+                            <div className="absolute bottom-3 left-6 text-stone-300 text-[8px] font-bold tracking-[0.2em] uppercase flex items-center gap-1.5">
+                                <div className="w-1 h-1 bg-stone-200 rounded-full" />
+                                cartepostale.cool
+                            </div>
                             <div className="absolute left-1/2 top-10 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50"></div>
 
                             <div className="flex w-full h-full gap-5 sm:gap-8">

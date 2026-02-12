@@ -24,20 +24,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-const dropdownDecouvrir = [
-    {
-        href: '/showcase',
-        icon: ImageIcon,
-        title: 'Galerie',
-        description: 'Voir les cartes créées par la communauté',
-    },
-    {
-        href: '/about',
-        icon: Info,
-        title: 'À propos',
-        description: 'Notre histoire et notre mission',
-    },
-]
 
 const dropdownPro = [
     {
@@ -161,32 +147,29 @@ export const Navbar = () => {
                     </Link>
 
                     <div className="hidden sm:flex items-center gap-2">
-                        <NavDropdown
-                            id="decouvrir"
-                            label="Découvrir"
-                            active={pathname === '/showcase' || pathname === '/about'}
+                        <Link
+                            href="/galerie"
+                            className={cn(
+                                'font-medium transition-all duration-200 rounded-xl px-4 py-3 tracking-tight text-[15px]',
+                                pathname === '/galerie'
+                                    ? 'text-teal-600 font-bold bg-teal-50/80'
+                                    : 'text-stone-600 hover:text-teal-600 hover:bg-stone-50/80'
+                            )}
                         >
-                            <div className="py-3 px-1">
-                                {dropdownDecouvrir.map((item) => (
-                                    <Link
-                                        key={item.href}
-                                        href={item.href}
-                                        onClick={() => setOpenDropdown(null)}
-                                        className="flex gap-4 px-4 py-4 rounded-xl hover:bg-teal-50/80 transition-colors group/item mx-2 mb-1 last:mb-0"
-                                    >
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 group-hover/item:bg-teal-100 group-hover/item:scale-105 transition-transform">
-                                            <item.icon className="w-6 h-6" />
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <div className="font-semibold text-stone-800 group-hover/item:text-teal-600 text-[15px]">
-                                                {item.title}
-                                            </div>
-                                            <div className="text-sm text-stone-500 mt-0.5">{item.description}</div>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        </NavDropdown>
+                            Galerie
+                        </Link>
+
+                        <Link
+                            href="/a-propos"
+                            className={cn(
+                                'font-medium transition-all duration-200 rounded-xl px-4 py-3 tracking-tight text-[15px]',
+                                pathname === '/a-propos'
+                                    ? 'text-teal-600 font-bold bg-teal-50/80'
+                                    : 'text-stone-600 hover:text-teal-600 hover:bg-stone-50/80'
+                            )}
+                        >
+                            À propos
+                        </Link>
 
                         <NavDropdown
                             id="pro"
@@ -308,20 +291,28 @@ export const Navbar = () => {
                             Découvrir
                         </div>
                         <div className="space-y-1">
-                            {dropdownDecouvrir.map((item) => (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className="flex gap-4 px-4 py-4 rounded-2xl hover:bg-teal-50/80 active:bg-teal-50 text-stone-700 transition-colors"
-                                >
-                                    <item.icon className="w-6 h-6 text-teal-500 flex-shrink-0 mt-0.5" />
-                                    <div>
-                                        <div className="font-semibold text-[15px]">{item.title}</div>
-                                        <div className="text-sm text-stone-500 mt-0.5">{item.description}</div>
-                                    </div>
-                                </Link>
-                            ))}
+                            <Link
+                                href="/galerie"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={cn(
+                                    "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
+                                    pathname === "/galerie" ? "bg-teal-50 text-teal-700" : "hover:bg-teal-50/80 text-stone-700"
+                                )}
+                            >
+                                <ImageIcon className="w-6 h-6 text-teal-500 flex-shrink-0" />
+                                Galerie
+                            </Link>
+                            <Link
+                                href="/a-propos"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={cn(
+                                    "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
+                                    pathname === "/a-propos" ? "bg-teal-50 text-teal-700" : "hover:bg-teal-50/80 text-stone-700"
+                                )}
+                            >
+                                <Info className="w-6 h-6 text-teal-500 flex-shrink-0" />
+                                À propos
+                            </Link>
                         </div>
                         <div className="text-xs font-bold text-stone-400 uppercase tracking-widest px-4 py-2">
                             Agences & Pro
