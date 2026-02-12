@@ -12,6 +12,25 @@ export const Footer = () => {
     // Hide footer on editor page for more space
     if (pathname === '/editor') return null
 
+    // Minimalist footer for view page
+    if (pathname?.startsWith('/view/')) {
+        return (
+            <footer className="bg-[#fcfaf5] border-t border-stone-100 py-6 mt-12">
+                <div className="max-w-7xl mx-auto px-4 text-center">
+                    <Link href="/" className="inline-flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
+                        <div className="bg-teal-500/10 p-1 rounded-md">
+                             <Mail className="text-teal-600 w-3 h-3" />
+                        </div>
+                        <span className="font-serif font-bold text-sm text-stone-600">cartepostale.cool</span>
+                    </Link>
+                    <p className="text-stone-300 text-[10px] mt-2">
+                        © {new Date().getFullYear()}
+                    </p>
+                </div>
+            </footer>
+        )
+    }
+
     return (
         <footer className="bg-white border-t border-stone-200 py-12 mt-24">
             <div className="max-w-7xl mx-auto px-4 text-center">

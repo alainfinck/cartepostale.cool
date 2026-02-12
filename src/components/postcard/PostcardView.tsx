@@ -20,9 +20,10 @@ interface PostcardViewProps {
     isPreview?: boolean;
     flipped?: boolean;
     className?: string;
+    isLarge?: boolean;
 }
 
-const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false, flipped, className }) => {
+const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false, flipped, className, isLarge = false }) => {
     const [isFlipped, setIsFlipped] = useState(flipped ?? false);
     const [isDragging, setIsDragging] = useState(false);
 
@@ -195,7 +196,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                 <motion.div
                     className={cn(
                         "perspective-1000 cursor-grab active:cursor-grabbing group touch-none",
-                        "w-[340px] h-[240px] sm:w-[600px] sm:h-[400px]",
+                        isLarge 
+                            ? "w-[90vw] h-[60vw] max-w-[450px] max-h-[300px] sm:w-[600px] sm:h-[400px] md:w-[800px] md:h-[533px] sm:max-w-none sm:max-h-none portrait:max-h-none landscape:max-h-[75svh] landscape:w-[95vw] landscape:h-[75svh]" 
+                            : "w-[340px] h-[240px] sm:w-[600px] sm:h-[400px]",
                         className
                     )}
                     onClick={handleFlip}
@@ -243,7 +246,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
 
                         {/* Back of Card */}
                         <div 
-                            className="absolute w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#fafaf9] border border-stone-200 p-5 sm:p-8 flex"
+                            className={cn(
+                                "absolute w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#fafaf9] border border-stone-200 flex overflow-hidden",
+                                isLarge ? "p-4 sm:p-8" : "p-5 sm:p-8"
+                            )}
                             style={{ 
                                 backfaceVisibility: 'hidden',
                                 transform: 'rotateY(180deg)'
@@ -288,7 +294,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                                 <div className="relative group-hover:rotate-2 transition-transform duration-500 ease-out py-2 pr-2">
                                                     
                                                     {/* The Stamp itself - Reduced size (w-20/h-24 on desktop) */}
-                                                    <div className="w-16 h-20 sm:w-24 sm:h-28 relative shadow-[2px_3px_5px_rgba(0,0,0,0.2)] transform rotate-1">
+                                                    <div className={cn(
+                                                        "relative shadow-[2px_3px_5px_rgba(0,0,0,0.2)] transform rotate-1",
+                                                        isLarge ? "w-10 h-13 sm:w-20 sm:h-24" : "w-10 h-12 sm:w-16 sm:h-20"
+                                                    )}>
                                                         
                                                         {/* Classic: perforated edges using radial-gradient mask/clip for realism */}
                                                         {style === 'classic' && (
@@ -351,7 +360,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                                     </div>
 
                                                     {/* Realistic Postmark (Tampon) - SVG Overlay */}
-                                                    <div className="absolute -left-6 top-6 w-20 h-20 sm:w-28 sm:h-28 pointer-events-none z-20 mix-blend-multiply opacity-85 transform -rotate-12">
+                                                    <div className={cn(
+                                                        "absolute -left-6 top-5 pointer-events-none z-20 mix-blend-multiply opacity-85 transform -rotate-12",
+                                                        isLarge ? "w-16 h-16 sm:w-24 sm:h-24" : "w-14 h-14 sm:w-18 sm:h-18"
+                                                    )}>
                                                         <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm text-stone-800/70 fill-current">
                                                             <defs>
                                                                 <path id="curve" d="M 15,50 A 35,35 0 1,1 85,50 A 35,35 0 1,1 15,50" />
@@ -405,7 +417,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                     </div>
                                     <div className="mt-auto w-full">
                                         {postcard.recipientName && (
-                                            <div className="border-b-2 border-stone-300 border-dotted pb-1 mb-2 font-handwriting text-xl sm:text-2xl text-stone-600 pl-4">
+                                            <div className={cn(
+                                                "border-b-2 border-stone-300 border-dotted pb-0.5 mb-1.5 font-handwriting text-stone-600 pl-4",
+                                                isLarge ? "text-lg sm:text-2xl" : "text-xl sm:text-2xl"
+                                            )}>
                                                 {postcard.recipientName}
                                             </div>
                                         )}
@@ -414,7 +429,14 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                                 <h4 className="font-bold text-stone-400 text-[10px] uppercase mb-1 tracking-wider flex items-center gap-1">
                                                     <MapPin size={10} /> {postcard.location}
                                                 </h4>
-                                                <div className="w-full h-24 sm:h-40 bg-stone-100 rounded-lg overflow-hidden border border-stone-200 relative cursor-pointer hover:border-teal-400 transition-colors z-20" onClick={openMap}>
+                                                <div 
+                                                    className={cn(
+                                                        "w-full bg-stone-100 rounded-lg overflow-hidden border border-stone-200 relative cursor-pointer hover:border-teal-400 transition-colors z-20",
+                                                        // Adjust map height: smaller on mobile to prevent overflow
+                                                        isLarge ? "h-20 sm:h-56" : "h-16 sm:h-24"
+                                                    )}
+                                                    onClick={openMap}
+                                                >
                                                     <iframe
                                                         title="Mini Map"
                                                         width="100%"
@@ -449,18 +471,18 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
 
             {renderAlbumModal()}
             
-            {/* New Leaflet Map Modal */}
-            {isMapOpen && (
-                <div style={{ position: 'fixed', zIndex: 9999 }}>
-                    <MapModal
-                        isOpen={isMapOpen}
-                        onClose={() => setIsMapOpen(false)}
-                        location={postcard.location || ''}
-                        coords={postcard.coords}
-                        image={postcard.frontImage}
-                        message={postcard.message}
-                    />
-                </div>
+            {/* New Leaflet Map Modal - Portaled to avoid perspective/transform issues */}
+            {isMapOpen && portalRoot && createPortal(
+                <MapModal
+                    isOpen={isMapOpen}
+                    onClose={() => setIsMapOpen(false)}
+                    location={postcard.location || ''}
+                    coords={postcard.coords}
+                    image={postcard.frontImage}
+                    message={postcard.message}
+                    isLarge={isLarge}
+                />,
+                portalRoot
             )}
         </>
     );

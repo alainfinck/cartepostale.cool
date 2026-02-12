@@ -51,6 +51,7 @@ export async function linkPostcardToUser(postcardId: string, email: string) {
                     equals: postcardId,
                 },
             },
+            depth: 2,
         });
 
         if (postcardQuery.totalDocs === 0) {
@@ -64,7 +65,7 @@ export async function linkPostcardToUser(postcardId: string, email: string) {
             id: postcard.id,
             data: {
                 author: user.id,
-            },
+            } as any,
         });
 
         // 3. Generate Magic Link
@@ -77,7 +78,7 @@ export async function linkPostcardToUser(postcardId: string, email: string) {
             data: {
                 magicLinkToken: token,
                 magicLinkExpires: expires.toISOString(),
-            },
+            } as any,
         });
 
         // 4. Send Email
@@ -88,7 +89,13 @@ export async function linkPostcardToUser(postcardId: string, email: string) {
         const magicLink = `${protocol}://${host}/api/magic-login?token=${token}`;
         const postcardUrl = `${protocol}/view/${postcardId}`;
 
-        const emailHtml = generateMagicLinkEmail(magicLink, postcardUrl, postcardId);
+        // Resolve generic type for frontImage which can be number | Media | null
+        let postcardImageUrl = (postcard as any).frontImageURL;
+        if (!postcardImageUrl && (postcard as any).frontImage && typeof (postcard as any).frontImage === 'object') {
+             postcardImageUrl = (postcard as any).frontImage.url;
+        }
+
+        const emailHtml = generateMagicLinkEmail(magicLink, postcardUrl, postcardId, postcardImageUrl);
         
         await sendEmail({
             to: lowerEmail,

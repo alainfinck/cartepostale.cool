@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { X, Loader2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 // Fix for default marker icon in Next.js
 // Leaflet's default icon path issues are common in SSR/bundling environments
@@ -26,6 +27,7 @@ interface MapModalProps {
   coords?: { lat: number; lng: number }
   image: string
   message?: string
+  isLarge?: boolean
 }
 
 // Component to update map view when coordinates change
@@ -35,7 +37,7 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
   return null
 }
 
-const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, location, coords, image, message }) => {
+const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, location, coords, image, message, isLarge = false }) => {
   const [position, setPosition] = useState<[number, number] | null>(
     coords ? [coords.lat, coords.lng] : null
   )
@@ -80,7 +82,12 @@ const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, location, coords, 
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-4xl h-[60vh] bg-white rounded-2xl overflow-hidden shadow-2xl relative flex flex-col"
+        className={cn(
+          "bg-white rounded-xl overflow-hidden shadow-2xl relative flex flex-col transition-all duration-300",
+          isLarge 
+            ? "w-[90vw] h-[60vw] max-w-[450px] max-h-[300px] sm:w-[600px] sm:h-[400px] md:w-[800px] md:h-[533px] sm:max-w-none sm:max-h-none landscape:max-h-[85svh] landscape:w-[95vw] landscape:h-[85svh]" 
+            : "w-[340px] h-[240px] sm:w-[600px] sm:h-[400px]"
+        )}
         onClick={(e) => e.stopPropagation()}
       >
         <button

@@ -141,6 +141,8 @@ export default function EditorPage() {
 
   const [showCopyToast, setShowCopyToast] = useState(false)
   const [hasConfettiFired, setHasConfettiFired] = useState(false)
+  const [isSendingEmail, setIsSendingEmail] = useState(false)
+  const [isEmailSent, setIsEmailSent] = useState(false)
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
   const showBack = currentStep === 'redaction'
@@ -945,33 +947,58 @@ export default function EditorPage() {
                           </div>
                         </div>
                         <div className="max-w-md flex gap-2">
-                          <input
-                            type="email"
-                            value={senderEmail}
-                            onChange={(e) => setSenderEmail(e.target.value)}
-                            placeholder="votre@email.com"
-                            className="flex-1 rounded-xl border border-stone-200 px-4 py-3 text-base focus:border-teal-500 focus:ring-teal-500 bg-white shadow-sm transition-all"
-                          />
-                          <Button 
-                            variant="secondary"
-                            className="rounded-xl h-auto px-6 bg-teal-500 hover:bg-teal-600 text-white border-0 font-bold transition-all shadow-md shadow-teal-100"
-                            onClick={async () => {
-                              if (!createdPostcardId) return
-                              if (!senderEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) {
-                                alert("Veuillez entrer une adresse email valide.")
-                                return
-                              }
-                              
-                              const result = await linkPostcardToUser(createdPostcardId, senderEmail)
-                              if (result.success) {
-                                alert("Compte créé/lié ! Un email avec votre lien de connexion magique vous a été envoyé.")
-                              } else {
-                                alert("Erreur: " + (result.error || "Impossible de lier le compte."))
-                              }
-                            }}
-                          >
-                            Valider
-                          </Button>
+                          {isEmailSent ? (
+                            <div className="w-full flex items-center gap-3 bg-teal-50 border border-teal-200 text-teal-800 px-4 py-3 rounded-xl animate-in fade-in slide-in-from-top-2">
+                              <div className="bg-teal-100 p-1 rounded-full">
+                                <Check size={16} className="text-teal-600" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="font-bold text-sm">E-mail envoyé !</p>
+                                <p className="text-xs text-teal-600">Vérifiez votre boîte de réception (et vos spams).</p>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <input
+                                type="email"
+                                value={senderEmail}
+                                onChange={(e) => setSenderEmail(e.target.value)}
+                                placeholder="votre@email.com"
+                                disabled={isSendingEmail}
+                                className="flex-1 rounded-xl border border-stone-200 px-4 py-3 text-base focus:border-teal-500 focus:ring-teal-500 bg-white shadow-sm transition-all disabled:opacity-50 disabled:bg-stone-50"
+                              />
+                              <Button 
+                                variant="secondary"
+                                className="rounded-xl h-auto px-6 bg-teal-500 hover:bg-teal-600 text-white border-0 font-bold transition-all shadow-md shadow-teal-100 disabled:opacity-70"
+                                disabled={isSendingEmail}
+                                onClick={async () => {
+                                  if (!createdPostcardId) return
+                                  if (!senderEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) {
+                                    alert("Veuillez entrer une adresse email valide.")
+                                    return
+                                  }
+                                  
+                                  setIsSendingEmail(true);
+                                  try {
+                                    const result = await linkPostcardToUser(createdPostcardId, senderEmail)
+                                    if (result.success) {
+                                      setIsEmailSent(true);
+                                      // alert("Compte créé/lié ! Un email avec votre lien de connexion magique vous a été envoyé.")
+                                    } else {
+                                      alert("Erreur: " + (result.error || "Impossible de lier le compte."))
+                                    }
+                                  } catch (e) {
+                                    console.error(e);
+                                    alert("Une erreur est survenue.");
+                                  } finally {
+                                    setIsSendingEmail(false);
+                                  }
+                                }}
+                              >
+                                {isSendingEmail ? <RefreshCw size={18} className="animate-spin" /> : 'Valider'}
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Postcard } from '@/types'
-import { Plus, Compass, ExternalLink, Heart, Library, Instagram, Mail, Sun, Sparkles, Zap, Wallet, Share2, Image, Camera, Repeat } from 'lucide-react'
+import { Plus, Compass, ExternalLink, Heart, Library, Instagram, Mail, Sun, Sparkles, Zap, Wallet, Share2, Image, Camera, Repeat, MapPin } from 'lucide-react'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import WordRotate from '@/components/ui/word-rotate'
@@ -93,50 +93,62 @@ export default function Home() {
 
   return (
     <>
-      <div className="relative bg-teal-900 min-h-[560px] lg:min-h-[520px] flex items-center overflow-hidden">
+      <div className="relative bg-[#0f172a] min-h-[700px] lg:min-h-[640px] flex items-center overflow-hidden">
+        {/* Dynamic Colorful Background */}
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
-            className="w-full h-full object-cover opacity-50 mix-blend-normal"
-            alt="Ocean background"
+            src="https://images.unsplash.com/photo-1542259646-c0c7e85c19e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+            className="w-full h-full object-cover opacity-40 mix-blend-overlay"
+            alt="Summer vibes"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-teal-900/90 via-teal-900/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-teal-950/80" />
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/90 via-purple-900/80 to-teal-900/90" />
+          <div className="absolute top-[-100px] left-[-100px] w-[600px] h-[600px] bg-orange-500/30 rounded-full blur-3xl mix-blend-screen animate-pulse" />
+          <div className="absolute bottom-[-100px] right-[-100px] w-[500px] h-[500px] bg-pink-500/30 rounded-full blur-3xl mix-blend-screen animate-pulse" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full mt-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-12 lg:gap-8">
             {/* Contenu à gauche */}
-            <div className="max-w-2xl text-center lg:text-left">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-5 leading-tight drop-shadow-lg">
-                Envoyez un coin de <br />
-                <span className="inline-block relative">
-                  <WordRotate
-                    words={['paradis.', 'montagne.', 'mer.', 'campagne.', 'ville.']}
-                    className="text-orange-200"
-                  />
-                </span>
+            <div className="max-w-3xl text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-orange-300 text-xs font-bold uppercase tracking-widest mb-6">
+                <Sparkles size={12} />
+                <span>Nouveau & Fun</span>
+              </div>
+              
+              <h1 className="text-5xl sm:text-6xl md:text-7xl font-serif font-bold text-white mb-6 leading-tight drop-shadow-2xl">
+                Créez une vraie carte <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-300 to-pink-300">
+                  postale virtuelle
+                </span> <br />
+                et envoyez du bonheur !
               </h1>
-              <p className="text-teal-50 text-lg md:text-xl leading-relaxed max-w-lg mx-auto lg:mx-0 drop-shadow-md">
-                Le charme d&apos;une carte manuscrite, livrée instantanément. Capturez vos souvenirs de voyage et partagez-les avec style.
+              
+              <p className="text-teal-50 text-xl md:text-2xl leading-relaxed max-w-2xl mx-auto lg:mx-0 drop-shadow-md font-light mb-8">
+                Fini les SMS oubliés ! Transformez vos souvenirs de vacances en une <strong>carte postale numérique et interactive</strong>. Envoyez instantanément vos plus belles photos, vidéos et messages manuscrits à tous vos proches, où qu&apos;ils soient.
               </p>
+              
+              <div className="flex flex-wrap gap-4 text-white/80 text-sm font-medium mb-8 justify-center lg:justify-start">
+                <span className="flex items-center gap-1.5"><Camera size={16} className="text-orange-400" /> Photos & Vidéos</span>
+                <span className="flex items-center gap-1.5"><Image size={16} className="text-teal-400" /> Timbre personnalisé</span>
+                <span className="flex items-center gap-1.5"><MapPin size={16} className="text-pink-400" /> Localisation</span>
+              </div>
             </div>
 
             {/* Boutons à droite */}
-            <div className="flex flex-col sm:flex-row lg:flex-col gap-4 lg:min-w-[280px] lg:shrink-0 justify-center items-center lg:items-end">
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-5 lg:min-w-[280px] lg:shrink-0 justify-center items-center lg:items-end">
               <Link href="/editor" className="w-full sm:w-auto lg:w-full">
                 <Button
-                  className="w-full bg-orange-500 text-white px-8 py-7 rounded-2xl font-bold text-lg hover:bg-orange-600 transition-all shadow-xl shadow-orange-900/30 inline-flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] h-auto border-0"
+                  className="w-full bg-gradient-to-r from-orange-500 to-pink-600 text-white px-8 py-8 rounded-2xl font-bold text-xl hover:brightness-110 transition-all shadow-xl shadow-orange-900/40 inline-flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] h-auto border-0 ring-2 ring-white/20"
                 >
-                  Commencer <Plus size={22} strokeWidth={2.5} />
+                  Je crée ma carte <Plus size={24} strokeWidth={3} />
                 </Button>
               </Link>
               <Link href="/showcase" className="w-full sm:w-auto lg:w-full">
                 <Button
                   variant="ghost"
-                  className="w-full bg-white/10 backdrop-blur-sm text-white border-2 border-white/25 px-8 py-7 rounded-2xl font-bold text-lg hover:bg-white/20 hover:border-white/40 transition-all inline-flex items-center justify-center gap-2 h-auto"
+                  className="w-full bg-white/10 backdrop-blur-md text-white border border-white/30 px-8 py-6 rounded-2xl font-bold text-lg hover:bg-white/20 transition-all inline-flex items-center justify-center gap-2 h-auto"
                 >
-                  Comment ça marche <Compass size={22} strokeWidth={2.5} />
+                  Voir un exemple <Sparkles size={20} />
                 </Button>
               </Link>
             </div>
@@ -182,6 +194,7 @@ export default function Home() {
                   <PostcardView 
                     postcard={demoCard} 
                     isPreview={true} 
+                    isLarge={true}
                     className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] group-hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)]" 
                   />
                </div>

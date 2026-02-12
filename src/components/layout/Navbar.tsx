@@ -59,7 +59,16 @@ export const Navbar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [openDropdown, setOpenDropdown] = useState<string | null>(null)
     const [user, setUser] = useState<{ name?: string | null; email?: string } | null>(null)
+    const [scrolled, setScrolled] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20)
+        }
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
 
     useEffect(() => {
         fetch('/api/users/me', { credentials: 'include' })
@@ -118,7 +127,7 @@ export const Navbar = () => {
             </button>
             {openDropdown === id && (
                 <div
-                    className="absolute top-full left-0 pt-3 min-w-[300px] z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+                    className="absolute top-full left-0 pt-3 min-w-[380px] z-50 animate-in fade-in slide-in-from-top-2 duration-200"
                     onMouseLeave={() => setOpenDropdown(null)}
                 >
                     <div className="bg-white rounded-2xl shadow-2xl shadow-stone-200/50 border border-stone-100 overflow-hidden">
@@ -129,21 +138,77 @@ export const Navbar = () => {
         </div>
     )
 
+    // Minimalist Navbar for View Page
+    if (pathname?.startsWith('/view/')) {
+        return (
+            <nav className={cn(
+                "bg-white/95 backdrop-blur-lg border-b sticky top-0 z-50 transition-all duration-300",
+                scrolled ? "border-stone-100 shadow-sm" : "border-transparent"
+            )}>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className={cn(
+                        "flex justify-between items-center transition-all duration-300",
+                        scrolled ? "h-10 md:h-12" : "h-12 md:h-16"
+                    )}>
+                        <Link href="/" className="flex items-center cursor-pointer group">
+                             <div className={cn(
+                                "bg-teal-500 group-hover:bg-teal-600 transition-all p-1.5 rounded-md mr-2.5 transform shadow-teal-500/10",
+                                scrolled ? "scale-90 -rotate-1" : "-rotate-2 shadow-sm"
+                            )}>
+                                <Mail className="text-white" size={scrolled ? 14 : 16} />
+                            </div>
+                            <div>
+                                <span className={cn(
+                                    "font-serif font-bold text-stone-800 tracking-tight block leading-none transition-all",
+                                    scrolled ? "text-sm md:text-base" : "text-base md:text-lg"
+                                )}>
+                                    cartepostale.cool
+                                </span>
+                            </div>
+                        </Link>
+                         <Link href="/editor">
+                            <Button size="sm" className={cn(
+                                "bg-teal-600 hover:bg-teal-700 text-white rounded-full font-bold shadow-sm shadow-teal-500/10 transition-all",
+                                scrolled ? "text-[9px] px-2.5 h-7" : "text-[10px] md:text-xs px-3 h-8"
+                            )}>
+                                <Plus size={scrolled ? 12 : 14} className="mr-1" /> Créer
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
+            </nav>
+        )
+    }
+
     return (
-        <nav className="bg-white/95 backdrop-blur-lg border-b border-stone-200/80 sticky top-0 z-50">
+        <nav className={cn(
+            "bg-white/95 backdrop-blur-lg border-b sticky top-0 z-50 transition-all duration-300",
+            scrolled ? "border-stone-200/80 shadow-sm" : "border-stone-200/80"
+        )}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between h-24 items-center">
+                <div className={cn(
+                    "flex justify-between items-center transition-all duration-300",
+                    scrolled ? "h-16 md:h-20" : "h-20 md:h-24"
+                )}>
                     <Link href="/" className="flex items-center cursor-pointer group">
-                        <div className="bg-teal-500 group-hover:bg-teal-600 transition-colors p-2.5 rounded-xl mr-4 transform -rotate-3 shadow-lg shadow-teal-500/20">
-                            <Mail className="text-white" size={26} />
+                        <div className={cn(
+                            "bg-teal-500 group-hover:bg-teal-600 transition-all p-2.5 rounded-xl mr-4 transform shadow-lg shadow-teal-500/20",
+                            scrolled ? "p-1.5 -rotate-2 scale-90" : "-rotate-3"
+                        )}>
+                            <Mail className="text-white" size={scrolled ? 20 : 26} />
                         </div>
                         <div>
-                            <span className="font-serif font-bold text-2xl text-stone-800 tracking-tight block leading-none">
+                            <span className={cn(
+                                "font-serif font-bold text-stone-800 tracking-tight block leading-none transition-all",
+                                scrolled ? "text-xl" : "text-2xl"
+                            )}>
                                 cartepostale.cool
                             </span>
-                            <span className="text-xs font-bold text-orange-500 tracking-widest flex items-center gap-1.5">
-                                cool et digitale ! <Heart className="w-3 h-3 fill-orange-500 text-orange-500" />
-                            </span>
+                            {!scrolled && (
+                                <span className="text-xs font-bold text-orange-500 tracking-widest flex items-center gap-1.5 animate-in fade-in duration-300">
+                                    cool et digitale ! <Heart className="w-3 h-3 fill-orange-500 text-orange-500" />
+                                </span>
+                            )}
                         </div>
                     </Link>
 
@@ -210,7 +275,7 @@ export const Navbar = () => {
                                             key={item.label}
                                             href={item.href}
                                             onClick={() => setOpenDropdown(null)}
-                                            className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors group/item"
+                                            className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors group/item whitespace-nowrap"
                                         >
                                             <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-600 group-hover/item:bg-teal-50 group-hover/item:text-teal-600">
                                                 <item.icon className="w-5 h-5" />

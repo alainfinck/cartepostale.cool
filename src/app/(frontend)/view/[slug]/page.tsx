@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import { Postcard as PayloadPostcard, Media } from '@/payload-types'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
+import { RotateDevicePrompt } from "@/components/ui/rotate-device-prompt"
 
 interface PageProps {
     params: Promise<{
@@ -47,9 +48,9 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
         id: payloadPostcard.publicId, // Use publicId for frontend ID
         frontImage: frontImageUrl,
         message: payloadPostcard.message,
-        recipientName: payloadPostcard.recipientName,
-        senderName: payloadPostcard.senderName,
-        location: payloadPostcard.location,
+        recipientName: payloadPostcard.recipientName || '',
+        senderName: payloadPostcard.senderName || '',
+        location: payloadPostcard.location || '',
         stampStyle: payloadPostcard.stampStyle || 'classic',
         stampLabel: payloadPostcard.stampLabel || undefined,
         stampYear: payloadPostcard.stampYear || undefined,
@@ -110,21 +111,27 @@ export default async function PostcardPage({ params }: PageProps) {
     const frontendPostcard = mapPostcard(payloadPostcard)
 
     return (
-        <div className="min-h-screen bg-[#fdfbf7] py-12 px-4 flex flex-col items-center justify-center">
+        <div className="min-h-screen bg-[#fdfbf7] py-6 md:py-12 landscape:py-2 flex flex-col items-center justify-center overflow-x-hidden">
+            <RotateDevicePrompt />
 
             {/* Header / Context */}
-            <div className="text-center mb-8">
-                <h1 className="text-3xl md:text-4xl font-serif font-bold text-stone-800 mb-2">
+            <div className="text-center mb-4 md:mb-8 px-4 landscape:mb-2">
+                <h1 className="text-xl md:text-4xl font-serif font-bold text-stone-800 mb-1 md:mb-2 landscape:text-lg">
                     Vous avez reçu une carte postale !
                 </h1>
-                <p className="text-stone-500 text-lg">
+                <p className="text-stone-500 text-sm md:text-lg landscape:text-xs">
                     De la part de <span className="font-semibold text-teal-600">{frontendPostcard.senderName}</span>
                 </p>
             </div>
 
             {/* Card View */}
-            <div className="w-full max-w-4xl flex justify-center perspective-[1000px] mb-12">
-                <PostcardView postcard={frontendPostcard} flipped={false} className="w-full h-auto aspect-[3/2] shadow-2xl" />
+            <div className="w-full max-w-[100vw] md:max-w-4xl flex justify-center perspective-[1000px] mb-6 md:mb-12 px-2 md:px-0 landscape:mb-4">
+                <PostcardView 
+                    postcard={frontendPostcard} 
+                    flipped={false} 
+                    isLarge={true}
+                    className="shadow-2xl" 
+                />
             </div>
 
             {/* CTA Section */}
