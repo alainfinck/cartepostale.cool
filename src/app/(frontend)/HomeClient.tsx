@@ -6,6 +6,7 @@ import { Postcard } from '@/types'
 import { Plus, Compass, ExternalLink, Heart, Library, Instagram, Mail, Sun, Sparkles, Zap, Wallet, Share2, Image } from 'lucide-react'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
+import WordRotate from '@/components/ui/word-rotate'
 
 export default function Home() {
   const [savedPostcards, setSavedPostcards] = useState<Postcard[]>([])
@@ -94,12 +95,11 @@ export default function Home() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-12 lg:gap-8">
             {/* Contenu à gauche */}
             <div className="max-w-2xl text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-orange-200 text-sm font-semibold mb-6 border border-white/10 shadow-lg">
-                <Sun size={18} className="text-orange-400" /> Édition Été 2024
-              </div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-5 leading-tight drop-shadow-lg">
                 Envoyez un coin de <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-amber-200">paradis.</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-amber-200">
+                  <WordRotate words={['paradis.', 'montagne.', 'mer.', 'campagne.', 'ville.']} />
+                </span>
               </h1>
               <p className="text-teal-50 text-lg md:text-xl leading-relaxed max-w-lg mx-auto lg:mx-0">
                 Le charme d&apos;une carte manuscrite, livrée instantanément. Capturez vos souvenirs de voyage et partagez-les avec style.
