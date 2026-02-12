@@ -4,12 +4,36 @@ import React, { useState, useTransition, useCallback } from 'react'
 import Link from 'next/link'
 import {
     Search, LayoutGrid, List, Eye, Share2, Mail, Trash2,
-    ChevronDown, X, ExternalLink, MapPin, Calendar, User,
+    ChevronDown, ExternalLink, MapPin, Calendar, User,
     Users, Archive, FileText, BarChart3, ArrowUpDown,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table'
 import { Postcard as PayloadPostcard, Media } from '@/payload-types'
 import { getAllPostcards, updatePostcardStatus, deletePostcard, PostcardsResult } from '@/actions/manager-actions'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -145,87 +169,59 @@ export default function ManagerClient({ initialData }: Props) {
     }
 
     return (
-        <div className="min-h-screen bg-[#fdfbf7]">
-            {/* Header */}
-            <div className="bg-white border-b border-stone-200 sticky top-0 z-40">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-serif font-bold text-stone-800">
-                                Manager
-                            </h1>
-                            <p className="text-sm text-stone-500 mt-0.5">
-                                Gestion des cartes postales
-                            </p>
-                        </div>
-                        <Link href="/">
-                            <Button variant="outline" size="sm">
-                                Retour au site
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
-            </div>
-
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        <div className="space-y-6">
                 {/* Stats */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                    <StatCard icon={<Mail size={18} />} label="Total" value={totalCards} color="text-stone-700 bg-white" />
-                    <StatCard icon={<FileText size={18} />} label="Publiées" value={publishedCount} color="text-emerald-700 bg-emerald-50" />
-                    <StatCard icon={<FileText size={18} />} label="Brouillons" value={draftCount} color="text-amber-700 bg-amber-50" />
-                    <StatCard icon={<Archive size={18} />} label="Archivées" value={archivedCount} color="text-stone-500 bg-stone-50" />
-                    <StatCard icon={<Eye size={18} />} label="Vues" value={totalViews} color="text-blue-700 bg-blue-50" />
-                    <StatCard icon={<Share2 size={18} />} label="Partages" value={totalShares} color="text-purple-700 bg-purple-50" />
+                    <StatCard icon={<Mail size={18} />} label="Total" value={totalCards} />
+                    <StatCard icon={<FileText size={18} />} label="Publiées" value={publishedCount} variant="success" />
+                    <StatCard icon={<FileText size={18} />} label="Brouillons" value={draftCount} variant="warning" />
+                    <StatCard icon={<Archive size={18} />} label="Archivées" value={archivedCount} variant="muted" />
+                    <StatCard icon={<Eye size={18} />} label="Vues" value={totalViews} variant="info" />
+                    <StatCard icon={<Share2 size={18} />} label="Partages" value={totalShares} variant="info" />
                 </div>
 
                 {/* Toolbar */}
                 <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
                     <div className="relative flex-1">
-                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             placeholder="Rechercher par nom, lieu, message..."
                             value={search}
                             onChange={(e) => handleSearch(e.target.value)}
-                            className="pl-9 bg-white"
+                            className="pl-9"
                         />
                     </div>
 
                     <div className="flex gap-2">
                         {(['all', 'published', 'draft', 'archived'] as StatusFilter[]).map((s) => (
-                            <button
+                            <Button
                                 key={s}
+                                variant={statusFilter === s ? 'default' : 'outline'}
+                                size="sm"
                                 onClick={() => handleStatusFilter(s)}
-                                className={cn(
-                                    'px-3 py-2 text-xs font-medium rounded-lg border transition-colors',
-                                    statusFilter === s
-                                        ? 'bg-stone-800 text-white border-stone-800'
-                                        : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
-                                )}
                             >
                                 {s === 'all' ? 'Tous' : statusConfig[s].label}
-                            </button>
+                            </Button>
                         ))}
                     </div>
 
-                    <div className="flex gap-1 bg-white border border-stone-200 rounded-lg p-1">
-                        <button
+                    <div className="flex gap-1 rounded-lg border p-1">
+                        <Button
+                            variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                            size="icon"
+                            className="h-8 w-8"
                             onClick={() => setViewMode('grid')}
-                            className={cn(
-                                'p-2 rounded-md transition-colors',
-                                viewMode === 'grid' ? 'bg-stone-100 text-stone-800' : 'text-stone-400 hover:text-stone-600'
-                            )}
                         >
                             <LayoutGrid size={16} />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                            size="icon"
+                            className="h-8 w-8"
                             onClick={() => setViewMode('list')}
-                            className={cn(
-                                'p-2 rounded-md transition-colors',
-                                viewMode === 'list' ? 'bg-stone-100 text-stone-800' : 'text-stone-400 hover:text-stone-600'
-                            )}
                         >
                             <List size={16} />
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
@@ -239,15 +235,17 @@ export default function ManagerClient({ initialData }: Props) {
 
                 {/* Content */}
                 {postcards.length === 0 ? (
-                    <div className="text-center py-20">
-                        <Mail size={48} className="mx-auto text-stone-300 mb-4" />
-                        <h3 className="text-lg font-medium text-stone-600 mb-1">Aucune carte trouvée</h3>
-                        <p className="text-stone-400 text-sm">
-                            {search || statusFilter !== 'all'
-                                ? 'Essayez de modifier vos filtres'
-                                : 'Aucune carte postale dans la base de données'}
-                        </p>
-                    </div>
+                    <Card>
+                        <CardContent className="flex flex-col items-center justify-center py-20">
+                            <Mail size={48} className="mx-auto text-muted-foreground mb-4" />
+                            <h3 className="text-lg font-medium text-foreground mb-1">Aucune carte trouvée</h3>
+                            <p className="text-muted-foreground text-sm">
+                                {search || statusFilter !== 'all'
+                                    ? 'Essayez de modifier vos filtres'
+                                    : 'Aucune carte postale dans la base de données'}
+                            </p>
+                        </CardContent>
+                    </Card>
                 ) : viewMode === 'grid' ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {postcards.map((postcard) => (
@@ -261,23 +259,23 @@ export default function ManagerClient({ initialData }: Props) {
                         ))}
                     </div>
                 ) : (
-                    <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
+                    <Card>
                         <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b border-stone-100 bg-stone-50/50">
-                                        <th className="text-left py-3 px-4 font-medium text-stone-500">Image</th>
-                                        <th className="text-left py-3 px-4 font-medium text-stone-500">Expéditeur</th>
-                                        <th className="text-left py-3 px-4 font-medium text-stone-500">Destinataire</th>
-                                        <th className="text-left py-3 px-4 font-medium text-stone-500">Lieu</th>
-                                        <th className="text-left py-3 px-4 font-medium text-stone-500">Date</th>
-                                        <th className="text-left py-3 px-4 font-medium text-stone-500">Statut</th>
-                                        <th className="text-right py-3 px-4 font-medium text-stone-500">Vues</th>
-                                        <th className="text-right py-3 px-4 font-medium text-stone-500">Partages</th>
-                                        <th className="text-right py-3 px-4 font-medium text-stone-500">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Image</TableHead>
+                                        <TableHead>Expéditeur</TableHead>
+                                        <TableHead>Destinataire</TableHead>
+                                        <TableHead>Lieu</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Statut</TableHead>
+                                        <TableHead className="text-right">Vues</TableHead>
+                                        <TableHead className="text-right">Partages</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
                                     {postcards.map((postcard) => (
                                         <ListRow
                                             key={postcard.id}
@@ -288,12 +286,11 @@ export default function ManagerClient({ initialData }: Props) {
                                             formatDate={formatDate}
                                         />
                                     ))}
-                                </tbody>
-                            </table>
+                                </TableBody>
+                            </Table>
                         </div>
-                    </div>
+                    </Card>
                 )}
-            </div>
 
             {/* Detail Modal */}
             {selectedPostcard && (
@@ -307,55 +304,62 @@ export default function ManagerClient({ initialData }: Props) {
             )}
 
             {/* Delete confirmation */}
-            {deleteConfirm !== null && (
-                <div className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setDeleteConfirm(null)}>
-                    <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                        <h3 className="text-lg font-bold text-stone-800 mb-2">Confirmer la suppression</h3>
-                        <p className="text-stone-500 text-sm mb-6">
+            <Dialog open={deleteConfirm !== null} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+                <DialogContent className="sm:max-w-sm" onClick={(e) => e.stopPropagation()}>
+                    <DialogHeader>
+                        <DialogTitle>Confirmer la suppression</DialogTitle>
+                        <DialogDescription>
                             Cette action est irréversible. La carte postale sera définitivement supprimée.
-                        </p>
-                        <div className="flex gap-3 justify-end">
-                            <Button variant="outline" size="sm" onClick={() => setDeleteConfirm(null)}>
-                                Annuler
-                            </Button>
-                            <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleDelete(deleteConfirm)}
-                                disabled={isPending}
-                            >
-                                {isPending ? 'Suppression...' : 'Supprimer'}
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" size="sm" onClick={() => setDeleteConfirm(null)}>
+                            Annuler
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => deleteConfirm !== null && handleDelete(deleteConfirm)}
+                            disabled={isPending}
+                        >
+                            {isPending ? 'Suppression…' : 'Supprimer'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
 
 // --- Sub-components ---
 
-function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: number; color: string }) {
+const statVariants = {
+    default: 'border-border bg-card',
+    success: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    warning: 'border-amber-200 bg-amber-50 text-amber-700',
+    muted: 'border-border bg-muted/50 text-muted-foreground',
+    info: 'border-blue-200 bg-blue-50 text-blue-700',
+} as const
+
+function StatCard({ icon, label, value, variant = 'default' }: { icon: React.ReactNode; label: string; value: number; variant?: keyof typeof statVariants }) {
     return (
-        <div className={cn('rounded-xl border border-stone-200 p-4 flex items-center gap-3', color)}>
-            <div className="opacity-60">{icon}</div>
-            <div>
-                <div className="text-xl font-bold leading-none">{value}</div>
-                <div className="text-xs opacity-70 mt-0.5">{label}</div>
-            </div>
-        </div>
+        <Card className={cn('p-4 flex items-center gap-3', statVariants[variant])}>
+            <CardContent className="flex flex-row items-center gap-3 p-0">
+                <div className="opacity-60">{icon}</div>
+                <div>
+                    <div className="text-xl font-bold leading-none">{value}</div>
+                    <div className="text-xs opacity-70 mt-0.5">{label}</div>
+                </div>
+            </CardContent>
+        </Card>
     )
 }
 
 function StatusBadge({ status }: { status: string }) {
     const config = statusConfig[status as keyof typeof statusConfig]
     if (!config) return null
-    return (
-        <span className={cn('text-[11px] font-medium px-2 py-0.5 rounded-full border', config.color)}>
-            {config.label}
-        </span>
-    )
+    const variant = status === 'published' ? 'default' : status === 'draft' ? 'secondary' : 'outline'
+    return <Badge variant={variant}>{config.label}</Badge>
 }
 
 function StatusDropdown({ currentStatus, onUpdate, postcardId }: {
@@ -363,42 +367,28 @@ function StatusDropdown({ currentStatus, onUpdate, postcardId }: {
     onUpdate: (id: number, status: 'published' | 'draft' | 'archived') => void
     postcardId: number
 }) {
-    const [open, setOpen] = useState(false)
     const statuses = ['published', 'draft', 'archived'] as const
 
     return (
-        <div className="relative">
-            <button
-                onClick={(e) => { e.stopPropagation(); setOpen(!open) }}
-                className="flex items-center gap-1 text-xs text-stone-500 hover:text-stone-700 transition-colors"
-            >
-                <ArrowUpDown size={12} />
-                <span>Statut</span>
-            </button>
-            {open && (
-                <>
-                    <div className="fixed inset-0 z-50" onClick={() => setOpen(false)} />
-                    <div className="absolute right-0 top-full mt-1 bg-white border border-stone-200 rounded-lg shadow-lg z-50 py-1 min-w-[120px]">
-                        {statuses.map((s) => (
-                            <button
-                                key={s}
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    onUpdate(postcardId, s)
-                                    setOpen(false)
-                                }}
-                                className={cn(
-                                    'w-full text-left px-3 py-1.5 text-xs hover:bg-stone-50 transition-colors',
-                                    currentStatus === s ? 'font-bold text-teal-600' : 'text-stone-600'
-                                )}
-                            >
-                                {statusConfig[s].label}
-                            </button>
-                        ))}
-                    </div>
-                </>
-            )}
-        </div>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-muted-foreground">
+                    <ArrowUpDown size={12} />
+                    Statut
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                {statuses.map((s) => (
+                    <DropdownMenuItem
+                        key={s}
+                        onClick={(e) => { e.stopPropagation(); onUpdate(postcardId, s) }}
+                        className={cn(currentStatus === s && 'font-semibold')}
+                    >
+                        {statusConfig[s].label}
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
     )
 }
 
@@ -411,8 +401,8 @@ function GridCard({ postcard, onSelect, onUpdateStatus, onDelete }: {
     const imageUrl = getFrontImageUrl(postcard)
 
     return (
-        <div
-            className="bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
+        <Card
+            className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
             onClick={onSelect}
         >
             {/* Image */}
@@ -475,7 +465,7 @@ function GridCard({ postcard, onSelect, onUpdateStatus, onDelete }: {
                     </div>
                 </div>
             </div>
-        </div>
+        </Card>
     )
 }
 
@@ -489,42 +479,41 @@ function ListRow({ postcard, onSelect, onUpdateStatus, onDelete, formatDate }: {
     const imageUrl = getFrontImageUrl(postcard)
 
     return (
-        <tr
-            className="border-b border-stone-50 hover:bg-stone-50/50 transition-colors cursor-pointer"
-            onClick={onSelect}
-        >
-            <td className="py-3 px-4">
+        <TableRow className="cursor-pointer" onClick={onSelect}>
+            <TableCell>
                 <img src={imageUrl} alt="" className="w-16 h-11 object-cover rounded-md" />
-            </td>
-            <td className="py-3 px-4 font-medium text-stone-700">{postcard.senderName}</td>
-            <td className="py-3 px-4 text-stone-600">{postcard.recipientName}</td>
-            <td className="py-3 px-4 text-stone-500">{postcard.location}</td>
-            <td className="py-3 px-4 text-stone-500">{formatDate(postcard.date)}</td>
-            <td className="py-3 px-4"><StatusBadge status={postcard.status || 'draft'} /></td>
-            <td className="py-3 px-4 text-right text-stone-500">{postcard.views || 0}</td>
-            <td className="py-3 px-4 text-right text-stone-500">{postcard.shares || 0}</td>
-            <td className="py-3 px-4">
+            </TableCell>
+            <TableCell className="font-medium">{postcard.senderName}</TableCell>
+            <TableCell>{postcard.recipientName}</TableCell>
+            <TableCell className="text-muted-foreground">{postcard.location}</TableCell>
+            <TableCell className="text-muted-foreground">{formatDate(postcard.date)}</TableCell>
+            <TableCell><StatusBadge status={postcard.status || 'draft'} /></TableCell>
+            <TableCell className="text-right text-muted-foreground">{postcard.views || 0}</TableCell>
+            <TableCell className="text-right text-muted-foreground">{postcard.shares || 0}</TableCell>
+            <TableCell>
                 <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                     <Link href={`/view/${postcard.publicId}`} target="_blank">
-                        <button className="text-stone-400 hover:text-teal-600 transition-colors" title="Voir la carte">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Voir la carte">
                             <ExternalLink size={14} />
-                        </button>
+                        </Button>
                     </Link>
                     <StatusDropdown
                         currentStatus={postcard.status || 'draft'}
                         onUpdate={onUpdateStatus}
                         postcardId={postcard.id}
                     />
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
                         onClick={() => onDelete(postcard.id)}
-                        className="text-stone-300 hover:text-red-500 transition-colors"
                         title="Supprimer"
                     >
                         <Trash2 size={14} />
-                    </button>
+                    </Button>
                 </div>
-            </td>
-        </tr>
+            </TableCell>
+        </TableRow>
     )
 }
 
@@ -539,30 +528,22 @@ function DetailModal({ postcard, onClose, onUpdateStatus, onDelete, formatDate }
     const publicUrl = `/view/${postcard.publicId}`
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-start justify-center p-4 pt-12 overflow-y-auto" onClick={onClose}>
-            <div className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                {/* Modal header */}
-                <div className="flex items-center justify-between p-4 border-b border-stone-100">
+        <Dialog open onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                <DialogHeader>
                     <div className="flex items-center gap-3">
-                        <h2 className="font-serif font-bold text-lg text-stone-800">
-                            Détail de la carte
-                        </h2>
+                        <DialogTitle>Détail de la carte</DialogTitle>
                         <StatusBadge status={postcard.status || 'draft'} />
                     </div>
-                    <button onClick={onClose} className="text-stone-400 hover:text-stone-600 transition-colors">
-                        <X size={20} />
-                    </button>
-                </div>
+                </DialogHeader>
 
-                {/* Card preview */}
-                <div className="p-6 bg-[#fdfbf7] flex justify-center">
+                <div className="p-6 bg-muted/30 flex justify-center rounded-lg">
                     <div className="transform scale-75 sm:scale-90 origin-top">
                         <PostcardView postcard={frontendPostcard} isPreview />
                     </div>
                 </div>
 
-                {/* Details */}
-                <div className="p-6 space-y-4">
+                <div className="space-y-4">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                         <InfoItem icon={<User size={14} />} label="Expéditeur" value={postcard.senderName} />
                         <InfoItem icon={<Users size={14} />} label="Destinataire" value={postcard.recipientName} />
@@ -582,14 +563,13 @@ function DetailModal({ postcard, onClose, onUpdateStatus, onDelete, formatDate }
                     </div>
 
                     {postcard.message && (
-                        <div className="bg-stone-50 rounded-lg p-4">
-                            <p className="text-xs text-stone-400 mb-1">Message</p>
-                            <p className="text-sm text-stone-700 leading-relaxed">{postcard.message}</p>
+                        <div className="bg-muted/50 rounded-lg p-4">
+                            <p className="text-xs text-muted-foreground mb-1">Message</p>
+                            <p className="text-sm leading-relaxed">{postcard.message}</p>
                         </div>
                     )}
 
-                    {/* Actions */}
-                    <div className="flex flex-wrap gap-2 pt-2 border-t border-stone-100">
+                    <DialogFooter className="flex flex-wrap gap-2 border-t pt-4">
                         <Link href={publicUrl} target="_blank">
                             <Button variant="outline" size="sm">
                                 <ExternalLink size={14} />
@@ -637,10 +617,10 @@ function DetailModal({ postcard, onClose, onUpdateStatus, onDelete, formatDate }
                             <Trash2 size={14} />
                             Supprimer
                         </Button>
-                    </div>
+                    </DialogFooter>
                 </div>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     )
 }
 

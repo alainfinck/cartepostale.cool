@@ -1,8 +1,6 @@
 import React from 'react'
 import './styles.css'
-import { Navbar } from '@/components/layout/Navbar'
-import { Footer } from '@/components/layout/Footer'
-import './styles.css'
+import { FrontendLayoutWrapper } from '@/components/layout/FrontendLayoutWrapper'
 
 export const metadata = {
   metadataBase: new URL('https://cartepostale.cool'),
@@ -40,11 +38,9 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
   return (
-    <html lang="en">
+    <html lang="fr">
       <body className="flex flex-col min-h-screen bg-[#fdfbf7] font-sans">
-        <Navbar />
-        <main className="flex-grow">{children}</main>
-        <Footer />
+        <FrontendLayoutWrapper>{children}</FrontendLayoutWrapper>
       </body>
     </html>
   )
