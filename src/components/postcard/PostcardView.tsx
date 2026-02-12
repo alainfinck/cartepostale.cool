@@ -468,11 +468,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 <div className="w-1 h-1 bg-stone-200 rounded-full" />
                                 cartepostale.cool
                             </div>
-                            <div className="absolute left-[62%] top-10 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50"></div>
+                            <div className="absolute left-[62%] top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50"></div>
 
-                            <div className="flex w-full h-full gap-8 sm:gap-14">
+                            <div className="flex w-full h-full gap-8 sm:gap-14 pt-10 sm:pt-12">
                                 {/* Left Side: Message - much wider */}
-                                <div className="flex-[1.6] min-w-0 flex flex-col justify-start relative pt-2 pr-6 sm:pr-8">
+                                <div className="flex-[1.6] min-w-0 flex flex-col justify-start relative pt-0 pr-6 sm:pr-8">
 
                                     <div 
                                         className="flex-1 min-w-0 overflow-y-auto custom-scrollbar my-1 cursor-pointer group/msg relative pr-2"
