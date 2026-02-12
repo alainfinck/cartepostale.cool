@@ -7,6 +7,8 @@ export interface MediaItem {
 export interface Postcard {
     id: string;
     frontImage: string;
+    frontCaption?: string;
+    frontEmoji?: string;
     message: string;
     recipientName: string;
     senderName: string;

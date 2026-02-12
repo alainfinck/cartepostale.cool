@@ -361,14 +361,32 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
 
 
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none z-0" />
+
                             {postcard.location && (
-                                <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-sm text-teal-900 px-4 py-2 rounded-lg text-sm font-bold shadow-lg flex items-center gap-2 transform transition-transform group-hover:scale-105">
-                                    <MapPin size={16} className="text-orange-500" />
-                                    <span className="uppercase tracking-wide">{postcard.location}</span>
+                                <div
+                                    className={cn(
+                                        "absolute left-4 sm:left-6 z-10 bg-white/90 backdrop-blur-md text-teal-900 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-bold shadow-lg flex items-center gap-2",
+                                        (postcard.frontCaption || postcard.frontEmoji) ? "bottom-20 sm:bottom-24" : "bottom-4 sm:bottom-6"
+                                    )}
+                                >
+                                    <MapPin size={14} className="text-orange-500 shrink-0" />
+                                    <span className="uppercase tracking-wide truncate max-w-[140px] sm:max-w-[200px]">{postcard.location}</span>
                                 </div>
                             )}
 
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none"></div>
+                            {(postcard.frontCaption || postcard.frontEmoji) && (
+                                <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 z-10 flex items-center gap-3 rounded-xl sm:rounded-2xl border border-white/50 bg-white/90 backdrop-blur-md px-4 py-3 sm:px-5 sm:py-3.5 shadow-xl">
+                                    {postcard.frontEmoji && (
+                                        <span className="text-xl sm:text-2xl leading-none shrink-0" aria-hidden>{postcard.frontEmoji}</span>
+                                    )}
+                                    {postcard.frontCaption ? (
+                                        <p className="m-0 text-sm sm:text-lg font-semibold leading-tight tracking-tight text-stone-800 break-words line-clamp-2">
+                                            {postcard.frontCaption}
+                                        </p>
+                                    ) : null}
+                                </div>
+                            )}
                         </div>
 
                         {/* Back of Card */}

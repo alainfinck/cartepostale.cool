@@ -214,6 +214,14 @@ export interface Postcard {
    * URL for template images
    */
   frontImageURL?: string | null;
+  /**
+   * Texte court affiché sur la face avant
+   */
+  frontCaption?: string | null;
+  /**
+   * Emoji affiché près du texte de la face avant
+   */
+  frontEmoji?: string | null;
   message: string;
   recipients?:
     | {
@@ -465,6 +473,8 @@ export interface PostcardsSelect<T extends boolean = true> {
   publicId?: T;
   frontImage?: T;
   frontImageURL?: T;
+  frontCaption?: T;
+  frontEmoji?: T;
   message?: T;
   recipients?:
     | T

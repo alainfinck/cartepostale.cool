@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Postcard } from '@/types'
-import { Plus, Compass, ExternalLink, Heart, Library, Instagram, Mail, Sparkles, Zap, Wallet, Share2, Image, Camera, Repeat, MapPin } from 'lucide-react'
+import { Plus, Compass, ExternalLink, Heart, Library, Instagram, Mail, Sparkles, Zap, Wallet, Share2, Image, Camera, Repeat, MapPin, Check } from 'lucide-react'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import WordRotate from '@/components/ui/word-rotate'
@@ -344,6 +344,55 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      <section className="bg-[#fefaf4] border-t border-stone-100 py-20">
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <div className="inline-flex items-center justify-center gap-2 px-3 py-1.5 bg-pink-50 text-pink-600 text-xs font-bold uppercase tracking-[0.2em] rounded-full shadow-sm mb-4">
+            Prix par carte
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-4">
+            Simple et transparent
+          </h2>
+          <p className="text-stone-500 text-lg">
+            Pas d&apos;abonnement, pas de mauvaise surprise : vous payez uniquement chaque fois que vous envoyez une carte postale réelle.
+          </p>
+        </div>
+
+        <div className="max-w-5xl mx-auto px-4 mt-12">
+          <div className="relative bg-white border border-pink-100 rounded-[32px] shadow-[0_20px_60px_rgba(240,156,194,0.25)] overflow-hidden">
+            <div className="bg-gradient-to-r from-pink-500 to-orange-400 text-white text-center px-10 py-7">
+              <div className="text-sm uppercase tracking-[0.4em] font-semibold opacity-90">Prix par carte</div>
+              <div className="mt-4 text-5xl font-bold leading-tight">1,99€</div>
+              <p className="text-lg opacity-90 mt-2">par carte postale</p>
+            </div>
+            <div className="px-10 py-8 space-y-4">
+              {[
+                "Upload de vos propres images",
+                "Templates prédéfinis inclus",
+                "Texte personnalisable recto & verso",
+                "Timbres décoratifs fun",
+                "Téléchargement HD (PNG/PDF)",
+                "Partage par lien & email",
+                "Pas d'abonnement ni engagement",
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-3 text-stone-600 text-base font-semibold">
+                  <Check className="text-emerald-500" size={18} />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+            <div className="px-10 pb-10 pt-1">
+              <div className="max-w-xs mx-auto">
+                <Link href="/editor" className="w-full">
+                  <Button className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full font-bold text-lg py-5 shadow-lg shadow-pink-500/30 border-0">
+                    Commencer maintenant 🪄
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   )
 }

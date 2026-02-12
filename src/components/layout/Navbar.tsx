@@ -151,12 +151,23 @@ export const Navbar = () => {
                         scrolled ? "h-10 md:h-12" : "h-12 md:h-16"
                     )}>
                         <Link href="/" className="flex items-center cursor-pointer group">
-                             <div className={cn(
-                                "bg-gradient-cta group-hover:opacity-90 transition-all p-1.5 rounded-lg mr-2.5 flex items-center justify-center",
+                        <div
+                            className={cn(
+                                "relative bg-gradient-cta group-hover:opacity-90 transition-all p-1.5 rounded-lg mr-2.5 flex items-center justify-center",
                                 scrolled ? "scale-90" : ""
-                            )}>
-                                <Mail className="text-white" size={scrolled ? 14 : 16} />
+                            )}
+                        >
+                            <Mail className="text-white" size={scrolled ? 14 : 16} />
+                            <div
+                                className="absolute -top-1 -right-1 rounded-full bg-white p-[2px]"
+                                aria-hidden="true"
+                            >
+                                <Heart
+                                    className="text-rose-500 drop-shadow-[0_2px_4px_rgba(0,0,0,0.25)]"
+                                    size={scrolled ? 12 : 14}
+                                />
                             </div>
+                        </div>
                             <span className={cn(
                                 "font-bold text-stone-800 tracking-tight leading-none transition-all",
                                 scrolled ? "text-sm md:text-base" : "text-base md:text-lg"
@@ -189,11 +200,22 @@ export const Navbar = () => {
                     scrolled ? "h-14 md:h-16" : "h-16 md:h-20"
                 )}>
                     <Link href="/" className="flex items-center cursor-pointer group">
-                        <div className={cn(
-                            "bg-gradient-to-r from-pink-500 to-orange-400 group-hover:opacity-90 transition-all p-2 rounded-xl mr-3 flex items-center justify-center shadow-lg shadow-pink-500/20",
-                            scrolled ? "p-1.5 scale-90" : ""
-                        )}>
+                        <div
+                            className={cn(
+                                "relative bg-gradient-to-r from-pink-500 to-orange-400 group-hover:opacity-90 transition-all p-2 rounded-xl mr-3 flex items-center justify-center shadow-lg shadow-pink-500/20",
+                                scrolled ? "p-1.5 scale-90" : ""
+                            )}
+                        >
                             <Mail className="text-white" size={scrolled ? 18 : 22} />
+                            <div
+                                className="absolute -top-1 -right-1 rounded-full bg-white p-[2px]"
+                                aria-hidden="true"
+                            >
+                                <Heart
+                                    className="text-rose-500 drop-shadow-[0_2px_4px_rgba(0,0,0,0.25)]"
+                                    size={scrolled ? 14 : 16}
+                                />
+                            </div>
                         </div>
                         <span className={cn(
                             "font-bold text-stone-800 tracking-tight leading-none",

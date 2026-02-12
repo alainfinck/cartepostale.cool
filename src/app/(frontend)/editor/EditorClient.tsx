@@ -108,6 +108,8 @@ const SAMPLE_TEMPLATES: Template[] = [
   },
 ]
 
+const EMOJI_SUGGESTIONS = ['✨', '📍', '🌅', '🌴', '💌', '🌊', '🗺️'] as const
+
 export default function EditorPage() {
   const [currentStep, setCurrentStep] = useState<StepId>('photo')
   const [selectedCategory, setSelectedCategory] = useState<Template['category'] | 'all'>('all')
@@ -116,6 +118,8 @@ export default function EditorPage() {
 
   // Postcard state
   const [frontImage, setFrontImage] = useState('')
+  const [frontCaption, setFrontCaption] = useState('Souvenirs magiques')
+  const [frontEmoji, setFrontEmoji] = useState('✨')
   const [message, setMessage] = useState('Un petit coucou de mes vacances ! Tout se passe merveilleusement bien, les paysages sont magnifiques. On pense bien à vous !')
   const [recipientName, setRecipientName] = useState('Maman & Papa')
   const [senderName, setSenderName] = useState('Sarah')
@@ -264,6 +268,8 @@ export default function EditorPage() {
     frontImage:
       frontImage ||
       'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+    frontCaption: frontCaption.trim() || undefined,
+    frontEmoji: frontEmoji.trim() || undefined,
     message: message || '',
     recipientName: recipientName || '',
     senderName: senderName || '',
@@ -543,6 +549,81 @@ export default function EditorPage() {
                     </button>
                   ))}
                 </div>
+
+                {/* Face avant : texte + emoji */}
+                <section className="mt-8 pt-8 border-t border-stone-200">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-100 text-teal-600">
+                      <Sparkles size={18} />
+                    </span>
+                    <div>
+                      <h3 className="text-sm font-bold text-stone-800 uppercase tracking-wider">
+                        Face avant
+                      </h3>
+                      <p className="text-xs text-stone-500">
+                        Texte et emoji sur la photo
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                        Texte accroche
+                      </label>
+                      <Input
+                        placeholder="ex: Souvenirs magiques"
+                        value={frontCaption}
+                        onChange={(e) => setFrontCaption(e.target.value)}
+                        maxLength={40}
+                        className="h-11 rounded-xl border-stone-200 bg-stone-50/80 text-stone-800 placeholder:text-stone-400 focus:border-teal-400 focus:ring-teal-400"
+                      />
+                      <p className="mt-1 text-[11px] text-stone-400">
+                        Affiché en bas de la photo (max. 40 caractères)
+                      </p>
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                        Emoji
+                      </label>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {EMOJI_SUGGESTIONS.map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => setFrontEmoji(emoji)}
+                            className={cn(
+                              'flex h-10 w-10 items-center justify-center rounded-xl border-2 text-xl transition-all',
+                              frontEmoji === emoji
+                                ? 'border-teal-500 bg-teal-50 text-teal-700 shadow-sm'
+                                : 'border-stone-200 bg-white text-stone-500 hover:border-teal-300 hover:bg-teal-50/50'
+                            )}
+                            title={`Choisir ${emoji}`}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                        <Input
+                          placeholder="✨"
+                          value={frontEmoji}
+                          onChange={(e) => setFrontEmoji(e.target.value)}
+                          maxLength={4}
+                          className="h-10 w-16 rounded-xl border-stone-200 text-center text-lg tracking-widest"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  {(frontCaption.trim() || frontEmoji.trim()) && (
+                    <div className="mt-4 flex items-center gap-2 rounded-xl border border-teal-100 bg-teal-50/50 px-4 py-3">
+                      <span className="text-lg leading-none">{frontEmoji.trim() || '✨'}</span>
+                      <span className="text-sm font-medium text-stone-700 truncate">
+                        {frontCaption.trim() || 'Votre accroche'}
+                      </span>
+                      <span className="ml-auto text-[10px] font-semibold uppercase tracking-wider text-teal-600">
+                        Aperçu
+                      </span>
+                    </div>
+                  )}
+                </section>
               </div>
             )}
 

@@ -48,6 +48,8 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
     return {
         id: payloadPostcard.publicId, // Use publicId for frontend ID
         frontImage: frontImageUrl,
+        frontCaption: payloadPostcard.frontCaption || undefined,
+        frontEmoji: payloadPostcard.frontEmoji || undefined,
         message: payloadPostcard.message,
         recipientName: payloadPostcard.recipientName || '',
         senderName: payloadPostcard.senderName || '',

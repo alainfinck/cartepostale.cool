@@ -31,6 +31,20 @@ export const Postcards: CollectionConfig = {
             },
         },
         {
+            name: 'frontCaption',
+            type: 'text',
+            admin: {
+                description: 'Texte court affiché sur la face avant',
+            },
+        },
+        {
+            name: 'frontEmoji',
+            type: 'text',
+            admin: {
+                description: 'Emoji affiché près du texte de la face avant',
+            },
+        },
+        {
             name: 'message',
             type: 'textarea',
             required: true,
