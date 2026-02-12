@@ -76,10 +76,10 @@ function mapToFrontend(p: PayloadPostcard): FrontendPostcard {
     return {
         id: p.publicId,
         frontImage: getFrontImageUrl(p),
-        message: p.message,
-        recipientName: p.recipientName,
-        senderName: p.senderName,
-        location: p.location,
+        message: p.message || '',
+        recipientName: p.recipientName || '',
+        senderName: p.senderName || '',
+        location: p.location || '',
         stampStyle: p.stampStyle || 'classic',
         stampLabel: p.stampLabel || undefined,
         stampYear: p.stampYear || undefined,
@@ -578,9 +578,9 @@ function DetailsSheet({ postcard, isOpen, onClose, onUpdateStatus, onDelete, for
 
                         {/* Metadatas Section */}
                         <div className="grid grid-cols-2 gap-4">
-                            <InfoCard icon={<User size={16} />} label="Expéditeur" value={postcard.senderName} />
-                            <InfoCard icon={<Users size={16} />} label="Destinataire" value={postcard.recipientName} />
-                            <InfoCard icon={<MapPin size={16} className="text-orange-400" />} label="Lieu" value={postcard.location} />
+                            <InfoCard icon={<User size={16} />} label="Expéditeur" value={postcard.senderName || ''} />
+                            <InfoCard icon={<Users size={16} />} label="Destinataire" value={postcard.recipientName || ''} />
+                            <InfoCard icon={<MapPin size={16} className="text-orange-400" />} label="Lieu" value={postcard.location || ''} />
                             <InfoCard icon={<Calendar size={16} />} label="Date de l'envoi" value={formatDate(postcard.date)} />
                         </div>
 

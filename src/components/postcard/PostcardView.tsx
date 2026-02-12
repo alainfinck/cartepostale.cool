@@ -32,9 +32,19 @@ interface PostcardViewProps {
     flipped?: boolean;
     className?: string;
     isLarge?: boolean;
+    width?: string;
+    height?: string;
 }
 
-const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false, flipped, className, isLarge = false }) => {
+const PostcardView: React.FC<PostcardViewProps> = ({ 
+    postcard, 
+    isPreview = false, 
+    flipped, 
+    className, 
+    isLarge = false,
+    width,
+    height
+}) => {
     const [isFlipped, setIsFlipped] = useState(flipped ?? false);
     const [isDragging, setIsDragging] = useState(false);
 
@@ -57,6 +67,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
     const [isMapOpen, setIsMapOpen] = useState(false);
     const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+    const [messageModalFontSize, setMessageModalFontSize] = useState(2);
 
     const handleFlip = () => {
         if (isDragging) return;
@@ -144,7 +155,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                 <motion.div 
                     initial={{ scale: 0.9, y: 20 }}
                     animate={{ scale: 1, y: 0 }}
-                    className="w-full max-w-2xl bg-[#fafaf9] rounded-2xl shadow-2xl p-8 md:p-12 relative overflow-hidden flex flex-col items-center text-center border-4 border-white/50"
+                    className="w-full max-w-[95vw] h-[90vh] min-h-0 bg-[#fafaf9] rounded-3xl shadow-2xl p-6 md:p-16 relative overflow-hidden flex flex-col items-center text-center border-8 border-white/50"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Background decorations */}
@@ -153,30 +164,58 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                     
                     <button
                         onClick={() => setIsMessageOpen(false)}
-                        className="absolute top-4 right-4 md:top-8 md:right-8 z-[100] bg-white hover:bg-red-50 text-stone-500 hover:text-red-500 p-2.5 rounded-full transition-all shadow-xl border border-stone-200"
+                        className="absolute top-3 right-3 md:top-4 md:right-4 z-[100] bg-white hover:bg-stone-100 text-stone-500 hover:text-stone-800 p-4 rounded-full transition-all shadow-2xl border-2 border-stone-100 group/close"
                     >
-                        <X size={24} />
+                        <X size={32} className="group-hover/close:rotate-90 transition-transform duration-300" />
                     </button>
 
-                    <div className="w-12 h-1 bg-stone-200 rounded-full mb-10 opacity-50"></div>
+                    {/* Header en haut, en position absolue pour ne pas descendre le contenu */}
+                    <div className="absolute top-4 left-6 md:top-6 md:left-10 right-20 z-[90] pointer-events-none">
+                        <p className="text-[10px] md:text-xs font-bold text-stone-400 uppercase tracking-widest">
+                            Carte postale reçue de la part de {postcard.senderName || '…'}
+                            {postcard.location && (
+                                <span className="text-stone-300 font-normal normal-case tracking-normal"> · {postcard.location}</span>
+                            )}
+                        </p>
+                    </div>
 
-                    <div className="flex-1 w-full overflow-y-auto custom-scrollbar px-2">
-                        <p className="font-handwriting text-stone-700 text-2xl md:text-4xl leading-relaxed md:leading-loose text-left whitespace-pre-wrap">
+                    <div className="w-24 h-1.5 bg-stone-100 rounded-full mb-4 opacity-50 shrink-0"></div>
+
+                    <div className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden custom-scrollbar px-4 flex flex-col pt-0">
+                        <p 
+                            className="font-handwriting text-stone-700 leading-relaxed text-center whitespace-pre-wrap pt-2 pb-6 w-full max-w-full break-words"
+                            style={{ fontSize: `${messageModalFontSize}rem` }}
+                        >
                             {postcard.message}
                         </p>
                     </div>
 
-                    <div className="w-full h-px bg-stone-100 my-8"></div>
+                    <div className="w-full h-px bg-stone-100 my-6 shrink-0"></div>
 
-                    <div className="w-full flex justify-between items-end">
-                        <div className="text-left">
+                    <div className="w-full flex flex-wrap items-end justify-between gap-4 shrink-0 pb-2">
+                        <div className="text-left shrink-0">
                             <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Envoyé de</p>
                             <p className="text-stone-600 font-medium flex items-center gap-1.5 text-sm uppercase">
                                 <MapPin size={14} className="text-teal-600" />
                                 {postcard.location}
                             </p>
                         </div>
-                        <p className="font-handwriting text-teal-700 text-2xl md:text-3xl rotate-[-2deg]">
+                        <div className="flex items-center gap-2 min-w-0 flex-1 justify-center max-w-xs mx-auto">
+                            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest whitespace-nowrap shrink-0">Taille</span>
+                            <input
+                                type="range"
+                                min={1}
+                                max={4}
+                                step={0.1}
+                                value={messageModalFontSize}
+                                onChange={(e) => setMessageModalFontSize(Number(e.target.value))}
+                                onClick={(e) => e.stopPropagation()}
+                                className="flex-1 min-w-[80px] h-2 bg-stone-200 rounded-full appearance-none cursor-pointer accent-teal-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-teal-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow"
+                                aria-label="Taille du texte"
+                            />
+                            <span className="text-[10px] font-medium text-stone-500 tabular-nums w-7 shrink-0">{Math.round(messageModalFontSize * 100)}%</span>
+                        </div>
+                        <p className="font-handwriting text-teal-700 text-2xl md:text-3xl rotate-[-2deg] shrink-0 text-right">
                             - {postcard.senderName}
                         </p>
                     </div>
@@ -265,13 +304,28 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
 
     return (
         <>
+            <style jsx global>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 4px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: #cbd5e1;
+                    border-radius: 10px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: #94a3b8;
+                }
+            `}</style>
             <div className="flex flex-col items-center gap-6 select-none">
                 <motion.div
                     className={cn(
                         "perspective-1000 cursor-grab active:cursor-grabbing group touch-none",
-                        isLarge 
-                            ? "w-[90vw] h-[60vw] max-w-[450px] max-h-[300px] sm:w-[600px] sm:h-[400px] md:w-[800px] md:h-[533px] sm:max-w-none sm:max-h-none portrait:max-h-none landscape:max-h-[75svh] landscape:w-[95vw] landscape:h-[75svh]" 
-                            : "w-[340px] h-[240px] sm:w-[600px] sm:h-[400px]",
+                        !width && !height && (isLarge 
+                            ? "w-[95vw] h-[65vw] max-w-[480px] max-h-[320px] sm:w-[600px] sm:h-[400px] md:w-[840px] md:h-[560px] lg:w-[1050px] lg:h-[700px] sm:max-w-none sm:max-h-none portrait:max-h-none" 
+                            : "w-[340px] h-[240px] sm:w-[600px] sm:h-[400px]"),
                         className
                     )}
                     onClick={handleFlip}
@@ -283,7 +337,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                     onDragEnd={handleDragEnd}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    style={{ perspective: 1000 }}
+                    style={{ perspective: 1000, width, height }}
                 >
                     <motion.div
                         className={cn(
@@ -328,36 +382,49 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                 transform: 'rotateY(180deg)'
                             }}
                         >
+                            {/* Flip indicator — top-left */}
+                            <div className="absolute top-4 left-4 z-40 flex items-center gap-1.5 text-stone-400 pointer-events-none group-hover:text-stone-600 transition-all duration-300">
+                                <RotateCw size={isLarge ? 22 : 18} />
+                                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Retourner</span>
+                            </div>
+
+                            {/* Flip indicator — top-right */}
+                            <div className="absolute top-4 right-4 z-40 flex items-center gap-1.5 text-stone-400 pointer-events-none group-hover:text-stone-600 transition-all duration-300 sm:flex">
+                                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider hidden sm:inline">Retourner</span>
+                                <RotateCw size={isLarge ? 22 : 18} />
+                            </div>
+
+                            {/* Flip indicator — bottom-center (above branding) */}
+                            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 text-stone-300 pointer-events-none group-hover:text-stone-500 transition-all duration-300">
+                                <RotateCw size={16} />
+                                <span className="text-[9px] font-bold uppercase tracking-widest">Cliquer pour retourner</span>
+                            </div>
+
                             {/* Small branding bottom-left */}
                             <div className="absolute bottom-3 left-6 text-stone-300 text-[8px] font-bold tracking-[0.2em] uppercase flex items-center gap-1.5">
                                 <div className="w-1 h-1 bg-stone-200 rounded-full" />
                                 cartepostale.cool
                             </div>
-                            <div className="absolute left-1/2 top-10 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50"></div>
+                            <div className="absolute left-[62%] top-10 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50"></div>
 
-                            <div className="flex w-full h-full gap-5 sm:gap-8">
-                                {/* Left Side: Message - wider and more vertical space */}
-                                <div className="flex-[1.25] min-w-0 flex flex-col justify-start relative pt-2">
+                            <div className="flex w-full h-full gap-8 sm:gap-14">
+                                {/* Left Side: Message - much wider */}
+                                <div className="flex-[1.6] min-w-0 flex flex-col justify-start relative pt-2 pr-6 sm:pr-8">
 
                                     <div 
-                                        className="flex-1 flex flex-col justify-start items-start my-1 min-h-0 cursor-pointer group/msg relative"
+                                        className="flex-1 min-w-0 overflow-y-auto custom-scrollbar my-1 cursor-pointer group/msg relative pr-2"
                                         onClick={openMessage}
                                     >
-                                        <p className="font-handwriting text-stone-700 text-sm sm:text-lg leading-loose sm:leading-loose line-clamp-7 sm:line-clamp-none text-left">
+                                        <p className="font-handwriting text-stone-700 text-sm sm:text-lg leading-loose sm:leading-loose text-left whitespace-pre-wrap w-full max-w-full break-words">
                                             {postcard.message}
                                         </p>
                                         
-                                        {/* Zoom hint with loupe and info - Permanently visible */}
-                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                            <div className="bg-white/60 backdrop-blur-[1px] px-2 py-1 rounded-full border border-stone-200/50 flex items-center gap-1.5 transform scale-75 opacity-70 group-hover/msg:opacity-100 group-hover/msg:scale-90 transition-all duration-300">
-                                                <Search size={12} className="text-teal-600" />
-                                                <span className="text-[9px] font-bold text-stone-500 uppercase tracking-widest">Cliquer pour zoomer</span>
-                                                <Info size={10} className="text-stone-400" />
+                                        {/* Zoom hint - shown when hovering */}
+                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover/msg:opacity-100 transition-opacity duration-300">
+                                            <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-stone-200 shadow-xl flex items-center gap-2 transform scale-75 sm:scale-100">
+                                                <Search size={14} className="text-teal-600" />
+                                                <span className="text-[10px] font-bold text-stone-600 uppercase tracking-widest">Agrandir</span>
                                             </div>
-                                        </div>
-
-                                        <div className="absolute bottom-0 right-0 opacity-0 group-hover/msg:opacity-100 transition-opacity bg-white/50 rounded-full p-1 border border-stone-200 shadow-sm hidden sm:block">
-                                            <Maximize2 size={12} className="text-stone-400" />
                                         </div>
                                     </div>
                                     {postcard.senderName && (
@@ -515,17 +582,15 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                             </button>
                                         )}
                                     </div>
-                                    <div className="mt-auto w-full">
+                                    <div className="mt-4 w-full flex-1 flex flex-col min-h-0">
                                         {postcard.location && (
-                                            <div className="relative group/map">
+                                            <div className="relative group/map flex-1 flex flex-col min-h-0">
                                                 <h4 className="font-bold text-stone-400 text-[10px] uppercase mb-1 tracking-wider flex items-center gap-1">
                                                     <MapPin size={10} /> {postcard.location}
                                                 </h4>
                                                 <div 
                                                     className={cn(
-                                                        "w-full bg-stone-100 rounded-lg overflow-hidden border border-stone-200 relative cursor-pointer hover:border-teal-400 transition-colors z-20",
-                                                        // Adjust map height: increased as requested
-                                                        isLarge ? "h-28 sm:h-64" : "h-20 sm:h-28"
+                                                        "w-full flex-1 bg-stone-100 rounded-lg overflow-hidden border border-stone-200 relative cursor-pointer hover:border-teal-400 transition-colors z-20",
                                                     )}
                                                     onClick={openMap}
                                                 >

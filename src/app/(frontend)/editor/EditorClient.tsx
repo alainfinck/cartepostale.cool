@@ -132,6 +132,7 @@ export default function EditorPage() {
   const [mediaItems, setMediaItems] = useState<Postcard['mediaItems']>([])
   const [isPremium, setIsPremium] = useState(false)
   const [showFullscreen, setShowFullscreen] = useState(false)
+  const [showRecipientModal, setShowRecipientModal] = useState(false)
 
   // Sharing state
   const [isPublishing, setIsPublishing] = useState(false)
@@ -892,7 +893,7 @@ export default function EditorPage() {
                           </div>
                         </div>
 
-                        <div className="flex flex-wrap justify-center gap-3">
+                          <div className="flex flex-wrap justify-center gap-3">
                           {/* E-mails share */}
                           <a 
                             href={`mailto:?subject=Regarde ma carte postale !&body=J'ai créé une carte postale pour toi : ${shareUrl}`}
@@ -928,6 +929,20 @@ export default function EditorPage() {
                           >
                             <Facebook size={16} /> Facebook
                           </a>
+                          
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              if (!shareUrl) return
+                              setShowRecipientModal(true)
+                            }}
+                            variant="outline"
+                            className="flex items-center gap-2 px-5 py-2.5 border border-stone-200 rounded-full text-stone-700 text-xs font-bold uppercase tracking-wider hover:border-stone-300 hover:bg-stone-50 transition-all shadow-sm"
+                            disabled={!shareUrl}
+                          >
+                            <Plane size={16} />
+                            Voir comme destinataire
+                          </Button>
                         </div>
                       </div>
                     )}
@@ -1098,6 +1113,39 @@ export default function EditorPage() {
               postcard={currentPostcard}
               flipped={showBack}
               className="w-full max-w-[1700px] h-auto aspect-[3/2] shadow-2xl hover:scale-100 cursor-default"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Modal destinataire : iframe de la page réelle */}
+      {showRecipientModal && shareUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 sm:p-8 overflow-auto"
+          onClick={() => setShowRecipientModal(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-[1400px] h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-stone-200"
+          >
+            <button
+              onClick={() => setShowRecipientModal(false)}
+              className="absolute top-3 right-3 z-50 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all"
+              aria-label="Fermer la vue destinataire"
+            >
+              <X size={20} />
+            </button>
+            <div className="absolute inset-x-0 top-4 flex justify-center z-40">
+              <span className="bg-white/80 text-stone-600 text-xs font-semibold uppercase tracking-[0.2em] px-4 py-1 rounded-full shadow-sm">
+                Vue destinataire
+              </span>
+            </div>
+            <iframe
+              src={shareUrl}
+              title="Page destinataire"
+              className="w-full h-full border-0"
+              loading="lazy"
+              allowFullScreen
             />
           </div>
         </div>

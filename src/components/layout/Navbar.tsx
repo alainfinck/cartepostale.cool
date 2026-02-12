@@ -142,8 +142,8 @@ export const Navbar = () => {
     if (pathname?.startsWith('/view/')) {
         return (
             <nav className={cn(
-                "bg-white/95 backdrop-blur-lg border-b sticky top-0 z-50 transition-all duration-300",
-                scrolled ? "border-stone-100 shadow-sm" : "border-transparent"
+                "bg-[#faf8f5]/95 backdrop-blur-lg border-b border-stone-200/60 sticky top-0 z-50 transition-all duration-300",
+                scrolled ? "shadow-sm" : ""
             )}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className={cn(
@@ -152,23 +152,21 @@ export const Navbar = () => {
                     )}>
                         <Link href="/" className="flex items-center cursor-pointer group">
                              <div className={cn(
-                                "bg-teal-500 group-hover:bg-teal-600 transition-all p-1.5 rounded-md mr-2.5 transform shadow-teal-500/10",
-                                scrolled ? "scale-90 -rotate-1" : "-rotate-2 shadow-sm"
+                                "bg-gradient-cta group-hover:opacity-90 transition-all p-1.5 rounded-lg mr-2.5 flex items-center justify-center",
+                                scrolled ? "scale-90" : ""
                             )}>
                                 <Mail className="text-white" size={scrolled ? 14 : 16} />
                             </div>
-                            <div>
-                                <span className={cn(
-                                    "font-serif font-bold text-stone-800 tracking-tight block leading-none transition-all",
-                                    scrolled ? "text-sm md:text-base" : "text-base md:text-lg"
-                                )}>
-                                    cartepostale.cool
-                                </span>
-                            </div>
+                            <span className={cn(
+                                "font-bold text-stone-800 tracking-tight leading-none transition-all",
+                                scrolled ? "text-sm md:text-base" : "text-base md:text-lg"
+                            )}>
+                                cartepostale.cool
+                            </span>
                         </Link>
                          <Link href="/editor">
                             <Button size="sm" className={cn(
-                                "bg-teal-600 hover:bg-teal-700 text-white rounded-full font-bold shadow-sm shadow-teal-500/10 transition-all",
+                                "bg-gradient-cta hover:opacity-95 text-white rounded-full font-bold shadow-lg shadow-pink-500/20 transition-all border-0",
                                 scrolled ? "text-[9px] px-2.5 h-7" : "text-[10px] md:text-xs px-3 h-8"
                             )}>
                                 <Plus size={scrolled ? 12 : 14} className="mr-1" /> Créer
@@ -182,136 +180,74 @@ export const Navbar = () => {
 
     return (
         <nav className={cn(
-            "bg-white/95 backdrop-blur-lg border-b sticky top-0 z-50 transition-all duration-300",
-            scrolled ? "border-stone-200/80 shadow-sm" : "border-stone-200/80"
+            "bg-[#faf8f5]/95 backdrop-blur-lg border-b border-stone-200/60 sticky top-0 z-50 transition-all duration-300",
+            scrolled ? "shadow-sm" : ""
         )}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className={cn(
                     "flex justify-between items-center transition-all duration-300",
-                    scrolled ? "h-16 md:h-20" : "h-20 md:h-24"
+                    scrolled ? "h-14 md:h-16" : "h-16 md:h-20"
                 )}>
                     <Link href="/" className="flex items-center cursor-pointer group">
                         <div className={cn(
-                            "bg-teal-500 group-hover:bg-teal-600 transition-all p-2.5 rounded-xl mr-4 transform shadow-lg shadow-teal-500/20",
-                            scrolled ? "p-1.5 -rotate-2 scale-90" : "-rotate-3"
+                            "bg-gradient-to-r from-pink-500 to-orange-400 group-hover:opacity-90 transition-all p-2 rounded-xl mr-3 flex items-center justify-center shadow-lg shadow-pink-500/20",
+                            scrolled ? "p-1.5 scale-90" : ""
                         )}>
-                            <Mail className="text-white" size={scrolled ? 20 : 26} />
+                            <Mail className="text-white" size={scrolled ? 18 : 22} />
                         </div>
-                        <div>
-                            <span className={cn(
-                                "font-serif font-bold text-stone-800 tracking-tight block leading-none transition-all",
-                                scrolled ? "text-xl" : "text-2xl"
-                            )}>
-                                cartepostale.cool
-                            </span>
-                            {!scrolled && (
-                                <span className="text-xs font-bold text-orange-500 tracking-widest flex items-center gap-1.5 animate-in fade-in duration-300">
-                                    cool et digitale ! <Heart className="w-3 h-3 fill-orange-500 text-orange-500" />
-                                </span>
-                            )}
-                        </div>
+                        <span className={cn(
+                            "font-bold text-stone-800 tracking-tight leading-none",
+                            scrolled ? "text-lg" : "text-xl md:text-2xl"
+                        )}>
+                            cartepostale.cool
+                        </span>
                     </Link>
 
-                    <div className="hidden sm:flex items-center gap-2">
+                    <div className="hidden sm:flex items-center gap-1">
+                        <Link
+                            href="/#fonctionnalites"
+                            className={cn(
+                                'font-semibold transition-all duration-200 rounded-xl px-4 py-3 text-stone-600 hover:text-stone-900 hover:bg-stone-100/80 text-[15px]',
+                                pathname === '/' ? 'text-stone-900' : ''
+                            )}
+                        >
+                            Fonctionnalités
+                        </Link>
+
+                        <Link
+                            href="/pricing"
+                            className={cn(
+                                'font-semibold transition-all duration-200 rounded-xl px-4 py-3 text-[15px]',
+                                pathname === '/pricing'
+                                    ? 'text-stone-900 font-bold bg-pink-50/80 text-pink-700'
+                                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100/80'
+                            )}
+                        >
+                            Tarifs
+                        </Link>
+
                         <Link
                             href="/galerie"
                             className={cn(
-                                'font-medium transition-all duration-200 rounded-xl px-4 py-3 tracking-tight text-[15px]',
+                                'font-semibold transition-all duration-200 rounded-xl px-4 py-3 text-[15px]',
                                 pathname === '/galerie'
-                                    ? 'text-teal-600 font-bold bg-teal-50/80'
-                                    : 'text-stone-600 hover:text-teal-600 hover:bg-stone-50/80'
+                                    ? 'text-stone-900 font-bold bg-pink-50/80 text-pink-700'
+                                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100/80'
                             )}
                         >
                             Galerie
                         </Link>
 
-                        <Link
-                            href="/a-propos"
-                            className={cn(
-                                'font-medium transition-all duration-200 rounded-xl px-4 py-3 tracking-tight text-[15px]',
-                                pathname === '/a-propos'
-                                    ? 'text-teal-600 font-bold bg-teal-50/80'
-                                    : 'text-stone-600 hover:text-teal-600 hover:bg-stone-50/80'
-                            )}
-                        >
-                            À propos
-                        </Link>
-
-                        <NavDropdown
-                            id="pro"
-                            label="Agences & Pro"
-                            active={pathname === '/business' || pathname === '/contact'}
-                        >
-                            <div className="py-3 px-1">
-                                {dropdownPro.map((item) => (
-                                    <Link
-                                        key={item.href + item.title}
-                                        href={item.href}
-                                        onClick={() => setOpenDropdown(null)}
-                                        className="flex gap-4 px-4 py-4 rounded-xl hover:bg-orange-50/80 transition-colors group/item mx-2 mb-1 last:mb-0"
-                                    >
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 group-hover/item:bg-orange-100 group-hover/item:scale-105 transition-transform">
-                                            <item.icon className="w-6 h-6" />
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <div className="font-semibold text-stone-800 group-hover/item:text-teal-600 text-[15px]">
-                                                {item.title}
-                                            </div>
-                                            <div className="text-sm text-stone-500 mt-0.5">{item.description}</div>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        </NavDropdown>
-
-                        <NavDropdown id="tarifs" label="Tarifs" active={pathname === '/pricing'}>
-                            <div className="p-4">
-                                <div className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3 px-2">
-                                    Nos offres
-                                </div>
-                                <div className="space-y-1">
-                                    {dropdownTarifs.map((item) => (
-                                        <Link
-                                            key={item.label}
-                                            href={item.href}
-                                            onClick={() => setOpenDropdown(null)}
-                                            className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors group/item whitespace-nowrap"
-                                        >
-                                            <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-600 group-hover/item:bg-teal-50 group-hover/item:text-teal-600">
-                                                <item.icon className="w-5 h-5" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <span className="font-medium text-stone-800 group-hover/item:text-teal-600 text-[15px]">
-                                                    {item.label}
-                                                </span>
-                                                {item.desc && (
-                                                    <span className="text-stone-500 text-sm ml-1.5">{item.desc}</span>
-                                                )}
-                                            </div>
-                                            <span className="font-bold text-teal-600 text-sm tabular-nums">{item.price}</span>
-                                        </Link>
-                                    ))}
-                                </div>
-                                <Link
-                                    href="/pricing"
-                                    onClick={() => setOpenDropdown(null)}
-                                    className="block text-center text-sm font-semibold text-teal-600 hover:text-teal-700 mt-4 pt-4 border-t border-stone-100"
-                                >
-                                    Voir tous les tarifs →
-                                </Link>
-                            </div>
-                        </NavDropdown>
-
-                        <div className="h-8 w-px bg-stone-200 mx-3" />
+                        <div className="h-6 w-px bg-stone-200 mx-2" />
 
                         {user ? (
                             <Link
                                 href="/espace-client"
                                 className={cn(
-                                    'font-bold flex items-center gap-2.5 text-[15px] rounded-xl px-4 py-3 transition-all',
-                                    pathname.startsWith('/espace-client')
-                                        ? 'text-teal-600 bg-teal-50/80'
-                                        : 'text-stone-600 hover:text-teal-600 hover:bg-stone-50/80'
+                                    'font-semibold flex items-center gap-2 text-[15px] rounded-xl px-4 py-3 transition-all',
+                                    pathname?.startsWith('/espace-client')
+                                        ? 'text-pink-600 bg-pink-50/80'
+                                        : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100/80'
                                 )}
                             >
                                 <LayoutDashboard size={20} />
@@ -323,15 +259,15 @@ export const Navbar = () => {
                         ) : (
                             <Link
                                 href="/connexion"
-                                className="text-stone-600 hover:text-teal-600 hover:bg-stone-50/80 font-bold flex items-center gap-2.5 text-[15px] rounded-xl px-4 py-3 transition-all"
+                                className="text-stone-600 hover:text-stone-900 hover:bg-stone-100/80 font-semibold flex items-center gap-2 text-[15px] rounded-xl px-4 py-3 transition-all"
                             >
-                                <LogIn size={20} /> Connexion
+                                <LogIn size={18} /> Connexion
                             </Link>
                         )}
 
                         <Link href="/editor" className="ml-2">
-                            <Button className="bg-orange-500 text-white hover:bg-orange-600 rounded-full font-bold shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/30 flex items-center gap-2.5 px-6 py-6 text-[15px] transform hover:-translate-y-0.5 transition-all duration-200">
-                                <Plus size={22} /> Créer
+                            <Button className="bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-95 text-white rounded-full font-bold shadow-lg shadow-pink-500/25 border-0 flex items-center gap-2 px-5 py-5 text-[15px] transition-all duration-200">
+                                Créer ma carte <span className="opacity-90">✨</span>
                             </Button>
                         </Link>
                     </div>
@@ -358,14 +294,33 @@ export const Navbar = () => {
                         </div>
                         <div className="space-y-1">
                             <Link
+                                href="/#fonctionnalites"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-pink-50/80 text-stone-700 font-semibold text-[15px] transition-colors"
+                            >
+                                <Star className="w-6 h-6 text-pink-500 flex-shrink-0" />
+                                Fonctionnalités
+                            </Link>
+                            <Link
+                                href="/pricing"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={cn(
+                                    "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
+                                    pathname === "/pricing" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
+                                )}
+                            >
+                                <CreditCard className="w-6 h-6 text-pink-500 flex-shrink-0" />
+                                Tarifs
+                            </Link>
+                            <Link
                                 href="/galerie"
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={cn(
                                     "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
-                                    pathname === "/galerie" ? "bg-teal-50 text-teal-700" : "hover:bg-teal-50/80 text-stone-700"
+                                    pathname === "/galerie" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
                                 )}
                             >
-                                <ImageIcon className="w-6 h-6 text-teal-500 flex-shrink-0" />
+                                <ImageIcon className="w-6 h-6 text-pink-500 flex-shrink-0" />
                                 Galerie
                             </Link>
                             <Link
@@ -373,10 +328,10 @@ export const Navbar = () => {
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={cn(
                                     "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
-                                    pathname === "/a-propos" ? "bg-teal-50 text-teal-700" : "hover:bg-teal-50/80 text-stone-700"
+                                    pathname === "/a-propos" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
                                 )}
                             >
-                                <Info className="w-6 h-6 text-teal-500 flex-shrink-0" />
+                                <Info className="w-6 h-6 text-pink-500 flex-shrink-0" />
                                 À propos
                             </Link>
                         </div>
@@ -410,9 +365,9 @@ export const Navbar = () => {
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className="flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-stone-50 active:bg-stone-100 text-stone-700 transition-colors"
                                 >
-                                    <item.icon className="w-6 h-6 text-teal-500 flex-shrink-0" />
+                                    <item.icon className="w-6 h-6 text-pink-500 flex-shrink-0" />
                                     <span className="font-medium flex-1 text-[15px]">{item.label}</span>
-                                    <span className="text-sm font-bold text-teal-600 tabular-nums">{item.price}</span>
+                                    <span className="text-sm font-bold text-pink-600 tabular-nums">{item.price}</span>
                                 </Link>
                             ))}
                         </div>
@@ -422,7 +377,7 @@ export const Navbar = () => {
                                 <Link
                                     href="/espace-client"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="flex items-center gap-4 px-4 py-4 rounded-2xl bg-teal-50 text-teal-700 font-semibold text-[15px]"
+                                    className="flex items-center gap-4 px-4 py-4 rounded-2xl bg-pink-50 text-pink-700 font-semibold text-[15px]"
                                 >
                                     <LayoutDashboard size={22} />
                                     <span className="truncate">{user.name?.trim() || user.email}</span>
@@ -440,9 +395,9 @@ export const Navbar = () => {
                             <Link
                                 href="/editor"
                                 onClick={() => setIsMobileMenuOpen(false)}
-                                className="flex items-center justify-center gap-2.5 w-full py-4 rounded-2xl bg-orange-500 text-white font-bold text-[15px] shadow-lg shadow-orange-500/25 active:scale-[0.98] transition-transform"
+                                className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold text-[15px] shadow-lg shadow-pink-500/25 active:scale-[0.98] transition-transform border-0"
                             >
-                                <Plus size={22} /> Créer une carte
+                                Créer ma carte <span className="opacity-90">✨</span>
                             </Link>
                         </div>
                     </div>

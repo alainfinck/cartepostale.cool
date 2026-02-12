@@ -1,7 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Indie+Flower&display=swap');
 
 @theme {
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
   --font-handwriting: 'Dancing Script', cursive;
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -33,6 +34,14 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+
+  /* Modern gradient palette (pink → purple → orange) */
+  --gradient-hero: linear-gradient(135deg, #ec4899 0%, #f97316 50%, #a855f7 100%);
+  --gradient-cta: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+  --gradient-badge: linear-gradient(135deg, #fce7f3 0%, #fed7aa 100%);
+  --color-beige: #faf8f5;
+  --color-ink: #1c1917;
+  --color-ink-muted: #57534e;
 
   @keyframes accordion-down {
     from {
@@ -197,5 +206,40 @@
 
   .hover-tilt-3d:hover {
     transform: perspective(1000px) rotateX(2deg) rotateY(2deg) scale(1.01);
+  }
+
+  /* Effet retournement carte hero */
+  @keyframes flip-card {
+    0%, 100% { transform: perspective(800px) rotateY(-8deg) translateY(0); }
+    50% { transform: perspective(800px) rotateY(8deg) translateY(-6px); }
+  }
+
+  .animate-flip-card {
+    animation: flip-card 4s ease-in-out infinite;
+    transform-style: preserve-3d;
+  }
+
+  .animate-flip-card:hover {
+    animation: none;
+  }
+
+  /* Modern gradient utilities */
+  .text-gradient-hero {
+    background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .text-gradient-cta {
+    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .bg-gradient-cta {
+    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+  }
+  .bg-gradient-card {
+    background: linear-gradient(135deg, #ec4899 0%, #f97316 50%, #a855f7 100%);
   }
 }
