@@ -74,6 +74,9 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
                     },
                 })
                 frontImageId = media.id as number;
+                // Persist URL so view page has a stable value (Payload may return url or we build from filename)
+                const mediaDoc = media as { url?: string | null; filename?: string | null }
+                frontImageURL = mediaDoc.url ?? (mediaDoc.filename ? `/api/media/file/${mediaDoc.filename}` : undefined)
             } else if (data.frontImage.startsWith('http')) {
                 // External URL (template)
                 frontImageURL = data.frontImage;

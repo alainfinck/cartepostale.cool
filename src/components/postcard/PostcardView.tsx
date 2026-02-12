@@ -35,6 +35,8 @@ interface PostcardViewProps {
     height?: string;
 }
 
+const FALLBACK_FRONT_IMAGE = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80'
+
 const PostcardView: React.FC<PostcardViewProps> = ({ 
     postcard, 
     isPreview = false, 
@@ -46,6 +48,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 }) => {
     const [isFlipped, setIsFlipped] = useState(flipped ?? false);
     const [isDragging, setIsDragging] = useState(false);
+    const [frontImageSrc, setFrontImageSrc] = useState(postcard.frontImage);
+    useEffect(() => {
+        setFrontImageSrc(postcard.frontImage);
+    }, [postcard.frontImage, postcard.id]);
 
     // Motion values for rotation
     const rotateY = useMotionValue(flipped ? 180 : 0);
@@ -69,6 +75,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     const [messageModalFontSize, setMessageModalFontSize] = useState(2);
     // Slider de taille du texte au verso (0.7 = petit, 2.2 = grand)
     const [backTextScale, setBackTextScale] = useState(1);
+    // Zoom de la mini-carte au verso (pour que + / - fonctionnent sans déclencher le flip)
+    const [backMapZoom, setBackMapZoom] = useState(11);
 
     const handleFlip = () => {
         if (isDragging) return;
@@ -365,9 +373,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             style={{ backfaceVisibility: 'hidden' }}
                         >
                             <img
-                                src={postcard.frontImage}
+                                src={frontImageSrc}
                                 alt="Postcard Front"
                                 className="w-full h-full object-cover pointer-events-none"
+                                onError={() => setFrontImageSrc(FALLBACK_FRONT_IMAGE)}
                             />
 
 
@@ -662,18 +671,18 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                             isLarge ? "min-h-[140px] sm:min-h-[200px] md:min-h-[280px]" : "min-h-[80px] sm:min-h-[100px]"
                                         )}>
                                             {postcard.coords ? (
-                                                <button
-                                                    type="button"
+                                                <div
+                                                    className="group/map relative w-full h-full flex flex-col items-center justify-center cursor-pointer overflow-hidden"
                                                     onClick={openMap}
-                                                    className="group/map relative w-full h-full flex flex-col items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-inset overflow-hidden"
+                                                    role="button"
+                                                    tabIndex={0}
                                                     title="Agrandir la carte"
                                                 >
-                                                    {/* Carte statique en tuiles OSM (s'affiche correctement dans le verso 3D) */}
+                                                    {/* Carte statique en tuiles OSM (zoom contrôlé par backMapZoom) */}
                                                     <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 overflow-hidden">
                                                         {(() => {
                                                             const { lat, lng } = postcard.coords!;
-                                                            const zoom = 11;
-                                                            const { x, y, z } = getTileCoord(lat, lng, zoom);
+                                                            const { x, y, z } = getTileCoord(lat, lng, backMapZoom);
                                                             const tiles = [
                                                                 [x, y],
                                                                 [x + 1, y],
@@ -690,14 +699,33 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                                             ));
                                                         })()}
                                                     </div>
-                                                    {/* Overlay loupe au hover — clic ouvre le modal carte */}
+                                                    {/* Boutons zoom + / - au-dessus de la carte, cliquables sans déclencher flip ni ouverture modal */}
+                                                    <div className="absolute top-1.5 right-1.5 z-10 flex flex-col gap-0.5 shadow-md rounded-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => { e.stopPropagation(); setBackMapZoom((z) => Math.min(18, z + 1)); }}
+                                                            className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-white/95 hover:bg-white text-stone-600 hover:text-teal-600 border border-stone-200/80 transition-colors"
+                                                            aria-label="Zoom avant"
+                                                        >
+                                                            <span className="text-lg font-bold leading-none">+</span>
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => { e.stopPropagation(); setBackMapZoom((z) => Math.max(5, z - 1)); }}
+                                                            className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-white/95 hover:bg-white text-stone-600 hover:text-teal-600 border border-stone-200/80 transition-colors"
+                                                            aria-label="Zoom arrière"
+                                                        >
+                                                            <span className="text-lg font-bold leading-none">−</span>
+                                                        </button>
+                                                    </div>
+                                                    {/* Overlay loupe au hover — clic ouvre le modal carte (pointer-events-none pour ne pas bloquer les boutons zoom) */}
                                                     <span className="absolute inset-0 flex items-center justify-center bg-stone-900/40 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none">
                                                         <span className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/95 shadow-lg text-teal-600">
                                                             <Search size={isLarge ? 28 : 22} strokeWidth={2.5} />
                                                         </span>
                                                     </span>
                                                     <span className="sr-only">Agrandir la carte</span>
-                                                </button>
+                                                </div>
                                             ) : (
                                                 <button
                                                     type="button"
