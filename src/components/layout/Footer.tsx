@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Mail, Github, Twitter, Instagram } from 'lucide-react'
+import { Mail, Github, Instagram } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
@@ -31,7 +31,11 @@ export const Footer = () => {
                 </div>
 
                 <div className="flex justify-center gap-6 mb-8 text-stone-400">
-                    <a href="#" className="hover:text-teal-600 transition-colors"><Twitter size={20} /></a>
+                    <a href="#" className="hover:text-teal-600 transition-colors">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zl-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                        </svg>
+                    </a>
                     <a href="#" className="hover:text-teal-600 transition-colors"><Instagram size={20} /></a>
                     <a href="#" className="hover:text-teal-600 transition-colors"><Github size={20} /></a>
                 </div>

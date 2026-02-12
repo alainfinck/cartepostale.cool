@@ -131,6 +131,8 @@ export interface User {
   company?: string | null;
   cardsCreated?: number | null;
   plan?: ('free' | 'pro' | 'enterprise') | null;
+  magicLinkToken?: string | null;
+  magicLinkExpires?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -228,6 +230,7 @@ export interface Postcard {
   stampStyle?: ('classic' | 'modern' | 'airmail') | null;
   stampLabel?: string | null;
   stampYear?: string | null;
+  postmarkText?: string | null;
   date: string;
   status?: ('published' | 'draft' | 'archived') | null;
   views?: number | null;
@@ -242,6 +245,7 @@ export interface Postcard {
   isPremium?: boolean | null;
   agency?: (number | null) | Agency;
   brandLogo?: (number | null) | Media;
+  author?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -353,6 +357,8 @@ export interface UsersSelect<T extends boolean = true> {
   company?: T;
   cardsCreated?: T;
   plan?: T;
+  magicLinkToken?: T;
+  magicLinkExpires?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -444,6 +450,7 @@ export interface PostcardsSelect<T extends boolean = true> {
   stampStyle?: T;
   stampLabel?: T;
   stampYear?: T;
+  postmarkText?: T;
   date?: T;
   status?: T;
   views?: T;
@@ -458,6 +465,7 @@ export interface PostcardsSelect<T extends boolean = true> {
   isPremium?: T;
   agency?: T;
   brandLogo?: T;
+  author?: T;
   updatedAt?: T;
   createdAt?: T;
 }

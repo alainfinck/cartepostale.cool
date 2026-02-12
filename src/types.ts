@@ -21,7 +21,10 @@ export interface Postcard {
     /** Personnalisation du timbre (ex: "Digital Poste") */
     stampLabel?: string;
     /** Année affichée sur le timbre (ex: "2024") */
+    /** Année affichée sur le timbre (ex: "2024") */
     stampYear?: string;
+    /** Texte du tampon (ex: "Paris, France") */
+    postmarkText?: string;
     date: string;
     status?: 'published' | 'draft' | 'archived';
     views?: number;

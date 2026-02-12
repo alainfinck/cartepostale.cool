@@ -58,5 +58,15 @@ export const Users: CollectionConfig = {
       ],
       defaultValue: 'free',
     },
+    {
+      name: 'magicLinkToken',
+      type: 'text',
+      hidden: true,
+    },
+    {
+      name: 'magicLinkExpires',
+      type: 'date',
+      hidden: true,
+    },
   ],
 }

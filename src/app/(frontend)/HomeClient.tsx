@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Postcard } from '@/types'
-import { Plus, Compass, ExternalLink, Heart, Library, Instagram, Mail, Sun, Sparkles, Zap, Wallet, Share2, Image, Camera } from 'lucide-react'
+import { Plus, Compass, ExternalLink, Heart, Library, Instagram, Mail, Sun, Sparkles, Zap, Wallet, Share2, Image, Camera, Repeat } from 'lucide-react'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import WordRotate from '@/components/ui/word-rotate'
@@ -78,17 +78,30 @@ export default function Home() {
     ])
   }, [])
 
+  const demoCard: Postcard = {
+    id: 'demo-rv',
+    frontImage: 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+    location: 'Bali, Indonésie',
+    message: "Un petit coucou de Bali ! Les rizières sont magnifiques et les gens adorables. On a loué un scooter pour explorer l'île. Bises à tous !",
+    recipientName: "Famille Martin",
+    senderName: "Julie & Thomas",
+    stampStyle: 'classic',
+    date: '12 Aout 2024',
+    isPremium: false,
+    coords: { lat: -8.4095, lng: 115.1889 }
+  }
+
   return (
     <>
       <div className="relative bg-teal-900 min-h-[560px] lg:min-h-[520px] flex items-center overflow-hidden">
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
-            className="w-full h-full object-cover opacity-35 mix-blend-overlay"
+            className="w-full h-full object-cover opacity-50 mix-blend-normal"
             alt="Ocean background"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-teal-900/95 via-teal-800/85 to-teal-900/70" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-teal-950/50" />
+          <div className="absolute inset-0 bg-gradient-to-r from-teal-900/90 via-teal-900/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-teal-950/80" />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
@@ -104,7 +117,7 @@ export default function Home() {
                   />
                 </span>
               </h1>
-              <p className="text-teal-50 text-lg md:text-xl leading-relaxed max-w-lg mx-auto lg:mx-0">
+              <p className="text-teal-50 text-lg md:text-xl leading-relaxed max-w-lg mx-auto lg:mx-0 drop-shadow-md">
                 Le charme d&apos;une carte manuscrite, livrée instantanément. Capturez vos souvenirs de voyage et partagez-les avec style.
               </p>
             </div>
@@ -130,6 +143,51 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Section Recto/Verso */}
+      <section className="py-16 bg-[#fdfbf7] border-b border-stone-200 overflow-hidden relative">
+         {/* Décoration d'arrière-plan */}
+         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+            <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-teal-100/30 rounded-full blur-3xl" />
+            <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-orange-100/30 rounded-full blur-3xl" />
+         </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-12">
+             <div className="inline-flex items-center gap-2 px-3 py-1 bg-teal-50 border border-teal-100 rounded-full text-teal-700 text-xs font-bold uppercase tracking-widest mb-4">
+                <Repeat size={12} />
+                <span>Double Face</span>
+             </div>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800 mb-4">
+              Recto / Verso : La qualité avant tout
+            </h2>
+            <p className="text-stone-500 text-lg max-w-2xl mx-auto">
+              Vos photos sublimes au recto, votre message manuscrit au verso. Une véritable carte postale, sans les délais de la poste.
+            </p>
+          </div>
+
+          <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
+            {/* Recto */}
+            <div className="flex flex-col items-center gap-4">
+               <span className="text-stone-400 font-serif italic text-lg">Côté Photo (Recto)</span>
+               <div className="pointer-events-none transform hover:scale-[1.02] transition-transform duration-500">
+                  <PostcardView postcard={demoCard} isPreview={true} flipped={false} className="shadow-xl" />
+               </div>
+            </div>
+            
+             <div className="hidden lg:block h-32 w-px bg-stone-200" />
+             <div className="lg:hidden w-32 h-px bg-stone-200" />
+
+            {/* Verso */}
+            <div className="flex flex-col items-center gap-4">
+               <span className="text-stone-400 font-serif italic text-lg">Côté Message (Verso)</span>
+               <div className="pointer-events-none transform hover:scale-[1.02] transition-transform duration-500">
+                  <PostcardView postcard={demoCard} isPreview={true} flipped={true} className="shadow-xl" />
+               </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Arguments : carte virtuelle, innovant, pratique, pas cher, social, partage */}
       <section className="relative bg-gradient-to-b from-stone-50/80 to-[#fdfbf7] border-b border-stone-100 overflow-hidden">

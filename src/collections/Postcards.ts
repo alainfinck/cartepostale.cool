@@ -106,6 +106,11 @@ export const Postcards: CollectionConfig = {
             type: 'text',
         },
         {
+            name: 'postmarkText',
+            type: 'text',
+            required: false,
+        },
+        {
             name: 'date',
             type: 'date',
             required: true,
@@ -164,6 +169,14 @@ export const Postcards: CollectionConfig = {
             name: 'brandLogo',
             type: 'upload',
             relationTo: 'media',
+        },
+        {
+            name: 'author',
+            type: 'relationship',
+            relationTo: 'users',
+            admin: {
+                position: 'sidebar',
+            },
         },
     ],
 }

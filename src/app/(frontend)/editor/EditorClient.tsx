@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import Link from 'next/link'
+import confetti from 'canvas-confetti'
 import {
   Upload,
   Type,
@@ -26,9 +27,10 @@ import {
   Copy,
   Facebook,
   Linkedin,
-  Twitter,
+
   Share2,
   Maximize2,
+  MessageSquare,
 } from 'lucide-react'
 import { Postcard, Template } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -36,6 +38,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { createPostcard } from '@/actions/postcard-actions'
+import { linkPostcardToUser } from '@/actions/auth-actions'
 
 const STEPS = [
   { id: 'photo', label: 'Photo', icon: Camera },
@@ -123,6 +126,7 @@ export default function EditorPage() {
   const [stampStyle, setStampStyle] = useState<Postcard['stampStyle']>('classic')
   const [stampLabel, setStampLabel] = useState('Digital Poste')
   const [stampYear, setStampYear] = useState('2024')
+  const [postmarkText, setPostmarkText] = useState('')
   const [uploadedFileName, setUploadedFileName] = useState('')
   const [mediaItems, setMediaItems] = useState<Postcard['mediaItems']>([])
   const [isPremium, setIsPremium] = useState(false)
@@ -135,17 +139,33 @@ export default function EditorPage() {
   const [newPhone, setNewPhone] = useState('')
   const [isPublishing, setIsPublishing] = useState(false)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [createdPostcardId, setCreatedPostcardId] = useState<string | null>(null)
   const [shareError, setShareError] = useState<string | null>(null)
+
+  const [showCopyToast, setShowCopyToast] = useState(false)
+  const [hasConfettiFired, setHasConfettiFired] = useState(false)
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
   const showBack = currentStep === 'redaction'
 
-  // Auto-publish when reaching preview step
   useEffect(() => {
     if (currentStep === 'preview' && !shareUrl && !isPublishing && !shareError) {
       handlePublish()
     }
   }, [currentStep, shareUrl, isPublishing, shareError])
+
+  // Trigger confetti once when shareUrl becomes available
+  useEffect(() => {
+    if (shareUrl && !hasConfettiFired) {
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#14b8a6', '#f59e0b', '#3b82f6', '#ec4899']
+      })
+      setHasConfettiFired(true)
+    }
+  }, [shareUrl, hasConfettiFired])
 
   const canGoNext = () => {
     switch (currentStep) {
@@ -253,6 +273,7 @@ export default function EditorPage() {
     stampStyle,
     stampLabel: stampLabel.trim() || undefined,
     stampYear: stampYear.trim() || undefined,
+    postmarkText: postmarkText.trim() || undefined,
     date: new Date().toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: 'short',
@@ -303,6 +324,7 @@ export default function EditorPage() {
     })
 
     if (result.success && result.publicId) {
+      setCreatedPostcardId(result.publicId)
       setShareUrl(`${window.location.origin}/view/${result.publicId}`)
       // No longer switching step, sharing UI appears in 'preview' step
     } else {
@@ -314,7 +336,8 @@ export default function EditorPage() {
   const copyToClipboard = () => {
     if (shareUrl) {
       navigator.clipboard.writeText(shareUrl)
-      // Could add toast here
+      setShowCopyToast(true)
+      setTimeout(() => setShowCopyToast(false), 2000)
     }
   }
 
@@ -409,36 +432,7 @@ export default function EditorPage() {
                     </Button>
                   )}
 
-                  {/* Step 3 sharing options in left panel */}
-                  {currentStep === 'preview' && shareUrl && (
-                    <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
-                      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-3 text-center">Partager votre création</p>
-                      
-                      <div className="flex gap-2 mb-4">
-                        <input
-                          type="text"
-                          readOnly
-                          value={shareUrl}
-                          className="flex-1 bg-stone-50 border border-stone-100 rounded-lg px-3 text-xs text-stone-600 focus:outline-none py-2"
-                        />
-                        <Button onClick={copyToClipboard} variant="ghost" size="sm" className="text-teal-600 hover:bg-teal-50 h-8">
-                          <Copy size={12} className="mr-1" /> Copier
-                        </Button>
-                      </div>
 
-                      <div className="flex justify-center gap-3">
-                        <a href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#25D366] text-white rounded-full hover:opacity-90 transition-opacity shadow-sm">
-                          <Share2 size={16} />
-                        </a>
-                        <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#1877F2] text-white rounded-full hover:opacity-90 transition-opacity shadow-sm">
-                          <Facebook size={16} />
-                        </a>
-                        <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Regarde ma carte postale !`)}&url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#1DA1F2] text-white rounded-full hover:opacity-90 transition-opacity shadow-sm">
-                          <Twitter size={16} />
-                        </a>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -873,85 +867,16 @@ export default function EditorPage() {
             {/* ==================== STEP: APERÇU ==================== */}
             {currentStep === 'preview' && (
               <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-4">
                   <h2 className="text-2xl font-serif font-bold text-stone-800">
                     Votre carte est prête !
                   </h2>
-                  <Button
-                    onClick={() => setShowFullscreen(true)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 font-bold flex items-center gap-1.5 transition-colors"
-                  >
-                    <Maximize2 size={14} /> Aperçu plein écran
-                  </Button>
                 </div>
-                <p className="text-stone-500 mb-6 text-sm">
-                  Vérifiez le rendu final. Cliquez sur la carte pour la retourner.
+                <p className="text-stone-500 mb-8 text-sm">
+                  Partagez-la maintenant avec vos proches. Cliquez sur la carte pour la retourner.
                 </p>
 
-                {/* Summary */}
-                <div className="space-y-4 mb-8">
-                  <div className="flex items-start gap-3 p-4 bg-stone-50 rounded-xl">
-                    <ImageIcon size={18} className="text-teal-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-xs font-bold text-stone-500 uppercase tracking-wider">
-                        Photo
-                      </p>
-                      <p className="text-stone-700 text-sm mt-0.5">
-                        {uploadedFileName || 'Modèle sélectionné'}
-                      </p>
-                    </div>
-                    {!shareUrl && (
-                      <button
-                        onClick={() => setCurrentStep('photo')}
-                        className="ml-auto text-teal-500 hover:text-teal-700 text-xs font-bold"
-                      >
-                        Modifier
-                      </button>
-                    )}
-                  </div>
 
-                  <div className="flex items-start gap-3 p-4 bg-stone-50 rounded-xl">
-                    <Type size={18} className="text-indigo-500 mt-0.5 flex-shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-stone-500 uppercase tracking-wider">
-                        Message
-                      </p>
-                      <p className="text-stone-700 text-sm mt-0.5 line-clamp-2">{message}</p>
-                    </div>
-                    {!shareUrl && (
-                      <button
-                        onClick={() => setCurrentStep('redaction')}
-                        className="ml-auto text-teal-500 hover:text-teal-700 text-xs font-bold flex-shrink-0"
-                      >
-                        Modifier
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="flex items-start gap-3 p-4 bg-stone-50 rounded-xl">
-                    <MapPin size={18} className="text-orange-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-xs font-bold text-stone-500 uppercase tracking-wider">
-                        Détails
-                      </p>
-                      <p className="text-stone-700 text-sm mt-0.5">
-                        De <span className="font-semibold">{senderName}</span> pour{' '}
-                        <span className="font-semibold">{recipientName}</span> depuis{' '}
-                        <span className="font-semibold">{location}</span>
-                      </p>
-                    </div>
-                    {!shareUrl && (
-                      <button
-                        onClick={() => setCurrentStep('redaction')}
-                        className="ml-auto text-teal-500 hover:text-teal-700 text-xs font-bold"
-                      >
-                        Modifier
-                      </button>
-                    )}
-                  </div>
-                </div>
 
                 {!shareUrl && (
                   <div className="border-t border-stone-200 pt-6">
@@ -1033,9 +958,19 @@ export default function EditorPage() {
                           <Button 
                             variant="secondary"
                             className="rounded-xl h-auto px-5 bg-teal-500 hover:bg-teal-600 text-white border-0"
-                            onClick={() => {
-                              // Simple feedback since it's autosaved
-                              alert("Email enregistré !")
+                            onClick={async () => {
+                              if (!createdPostcardId) return
+                              if (!senderEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) {
+                                alert("Veuillez entrer une adresse email valide.")
+                                return
+                              }
+                              
+                              const result = await linkPostcardToUser(createdPostcardId, senderEmail)
+                              if (result.success) {
+                                alert("Compte créé/lié ! Un email avec votre lien de connexion magique vous a été envoyé.")
+                              } else {
+                                alert("Erreur: " + (result.error || "Impossible de lier le compte."))
+                              }
                             }}
                           >
                             Valider
@@ -1051,10 +986,9 @@ export default function EditorPage() {
                     <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Send size={32} className="text-teal-600" />
                     </div>
-                    <h3 className="text-xl font-serif font-bold text-stone-800 mb-2">Carte prête à être partagée !</h3>
-
+                    <h3 className="text-xl font-serif font-bold text-stone-800 mb-2">Prête à être partagée !</h3>
+                    <p className="text-stone-500 text-sm mb-6">Utilisez le lien ci-dessous ou les réseaux sociaux</p>
                     <div className="mb-6 max-w-lg mx-auto">
-                      <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 text-left">Lien de partage</p>
                       <div className="flex gap-2">
                         <input
                           type="text"
@@ -1062,21 +996,27 @@ export default function EditorPage() {
                           value={shareUrl}
                           className="flex-1 bg-white border border-stone-200 rounded-lg px-3 text-sm text-stone-600 focus:outline-none py-2"
                         />
-                        <Button onClick={copyToClipboard} variant="outline" className="bg-white hover:bg-stone-50 text-stone-600 border-stone-200 text-sm py-2 h-auto">
+                        <Button onClick={copyToClipboard} variant="outline" className="bg-white hover:bg-teal-100 hover:text-teal-800 hover:border-teal-300 text-stone-600 border-stone-200 text-sm py-2 h-auto transition-all shadow-sm hover:shadow-md">
                           <Copy size={14} className="mr-2" /> Copier
                         </Button>
                       </div>
                     </div>
 
                     <div className="flex flex-wrap justify-center gap-3">
+                      <a href={`sms:?body=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
+                        <MessageSquare size={14} /> SMS
+                      </a>
                       <a href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#25D366] text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
                         <Share2 size={14} /> WhatsApp
                       </a>
                       <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#1877F2] text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
                         <Facebook size={14} /> Facebook
                       </a>
-                      <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Regarde ma carte postale !`)}&url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#1DA1F2] text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
-                        <Twitter size={14} /> Twitter
+                      <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Regarde ma carte postale !`)}&url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full font-bold text-xs hover:opacity-80 transition-opacity shadpw-sm">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zl-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                        </svg>
+                        X
                       </a>
                     </div>
                   </div>
@@ -1163,19 +1103,30 @@ export default function EditorPage() {
           className="fixed inset-0 z-50 bg-stone-900/95 flex items-center justify-center p-2 sm:p-4 overflow-auto"
           onClick={() => setShowFullscreen(false)}
         >
-          <button
-            onClick={() => setShowFullscreen(false)}
-            className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10 z-10"
-            aria-label="Fermer"
-          >
-            <X size={28} />
-          </button>
-          <div onClick={(e) => e.stopPropagation()} className="flex items-center justify-center min-h-full py-2 w-full h-full">
+          <div onClick={(e) => e.stopPropagation()} className="relative flex items-center justify-center w-full h-full p-4 sm:p-12">
+            <button
+              onClick={() => setShowFullscreen(false)}
+              className="absolute top-2 right-2 sm:top-6 sm:right-6 p-4 text-white hover:text-red-400 transition-all z-50 bg-black/20 hover:bg-black/40 backdrop-blur-sm rounded-full active:scale-95"
+              aria-label="Fermer"
+            >
+              <X size={48} strokeWidth={3} />
+            </button>
             <PostcardView
               postcard={currentPostcard}
               flipped={showBack}
-              className="w-auto h-auto max-w-full max-h-[95vh] aspect-[3/2] shadow-2xl hover:scale-100 cursor-default"
+              className="w-full max-w-[1700px] h-auto aspect-[3/2] shadow-2xl hover:scale-100 cursor-default"
             />
+          </div>
+        </div>
+      )}
+      {/* Copy notification toast */}
+      {showCopyToast && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="bg-stone-900 border border-white/10 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md">
+            <div className="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center">
+              <Check size={14} className="text-white" />
+            </div>
+            <span className="font-bold text-sm tracking-wide">Lien copié !</span>
           </div>
         </div>
       )}

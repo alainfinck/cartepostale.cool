@@ -3,9 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Postcard } from '@/types';
-import { RotateCw, MapPin, Image as ImageIcon, X, Play, ChevronLeft, ChevronRight, Maximize2, Camera } from 'lucide-react';
+import { RotateCw, MapPin, X, Play, ChevronLeft, ChevronRight, Maximize2, Camera } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import dynamic from 'next/dynamic'
+
+// Dynamically import MapModal to avoid SSR issues with Leaflet
+const MapModal = dynamic(() => import('@/components/ui/MapModal'), {
+    ssr: false,
+    loading: () => null
+})
 
 interface PostcardViewProps {
     postcard: Postcard;
@@ -15,7 +22,7 @@ interface PostcardViewProps {
 }
 
 const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false, flipped, className }) => {
-    const [isFlipped, setIsFlipped] = useState(false);
+    const [isFlipped, setIsFlipped] = useState(flipped ?? false);
 
     useEffect(() => {
         if (flipped !== undefined) {
@@ -140,37 +147,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
         );
     };
 
-    const renderMapModal = () => {
-        if (!portalRoot || !isMapOpen || !(postcard.coords || postcard.location)) return null;
 
-        return createPortal(
-            <div 
-                className="fixed inset-0 z-[150] bg-stone-900/95 backdrop-blur-md flex items-center justify-center p-4"
-                onClick={() => setIsMapOpen(false)}
-            >
-                <div 
-                    className="w-full max-w-4xl h-[60vh] bg-white rounded-2xl overflow-hidden shadow-2xl relative"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <button
-                        onClick={() => setIsMapOpen(false)}
-                        className="absolute top-4 right-4 bg-white/80 hover:bg-white text-stone-500 hover:text-red-500 p-2 rounded-full transition-all z-[110] shadow-md border border-stone-100"
-                    >
-                        <X size={24} />
-                    </button>
-
-                    <iframe
-                        title="Full Map"
-                        width="100%"
-                        height="100%"
-                        frameBorder="0"
-                        src={`https://www.google.com/maps?q=${encodeURIComponent(postcard.location)}&output=embed&z=14`}
-                    ></iframe>
-                </div>
-            </div>,
-            portalRoot
-        );
-    };
 
     return (
         <>
@@ -210,7 +187,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                         </div>
 
                         {/* Back of Card */}
-                        <div className="absolute w-full h-full backface-hidden rotate-y-180 rounded-xl shadow-2xl paper-texture border border-stone-200 p-5 sm:p-8 flex">
+                        <div className="absolute w-full h-full backface-hidden rotate-y-180 rounded-xl shadow-2xl bg-[#fafaf9] border border-stone-200 p-5 sm:p-8 flex">
                             {/* Small branding bottom-left */}
                             <div className="absolute bottom-3 left-6 text-stone-300 text-[8px] font-bold tracking-[0.2em] uppercase flex items-center gap-1.5">
                                 <div className="w-1 h-1 bg-stone-200 rounded-full" />
@@ -237,7 +214,123 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                 {/* Right Side: Address & Stamp */}
                                 <div className="flex-1 flex flex-col relative min-w-0">
                                     {/* Top Section: Album button (left) + Stamp (right, smaller) */}
-                                    <div className="flex justify-end items-center gap-3 mb-2">
+                                    <div className="flex flex-col items-end gap-2 mb-2">
+                                        {/* Stamp - plus petit et plus réaliste */}
+                                        {(() => {
+                                            const style = postcard.stampStyle || 'classic';
+                                            const label = (postcard.stampLabel || 'Digital Poste').trim() || 'Digital Poste';
+                                            const year = (postcard.stampYear || '2024').trim() || '2024';
+                                            // Split text for postmark if too long or multiline needed? defaulted to location/date
+                                            const pmText = postcard.postmarkText || (postcard.location ? postcard.location.split(',')[0] : 'Digital');
+                                            
+                                            return (
+                                                <div className="relative group-hover:rotate-2 transition-transform duration-500 ease-out py-2 pr-2">
+                                                    
+                                                    {/* The Stamp itself - Reduced size (w-20/h-24 on desktop) */}
+                                                    <div className="w-16 h-20 sm:w-24 sm:h-28 relative shadow-[2px_3px_5px_rgba(0,0,0,0.2)] transform rotate-1">
+                                                        
+                                                        {/* Classic: perforated edges using radial-gradient mask/clip for realism */}
+                                                        {style === 'classic' && (
+                                                            <div className="w-full h-full bg-[#fdf5e6] p-1.5 relative overflow-hidden"
+                                                                style={{
+                                                                    // CSS-only sawtooth wave pattern for edges
+                                                                    mask: 'conic-gradient(from 45deg, transparent 0deg 90deg, black 90deg 360deg) 0 0/10px 10px round',
+                                                                    WebkitMask: 'conic-gradient(from 45deg, transparent 0deg 90deg, black 90deg 360deg) 0 0/10px 10px round'
+                                                                }}
+                                                            >
+                                                                <div className="w-full h-full border-[1.5px] border-orange-300/60 flex flex-col items-center justify-between p-1 bg-white/40">
+                                                                    <div className="text-[6px] sm:text-[8px] font-bold text-orange-900/80 uppercase tracking-wide text-center w-full truncate px-1">{label}</div>
+                                                                    <div className="flex-1 flex items-center justify-center opacity-80 mix-blend-multiply">
+                                                                         {/* Generic symbol */}
+                                                                         <div className="w-8 h-8 sm:w-12 sm:h-12 border border-orange-200/50 rounded-full flex items-center justify-center">
+                                                                            <img src="https://i.imgur.com/R21Yw3x.png" className="w-6 h-6 sm:w-9 sm:h-9 object-contain grayscale contrast-125 opacity-60" alt="stamp" />
+                                                                         </div>
+                                                                    </div>
+                                                                    <div className="text-[6px] sm:text-[8px] font-serif font-bold text-orange-900/60">{year}</div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Modern: Gradient, rounded */}
+                                                        {style === 'modern' && (
+                                                            <div className="w-full h-full rounded-lg bg-gradient-to-tr from-teal-50 to-white border border-teal-200 shadow-sm flex flex-col items-center justify-between p-2 relative overflow-hidden">
+                                                                <div className="absolute top-0 left-0 w-full h-1 bg-teal-400/30"></div>
+                                                                <div className="text-[6px] sm:text-[8px] font-bold text-teal-800 uppercase tracking-widest">{label}</div>
+                                                                <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full border border-teal-200 flex items-center justify-center bg-teal-50/50">
+                                                                    <span className="text-[8px] sm:text-[10px] font-bold text-teal-600/80">POST</span>
+                                                                </div>
+                                                                <div className="text-[7px] sm:text-[9px] font-semibold text-teal-700/60">{year}</div>
+                                                                <div className="absolute bottom-0 left-0 w-full h-1 bg-teal-400/30"></div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Airmail: Stripes */}
+                                                        {style === 'airmail' && (
+                                                            <div className="w-full h-full bg-white p-1 shadow-sm relative overflow-hidden"
+                                                                style={{
+                                                                    mask: 'radial-gradient(circle at 2px 2px, transparent 2px, black 0) -2px -2px / 11px 11px repeat-x, radial-gradient(circle at 2px 2px, transparent 2px, black 0) -2px -2px / 11px 11px repeat-y',
+                                                                    WebkitMask: 'radial-gradient(circle at 50% 50%, white, white)' // Fallback generic because radial zig-zag complex in CSS
+                                                                }}
+                                                            >
+                                                                <div className="absolute inset-0 border-4 border-transparent" 
+                                                                    style={{
+                                                                        backgroundImage: 'repeating-linear-gradient(135deg, #ef4444 0, #ef4444 10px, transparent 10px, transparent 20px, #3b82f6 20px, #3b82f6 30px, transparent 30px, transparent 40px)'
+                                                                    }} 
+                                                                ></div>
+                                                                <div className="absolute inset-2 bg-white flex flex-col items-center justify-center gap-1 shadow-inner">
+                                                                    <div className="text-[5px] sm:text-[6px] font-black text-blue-800 uppercase tracking-widest">AIR MAIL</div>
+                                                                    <div className="text-[6px] sm:text-[8px] font-bold text-stone-600 text-center leading-none">{label}</div>
+                                                                    <div className="text-[6px] sm:text-[8px] font-bold text-red-600">{year}</div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Subtle paper texture overlay */}
+                                                        <div className="absolute inset-0 bg-stone-50 opacity-10 mix-blend-multiply pointer-events-none"></div>
+                                                    </div>
+
+                                                    {/* Realistic Postmark (Tampon) - SVG Overlay */}
+                                                    <div className="absolute -left-6 top-6 w-20 h-20 sm:w-28 sm:h-28 pointer-events-none z-20 mix-blend-multiply opacity-85 transform -rotate-12">
+                                                        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm text-stone-800/70 fill-current">
+                                                            <defs>
+                                                                <path id="curve" d="M 15,50 A 35,35 0 1,1 85,50 A 35,35 0 1,1 15,50" />
+                                                                <filter id="roughness">
+                                                                    <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" result="noise" />
+                                                                    <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.5" />
+                                                                </filter>
+                                                            </defs>
+                                                            <g filter="url(#roughness)">
+                                                                {/* Outer Circle */}
+                                                                <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                                                                {/* Inner Circle */}
+                                                                <circle cx="50" cy="50" r="32" fill="none" stroke="currentColor" strokeWidth="1" />
+                                                                
+                                                                {/* Wavy lines */}
+                                                                <path d="M10,50 Q30,45 50,50 T90,50" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
+                                                                <path d="M12,56 Q32,51 52,56 T88,56" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
+                                                                <path d="M12,44 Q32,39 52,44 T88,44" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
+
+                                                                {/* Text on curve */}
+                                                                <text fontSize="7.5" fontWeight="bold" letterSpacing="1" textAnchor="middle">
+                                                                    <textPath href="#curve" startOffset="50%" className="uppercase">
+                                                                        {pmText.length > 20 ? pmText.substring(0, 18) + '..' : pmText || 'POSTE AERIENNE'}
+                                                                    </textPath>
+                                                                </text>
+                                                                
+                                                                {/* Center Date */}
+                                                                <text x="50" y="52" fontSize="7" fontFamily="monospace" fontWeight="bold" textAnchor="middle" className="uppercase">
+                                                                    {postcard.date.split('/').slice(0, 2).join('/')}
+                                                                </text>
+                                                                <text x="50" y="60" fontSize="7" fontFamily="monospace" fontWeight="bold" textAnchor="middle" className="uppercase">
+                                                                    {postcard.date.split('/')[2] || '2024'}
+                                                                </text>
+                                                            </g>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
+
                                         {hasMedia && (
                                             <button
                                                 onClick={openAlbum}
@@ -248,61 +341,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                                 <span className="text-[8px] text-white/70">({postcard.mediaItems!.length})</span>
                                             </button>
                                         )}
-
-                                        {/* Stamp - plus grand, personnalisable (style + texte + année) */}
-                                        {(() => {
-                                            const style = postcard.stampStyle || 'classic';
-                                            const label = (postcard.stampLabel || 'Digital Poste').trim() || 'Digital Poste';
-                                            const year = (postcard.stampYear || '2024').trim() || '2024';
-                                            const perforatedClip = "polygon(0% 18%, 5% 18%, 5% 0%, 10% 0%, 10% 18%, 15% 18%, 15% 0%, 20% 0%, 20% 18%, 25% 18%, 25% 0%, 30% 0%, 30% 18%, 35% 18%, 35% 0%, 40% 0%, 40% 18%, 45% 18%, 45% 0%, 50% 0%, 50% 18%, 55% 18%, 55% 0%, 60% 0%, 60% 18%, 65% 18%, 65% 0%, 70% 0%, 70% 18%, 75% 18%, 75% 0%, 80% 0%, 80% 18%, 85% 18%, 85% 0%, 90% 0%, 90% 18%, 95% 18%, 95% 0%, 100% 0%, 100% 18%, 100% 22%, 95% 22%, 95% 28%, 100% 28%, 100% 32%, 95% 32%, 95% 38%, 100% 38%, 100% 42%, 95% 42%, 95% 48%, 100% 48%, 100% 52%, 95% 52%, 95% 58%, 100% 58%, 100% 62%, 95% 62%, 95% 68%, 100% 68%, 100% 72%, 95% 72%, 95% 78%, 100% 78%, 100% 82%, 95% 82%, 95% 88%, 100% 88%, 100% 92%, 95% 92%, 95% 98%, 100% 98%, 100% 100%, 95% 100%, 95% 98%, 90% 98%, 90% 100%, 85% 100%, 85% 98%, 80% 98%, 80% 100%, 75% 100%, 75% 98%, 70% 98%, 70% 100%, 65% 100%, 65% 98%, 60% 98%, 60% 100%, 55% 100%, 55% 98%, 50% 98%, 50% 100%, 45% 100%, 45% 98%, 40% 98%, 40% 100%, 35% 100%, 35% 98%, 30% 98%, 30% 100%, 25% 100%, 25% 98%, 20% 98%, 20% 100%, 15% 100%, 15% 98%, 10% 98%, 10% 100%, 5% 100%, 5% 98%, 0% 98%, 0% 100%, 0% 100%, 0% 98%, 0% 92%, 5% 92%, 5% 88%, 0% 88%, 0% 82%, 5% 82%, 5% 78%, 0% 78%, 0% 72%, 5% 72%, 5% 68%, 0% 68%, 0% 62%, 5% 62%, 5% 58%, 0% 58%, 0% 52%, 5% 52%, 5% 48%, 0% 48%, 0% 42%, 5% 42%, 5% 38%, 0% 38%, 0% 32%, 5% 32%, 5% 28%, 0% 28%, 0% 22%, 5% 22%, 5% 18%, 0% 18%)";
-                                            return (
-                                                <div className="w-14 h-[6rem] sm:w-32 sm:h-[7.5rem] flex-shrink-0 relative group-hover:rotate-6 transition-transform shadow-xl">
-                                                    {/* Classic: perforated, orange/cream */}
-                                                    {style === 'classic' && (
-                                                        <div className="w-full h-full bg-[#fdf5e6] shadow-lg border-2 border-stone-300/30 flex items-center justify-center p-1 relative z-10" style={{ clipPath: perforatedClip }}>
-                                                            <div className="w-full h-full border border-orange-200/60 flex flex-col items-center justify-between p-1 bg-white/70">
-                                                                <div className="text-[8px] sm:text-[10px] font-bold text-orange-800 uppercase leading-none mt-0.5 text-center max-w-full">{label}</div>
-                                                                <img src="https://i.imgur.com/R21Yw3x.png" className="w-9 h-9 sm:w-10 sm:h-10 object-contain grayscale opacity-70" alt="stamp" />
-                                                                <div className="text-[8px] sm:text-[9px] font-serif font-bold text-orange-900 leading-none mb-0.5">{year}</div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                    {/* Modern: clean rectangle, teal/white */}
-                                                    {style === 'modern' && (
-                                                        <div className="w-full h-full rounded-xl shadow-lg border-2 border-teal-300/60 bg-gradient-to-b from-teal-50 to-white flex flex-col items-center justify-between p-2 relative z-10">
-                                                            <div className="text-[7px] sm:text-[9px] font-bold text-teal-700 uppercase leading-none text-center max-w-full">{label}</div>
-                                                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-teal-400 flex items-center justify-center">
-                                                                <span className="text-[10px] sm:text-[12px] font-bold text-teal-600">DP</span>
-                                                            </div>
-                                                            <div className="text-[8px] sm:text-[9px] font-semibold text-teal-800 leading-none">{year}</div>
-                                                        </div>
-                                                    )}
-                                                    {/* Airmail: red/blue diagonal stripes */}
-                                                    {style === 'airmail' && (
-                                                        <div
-                                                            className="w-full h-full rounded-xl shadow-lg border-2 border-red-400/80 flex flex-col items-center justify-between p-1 relative z-10 overflow-hidden"
-                                                            style={{
-                                                                background: 'repeating-linear-gradient(-45deg, #dc2626 0px, #dc2626 5px, #1d4ed8 5px, #1d4ed8 10px)',
-                                                            }}
-                                                        >
-                                                            <div className="w-full h-full flex flex-col items-center justify-between p-1.5 bg-white/85 rounded-lg">
-                                                                <div className="text-[6px] sm:text-[7px] font-bold text-red-600 uppercase leading-none tracking-[0.2em]">Par avion</div>
-                                                                <div className="text-[7px] sm:text-[8px] font-bold text-stone-700 uppercase text-center max-w-full">{label}</div>
-                                                                <div className="text-[7px] sm:text-[8px] font-serif text-stone-600 leading-none">{year}</div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                    {/* Postmark circle overlay */}
-                                                    <div className="absolute -left-5 top-4 w-12 h-12 sm:w-14 sm:h-14 border-2 border-stone-900/10 rounded-full flex items-center justify-center transform -rotate-10 pointer-events-none z-20 text-center">
-                                                        <div className="text-[5px] sm:text-[6px] font-mono text-stone-500/40 leading-none uppercase font-bold">
-                                                            {postcard.location ? postcard.location.split(',')[0] : 'Digital'}<br />{postcard.date}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })()}
                                     </div>
-
                                     <div className="mt-auto w-full">
                                         {postcard.recipientName && (
                                             <div className="border-b-2 border-stone-300 border-dotted pb-1 mb-2 font-handwriting text-xl sm:text-2xl text-stone-600 pl-4">
@@ -343,10 +382,25 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                     <RotateCw size={12} />
                     <span>Appuyer pour retourner</span>
                 </div>
-            </div >
+
+                </div>
+
 
             {renderAlbumModal()}
-            {renderMapModal()}
+            
+            {/* New Leaflet Map Modal */}
+            {isMapOpen && (
+                <div style={{ position: 'fixed', zIndex: 9999 }}>
+                    <MapModal
+                        isOpen={isMapOpen}
+                        onClose={() => setIsMapOpen(false)}
+                        location={postcard.location || ''}
+                        coords={postcard.coords}
+                        image={postcard.frontImage}
+                        message={postcard.message}
+                    />
+                </div>
+            )}
         </>
     );
 };
