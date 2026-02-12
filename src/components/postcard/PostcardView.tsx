@@ -3,7 +3,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Postcard } from '@/types';
-import { RotateCw, MapPin, X, Play, ChevronLeft, ChevronRight, Maximize2, Camera } from 'lucide-react';
+import { 
+    RotateCw, 
+    MapPin, 
+    X, 
+    Play, 
+    ChevronLeft, 
+    ChevronRight, 
+    Maximize2, 
+    Camera,
+    Search, 
+    Info 
+} from 'lucide-react';
 import { motion, useSpring, useMotionValue, useTransform, PanInfo, useAnimation } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
@@ -41,6 +52,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
         }
     }, [flipped, rotateY]);
 
+    const [isMessageOpen, setIsMessageOpen] = useState(false);
     const [isAlbumOpen, setIsAlbumOpen] = useState(false);
     const [isMapOpen, setIsMapOpen] = useState(false);
     const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
@@ -93,6 +105,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
         }
     };
 
+    const openMessage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsMessageOpen(true);
+    };
+
     const nextMedia = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (postcard.mediaItems) {
@@ -113,6 +130,62 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
         setPortalRoot(document.body);
     }, []);
 
+    const renderMessageModal = () => {
+        if (!portalRoot || !isMessageOpen) return null;
+
+        return createPortal(
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[150] bg-stone-900/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8"
+                onClick={() => setIsMessageOpen(false)}
+            >
+                <motion.div 
+                    initial={{ scale: 0.9, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    className="w-full max-w-2xl bg-[#fafaf9] rounded-2xl shadow-2xl p-8 md:p-12 relative overflow-hidden flex flex-col items-center text-center border-4 border-white/50"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {/* Background decorations */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500/5 rounded-full -ml-16 -mb-16 blur-3xl"></div>
+                    
+                    <button
+                        onClick={() => setIsMessageOpen(false)}
+                        className="absolute top-4 right-4 md:top-8 md:right-8 z-[100] bg-white hover:bg-red-50 text-stone-500 hover:text-red-500 p-2.5 rounded-full transition-all shadow-xl border border-stone-200"
+                    >
+                        <X size={24} />
+                    </button>
+
+                    <div className="w-12 h-1 bg-stone-200 rounded-full mb-10 opacity-50"></div>
+
+                    <div className="flex-1 w-full overflow-y-auto custom-scrollbar px-2">
+                        <p className="font-handwriting text-stone-700 text-2xl md:text-4xl leading-relaxed md:leading-loose text-left whitespace-pre-wrap">
+                            {postcard.message}
+                        </p>
+                    </div>
+
+                    <div className="w-full h-px bg-stone-100 my-8"></div>
+
+                    <div className="w-full flex justify-between items-end">
+                        <div className="text-left">
+                            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Envoyé de</p>
+                            <p className="text-stone-600 font-medium flex items-center gap-1.5 text-sm uppercase">
+                                <MapPin size={14} className="text-teal-600" />
+                                {postcard.location}
+                            </p>
+                        </div>
+                        <p className="font-handwriting text-teal-700 text-2xl md:text-3xl rotate-[-2deg]">
+                            - {postcard.senderName}
+                        </p>
+                    </div>
+                </motion.div>
+            </motion.div>,
+            portalRoot
+        );
+    };
+
     const renderAlbumModal = () => {
         if (!portalRoot || !isAlbumOpen || !hasMedia) return null;
 
@@ -126,11 +199,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                     onClick={(e) => e.stopPropagation()}
                 >
                     <button
-                        onClick={() => setIsAlbumOpen(false)}
-                        className="absolute -top-10 right-0 text-white/50 hover:text-white transition-colors"
-                    >
-                        <X size={32} />
-                    </button>
+                    onClick={() => setIsAlbumOpen(false)}
+                    className="absolute -top-12 right-0 md:right-0 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-all shadow-lg backdrop-blur-md border border-white/20"
+                >
+                    <X size={24} />
+                </button>
 
                     <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden shadow-2xl flex items-center justify-center mb-6">
                         {postcard.mediaItems![currentMediaIndex].type === 'video' ? (
@@ -266,22 +339,49 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                 {/* Left Side: Message - wider and more vertical space */}
                                 <div className="flex-[1.25] min-w-0 flex flex-col justify-start relative pt-2">
 
-                                    <div className="flex-1 flex flex-col justify-start items-start my-1 min-h-0">
+                                    <div 
+                                        className="flex-1 flex flex-col justify-start items-start my-1 min-h-0 cursor-pointer group/msg relative"
+                                        onClick={openMessage}
+                                    >
                                         <p className="font-handwriting text-stone-700 text-sm sm:text-lg leading-loose sm:leading-loose line-clamp-7 sm:line-clamp-none text-left">
                                             {postcard.message}
                                         </p>
+                                        
+                                        {/* Zoom hint with loupe and info - Permanently visible */}
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <div className="bg-white/60 backdrop-blur-[1px] px-2 py-1 rounded-full border border-stone-200/50 flex items-center gap-1.5 transform scale-75 opacity-70 group-hover/msg:opacity-100 group-hover/msg:scale-90 transition-all duration-300">
+                                                <Search size={12} className="text-teal-600" />
+                                                <span className="text-[9px] font-bold text-stone-500 uppercase tracking-widest">Cliquer pour zoomer</span>
+                                                <Info size={10} className="text-stone-400" />
+                                            </div>
+                                        </div>
+
+                                        <div className="absolute bottom-0 right-0 opacity-0 group-hover/msg:opacity-100 transition-opacity bg-white/50 rounded-full p-1 border border-stone-200 shadow-sm hidden sm:block">
+                                            <Maximize2 size={12} className="text-stone-400" />
+                                        </div>
                                     </div>
                                     {postcard.senderName && (
-                                        <p className="font-handwriting text-stone-800 text-lg sm:text-xl mt-auto self-start text-teal-700 transform -rotate-2 pt-1">
+                                        <p className="font-handwriting text-teal-700 text-base sm:text-xl mt-auto self-start transform -rotate-2 pt-1">
                                             - {postcard.senderName}
                                         </p>
                                     )}
                                 </div>
 
                                 {/* Right Side: Address & Stamp */}
-                                <div className="flex-1 flex flex-col relative min-w-0">
-                                    {/* Top Section: Album button (left) + Stamp (right, smaller) */}
-                                    <div className="flex flex-col items-end gap-2 mb-2">
+                                <div className="flex-1 flex flex-col relative min-w-0 pt-0 sm:pt-1">
+                                    {/* Top Section: Recipient (left) + Stamp (right) */}
+                                    <div className="flex justify-between items-start mb-1 gap-2">
+                                        <div className="flex-1 pt-3">
+                                            {postcard.recipientName && (
+                                                <div className={cn(
+                                                    "border-b-2 border-stone-300 border-dotted pb-0.5 font-handwriting text-stone-600 pl-2",
+                                                    isLarge ? "text-base sm:text-xl" : "text-sm sm:text-base"
+                                                )}>
+                                                    {postcard.recipientName}
+                                                </div>
+                                            )}
+                                        </div>
+                                        
                                         {/* Stamp - plus petit et plus réaliste */}
                                         {(() => {
                                             const style = postcard.stampStyle || 'classic';
@@ -291,7 +391,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                             const pmText = postcard.postmarkText || (postcard.location ? postcard.location.split(',')[0] : 'Digital');
                                             
                                             return (
-                                                <div className="relative group-hover:rotate-2 transition-transform duration-500 ease-out py-2 pr-2">
+                                                <div className="relative group-hover:rotate-2 transition-transform duration-500 ease-out pt-0 pb-2 pr-2">
                                                     
                                                     {/* The Stamp itself - Reduced size (w-20/h-24 on desktop) */}
                                                     <div className={cn(
@@ -407,23 +507,15 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                         {hasMedia && (
                                             <button
                                                 onClick={openAlbum}
-                                                className="flex items-center gap-2 px-3 py-1.5 bg-stone-900/80 hover:bg-stone-900 text-white rounded-2xl transition-all shadow-sm shadow-stone-900/40 backdrop-blur-sm border border-white/20 text-[11px] tracking-[0.2em] uppercase whitespace-nowrap z-30"
+                                                className="absolute top-16 right-0 flex items-center gap-1.5 px-2 py-1 bg-stone-900/80 hover:bg-stone-900 text-white rounded-xl transition-all shadow-sm shadow-stone-900/40 backdrop-blur-sm border border-white/20 text-[9px] tracking-wider uppercase whitespace-nowrap z-30"
                                             >
-                                                <Camera size={16} className="text-white/90" />
-                                                <span className="text-[10px] font-semibold">{"Voir l'album"}</span>
+                                                <Camera size={12} className="text-white/90" />
+                                                <span>Album</span>
                                                 <span className="text-[8px] text-white/70">({postcard.mediaItems!.length})</span>
                                             </button>
                                         )}
                                     </div>
                                     <div className="mt-auto w-full">
-                                        {postcard.recipientName && (
-                                            <div className={cn(
-                                                "border-b-2 border-stone-300 border-dotted pb-0.5 mb-1.5 font-handwriting text-stone-600 pl-4",
-                                                isLarge ? "text-lg sm:text-2xl" : "text-xl sm:text-2xl"
-                                            )}>
-                                                {postcard.recipientName}
-                                            </div>
-                                        )}
                                         {postcard.location && (
                                             <div className="relative group/map">
                                                 <h4 className="font-bold text-stone-400 text-[10px] uppercase mb-1 tracking-wider flex items-center gap-1">
@@ -432,8 +524,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                                 <div 
                                                     className={cn(
                                                         "w-full bg-stone-100 rounded-lg overflow-hidden border border-stone-200 relative cursor-pointer hover:border-teal-400 transition-colors z-20",
-                                                        // Adjust map height: smaller on mobile to prevent overflow
-                                                        isLarge ? "h-20 sm:h-56" : "h-16 sm:h-24"
+                                                        // Adjust map height: increased as requested
+                                                        isLarge ? "h-28 sm:h-64" : "h-20 sm:h-28"
                                                     )}
                                                     onClick={openMap}
                                                 >
@@ -470,6 +562,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
 
 
             {renderAlbumModal()}
+            {renderMessageModal()}
             
             {/* New Leaflet Map Modal - Portaled to avoid perspective/transform issues */}
             {isMapOpen && portalRoot && createPortal(

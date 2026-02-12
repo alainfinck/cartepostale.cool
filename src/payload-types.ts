@@ -72,6 +72,8 @@ export interface Config {
     agencies: Agency;
     postcards: Postcard;
     templates: Template;
+    reactions: Reaction;
+    comments: Comment;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -84,6 +86,8 @@ export interface Config {
     agencies: AgenciesSelect<false> | AgenciesSelect<true>;
     postcards: PostcardsSelect<false> | PostcardsSelect<true>;
     templates: TemplatesSelect<false> | TemplatesSelect<true>;
+    reactions: ReactionsSelect<false> | ReactionsSelect<true>;
+    comments: CommentsSelect<false> | CommentsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -263,6 +267,31 @@ export interface Template {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reactions".
+ */
+export interface Reaction {
+  id: number;
+  postcard: number | Postcard;
+  emoji: string;
+  sessionId: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments".
+ */
+export interface Comment {
+  id: number;
+  postcard: number | Postcard;
+  authorName: string;
+  content: string;
+  sessionId: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -304,6 +333,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'templates';
         value: number | Template;
+      } | null)
+    | ({
+        relationTo: 'reactions';
+        value: number | Reaction;
+      } | null)
+    | ({
+        relationTo: 'comments';
+        value: number | Comment;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -477,6 +514,29 @@ export interface TemplatesSelect<T extends boolean = true> {
   name?: T;
   imageUrl?: T;
   category?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reactions_select".
+ */
+export interface ReactionsSelect<T extends boolean = true> {
+  postcard?: T;
+  emoji?: T;
+  sessionId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments_select".
+ */
+export interface CommentsSelect<T extends boolean = true> {
+  postcard?: T;
+  authorName?: T;
+  content?: T;
+  sessionId?: T;
   updatedAt?: T;
   createdAt?: T;
 }

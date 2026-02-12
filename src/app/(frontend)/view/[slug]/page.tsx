@@ -8,6 +8,7 @@ import { ArrowRight, Sparkles } from 'lucide-react'
 import { Postcard as PayloadPostcard, Media } from '@/payload-types'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import { RotateDevicePrompt } from "@/components/ui/rotate-device-prompt"
+import SocialBar from '@/components/social/SocialBar'
 
 interface PageProps {
     params: Promise<{
@@ -133,6 +134,15 @@ export default async function PostcardPage({ params }: PageProps) {
                     className="shadow-2xl" 
                 />
             </div>
+
+            {/* Social Bar */}
+            <SocialBar
+                postcardId={payloadPostcard.id}
+                publicId={slug}
+                senderName={frontendPostcard.senderName}
+                initialViews={payloadPostcard.views || 0}
+                initialShares={payloadPostcard.shares || 0}
+            />
 
             {/* CTA Section */}
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 text-center max-w-md w-full">

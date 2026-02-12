@@ -93,7 +93,7 @@ export default function Home() {
 
   return (
     <>
-      <div className="relative bg-[#0f172a] min-h-[700px] lg:min-h-[640px] flex items-center overflow-hidden">
+      <div className="relative bg-[#0f172a] min-h-[500px] lg:min-h-[480px] flex items-center overflow-hidden py-12 md:py-20">
         {/* Dynamic Colorful Background */}
         <div className="absolute inset-0">
           <img
@@ -106,7 +106,7 @@ export default function Home() {
           <div className="absolute bottom-[-100px] right-[-100px] w-[500px] h-[500px] bg-pink-500/30 rounded-full blur-3xl mix-blend-screen animate-pulse" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full mt-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-12 lg:gap-8">
             {/* Contenu à gauche */}
             <div className="max-w-3xl text-center lg:text-left">
@@ -115,7 +115,7 @@ export default function Home() {
                 <span>Nouveau & Fun</span>
               </div>
               
-              <h1 className="text-5xl sm:text-6xl md:text-7xl font-serif font-bold text-white mb-6 leading-tight drop-shadow-2xl">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-bold text-white mb-6 leading-tight drop-shadow-2xl">
                 Créez une vraie carte <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-300 to-pink-300">
                   postale virtuelle
@@ -123,8 +123,8 @@ export default function Home() {
                 et envoyez du bonheur !
               </h1>
               
-              <p className="text-teal-50 text-xl md:text-2xl leading-relaxed max-w-2xl mx-auto lg:mx-0 drop-shadow-md font-light mb-8">
-                Fini les SMS oubliés ! Transformez vos souvenirs de vacances en une <strong>carte postale numérique et interactive</strong>. Envoyez instantanément vos plus belles photos, vidéos et messages manuscrits à tous vos proches, où qu&apos;ils soient.
+              <p className="text-teal-50 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto lg:mx-0 drop-shadow-md font-light mb-8">
+                Oubliez les SMS et les groupes WhatsApp intrusifs où vos souvenirs s&apos;égarent ! Offrez bien plus qu&apos;un simple message : une <strong>carte postale numérique, interactive et ultra-stylée</strong>. Un format élégant pour envoyer instantanément vos plus belles photos et vidéos.
               </p>
               
               <div className="flex flex-wrap gap-4 text-white/80 text-sm font-medium mb-8 justify-center lg:justify-start">
@@ -138,7 +138,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row lg:flex-col gap-5 lg:min-w-[280px] lg:shrink-0 justify-center items-center lg:items-end">
               <Link href="/editor" className="w-full sm:w-auto lg:w-full">
                 <Button
-                  className="w-full bg-gradient-to-r from-orange-500 to-pink-600 text-white px-8 py-8 rounded-2xl font-bold text-xl hover:brightness-110 transition-all shadow-xl shadow-orange-900/40 inline-flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] h-auto border-0 ring-2 ring-white/20"
+                  className="w-full bg-gradient-to-r from-orange-500 to-pink-600 text-white px-8 py-6 rounded-2xl font-bold text-lg hover:brightness-110 transition-all shadow-xl shadow-orange-900/40 inline-flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] h-auto border-0 ring-2 ring-white/20"
                 >
                   Je crée ma carte <Plus size={24} strokeWidth={3} />
                 </Button>
