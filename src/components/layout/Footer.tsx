@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Mail, Github, Instagram, Heart } from 'lucide-react'
+import { Mail, Github, Instagram, Heart, Image } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
@@ -25,6 +25,10 @@ export const Footer = () => {
                     </Link>
                     <p className="text-stone-300 text-[10px] mt-2">
                         © {new Date().getFullYear()}
+                    </p>
+                    <p className="text-stone-400 text-[10px] mt-2">
+                        Partagez vos albums photo (pro, perso) facilement :{' '}
+                        <a href="https://www.photopartage.com" target="_blank" rel="noopener noreferrer" className="text-teal-500 hover:underline">photopartage.com</a>
                     </p>
                 </div>
             </footer>
@@ -61,6 +65,11 @@ export const Footer = () => {
 
                 <p className="text-stone-400 text-sm flex items-center justify-center gap-1">
                     © {new Date().getFullYear()} cartepostale.cool. Des sourires <Heart className="w-3 h-3 fill-red-400 text-red-400 inline" /> dans vos boîtes aux lettres numériques.
+                </p>
+                <p className="text-stone-400 text-xs mt-3 flex items-center justify-center gap-1.5">
+                    <Image className="w-3 h-3" />
+                    Partagez vos albums photo (pro, perso) facilement :{' '}
+                    <a href="https://www.photopartage.com" target="_blank" rel="noopener noreferrer" className="text-teal-500 hover:underline">photopartage.com</a>
                 </p>
                 <div className="flex justify-center gap-6 mt-4 text-xs text-stone-400">
                     <Link href="/legal/mentions-legales" className="hover:text-stone-600 transition-colors">Mentions Légales</Link>

@@ -4,9 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
     Mail, Users, Building2, Eye, Share2,
-    TrendingUp, Calendar, CreditCard, ChevronRight
+    TrendingUp, Calendar, CreditCard, ChevronRight,
+    Globe, Monitor, Clock, Activity
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import type { PostcardViewStats } from '@/actions/postcard-view-stats'
 
 interface Stats {
     totalPostcards: number
@@ -20,7 +22,7 @@ interface Stats {
     premiumPostcards: number
 }
 
-export function StatsOverview({ stats }: { stats: Stats }) {
+export function StatsOverview({ stats, viewStats }: { stats: Stats; viewStats?: PostcardViewStats | null }) {
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
             {/* Title & Date */}
@@ -139,6 +141,113 @@ export function StatsOverview({ stats }: { stats: Stats }) {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Statistiques de vues détaillées (analytics) */}
+            {viewStats && (
+                <Card className="border-border/50 bg-card/60 backdrop-blur-md shadow-sm overflow-hidden">
+                    <CardHeader className="flex flex-row items-center justify-between border-b border-border/30 bg-muted/20 pb-4">
+                        <CardTitle className="text-sm font-bold uppercase tracking-widest text-stone-500 flex items-center gap-2">
+                            <Activity size={16} className="text-teal-500" />
+                            Statistiques de vues détaillées
+                        </CardTitle>
+                        <Badge variant="outline" className="bg-background/50 border-border/50 shadow-none">Analytics</Badge>
+                    </CardHeader>
+                    <CardContent className="p-6 space-y-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2 text-stone-400">
+                                    <Eye size={14} />
+                                    <span className="text-[10px] font-medium uppercase tracking-tight">Ouvertures totales</span>
+                                </div>
+                                <p className="text-2xl font-bold text-stone-800">{viewStats.totalViews.toLocaleString()}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2 text-stone-400">
+                                    <Users size={14} />
+                                    <span className="text-[10px] font-medium uppercase tracking-tight">Sessions uniques</span>
+                                </div>
+                                <p className="text-2xl font-bold text-stone-800">{viewStats.uniqueSessions.toLocaleString()}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2 text-stone-400">
+                                    <Clock size={14} />
+                                    <span className="text-[10px] font-medium uppercase tracking-tight">Temps moyen (s)</span>
+                                </div>
+                                <p className="text-2xl font-bold text-stone-800">
+                                    {viewStats.avgDurationSeconds != null ? Math.round(viewStats.avgDurationSeconds) : '—'}
+                                </p>
+                            </div>
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-medium uppercase tracking-tight text-stone-400">Pays / Navigateurs</span>
+                                <p className="text-sm font-semibold text-stone-600">
+                                    {viewStats.byCountry.length} pays · {viewStats.byBrowser.length} navigateurs
+                                </p>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t border-border/20">
+                            {viewStats.byCountry.length > 0 && (
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-3 flex items-center gap-2">
+                                        <Globe size={12} /> Top pays
+                                    </p>
+                                    <ul className="space-y-2">
+                                        {viewStats.byCountry.slice(0, 8).map(({ country, count }) => (
+                                            <li key={country} className="flex justify-between items-center text-sm">
+                                                <span className="text-stone-700 truncate">{country}</span>
+                                                <span className="font-semibold text-stone-800 tabular-nums ml-2">{count}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                            {viewStats.byBrowser.length > 0 && (
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-3 flex items-center gap-2">
+                                        <Monitor size={12} /> Top navigateurs
+                                    </p>
+                                    <ul className="space-y-2">
+                                        {viewStats.byBrowser.slice(0, 8).map(({ browser, count }) => (
+                                            <li key={browser} className="flex justify-between items-center text-sm">
+                                                <span className="text-stone-700 truncate">{browser}</span>
+                                                <span className="font-semibold text-stone-800 tabular-nums ml-2">{count}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                        {viewStats.recentEvents.length > 0 && (
+                            <div className="pt-4 border-t border-border/20">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-3">Dernières ouvertures</p>
+                                <div className="overflow-x-auto -mx-1">
+                                    <table className="w-full text-xs border-collapse">
+                                        <thead>
+                                            <tr className="text-stone-500 border-b border-border/30">
+                                                <th className="text-left py-2 px-2 font-medium">Date / Heure</th>
+                                                <th className="text-left py-2 px-2 font-medium">Pays</th>
+                                                <th className="text-left py-2 px-2 font-medium">Navigateur</th>
+                                                <th className="text-right py-2 px-2 font-medium">Durée</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {viewStats.recentEvents.map((ev, i) => (
+                                                <tr key={i} className="border-b border-border/10 hover:bg-muted/30">
+                                                    <td className="py-2 px-2 text-stone-600 whitespace-nowrap">
+                                                        {new Date(ev.openedAt).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                    </td>
+                                                    <td className="py-2 px-2 text-stone-600 truncate max-w-[100px]">{ev.country ?? '—'}</td>
+                                                    <td className="py-2 px-2 text-stone-600 truncate max-w-[120px]">{ev.browser ?? '—'}</td>
+                                                    <td className="py-2 px-2 text-right font-medium tabular-nums">{ev.durationSeconds != null ? `${ev.durationSeconds}s` : '—'}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
         </div>
     )
 }
