@@ -74,6 +74,7 @@ export interface Config {
     templates: Template;
     reactions: Reaction;
     comments: Comment;
+    'postcard-view-events': PostcardViewEvent;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -88,6 +89,7 @@ export interface Config {
     templates: TemplatesSelect<false> | TemplatesSelect<true>;
     reactions: ReactionsSelect<false> | ReactionsSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
+    'postcard-view-events': PostcardViewEventsSelect<false> | PostcardViewEventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -300,6 +302,64 @@ export interface Comment {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "postcard-view-events".
+ */
+export interface PostcardViewEvent {
+  id: number;
+  postcard: number | Postcard;
+  /**
+   * Heure d'ouverture de la carte
+   */
+  openedAt: string;
+  /**
+   * Heure de fermeture (si enregistrée)
+   */
+  closedAt?: string | null;
+  /**
+   * Temps de vue en secondes
+   */
+  durationSeconds?: number | null;
+  /**
+   * User-Agent du navigateur
+   */
+  userAgent?: string | null;
+  /**
+   * Navigateur (parsé)
+   */
+  browser?: string | null;
+  /**
+   * Système d'exploitation (parsé)
+   */
+  os?: string | null;
+  /**
+   * Referrer de la page
+   */
+  referrer?: string | null;
+  /**
+   * Pays (depuis headers ou geo)
+   */
+  country?: string | null;
+  /**
+   * Code pays (ex. FR)
+   */
+  countryCode?: string | null;
+  /**
+   * Région
+   */
+  region?: string | null;
+  /**
+   * Ville
+   */
+  city?: string | null;
+  /**
+   * ID de session visiteur (déduplication)
+   */
+  sessionId: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -349,6 +409,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'comments';
         value: number | Comment;
+      } | null)
+    | ({
+        relationTo: 'postcard-view-events';
+        value: number | PostcardViewEvent;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -546,6 +610,27 @@ export interface CommentsSelect<T extends boolean = true> {
   postcard?: T;
   authorName?: T;
   content?: T;
+  sessionId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "postcard-view-events_select".
+ */
+export interface PostcardViewEventsSelect<T extends boolean = true> {
+  postcard?: T;
+  openedAt?: T;
+  closedAt?: T;
+  durationSeconds?: T;
+  userAgent?: T;
+  browser?: T;
+  os?: T;
+  referrer?: T;
+  country?: T;
+  countryCode?: T;
+  region?: T;
+  city?: T;
   sessionId?: T;
   updatedAt?: T;
   createdAt?: T;

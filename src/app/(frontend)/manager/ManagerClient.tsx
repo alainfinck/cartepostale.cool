@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useTransition, useCallback } from 'react'
+import React, { useState, useTransition, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import {
     Search, LayoutGrid, List, Eye, Share2, Mail, Trash2,
@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/dialog'
 import { Postcard as PayloadPostcard, Media } from '@/payload-types'
 import { getAllPostcards, updatePostcardStatus, deletePostcard, PostcardsResult } from '@/actions/manager-actions'
+import { getPostcardViewStats, type PostcardViewStats } from '@/actions/postcard-view-stats'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 
@@ -112,8 +113,17 @@ export default function ManagerClient({ initialData }: Props) {
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
     const [viewMode, setViewMode] = useState<ViewMode>('grid')
     const [selectedPostcard, setSelectedPostcard] = useState<PayloadPostcard | null>(null)
+    const [viewStats, setViewStats] = useState<PostcardViewStats | null>(null)
     const [isPending, startTransition] = useTransition()
     const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
+
+    useEffect(() => {
+        if (!selectedPostcard) {
+            setViewStats(null)
+            return
+        }
+        getPostcardViewStats(selectedPostcard.id).then(setViewStats)
+    }, [selectedPostcard?.id])
 
     const postcards = data.docs
 
@@ -306,6 +316,7 @@ export default function ManagerClient({ initialData }: Props) {
             {/* Side Panel Details */}
             <DetailsSheet
                 postcard={selectedPostcard}
+                viewStats={viewStats}
                 isOpen={!!selectedPostcard}
                 onClose={() => setSelectedPostcard(null)}
                 onUpdateStatus={handleUpdateStatus}
@@ -541,8 +552,9 @@ function ListRow({ postcard, onSelect, onUpdateStatus, onDelete, formatDate }: {
     )
 }
 
-function DetailsSheet({ postcard, isOpen, onClose, onUpdateStatus, onDelete, formatDate }: {
+function DetailsSheet({ postcard, viewStats, isOpen, onClose, onUpdateStatus, onDelete, formatDate }: {
     postcard: PayloadPostcard | null
+    viewStats: PostcardViewStats | null
     isOpen: boolean
     onClose: () => void
     onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
@@ -585,7 +597,7 @@ function DetailsSheet({ postcard, isOpen, onClose, onUpdateStatus, onDelete, for
                         </div>
 
                         {/* Stats & Tech Section */}
-                        <div className="p-4 bg-muted/30 rounded-xl border border-border/30">
+                        <div className="p-4 bg-muted/30 rounded-xl border border-border/30 space-y-4">
                             <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4 opacity-50">Audience & Technique</h4>
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
@@ -603,6 +615,69 @@ function DetailsSheet({ postcard, isOpen, onClose, onUpdateStatus, onDelete, for
                                     </Badge>
                                 </div>
                             </div>
+                            {viewStats && (
+                                <>
+                                    <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border/20">
+                                        <div>
+                                            <p className="text-[10px] text-muted-foreground mb-0.5 uppercase tracking-tight">Sessions uniques</p>
+                                            <p className="text-lg font-semibold text-foreground">{viewStats.uniqueSessions}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-muted-foreground mb-0.5 uppercase tracking-tight">Temps moyen (s)</p>
+                                            <p className="text-lg font-semibold text-foreground">
+                                                {viewStats.avgDurationSeconds != null ? Math.round(viewStats.avgDurationSeconds) : '—'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {(viewStats.byCountry.length > 0 || viewStats.byBrowser.length > 0) && (
+                                        <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/20">
+                                            {viewStats.byCountry.length > 0 && (
+                                                <div>
+                                                    <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight">Pays (top)</p>
+                                                    <ul className="space-y-1 text-xs text-foreground">
+                                                        {viewStats.byCountry.slice(0, 5).map(({ country, count }) => (
+                                                            <li key={country} className="flex justify-between gap-2">
+                                                                <span className="truncate">{country}</span>
+                                                                <span className="font-medium tabular-nums">{count}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                            {viewStats.byBrowser.length > 0 && (
+                                                <div>
+                                                    <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight">Navigateurs (top)</p>
+                                                    <ul className="space-y-1 text-xs text-foreground">
+                                                        {viewStats.byBrowser.slice(0, 5).map(({ browser, count }) => (
+                                                            <li key={browser} className="flex justify-between gap-2">
+                                                                <span className="truncate">{browser}</span>
+                                                                <span className="font-medium tabular-nums">{count}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    {viewStats.recentEvents.length > 0 && (
+                                        <div className="pt-2 border-t border-border/20">
+                                            <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight">Dernières ouvertures</p>
+                                            <ul className="space-y-1.5 text-xs text-foreground max-h-32 overflow-y-auto">
+                                                {viewStats.recentEvents.map((ev, i) => (
+                                                    <li key={i} className="flex justify-between gap-2 py-1 border-b border-border/10 last:border-0">
+                                                        <span className="text-muted-foreground truncate">
+                                                            {new Date(ev.openedAt).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                        <span className="truncate">{ev.country ?? '—'}</span>
+                                                        <span className="truncate">{ev.browser ?? '—'}</span>
+                                                        <span className="tabular-nums">{ev.durationSeconds != null ? `${ev.durationSeconds}s` : '—'}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
 
                         {/* Message Section */}

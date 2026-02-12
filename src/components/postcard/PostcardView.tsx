@@ -10,7 +10,6 @@ import {
     Play, 
     ChevronLeft, 
     ChevronRight, 
-    Maximize2, 
     Camera,
     Search, 
     Info 
@@ -68,6 +67,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [messageModalFontSize, setMessageModalFontSize] = useState(2);
+    // Slider de taille du texte au verso (0.8 = petit, 1.5 = grand)
+    const [backTextScale, setBackTextScale] = useState(1);
 
     const handleFlip = () => {
         if (isDragging) return;
@@ -384,7 +385,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             {(postcard.frontCaption || postcard.frontEmoji) && (
                                 <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 z-10 flex items-center gap-3 rounded-xl sm:rounded-2xl border border-white/50 bg-white/90 backdrop-blur-md px-4 py-3 sm:px-5 sm:py-3.5 shadow-xl">
                                     {postcard.frontEmoji && (
-                                        <span className="text-xl sm:text-2xl leading-none shrink-0" aria-hidden>{postcard.frontEmoji}</span>
+                                        <span className="text-xl sm:text-4xl leading-none shrink-0" aria-hidden>{postcard.frontEmoji}</span>
                                     )}
                                     {postcard.frontCaption ? (
                                         <p className="m-0 text-sm sm:text-lg font-semibold leading-tight tracking-tight text-stone-800 break-words line-clamp-2">
@@ -424,6 +425,21 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 <span className="text-[9px] font-bold uppercase tracking-widest">Cliquer pour retourner</span>
                             </div>
 
+                            {/* Slider taille du texte — en bas de la carte, petit */}
+                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/70 border border-stone-200/80 shadow-sm" onClick={(e) => e.stopPropagation()}>
+                                <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">A</span>
+                                <input
+                                    type="range"
+                                    min={0.8}
+                                    max={1.5}
+                                    step={0.05}
+                                    value={backTextScale}
+                                    onChange={(e) => setBackTextScale(Number(e.target.value))}
+                                    className="w-14 h-1 accent-teal-500 rounded-full appearance-none bg-stone-200 cursor-pointer"
+                                />
+                                <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">A+</span>
+                            </div>
+
                             {/* Small branding bottom-left */}
                             <div className="absolute bottom-3 left-6 text-stone-300 text-[8px] font-bold tracking-[0.2em] uppercase flex items-center gap-1.5">
                                 <div className="w-1 h-1 bg-stone-200 rounded-full" />
@@ -439,7 +455,19 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                         className="flex-1 min-w-0 overflow-y-auto custom-scrollbar my-1 cursor-pointer group/msg relative pr-2"
                                         onClick={openMessage}
                                     >
-                                        <p className="font-handwriting text-stone-700 text-sm sm:text-lg leading-loose sm:leading-loose text-left whitespace-pre-wrap w-full max-w-full break-words">
+                                        <p 
+                                            className="font-handwriting text-stone-700 leading-loose sm:leading-loose text-left whitespace-pre-wrap w-full max-w-full break-words"
+                                            style={{
+                                                // Peu de texte → plus grand par défaut; slider ajuste la taille
+                                                fontSize: `${
+                                                    (() => {
+                                                        const len = (postcard.message || '').trim().length;
+                                                        const baseRem = len < 80 ? 1.35 : len < 180 ? 1.1 : 0.95;
+                                                        return Math.round(baseRem * backTextScale * 100) / 100;
+                                                    })()
+                                                }rem`
+                                            }}
+                                        >
                                             {postcard.message}
                                         </p>
                                         
@@ -455,6 +483,23 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                         <p className="font-handwriting text-teal-700 text-base sm:text-xl mt-auto self-start transform -rotate-2 pt-1">
                                             - {postcard.senderName}
                                         </p>
+                                    )}
+                                    {hasMedia && (
+                                        <div className="mt-3 self-start" onClick={(e) => e.stopPropagation()}>
+                                            <button
+                                                onClick={openAlbum}
+                                                title="Voir les photos de la carte"
+                                                className="group/album relative inline-flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-[11px] sm:text-xs uppercase tracking-wide shadow-md border-2 border-amber-200/80 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 text-amber-900 hover:from-amber-100 hover:via-orange-100 hover:to-rose-100 hover:shadow-lg hover:border-amber-300/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                                            >
+                                                <Camera size={14} className="text-amber-600 sm:text-amber-700" />
+                                                <span>Album photos</span>
+                                                <span className="text-[10px] text-amber-600/80 font-normal">({postcard.mediaItems!.length})</span>
+                                                {/* Tooltip au survol */}
+                                                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded-md bg-stone-800 text-white text-[10px] font-medium whitespace-nowrap opacity-0 pointer-events-none group-hover/album:opacity-100 group-hover/album:translate-y-0 transition-all duration-200 -translate-y-1 z-50 shadow-lg">
+                                                    Voir les photos de la carte
+                                                </span>
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
 
@@ -595,47 +640,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                             );
                                         })()}
 
-                                        {hasMedia && (
-                                            <button
-                                                onClick={openAlbum}
-                                                className="absolute top-16 right-0 flex items-center gap-1.5 px-2 py-1 bg-stone-900/80 hover:bg-stone-900 text-white rounded-xl transition-all shadow-sm shadow-stone-900/40 backdrop-blur-sm border border-white/20 text-[9px] tracking-wider uppercase whitespace-nowrap z-30"
-                                            >
-                                                <Camera size={12} className="text-white/90" />
-                                                <span>Album</span>
-                                                <span className="text-[8px] text-white/70">({postcard.mediaItems!.length})</span>
-                                            </button>
-                                        )}
                                     </div>
-                                    <div className="mt-4 w-full flex-1 flex flex-col min-h-0">
-                                        {postcard.location && (
-                                            <div className="relative group/map flex-1 flex flex-col min-h-0">
-                                                <h4 className="font-bold text-stone-400 text-[10px] uppercase mb-1 tracking-wider flex items-center gap-1">
-                                                    <MapPin size={10} /> {postcard.location}
-                                                </h4>
-                                                <div 
-                                                    className={cn(
-                                                        "w-full flex-1 bg-stone-100 rounded-lg overflow-hidden border border-stone-200 relative cursor-pointer hover:border-teal-400 transition-colors z-20",
-                                                    )}
-                                                    onClick={openMap}
-                                                >
-                                                    <iframe
-                                                        title="Mini Map"
-                                                        width="100%"
-                                                        height="100%"
-                                                        frameBorder="0"
-                                                        scrolling="no"
-                                                        className="opacity-80 group-hover/map:opacity-100 transition-opacity pointer-events-none"
-                                                        src={`https://www.google.com/maps?q=${encodeURIComponent(postcard.location)}&output=embed&z=10`}
-                                                    ></iframe>
-                                                    <div className="absolute inset-0 bg-transparent flex items-center justify-center">
-                                                        <div className="bg-white/80 p-2 rounded-full opacity-0 group-hover/map:opacity-100 transition-opacity transform scale-75 group-hover/map:scale-100 shadow-sm">
-                                                            <Maximize2 size={16} className="text-stone-700" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
+                                    {/* Pas de localisation ni carte au dos : réservés à la face avant uniquement */}
                                 </div>
                             </div>
                         </div>

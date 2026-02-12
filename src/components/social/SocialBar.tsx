@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Reply } from 'lucide-react'
 import { useSessionId } from '@/hooks/useSessionId'
-import { getReactions, getUserReactions, getComments, incrementViews } from '@/actions/social-actions'
+import { getReactions, getUserReactions, getComments } from '@/actions/social-actions'
+import { recordPostcardView, recordPostcardViewClose } from '@/actions/analytics-actions'
 import ReactionBar from './ReactionBar'
 import ShareButton from './ShareButton'
 import GuestbookSection from './GuestbookSection'
@@ -38,8 +39,19 @@ export default function SocialBar({
     const [comments, setComments] = useState<Comment[]>([])
     const [views] = useState(initialViews + 1) // Optimistic +1
     const [loaded, setLoaded] = useState(false)
+    const eventIdRef = useRef<number | null>(null)
+    const openedAtRef = useRef<number>(0)
+    const closeSentRef = useRef(false)
 
-    // Load initial data + increment views
+    const sendViewClose = () => {
+        if (closeSentRef.current || eventIdRef.current == null) return
+        closeSentRef.current = true
+        const closedAt = new Date().toISOString()
+        const durationSeconds = Math.max(0, Math.round((Date.now() - openedAtRef.current) / 1000))
+        recordPostcardViewClose({ eventId: eventIdRef.current, closedAt, durationSeconds })
+    }
+
+    // Load initial data + record view (open)
     useEffect(() => {
         if (!sessionId) return
 
@@ -55,12 +67,38 @@ export default function SocialBar({
             setComments(commentsData)
             setLoaded(true)
 
-            // Increment views (fire-and-forget)
-            incrementViews(postcardId)
+            openedAtRef.current = Date.now()
+            const result = await recordPostcardView({
+                postcardId,
+                sessionId,
+                userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+                openedAt: new Date(openedAtRef.current).toISOString(),
+                referrer: typeof document !== 'undefined' ? document.referrer || undefined : undefined,
+            })
+            if (result.success && result.eventId != null) {
+                eventIdRef.current = result.eventId
+            }
         }
 
         load()
     }, [postcardId, sessionId])
+
+    // On leave: visibility hidden, pagehide, beforeunload, and unmount
+    useEffect(() => {
+        const onVisibilityChange = () => {
+            if (document.visibilityState === 'hidden') sendViewClose()
+        }
+        const onPageHide = () => sendViewClose()
+
+        document.addEventListener('visibilitychange', onVisibilityChange)
+        window.addEventListener('pagehide', onPageHide)
+
+        return () => {
+            document.removeEventListener('visibilitychange', onVisibilityChange)
+            window.removeEventListener('pagehide', onPageHide)
+            sendViewClose()
+        }
+    }, [])
 
     const handleReactionUpdate = (emoji: string, added: boolean, newCount: number) => {
         setCounts((prev) => ({ ...prev, [emoji]: newCount }))
