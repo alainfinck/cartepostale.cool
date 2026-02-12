@@ -4,13 +4,12 @@ import { Button } from '@/components/ui/button'
 import {
     Building2,
     Zap,
-    BarChart3,
     Globe2,
     ArrowRight,
-    CheckCircle2,
-    Briefcase,
-    Users2,
-    Mail
+    Palette,
+    Database,
+    ImageIcon,
+    Users2
 } from 'lucide-react'
 
 export default function BusinessPage() {
@@ -30,54 +29,102 @@ export default function BusinessPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full py-20">
                     <div className="max-w-3xl">
                         <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md px-4 py-1.5 rounded-full text-orange-200 text-sm font-semibold mb-8 border border-white/10">
-                            <Building2 size={16} className="text-orange-400" /> B2B Solutions
+                            <Palette size={16} className="text-orange-400" /> Marque blanche
                         </div>
 
                         <h1 className="text-5xl md:text-7xl font-serif font-bold text-white mb-8 leading-tight">
-                            L&apos;impact émotionnel <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-amber-200">au service de votre marque.</span>
+                            Votre marque sur <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-amber-200">chaque carte postale.</span>
                         </h1>
 
                         <p className="text-teal-50 text-xl mb-10 leading-relaxed max-w-2xl font-light">
-                            Transformez vos relations clients grâce à l&apos;envoi automatisé de cartes postales physiques premium.
-                            Le meilleur du digital combiné à l&apos;authenticité du papier.
+                            Agences et professionnels : diffusez votre image de marque sur des cartes postales personnalisées.
+                            Vos clients reçoivent un objet tangible à votre effigie — données clients, CRM et envois sous votre nom.
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4">
                             <Button
+                                asChild
                                 className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-7 rounded-full text-lg font-semibold transition-all shadow-lg shadow-orange-900/20 flex items-center gap-2"
                             >
-                                Parler à un expert <ArrowRight size={20} />
+                                <Link href="/connexion/inscription">Parler à un expert <ArrowRight size={20} /></Link>
                             </Button>
                             <Button
+                                asChild
                                 variant="outline"
                                 className="bg-transparent border-white/20 text-white hover:bg-white/10 px-8 py-7 rounded-full text-lg font-semibold transition-all flex items-center gap-2"
                             >
-                                Voir les tarifs
+                                <Link href="/pricing">Voir les tarifs</Link>
                             </Button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Value Proposition Grid */}
+            {/* Marque blanche - Section dédiée */}
             <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto -mt-20 relative z-20">
+                <div className="bg-white rounded-3xl shadow-xl shadow-stone-200/50 border border-stone-100 overflow-hidden">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+                        <div className="p-12 lg:p-16 flex flex-col justify-center">
+                            <div className="inline-flex items-center gap-2 bg-teal-50 text-teal-700 px-3 py-1.5 rounded-full text-sm font-semibold mb-6 w-fit">
+                                <Palette size={16} /> Solution marque blanche
+                            </div>
+                            <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800 mb-6">
+                                Diffusez votre image de marque sur chaque envoi
+                            </h2>
+                            <p className="text-stone-600 text-lg leading-relaxed mb-8">
+                                Vos cartes postales arborent <strong>votre logo</strong>, vos couleurs et votre charte graphique.
+                                Les agences et les pros envoient sous leur propre marque : les clients ne voient que vous.
+                            </p>
+                            <ul className="space-y-4 text-stone-600">
+                                {[
+                                    'Logo et identité visuelle sur les cartes',
+                                    'Expérience et envois 100 % à votre nom',
+                                    'Personnalisation des modèles et messages',
+                                ].map((item, i) => (
+                                    <li key={i} className="flex items-center gap-3">
+                                        <span className="w-6 h-6 rounded-full bg-teal-500 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">✓</span>
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        <div className="bg-gradient-to-br from-teal-50 to-stone-50 p-12 lg:p-16 flex items-center justify-center">
+                            <div className="text-center max-w-sm">
+                                <div className="w-24 h-24 rounded-2xl bg-white shadow-lg border border-stone-100 mx-auto mb-4 flex items-center justify-center">
+                                    <ImageIcon className="w-12 h-12 text-teal-600" />
+                                </div>
+                                <p className="text-stone-500 font-medium">Votre marque sur chaque carte</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Value Proposition: données clients, marque, automatisation */}
+            <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+                <div className="text-center max-w-2xl mx-auto mb-14">
+                    <h2 className="text-3xl md:text-4xl font-serif font-bold text-teal-900 mb-4">Agences & pros : tout sous contrôle</h2>
+                    <p className="text-lg text-stone-600">
+                        Centralisez les infos clients, pilotez vos envois et diffusez votre image de marque sur vos cartes postales.
+                    </p>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {[
                         {
-                            icon: <Zap className="w-8 h-8 text-orange-500" />,
-                            title: "Automatisation Intelligente",
-                            desc: "Connectez votre CRM (Salesforce, HubSpot) ou utilisez notre API pour déclencher des envois basés sur des événements clés."
+                            icon: <Database className="w-8 h-8 text-orange-500" />,
+                            title: "Données clients à portée de main",
+                            desc: "Agences et professionnels disposent de toutes les infos sur leurs clients : contacts, historique, préférences. Import CRM, listes, segments — une seule base pour vos campagnes postales."
                         },
                         {
-                            icon: <Globe2 className="w-8 h-8 text-teal-500" />,
-                            title: "Réseau Global",
-                            desc: "Impression et expédition depuis nos centres partenaires dans 30+ pays. Délais réduits, empreinte carbone minimisée."
+                            icon: <Palette className="w-8 h-8 text-teal-500" />,
+                            title: "Image de marque sur les cartes",
+                            desc: "Chaque carte postale porte votre logo et votre identité. Vous diffusez votre marque physiquement : anniversaires, remerciements, relances — toujours à votre image."
                         },
                         {
-                            icon: <BarChart3 className="w-8 h-8 text-purple-500" />,
-                            title: "Tracking & Analytics",
-                            desc: "Suivez chaque envoi en temps réel. QR codes dynamiques pour mesurer le ROI et l'engagement de vos campagnes."
+                            icon: <Zap className="w-8 h-8 text-purple-500" />,
+                            title: "Automatisation & suivi",
+                            desc: "Connectez votre CRM ou notre API. Déclenchez des envois selon les événements, suivez les envois et mesurez l'engagement (QR, analytics) pour optimiser vos campagnes."
                         }
                     ].map((feature, idx) => (
                         <div key={idx} className="bg-white p-8 rounded-2xl shadow-xl shadow-stone-200/50 border border-stone-100 hover:transform hover:-translate-y-1 transition-all duration-300">
@@ -95,8 +142,8 @@ export default function BusinessPage() {
             <section className="py-20 bg-stone-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center max-w-3xl mx-auto mb-16">
-                        <h2 className="text-3xl md:text-5xl font-serif font-bold text-teal-900 mb-4">Pour chaque industrie</h2>
-                        <p className="text-lg text-stone-600">Nos solutions s&apos;adaptent à votre secteur pour maximiser l&apos;impact.</p>
+                        <h2 className="text-3xl md:text-5xl font-serif font-bold text-teal-900 mb-4">Agences & pros : votre marque en avant</h2>
+                        <p className="text-lg text-stone-600">Utilisez vos données clients et diffusez votre image de marque sur des cartes postales qui vous ressemblent.</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
@@ -104,17 +151,17 @@ export default function BusinessPage() {
                             {[
                                 {
                                     title: "Agences de Voyage & Tourisme",
-                                    desc: "Envoyez un souvenir physique après le voyage pour encourager les avis positifs et la fidélisation.",
+                                    desc: "Centralisez les infos de vos voyageurs et envoyez des cartes à votre marque après le séjour — avis, fidélisation, notoriété.",
                                     icon: <Globe2 size={24} />
                                 },
                                 {
                                     title: "Immobilier",
-                                    desc: "Féliicitez vos clients pour leur nouvel achat ou prospectez un quartier avec des cartes ultra-personnalisées.",
+                                    desc: "Félicitez vos clients pour leur nouvel achat ou prospectez un quartier avec des cartes à votre logo et à votre image.",
                                     icon: <Building2 size={24} />
                                 },
                                 {
                                     title: "E-commerce & DNVB",
-                                    desc: "Remerciez vos meilleurs clients ou réactivez les paniers abandonnés avec une offre tangible.",
+                                    desc: "Remerciez vos meilleurs clients ou réactivez les paniers abandonnés avec une carte postale à votre marque.",
                                     icon: <Users2 size={24} />
                                 }
                             ].map((item, i) => (
@@ -147,16 +194,16 @@ export default function BusinessPage() {
                 <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
 
                 <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-                    <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">Prêt à marquer les esprits ?</h2>
+                    <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">Diffusez votre marque sur chaque carte</h2>
                     <p className="text-teal-100 text-lg mb-10 max-w-2xl mx-auto">
-                        Rejoignez plus de 500 entreprises qui utilisent notre plateforme pour créer des liens durables.
+                        Solution marque blanche pour agences et professionnels : données clients, envois personnalisés, image de marque sur vos cartes postales.
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
-                        <Button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 rounded-full text-lg h-auto shadow-lg shadow-orange-900/30">
-                            Créer un compte professionnel
+                        <Button asChild className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 rounded-full text-lg h-auto shadow-lg shadow-orange-900/30">
+                            <Link href="/connexion/inscription">Créer un compte professionnel</Link>
                         </Button>
-                        <Button variant="ghost" className="text-white hover:bg-white/10 px-8 py-6 rounded-full text-lg h-auto border border-white/20">
-                            Contacter l&apos;équipe commerciale
+                        <Button asChild variant="ghost" className="text-white hover:bg-white/10 px-8 py-6 rounded-full text-lg h-auto border border-white/20">
+                            <Link href="/contact">Contacter l&apos;équipe commerciale</Link>
                         </Button>
                     </div>
                     <p className="mt-6 text-sm text-teal-300 opacity-80">

@@ -3,11 +3,11 @@ import { Metadata } from 'next'
 import BusinessClient from './BusinessClient'
 
 export const metadata: Metadata = {
-    title: 'Solutions Entreprises - Marketing Direct Impactant',
-    description: 'Boostez votre engagement client avec des campagnes de cartes postales automatisées. API, intégration CRM et envoi en masse pour agents immobiliers, e-commerce et agences.',
+    title: 'Marque blanche - Agences & Pro | Cartes postales à votre image',
+    description: 'Solution marque blanche pour agences et professionnels : diffusez votre image de marque sur des cartes postales, centralisez les données clients, envois personnalisés à votre nom.',
     openGraph: {
-        title: 'Solutions Entreprises - Marketing Direct Impactant | CartePostale.cool',
-        description: 'Boostez votre engagement client avec des campagnes de cartes postales automatisées. API, intégration CRM et envoi en masse.',
+        title: 'Marque blanche - Agences & Pro | CartePostale.cool',
+        description: 'Diffusez votre marque sur chaque carte postale. Données clients, CRM, envois sous votre nom pour agences et professionnels.',
         images: [
             {
                 url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
