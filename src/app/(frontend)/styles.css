@@ -169,4 +169,33 @@
   .font-handwriting {
     font-family: 'Dancing Script', cursive;
   }
+
+  /* Premium Postcard Animations */
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotateX(0) rotateY(0); }
+    25% { transform: translateY(-5px) rotateX(1deg) rotateY(1deg); }
+    50% { transform: translateY(0) rotateX(0) rotateY(0); }
+    75% { transform: translateY(5px) rotateX(-1deg) rotateY(-1deg); }
+  }
+
+  .animate-float-3d {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 8s linear infinite;
+  }
+
+  .hover-tilt-3d {
+    transition: transform 0.3s ease-out;
+  }
+
+  .hover-tilt-3d:hover {
+    transform: perspective(1000px) rotateX(2deg) rotateY(2deg) scale(1.01);
+  }
 }

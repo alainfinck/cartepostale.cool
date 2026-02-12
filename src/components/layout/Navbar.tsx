@@ -20,6 +20,7 @@ import {
     Globe,
     Star,
     Zap,
+    Heart,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -138,10 +139,10 @@ export const Navbar = () => {
                         </div>
                         <div>
                             <span className="font-serif font-bold text-2xl text-stone-800 tracking-tight block leading-none">
-                                CartePostale
+                                cartepostale.cool
                             </span>
-                            <span className="text-xs font-bold text-orange-500 uppercase tracking-widest">
-                                Cool & Digital
+                            <span className="text-xs font-bold text-orange-500 tracking-widest flex items-center gap-1.5">
+                                cool et digitale ! <Heart className="w-3 h-3 fill-orange-500 text-orange-500" />
                             </span>
                         </div>
                     </Link>

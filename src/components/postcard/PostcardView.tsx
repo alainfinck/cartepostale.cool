@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Postcard } from '@/types';
 import { RotateCw, MapPin, X, Play, ChevronLeft, ChevronRight, Maximize2, Camera } from 'lucide-react';
+import { motion, useSpring, useMotionValue, useTransform, PanInfo, useAnimation } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic'
@@ -23,21 +24,60 @@ interface PostcardViewProps {
 
 const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false, flipped, className }) => {
     const [isFlipped, setIsFlipped] = useState(flipped ?? false);
+    const [isDragging, setIsDragging] = useState(false);
+
+    // Motion values for rotation
+    const rotateY = useMotionValue(flipped ? 180 : 0);
+    const springRotateY = useSpring(rotateY, { stiffness: 260, damping: 20 });
+    
+    // Controls for animation
+    const controls = useAnimation();
 
     useEffect(() => {
         if (flipped !== undefined) {
             setIsFlipped(flipped);
+            rotateY.set(flipped ? 180 : 0);
         }
-    }, [flipped]);
+    }, [flipped, rotateY]);
+
     const [isAlbumOpen, setIsAlbumOpen] = useState(false);
     const [isMapOpen, setIsMapOpen] = useState(false);
     const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
-    const handleFlip = (e: React.MouseEvent) => {
-        // Don't flip if clicking buttons
-        if ((e.target as HTMLElement).closest('button')) return;
-        setIsFlipped(!isFlipped);
+    const handleFlip = () => {
+        if (isDragging) return;
+        const newFlippedState = !isFlipped;
+        setIsFlipped(newFlippedState);
+        rotateY.set(newFlippedState ? 180 : 0);
+    };
+
+    const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+        setIsDragging(false);
+        const currentRotation = rotateY.get();
+        // Normalize rotation to 0-360 range
+        const normalizedRotation = ((currentRotation % 360) + 360) % 360;
+        
+        // Determine if we should snap to front (0) or back (180)
+        // If rotation is between 90 and 270, snap to back (180)
+        if (normalizedRotation > 90 && normalizedRotation < 270) {
+            setIsFlipped(true);
+            rotateY.set(180);
+        } else {
+            setIsFlipped(false);
+            rotateY.set(0);
+        }
+    };
+
+    const handleDragStart = () => {
+        setIsDragging(true);
+    };
+
+    const handleDrag = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+        // Map drag distance to rotation
+        // Sensitive enough to rotate easily but not too fast
+        const current = rotateY.get();
+        rotateY.set(current + info.delta.x * 0.5);
     };
 
     const openAlbum = (e: React.MouseEvent) => {
@@ -151,27 +191,42 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
 
     return (
         <>
-            <div className="flex flex-col items-center gap-6">
-                <div
+            <div className="flex flex-col items-center gap-6 select-none">
+                <motion.div
                     className={cn(
-                        "perspective-1000 cursor-pointer group",
+                        "perspective-1000 cursor-grab active:cursor-grabbing group touch-none",
                         "w-[340px] h-[240px] sm:w-[600px] sm:h-[400px]",
                         className
                     )}
                     onClick={handleFlip}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.2}
+                    onDragStart={handleDragStart}
+                    onDrag={handleDrag}
+                    onDragEnd={handleDragEnd}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    style={{ perspective: 1000 }}
                 >
-                    <div
+                    <motion.div
                         className={cn(
-                            "relative w-full h-full duration-700 transform-style-3d transition-transform",
-                            isFlipped ? 'rotate-y-180' : ''
+                            "relative w-full h-full transform-style-3d",
                         )}
+                        style={{ 
+                            rotateY: springRotateY,
+                            transformStyle: "preserve-3d"
+                        }}
                     >
                         {/* Front of Card */}
-                        <div className="absolute w-full h-full backface-hidden rounded-xl shadow-2xl overflow-hidden bg-white border border-stone-200">
+                        <div 
+                            className="absolute w-full h-full backface-hidden rounded-xl shadow-2xl overflow-hidden bg-white border border-stone-200"
+                            style={{ backfaceVisibility: 'hidden' }}
+                        >
                             <img
                                 src={postcard.frontImage}
                                 alt="Postcard Front"
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover pointer-events-none"
                             />
 
 
@@ -187,7 +242,13 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                         </div>
 
                         {/* Back of Card */}
-                        <div className="absolute w-full h-full backface-hidden rotate-y-180 rounded-xl shadow-2xl bg-[#fafaf9] border border-stone-200 p-5 sm:p-8 flex">
+                        <div 
+                            className="absolute w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#fafaf9] border border-stone-200 p-5 sm:p-8 flex"
+                            style={{ 
+                                backfaceVisibility: 'hidden',
+                                transform: 'rotateY(180deg)'
+                            }}
+                        >
                             {/* Small branding bottom-left */}
                             <div className="absolute bottom-3 left-6 text-stone-300 text-[8px] font-bold tracking-[0.2em] uppercase flex items-center gap-1.5">
                                 <div className="w-1 h-1 bg-stone-200 rounded-full" />
@@ -243,7 +304,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                                                     <div className="flex-1 flex items-center justify-center opacity-80 mix-blend-multiply">
                                                                          {/* Generic symbol */}
                                                                          <div className="w-8 h-8 sm:w-12 sm:h-12 border border-orange-200/50 rounded-full flex items-center justify-center">
-                                                                            <img src="https://i.imgur.com/R21Yw3x.png" className="w-6 h-6 sm:w-9 sm:h-9 object-contain grayscale contrast-125 opacity-60" alt="stamp" />
+                                                                            <img src="https://i.imgur.com/R21Yw3x.png" className="w-6 h-6 sm:w-9 sm:h-9 object-contain grayscale text-orange-900/50 opacity-60" alt="stamp" />
                                                                          </div>
                                                                     </div>
                                                                     <div className="text-[6px] sm:text-[8px] font-serif font-bold text-orange-900/60">{year}</div>
@@ -334,7 +395,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                         {hasMedia && (
                                             <button
                                                 onClick={openAlbum}
-                                                className="flex items-center gap-2 px-3 py-1.5 bg-stone-900/80 hover:bg-stone-900 text-white rounded-2xl transition-all shadow-sm shadow-stone-900/40 backdrop-blur-sm border border-white/20 text-[11px] tracking-[0.2em] uppercase whitespace-nowrap"
+                                                className="flex items-center gap-2 px-3 py-1.5 bg-stone-900/80 hover:bg-stone-900 text-white rounded-2xl transition-all shadow-sm shadow-stone-900/40 backdrop-blur-sm border border-white/20 text-[11px] tracking-[0.2em] uppercase whitespace-nowrap z-30"
                                             >
                                                 <Camera size={16} className="text-white/90" />
                                                 <span className="text-[10px] font-semibold">{"Voir l'album"}</span>
@@ -353,7 +414,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                                 <h4 className="font-bold text-stone-400 text-[10px] uppercase mb-1 tracking-wider flex items-center gap-1">
                                                     <MapPin size={10} /> {postcard.location}
                                                 </h4>
-                                                <div className="w-full h-24 sm:h-40 bg-stone-100 rounded-lg overflow-hidden border border-stone-200 relative cursor-pointer hover:border-teal-400 transition-colors" onClick={openMap}>
+                                                <div className="w-full h-24 sm:h-40 bg-stone-100 rounded-lg overflow-hidden border border-stone-200 relative cursor-pointer hover:border-teal-400 transition-colors z-20" onClick={openMap}>
                                                     <iframe
                                                         title="Mini Map"
                                                         width="100%"
@@ -375,12 +436,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
 
                 <div className="flex items-center gap-2 text-teal-600/60 text-xs font-bold tracking-widest uppercase animate-pulse">
                     <RotateCw size={12} />
-                    <span>Appuyer pour retourner</span>
+                    <span>Faire glisser pour retourner</span>
                 </div>
 
                 </div>

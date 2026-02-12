@@ -1,7 +1,16 @@
-import { Resend } from 'resend';
+import * as nodemailer from 'nodemailer';
 import { Postcard } from '@/payload-types';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Create a transporter using SMTP
+const transporter = process.env.SMTP_HOST ? nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: process.env.SMTP_PORT === '465',
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+}) : null;
 
 interface EmailParams {
   to: string;
@@ -10,8 +19,8 @@ interface EmailParams {
 }
 
 export async function sendEmail({ to, subject, html }: EmailParams): Promise<boolean> {
-  if (!process.env.RESEND_API_KEY) {
-    console.log('⚠️ [EMAIL MOCK] No RESEND_API_KEY found. Logging email instead.');
+  if (!transporter) {
+    console.log('⚠️ [EMAIL MOCK] No SMTP configuration found. Logging email instead.');
     console.log(`To: ${to}`);
     console.log(`Subject: ${subject}`);
     console.log(`Body: ${html}`);
@@ -19,21 +28,17 @@ export async function sendEmail({ to, subject, html }: EmailParams): Promise<boo
   }
 
   try {
-    const { data, error } = await resend.emails.send({
-      from: 'CartePostale <no-reply@cartepostale.cool>', // Make sure this domain is verified in Resend
+    const info = await transporter.sendMail({
+      from: `"${process.env.EMAIL_FROM_NAME || 'CartePostale'}" <${process.env.EMAIL_FROM || 'cartepostalecool@gmail.com'}>`,
       to,
       subject,
       html,
     });
 
-    if (error) {
-      console.error('Error sending email:', error);
-      return false;
-    }
-
+    console.log('Message sent: %s', info.messageId);
     return true;
   } catch (error) {
-    console.error('Exception sending email:', error);
+    console.error('Error sending email:', error);
     return false;
   }
 }

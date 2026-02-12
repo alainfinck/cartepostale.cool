@@ -31,6 +31,7 @@ import {
   Share2,
   Maximize2,
   MessageSquare,
+  Mail,
 } from 'lucide-react'
 import { Postcard, Template } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -133,10 +134,6 @@ export default function EditorPage() {
   const [showFullscreen, setShowFullscreen] = useState(false)
 
   // Sharing state
-  const [recipientEmails, setRecipientEmails] = useState<string[]>([])
-  const [recipientPhones, setRecipientPhones] = useState<string[]>([])
-  const [newEmail, setNewEmail] = useState('')
-  const [newPhone, setNewPhone] = useState('')
   const [isPublishing, setIsPublishing] = useState(false)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [createdPostcardId, setCreatedPostcardId] = useState<string | null>(null)
@@ -289,48 +286,31 @@ export default function EditorPage() {
       ? SAMPLE_TEMPLATES
       : SAMPLE_TEMPLATES.filter((t) => t.category === selectedCategory)
 
-  const handleAddEmail = () => {
-    if (newEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
-      setRecipientEmails([...recipientEmails, newEmail])
-      setNewEmail('')
-    }
-  }
-
-  const handleAddPhone = () => {
-    if (newPhone) {
-      setRecipientPhones([...recipientPhones, newPhone])
-      setNewPhone('')
-    }
-  }
-
-  const removeEmail = (email: string) => setRecipientEmails(recipientEmails.filter(e => e !== email))
-  const removePhone = (phone: string) => setRecipientPhones(recipientPhones.filter(p => p !== phone))
-
   const handlePublish = async () => {
     setIsPublishing(true)
     setShareError(null)
 
-    // Prepare recipients data
-    const recipients = [
-      ...recipientEmails.map(email => ({ email })),
-      ...recipientPhones.map(phone => ({ phone }))
-    ]
+    try {
+      const result = await createPostcard({
+        ...currentPostcard,
+        recipients: [],
+        // If uploaded file, we might need to handle upload separately in a real app
+        // For now we assume frontImage is base64 or URL
+      })
 
-    const result = await createPostcard({
-      ...currentPostcard,
-      recipients,
-      // If uploaded file, we might need to handle upload separately in a real app
-      // For now we assume frontImage is base64 or URL
-    })
-
-    if (result.success && result.publicId) {
-      setCreatedPostcardId(result.publicId)
-      setShareUrl(`${window.location.origin}/view/${result.publicId}`)
-      // No longer switching step, sharing UI appears in 'preview' step
-    } else {
-      setShareError(result.error || 'Une erreur est survenue lors de la création de la carte.')
+      if (result.success && result.publicId) {
+        setCreatedPostcardId(result.publicId)
+        setShareUrl(`${window.location.origin}/view/${result.publicId}`)
+        // No longer switching step, sharing UI appears in 'preview' step
+      } else {
+        setShareError(result.error || 'Une erreur est survenue lors de la création de la carte.')
+      }
+    } catch (err: any) {
+      console.error('Publish error:', err)
+      setShareError('Une erreur critique est survenue. Veuillez réessayer.')
+    } finally {
+      setIsPublishing(false)
     }
-    setIsPublishing(false)
   }
 
   const copyToClipboard = () => {
@@ -876,73 +856,90 @@ export default function EditorPage() {
                   Partagez-la maintenant avec vos proches. Cliquez sur la carte pour la retourner.
                 </p>
 
-
-
-                {!shareUrl && (
-                  <div className="border-t border-stone-200 pt-6">
-                    <h3 className="font-serif font-bold text-lg text-stone-800 mb-1">Ajouter des destinataires <span className="text-stone-500 font-normal text-sm">(optionnel)</span></h3>
-                    <p className="text-stone-500 text-sm mb-4">
+                {/* Bloc de partage */}
+                <div className="border-t border-stone-200 pt-8">
+                  <div className="max-w-2xl mx-auto">
+                    <p className="text-stone-600 text-sm mb-6 leading-relaxed">
                       Une fois la carte créée, un lien à partager vous sera fourni. Vous pourrez l’envoyer à qui vous voulez.
                     </p>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                      {/* Emails */}
-                      <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2">E-mails</label>
-                        <div className="flex gap-2 mb-2">
-                          <input
-                            type="email"
-                            value={newEmail}
-                            onChange={(e) => setNewEmail(e.target.value)}
-                            placeholder="exemple@email.com"
-                            className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-teal-500"
-                            onKeyDown={(e) => e.key === 'Enter' && handleAddEmail()}
-                          />
-                          <button onClick={handleAddEmail} className="bg-stone-100 hover:bg-teal-100 text-stone-600 hover:text-teal-700 p-2 rounded-lg transition-colors"><Check size={18} /></button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {recipientEmails.map(email => (
-                            <span key={email} className="inline-flex items-center gap-1 bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded-md">
-                              {email} <button onClick={() => removeEmail(email)} className="hover:text-red-500"><X size={12} /></button>
-                            </span>
-                          ))}
-                        </div>
+                    {(isPublishing || !shareUrl) ? (
+                      <div className="bg-stone-50 rounded-2xl p-10 border border-stone-100 flex flex-col items-center justify-center text-center">
+                        <RefreshCw size={32} className="text-teal-500 animate-spin mb-4" />
+                        <p className="text-stone-500 font-medium font-serif">Création de votre lien de partage...</p>
                       </div>
+                    ) : (
+                      <div className="bg-stone-50 rounded-2xl p-6 sm:p-8 border border-stone-200 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                          <Send size={32} className="text-teal-600" />
+                        </div>
+                        <h3 className="text-xl font-serif font-bold text-stone-800 mb-2">Prête à être partagée !</h3>
+                        <p className="text-stone-500 text-sm mb-6">Utilisez le lien ci-dessous ou les réseaux sociaux</p>
+                        
+                        <div className="mb-8 max-w-lg mx-auto">
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              readOnly
+                              value={shareUrl}
+                              className="flex-1 bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-600 focus:outline-none shadow-sm"
+                            />
+                            <Button onClick={copyToClipboard} variant="outline" className="rounded-xl bg-white hover:bg-teal-50 hover:text-teal-800 hover:border-teal-300 text-stone-600 border-stone-200 px-6 h-auto shadow-sm transition-all">
+                              <Copy size={16} className="mr-2" /> Copier
+                            </Button>
+                          </div>
+                        </div>
 
-                      {/* Phones */}
-                      <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2">Numéros (SMS)</label>
-                        <div className="flex gap-2 mb-2">
-                          <input
-                            type="tel"
-                            value={newPhone}
-                            onChange={(e) => setNewPhone(e.target.value)}
-                            placeholder="06 12 34 56 78"
-                            className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-teal-500"
-                            onKeyDown={(e) => e.key === 'Enter' && handleAddPhone()}
-                          />
-                          <button onClick={handleAddPhone} className="bg-stone-100 hover:bg-teal-100 text-stone-600 hover:text-teal-700 p-2 rounded-lg transition-colors"><Check size={18} /></button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {recipientPhones.map(phone => (
-                            <span key={phone} className="inline-flex items-center gap-1 bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded-md">
-                              {phone} <button onClick={() => removePhone(phone)} className="hover:text-red-500"><X size={12} /></button>
-                            </span>
-                          ))}
+                        <div className="flex flex-wrap justify-center gap-3">
+                          {/* E-mails share */}
+                          <a 
+                            href={`mailto:?subject=Regarde ma carte postale !&body=J'ai créé une carte postale pour toi : ${shareUrl}`}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-stone-200 text-stone-700 rounded-full font-bold text-xs hover:bg-stone-50 transition-all shadow-sm"
+                          >
+                            <Mail size={16} className="text-stone-400" /> E-mails
+                          </a>
+                          
+                          {/* SMS share */}
+                          <a 
+                            href={`sms:?body=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-stone-800 text-white rounded-full font-bold text-xs hover:bg-stone-900 transition-all shadow-md"
+                          >
+                            <MessageSquare size={16} /> Numéros (SMS)
+                          </a>
+
+                          {/* WhatsApp share */}
+                          <a 
+                            href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="flex items-center gap-2 px-5 py-2.5 bg-[#25D366] text-white rounded-full font-bold text-xs hover:opacity-90 transition-all shadow-md"
+                          >
+                            <Share2 size={16} /> WhatsApp
+                          </a>
+
+                          {/* Facebook share */}
+                          <a 
+                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="flex items-center gap-2 px-5 py-2.5 bg-[#1877F2] text-white rounded-full font-bold text-xs hover:opacity-90 transition-all shadow-md"
+                          >
+                            <Facebook size={16} /> Facebook
+                          </a>
                         </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Sender Email Section */}
-                    <div className="mt-8 pt-8 border-t border-stone-100">
+                    <div className="mt-12 pt-8 border-t border-stone-100">
                       <div className="bg-teal-50/50 rounded-2xl p-6 border border-teal-100">
-                        <div className="flex items-start gap-3 mb-4">
-                          <div className="bg-teal-500 text-white p-2 rounded-lg mt-0.5">
-                            <User size={18} />
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className="bg-teal-500 text-white p-2.5 rounded-xl shrink-0">
+                            <User size={20} />
                           </div>
                           <div>
                             <h3 className="font-serif font-bold text-lg text-stone-800">Votre E-mail (Expéditeur)</h3>
-                            <p className="text-stone-500 text-sm mt-1">
+                            <p className="text-stone-500 text-sm mt-1 leading-relaxed">
                               Saisissez votre e-mail pour revoir votre carte, consulter les statistiques et suivre son envoi.
                             </p>
                           </div>
@@ -957,7 +954,7 @@ export default function EditorPage() {
                           />
                           <Button 
                             variant="secondary"
-                            className="rounded-xl h-auto px-5 bg-teal-500 hover:bg-teal-600 text-white border-0"
+                            className="rounded-xl h-auto px-6 bg-teal-500 hover:bg-teal-600 text-white border-0 font-bold transition-all shadow-md shadow-teal-100"
                             onClick={async () => {
                               if (!createdPostcardId) return
                               if (!senderEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) {
@@ -979,48 +976,7 @@ export default function EditorPage() {
                       </div>
                     </div>
                   </div>
-                )}
-
-                {shareUrl && (
-                  <div className="mt-8 bg-stone-50 rounded-2xl p-6 border border-stone-200 text-center animate-in fade-in slide-in-from-bottom-4">
-                    <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Send size={32} className="text-teal-600" />
-                    </div>
-                    <h3 className="text-xl font-serif font-bold text-stone-800 mb-2">Prête à être partagée !</h3>
-                    <p className="text-stone-500 text-sm mb-6">Utilisez le lien ci-dessous ou les réseaux sociaux</p>
-                    <div className="mb-6 max-w-lg mx-auto">
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          readOnly
-                          value={shareUrl}
-                          className="flex-1 bg-white border border-stone-200 rounded-lg px-3 text-sm text-stone-600 focus:outline-none py-2"
-                        />
-                        <Button onClick={copyToClipboard} variant="outline" className="bg-white hover:bg-teal-100 hover:text-teal-800 hover:border-teal-300 text-stone-600 border-stone-200 text-sm py-2 h-auto transition-all shadow-sm hover:shadow-md">
-                          <Copy size={14} className="mr-2" /> Copier
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap justify-center gap-3">
-                      <a href={`sms:?body=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
-                        <MessageSquare size={14} /> SMS
-                      </a>
-                      <a href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#25D366] text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
-                        <Share2 size={14} /> WhatsApp
-                      </a>
-                      <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#1877F2] text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
-                        <Facebook size={14} /> Facebook
-                      </a>
-                      <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Regarde ma carte postale !`)}&url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full font-bold text-xs hover:opacity-80 transition-opacity shadpw-sm">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zl-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                        </svg>
-                        X
-                      </a>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
             )}
 

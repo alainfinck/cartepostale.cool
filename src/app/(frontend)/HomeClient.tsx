@@ -166,24 +166,37 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
-            {/* Recto */}
-            <div className="flex flex-col items-center gap-4">
-               <span className="text-stone-400 font-serif italic text-lg">Côté Photo (Recto)</span>
-               <div className="pointer-events-none transform hover:scale-[1.02] transition-transform duration-500">
-                  <PostcardView postcard={demoCard} isPreview={true} flipped={false} className="shadow-xl" />
+          <div className="flex flex-col items-center justify-center">
+            {/* Carte Postale Interactive à Effet Rotatif */}
+            <div className="relative perspective-1000 group">
+               {/* Bulle d'indication avec un style plus premium */}
+               <div className="absolute -top-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-20">
+                  <div className="bg-stone-800 text-white text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-full shadow-2xl flex items-center gap-2">
+                    <Repeat size={12} className="animate-spin-slow" />
+                    CLIQUEZ OU GLISSEZ POUR TOURNER
+                  </div>
+                  <div className="w-px h-4 bg-stone-300" />
+               </div>
+               
+               <div className="animate-float-3d hover-tilt-3d transition-all duration-500">
+                  <PostcardView 
+                    postcard={demoCard} 
+                    isPreview={true} 
+                    className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] group-hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)]" 
+                  />
                </div>
             </div>
             
-             <div className="hidden lg:block h-32 w-px bg-stone-200" />
-             <div className="lg:hidden w-32 h-px bg-stone-200" />
-
-            {/* Verso */}
-            <div className="flex flex-col items-center gap-4">
-               <span className="text-stone-400 font-serif italic text-lg">Côté Message (Verso)</span>
-               <div className="pointer-events-none transform hover:scale-[1.02] transition-transform duration-500">
-                  <PostcardView postcard={demoCard} isPreview={true} flipped={true} className="shadow-xl" />
-               </div>
+            <div className="mt-12 flex flex-col items-center gap-8 max-w-xl text-center">
+               <div className="h-px w-24 bg-stone-200" />
+               <p className="text-stone-500 italic">
+                 "Une expérience immersive : touchez la carte pour découvrir son verso et les détails de votre message."
+               </p>
+               <Link href="/editor">
+                  <Button className="bg-orange-500 text-white hover:bg-orange-600 rounded-full font-bold shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/30 flex items-center gap-3 px-10 py-7 text-lg transform hover:-translate-y-1 transition-all duration-300 h-auto">
+                    <Plus size={24} /> Créer ma carte maintenant
+                  </Button>
+               </Link>
             </div>
           </div>
         </div>

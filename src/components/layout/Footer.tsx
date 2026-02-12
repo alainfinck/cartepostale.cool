@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Mail, Github, Instagram } from 'lucide-react'
+import { Mail, Github, Instagram, Heart } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
@@ -19,7 +19,7 @@ export const Footer = () => {
                     <div className="bg-teal-500 p-1.5 rounded-lg transform -rotate-3">
                         <Mail className="text-white" size={16} />
                     </div>
-                    <span className="font-serif font-bold text-xl text-stone-800">CartePostale</span>
+                    <span className="font-serif font-bold text-xl text-stone-800">cartepostale.cool</span>
                 </div>
                 <div className="flex flex-wrap justify-center gap-8 mb-8 text-stone-500 font-medium">
                     <Link href="/" className="hover:text-teal-600 transition-colors">Accueil</Link>
@@ -40,8 +40,8 @@ export const Footer = () => {
                     <a href="#" className="hover:text-teal-600 transition-colors"><Github size={20} /></a>
                 </div>
 
-                <p className="text-stone-400 text-sm">
-                    © {new Date().getFullYear()} CartePostale.cool. Des sourires dans vos boîtes aux lettres numériques.
+                <p className="text-stone-400 text-sm flex items-center justify-center gap-1">
+                    © {new Date().getFullYear()} cartepostale.cool. Des sourires <Heart className="w-3 h-3 fill-red-400 text-red-400 inline" /> dans vos boîtes aux lettres numériques.
                 </p>
                 <div className="flex justify-center gap-6 mt-4 text-xs text-stone-400">
                     <Link href="/legal/mentions-legales" className="hover:text-stone-600 transition-colors">Mentions Légales</Link>
