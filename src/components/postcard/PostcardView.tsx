@@ -50,7 +50,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
     // Motion values for rotation
     const rotateY = useMotionValue(flipped ? 180 : 0);
-    const springRotateY = useSpring(rotateY, { stiffness: 260, damping: 20 });
+    const springRotateY = useSpring(rotateY, { stiffness: 80, damping: 26 });
     
     // Controls for animation
     const controls = useAnimation();
@@ -362,6 +362,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
 
                             <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none z-0" />
+
+                            {/* Indication "Retourner la carte" au survol — en haut à droite */}
+                            <div className="absolute top-4 right-4 z-20 flex items-center gap-2 rounded-lg bg-white/90 backdrop-blur-md px-3 py-2 shadow-lg border border-white/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                <RotateCw size={isLarge ? 20 : 16} className="text-stone-600 shrink-0" />
+                                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-stone-700">Retourner la carte</span>
+                            </div>
 
                             {postcard.location && (
                                 <div
