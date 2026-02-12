@@ -1,4 +1,4 @@
-import { sqliteAdapter } from '@payloadcms/db-sqlite'
+import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -13,6 +13,9 @@ import { Templates } from './collections/Templates'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+// Local fallback ensures dev builds still run when DATABASE_URL is not set.
+const databaseUrl =
+  process.env.DATABASE_URL || 'postgres://localhost:5432/postgres'
 
 export default buildConfig({
   admin: {
@@ -27,9 +30,9 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: sqliteAdapter({
-    client: {
-      url: process.env.DATABASE_URL || 'file:./cartepostale-v2.db',
+  db: postgresAdapter({
+    pool: {
+      connectionString: databaseUrl,
     },
   }),
   sharp,

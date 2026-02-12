@@ -64,6 +64,11 @@ export const Postcards: CollectionConfig = {
             required: true,
         },
         {
+            name: 'senderEmail',
+            type: 'email',
+            required: false, // Optional for now, but we'll collect it
+        },
+        {
             name: 'location',
             type: 'text',
             required: true,

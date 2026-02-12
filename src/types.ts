@@ -10,6 +10,7 @@ export interface Postcard {
     message: string;
     recipientName: string;
     senderName: string;
+    senderEmail?: string;
     location: string;
     coords?: {
         lat: number;

@@ -113,6 +113,7 @@ export default function EditorPage() {
   const [message, setMessage] = useState('')
   const [recipientName, setRecipientName] = useState('')
   const [senderName, setSenderName] = useState('')
+  const [senderEmail, setSenderEmail] = useState('')
   const [location, setLocation] = useState('')
 
   const [stampStyle, setStampStyle] = useState<Postcard['stampStyle']>('classic')
@@ -140,12 +141,8 @@ export default function EditorPage() {
       case 'photo':
         return frontImage !== ''
       case 'redaction':
-        return (
-          message.trim().length > 0 &&
-          recipientName.trim() !== '' &&
-          senderName.trim() !== '' &&
-          location.trim() !== ''
-        )
+        // Un seul critère : au moins un message. Destinataire / expéditeur / lieu optionnels (valeurs par défaut à l’envoi).
+        return message.trim().length > 0
       case 'preview':
         return true
       default:
@@ -227,6 +224,7 @@ export default function EditorPage() {
     message: message || 'Votre message apparaîtra ici...',
     recipientName: recipientName || 'Destinataire',
     senderName: senderName || 'Expéditeur',
+    senderEmail: senderEmail || undefined,
 
     location: location || 'Quelque part...',
     stampStyle,
@@ -814,7 +812,10 @@ export default function EditorPage() {
 
                 {/* Recipients & Publish Section */}
                 <div className="border-t border-stone-200 pt-6">
-                  <h3 className="font-serif font-bold text-lg text-stone-800 mb-4">Ajouter des destinataires</h3>
+                  <h3 className="font-serif font-bold text-lg text-stone-800 mb-1">Ajouter des destinataires <span className="text-stone-500 font-normal text-sm">(optionnel)</span></h3>
+                  <p className="text-stone-500 text-sm mb-4">
+                    Une fois la carte créée, un lien à partager vous sera fourni. Vous pourrez l’envoyer à qui vous voulez.
+                  </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     {/* Emails */}
@@ -860,6 +861,32 @@ export default function EditorPage() {
                             {phone} <button onClick={() => removePhone(phone)} className="hover:text-red-500"><X size={12} /></button>
                           </span>
                         ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sender Email Section */}
+                  <div className="mt-8 pt-8 border-t border-stone-100">
+                    <div className="bg-teal-50/50 rounded-2xl p-6 border border-teal-100">
+                      <div className="flex items-start gap-3 mb-4">
+                        <div className="bg-teal-500 text-white p-2 rounded-lg mt-0.5">
+                          <User size={18} />
+                        </div>
+                        <div>
+                          <h3 className="font-serif font-bold text-lg text-stone-800">Votre E-mail (Expéditeur)</h3>
+                          <p className="text-stone-500 text-sm mt-1">
+                            Saisissez votre e-mail pour revoir votre carte, consulter les statistiques et suivre son envoi.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="max-w-md">
+                        <input
+                          type="email"
+                          value={senderEmail}
+                          onChange={(e) => setSenderEmail(e.target.value)}
+                          placeholder="votre@email.com"
+                          className="w-full rounded-xl border border-stone-200 px-4 py-3 text-base focus:border-teal-500 focus:ring-teal-500 bg-white shadow-sm transition-all"
+                        />
                       </div>
                     </div>
                   </div>
@@ -998,21 +1025,21 @@ export default function EditorPage() {
       {/* Modal plein écran : voir comme le destinataire */}
       {showFullscreen && (
         <div
-          className="fixed inset-0 z-50 bg-stone-900/95 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-stone-900/95 flex items-center justify-center p-2 sm:p-4 overflow-auto"
           onClick={() => setShowFullscreen(false)}
         >
           <button
             onClick={() => setShowFullscreen(false)}
-            className="absolute top-6 right-6 p-2 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10"
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10 z-10"
             aria-label="Fermer"
           >
             <X size={28} />
           </button>
-          <div onClick={(e) => e.stopPropagation()}>
+          <div onClick={(e) => e.stopPropagation()} className="flex items-center justify-center min-h-full py-12">
             <PostcardView
               postcard={currentPostcard}
               flipped={showBack}
-              className="w-[90vw] max-w-[1200px] hover:scale-100 aspect-[3/2] h-auto cursor-default"
+              className="w-[95vw] max-w-[1600px] hover:scale-100 aspect-[3/2] h-auto cursor-default shadow-2xl"
             />
           </div>
         </div>

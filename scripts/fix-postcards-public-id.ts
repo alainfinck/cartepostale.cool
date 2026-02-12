@@ -23,9 +23,10 @@ async function main() {
     args: [],
   })
 
-  const hasPublicId = tableInfo.rows.some(
-    (r) => (r as { name: string }).name === 'public_id',
-  )
+  const hasPublicId = tableInfo.rows.some((row) => {
+    const nameValue = (row as Record<string, unknown>)['name']
+    return typeof nameValue === 'string' && nameValue === 'public_id'
+  })
 
   if (!hasPublicId) {
     console.log('Adding public_id column to postcards...')

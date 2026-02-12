@@ -12,6 +12,40 @@ export const Agencies: CollectionConfig = {
             required: true,
         },
         {
+            name: 'code',
+            type: 'text',
+            unique: true,
+        },
+        {
+            name: 'address',
+            type: 'text',
+        },
+        {
+            name: 'city',
+            type: 'text',
+        },
+        {
+            name: 'region',
+            type: 'text',
+        },
+        {
+            name: 'country',
+            type: 'text',
+            defaultValue: 'France',
+        },
+        {
+            name: 'phone',
+            type: 'text',
+        },
+        {
+            name: 'email',
+            type: 'text',
+        },
+        {
+            name: 'website',
+            type: 'text',
+        },
+        {
             name: 'logo',
             type: 'upload',
             relationTo: 'media',

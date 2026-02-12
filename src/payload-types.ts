@@ -176,6 +176,14 @@ export interface Media {
 export interface Agency {
   id: number;
   name: string;
+  code?: string | null;
+  address?: string | null;
+  city?: string | null;
+  region?: string | null;
+  country?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  website?: string | null;
   logo?: (number | null) | Media;
   primaryColor?: string | null;
   imageBank?:
@@ -385,6 +393,14 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface AgenciesSelect<T extends boolean = true> {
   name?: T;
+  code?: T;
+  address?: T;
+  city?: T;
+  region?: T;
+  country?: T;
+  phone?: T;
+  email?: T;
+  website?: T;
   logo?: T;
   primaryColor?: T;
   imageBank?:
