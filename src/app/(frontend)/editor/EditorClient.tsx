@@ -38,8 +38,68 @@ import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import heic2any from 'heic2any'
 import { createPostcard } from '@/actions/postcard-actions'
 import { linkPostcardToUser } from '@/actions/auth-actions'
+
+const HEIC_TYPES = ['image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence']
+const MAX_IMAGE_PX = 2048 // 2K max côté le plus long
+
+/** Redimensionne une image (data URL) pour que le plus grand côté soit au max MAX_IMAGE_PX, en JPEG. */
+function resizeImageToMax2K(dataUrl: string, maxPx: number = MAX_IMAGE_PX): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      let w = img.naturalWidth
+      let h = img.naturalHeight
+      if (w <= maxPx && h <= maxPx) {
+        resolve(dataUrl)
+        return
+      }
+      if (w > h) {
+        h = Math.round((h * maxPx) / w)
+        w = maxPx
+      } else {
+        w = Math.round((w * maxPx) / h)
+        h = maxPx
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = w
+      canvas.height = h
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        resolve(dataUrl)
+        return
+      }
+      ctx.drawImage(img, 0, 0, w, h)
+      try {
+        const resized = canvas.toDataURL('image/jpeg', 0.9)
+        resolve(resized)
+      } catch {
+        resolve(dataUrl)
+      }
+    }
+    img.onerror = () => reject(new Error('Image load failed'))
+    img.src = dataUrl
+  })
+}
+
+async function fileToDataUrl(file: File): Promise<string> {
+  const isHeic = HEIC_TYPES.includes(file.type) || /\.heic$/i.test(file.name) || /\.heif$/i.test(file.name)
+  let blob: Blob = file
+  if (isHeic) {
+    const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 })
+    blob = Array.isArray(converted) ? converted[0] : converted
+  }
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
+  return resizeImageToMax2K(dataUrl)
+}
 
 const STEPS = [
   { id: 'photo', label: 'Photo', icon: Camera },
@@ -199,14 +259,13 @@ export default function EditorPage() {
 
   const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      setUploadedFileName(file.name)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setFrontImage(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
+    if (!file) return
+    setUploadedFileName(file.name)
+    fileToDataUrl(file).then(setFrontImage).catch(() => {
+      setUploadedFileName('')
+      setFrontImage('')
+      alert('Impossible de charger cette image. Utilisez une photo en JPEG ou PNG.')
+    })
   }, [])
 
   const handleSelectTemplate = (template: Template) => {
@@ -232,27 +291,32 @@ export default function EditorPage() {
   }
 
   const handleAlbumUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files)
-      
-      files.forEach(file => {
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          const newItem = {
-            id: Date.now() + Math.random().toString(),
-            type: file.type.startsWith('video') ? 'video' : 'image',
-            url: reader.result as string,
-          } as any
-
-          setMediaItems((prev) => {
-            const updated = [...(prev || []), newItem]
-            setIsPremium(updated.length > 0)
-            return updated
-          })
-        }
-        reader.readAsDataURL(file)
-      })
-    }
+    if (!e.target.files) return
+    const files = Array.from(e.target.files)
+    files.forEach(async (file) => {
+      try {
+        const url = file.type.startsWith('video/')
+          ? await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader()
+              reader.onloadend = () => resolve(reader.result as string)
+              reader.onerror = reject
+              reader.readAsDataURL(file)
+            })
+          : await fileToDataUrl(file)
+        const newItem = {
+          id: Date.now() + Math.random().toString() + Math.random(),
+          type: file.type.startsWith('video') ? 'video' : 'image',
+          url,
+        } as any
+        setMediaItems((prev) => {
+          const updated = [...(prev || []), newItem]
+          setIsPremium(updated.length > 0)
+          return updated
+        })
+      } catch {
+        alert('Impossible de charger une des images. Utilisez des photos en JPEG ou PNG.')
+      }
+    })
   }
 
   const removeMediaItem = (id: string) => {
@@ -947,7 +1011,35 @@ export default function EditorPage() {
                       Une fois la carte créée, un lien à partager vous sera fourni. Vous pourrez l’envoyer à qui vous voulez.
                     </p>
 
-                    {(isPublishing || !shareUrl) ? (
+                    {isPublishing ? (
+                      <div className="bg-stone-50 rounded-2xl p-10 border border-stone-100 flex flex-col items-center justify-center text-center">
+                        <RefreshCw size={32} className="text-teal-500 animate-spin mb-4" />
+                        <p className="text-stone-500 font-medium font-serif">Création de votre lien de partage...</p>
+                      </div>
+                    ) : shareError ? (
+                      <div className="bg-red-50 rounded-2xl p-8 border border-red-100 flex flex-col items-center justify-center text-center">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <X size={32} className="text-red-600" />
+                        </div>
+                        <h3 className="text-lg font-serif font-bold text-stone-800 mb-2">Impossible de créer le lien</h3>
+                        <p className="text-stone-600 text-sm mb-6 max-w-md">{shareError}</p>
+                        <div className="flex flex-wrap justify-center gap-3">
+                          <Button
+                            onClick={() => { setShareError(null); handlePublish(); }}
+                            className="rounded-xl bg-teal-500 hover:bg-teal-600 text-white"
+                          >
+                            <RefreshCw size={16} className="mr-2" /> Réessayer
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => { setShareError(null); setCurrentStep('photo'); }}
+                            className="rounded-xl border-stone-200"
+                          >
+                            Changer la photo
+                          </Button>
+                        </div>
+                      </div>
+                    ) : !shareUrl ? (
                       <div className="bg-stone-50 rounded-2xl p-10 border border-stone-100 flex flex-col items-center justify-center text-center">
                         <RefreshCw size={32} className="text-teal-500 animate-spin mb-4" />
                         <p className="text-stone-500 font-medium font-serif">Création de votre lien de partage...</p>

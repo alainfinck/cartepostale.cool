@@ -14,8 +14,39 @@ function generatePublicId(length = 10) {
     return result
 }
 
+const HEIC_MIME = /^image\/(heic|heif|heics|heifs)$/i
+
+function isHeicDataUrl(url: string): boolean {
+    if (!url?.startsWith('data:image')) return false
+    const mime = url.match(/^data:(image\/[^;]+);/)?.[1] || ''
+    return HEIC_MIME.test(mime)
+}
+
+function isHeifUploadError(err: unknown): boolean {
+    const msg = err instanceof Error ? err.message : String(err)
+    return /heif|Bitstream not supported|decoder/i.test(msg)
+}
+
 export async function createPostcard(data: any): Promise<{ success: boolean; publicId?: string; error?: string }> {
     try {
+        // Reject HEIC/HEIF upfront — Sharp/libvips often can't decode them
+        if (data.frontImage && isHeicDataUrl(data.frontImage)) {
+            return {
+                success: false,
+                error: 'Le format HEIC (photo iPhone) n’est pas supporté. Utilisez une photo en JPEG ou PNG, ou convertissez-la dans Réglages > Appareil photo > Formats.',
+            }
+        }
+        if (data.mediaItems && Array.isArray(data.mediaItems)) {
+            for (const item of data.mediaItems) {
+                if (item?.url && isHeicDataUrl(item.url)) {
+                    return {
+                        success: false,
+                        error: 'Une photo de l’album est au format HEIC (iPhone), non supporté. Utilisez des photos en JPEG ou PNG.',
+                    }
+                }
+            }
+        }
+
         const payload = await getPayload({ config })
 
         // Handle images
@@ -136,7 +167,14 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
         return { success: true, publicId }
     } catch (error) {
         console.error('Error creating postcard:', error)
-        return { success: false, error: 'Failed to create postcard' }
+        if (isHeifUploadError(error)) {
+            return {
+                success: false,
+                error: 'Cette photo (format HEIC/iPhone) ne peut pas être traitée. Utilisez une photo en JPEG ou PNG.',
+            }
+        }
+        const msg = error instanceof Error ? error.message : 'Failed to create postcard'
+        return { success: false, error: msg.includes('upload') ? 'Erreur lors de l’envoi de l’image. Utilisez JPEG ou PNG.' : 'Impossible de créer la carte. Réessayez.' }
     }
 }
 
