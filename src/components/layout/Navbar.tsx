@@ -54,6 +54,14 @@ const dropdownTarifs = [
     { href: '/pricing', icon: Zap, label: 'Pro & Agence', price: 'Sur devis', desc: '' },
 ]
 
+const dropdownPages = [
+    { href: '/a-propos', icon: Info, label: 'À propos' },
+    { href: '/galerie', icon: ImageIcon, label: 'Galerie' },
+    { href: '/legal/cgu', icon: FileText, label: 'CGU' },
+    { href: '/legal/mentions-legales', icon: FileText, label: 'Mentions légales' },
+    { href: '/legal/privacy', icon: FileText, label: 'Confidentialité' },
+]
+
 export const Navbar = () => {
     const pathname = usePathname()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -107,7 +115,7 @@ export const Navbar = () => {
         active: boolean
         children: React.ReactNode
     }) => (
-        <div className="relative" ref={dropdownRef}>
+        <div className="relative">
             <button
                 type="button"
                 onClick={() => setOpenDropdown(openDropdown === id ? null : id)}
@@ -225,7 +233,7 @@ export const Navbar = () => {
                         </span>
                     </Link>
 
-                    <div className="hidden sm:flex items-center gap-1">
+                    <div className="hidden sm:flex items-center gap-1" ref={dropdownRef}>
                         <Link
                             href="/#fonctionnalites"
                             className={cn(
@@ -236,29 +244,77 @@ export const Navbar = () => {
                             Fonctionnalités
                         </Link>
 
-                        <Link
-                            href="/pricing"
-                            className={cn(
-                                'font-semibold transition-all duration-200 rounded-xl px-4 py-3 text-[15px]',
-                                pathname === '/pricing'
-                                    ? 'text-stone-900 font-bold bg-pink-50/80 text-pink-700'
-                                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100/80'
-                            )}
+                        <NavDropdown
+                            id="pages"
+                            label="Pages"
+                            active={pathname === '/a-propos' || pathname === '/galerie' || pathname?.startsWith('/legal')}
                         >
-                            Tarifs
-                        </Link>
+                            <div className="p-2">
+                                {dropdownPages.map((item) => (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        className={cn(
+                                            'flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-medium transition-colors',
+                                            pathname === item.href || pathname?.startsWith(item.href + '/')
+                                                ? 'bg-pink-50 text-pink-700'
+                                                : 'text-stone-700 hover:bg-stone-50'
+                                        )}
+                                    >
+                                        <item.icon className="w-5 h-5 text-stone-400 shrink-0" />
+                                        {item.label}
+                                    </Link>
+                                ))}
+                            </div>
+                        </NavDropdown>
 
-                        <Link
-                            href="/galerie"
-                            className={cn(
-                                'font-semibold transition-all duration-200 rounded-xl px-4 py-3 text-[15px]',
-                                pathname === '/galerie'
-                                    ? 'text-stone-900 font-bold bg-pink-50/80 text-pink-700'
-                                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100/80'
-                            )}
+                        <NavDropdown
+                            id="tarifs"
+                            label="Tarifs"
+                            active={pathname === '/pricing'}
                         >
-                            Galerie
-                        </Link>
+                            <div className="p-2">
+                                {dropdownTarifs.map((item) => (
+                                    <Link
+                                        key={item.label}
+                                        href={item.href}
+                                        className={cn(
+                                            'flex items-center gap-3 px-4 py-3 rounded-xl transition-colors',
+                                            pathname === item.href ? 'bg-pink-50 text-pink-700' : 'text-stone-700 hover:bg-stone-50'
+                                        )}
+                                    >
+                                        <item.icon className="w-5 h-5 text-pink-500 shrink-0" />
+                                        <span className="font-medium text-[15px] flex-1">{item.label}</span>
+                                        <span className="text-sm font-bold text-pink-600 tabular-nums">{item.price}</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </NavDropdown>
+
+                        <NavDropdown
+                            id="pro"
+                            label="Pro"
+                            active={pathname === '/business' || pathname === '/pricing' || pathname === '/contact'}
+                        >
+                            <div className="p-2">
+                                {dropdownPro.map((item) => (
+                                    <Link
+                                        key={item.href + item.title}
+                                        href={item.href}
+                                        className={cn(
+                                            'flex gap-3 px-4 py-3 rounded-xl transition-colors',
+                                            pathname === item.href ? 'bg-teal-50' : 'hover:bg-stone-50'
+                                        )}
+                                    >
+                                        <item.icon className="w-5 h-5 text-teal-500 shrink-0 mt-0.5" />
+                                        <div>
+                                            <div className="font-semibold text-[15px] text-stone-800">{item.title}</div>
+                                            <div className="text-sm text-stone-500 mt-0.5">{item.description}</div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </NavDropdown>
 
                         <div className="h-6 w-px bg-stone-200 mx-2" />
 
@@ -355,6 +411,39 @@ export const Navbar = () => {
                             >
                                 <Info className="w-6 h-6 text-pink-500 flex-shrink-0" />
                                 À propos
+                            </Link>
+                            <Link
+                                href="/legal/cgu"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={cn(
+                                    "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
+                                    pathname === "/legal/cgu" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
+                                )}
+                            >
+                                <FileText className="w-6 h-6 text-pink-500 flex-shrink-0" />
+                                CGU
+                            </Link>
+                            <Link
+                                href="/legal/mentions-legales"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={cn(
+                                    "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
+                                    pathname === "/legal/mentions-legales" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
+                                )}
+                            >
+                                <FileText className="w-6 h-6 text-pink-500 flex-shrink-0" />
+                                Mentions légales
+                            </Link>
+                            <Link
+                                href="/legal/privacy"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={cn(
+                                    "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
+                                    pathname === "/legal/privacy" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
+                                )}
+                            >
+                                <FileText className="w-6 h-6 text-pink-500 flex-shrink-0" />
+                                Confidentialité
                             </Link>
                         </div>
                         <div className="text-xs font-bold text-stone-400 uppercase tracking-widest px-4 py-2">
