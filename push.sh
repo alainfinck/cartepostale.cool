@@ -5,8 +5,8 @@ git add .
 
 # Check if a commit message was provided as an argument
 if [ -z "$1" ]; then
-  # If not, prompt the user for a commit message
-  read -p "Enter commit message: " msg
+  # Use an automatic commit message
+  msg="Auto-commit: $(date +'%Y-%m-%d %H:%M:%S')"
 else
   # Use the provided argument as the commit message
   msg="$1"

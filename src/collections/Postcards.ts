@@ -7,10 +7,28 @@ export const Postcards: CollectionConfig = {
     },
     fields: [
         {
+            name: 'publicId',
+            type: 'text',
+            required: true,
+            unique: true,
+            index: true,
+            admin: {
+                position: 'sidebar',
+                readOnly: true,
+            },
+        },
+        {
             name: 'frontImage',
             type: 'upload',
             relationTo: 'media',
-            required: true,
+            required: false, // Can use frontImageURL instead
+        },
+        {
+            name: 'frontImageURL',
+            type: 'text',
+            admin: {
+                description: 'URL for template images',
+            },
         },
         {
             name: 'message',
@@ -18,7 +36,25 @@ export const Postcards: CollectionConfig = {
             required: true,
         },
         {
-            name: 'recipientName',
+            name: 'recipients',
+            type: 'array',
+            fields: [
+                {
+                    name: 'email',
+                    type: 'email',
+                },
+                {
+                    name: 'phone',
+                    type: 'text',
+                },
+                {
+                    name: 'name',
+                    type: 'text',
+                },
+            ],
+        },
+        {
+            name: 'recipientName', // Primary/First recipient name for display
             type: 'text',
             required: true,
         },
@@ -55,6 +91,14 @@ export const Postcards: CollectionConfig = {
                 { label: 'Airmail', value: 'airmail' },
             ],
             defaultValue: 'classic',
+        },
+        {
+            name: 'stampLabel',
+            type: 'text',
+        },
+        {
+            name: 'stampYear',
+            type: 'text',
         },
         {
             name: 'date',

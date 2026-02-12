@@ -194,8 +194,21 @@ export interface Agency {
  */
 export interface Postcard {
   id: number;
-  frontImage: number | Media;
+  publicId: string;
+  frontImage?: (number | null) | Media;
+  /**
+   * URL for template images
+   */
+  frontImageURL?: string | null;
   message: string;
+  recipients?:
+    | {
+        email?: string | null;
+        phone?: string | null;
+        name?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   recipientName: string;
   senderName: string;
   location: string;
@@ -204,6 +217,8 @@ export interface Postcard {
     lng?: number | null;
   };
   stampStyle?: ('classic' | 'modern' | 'airmail') | null;
+  stampLabel?: string | null;
+  stampYear?: string | null;
   date: string;
   status?: ('published' | 'draft' | 'archived') | null;
   views?: number | null;
@@ -387,8 +402,18 @@ export interface AgenciesSelect<T extends boolean = true> {
  * via the `definition` "postcards_select".
  */
 export interface PostcardsSelect<T extends boolean = true> {
+  publicId?: T;
   frontImage?: T;
+  frontImageURL?: T;
   message?: T;
+  recipients?:
+    | T
+    | {
+        email?: T;
+        phone?: T;
+        name?: T;
+        id?: T;
+      };
   recipientName?: T;
   senderName?: T;
   location?: T;
@@ -399,6 +424,8 @@ export interface PostcardsSelect<T extends boolean = true> {
         lng?: T;
       };
   stampStyle?: T;
+  stampLabel?: T;
+  stampYear?: T;
   date?: T;
   status?: T;
   views?: T;

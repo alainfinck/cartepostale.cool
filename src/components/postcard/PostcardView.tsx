@@ -231,7 +231,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                                 className="flex items-center gap-2 px-3 py-1.5 bg-stone-900/80 hover:bg-stone-900 text-white rounded-2xl transition-all shadow-sm shadow-stone-900/40 backdrop-blur-sm border border-white/20 text-[11px] tracking-[0.2em] uppercase whitespace-nowrap"
                                             >
                                                 <Camera size={16} className="text-white/90" />
-                                                <span className="text-[10px] font-semibold">Voir l'album</span>
+                                                <span className="text-[10px] font-semibold">Voir l&apos;album</span>
                                                 <span className="text-[8px] text-white/70">({postcard.mediaItems!.length})</span>
                                             </button>
                                         )}

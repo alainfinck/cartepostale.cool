@@ -22,16 +22,23 @@ import {
   Navigation,
   User,
   Users,
+  Copy,
+  Facebook,
+  Linkedin,
+  Twitter,
+  Share2,
 } from 'lucide-react'
 import { Postcard, Template } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { createPostcard } from '@/actions/postcard-actions'
 
 const STEPS = [
   { id: 'photo', label: 'Photo', icon: Camera },
   { id: 'redaction', label: 'Rédaction', icon: PenTool },
   { id: 'preview', label: 'Aperçu', icon: Eye },
+  { id: 'share', label: 'Envoyer', icon: Send },
 ] as const
 
 type StepId = (typeof STEPS)[number]['id']
@@ -115,6 +122,15 @@ export default function EditorPage() {
   const [mediaItems, setMediaItems] = useState<Postcard['mediaItems']>([])
   const [isPremium, setIsPremium] = useState(false)
   const [showFullscreen, setShowFullscreen] = useState(false)
+
+  // Sharing state
+  const [recipientEmails, setRecipientEmails] = useState<string[]>([])
+  const [recipientPhones, setRecipientPhones] = useState<string[]>([])
+  const [newEmail, setNewEmail] = useState('')
+  const [newPhone, setNewPhone] = useState('')
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [shareError, setShareError] = useState<string | null>(null)
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
   const showBack = currentStep === 'redaction'
@@ -230,8 +246,54 @@ export default function EditorPage() {
       ? SAMPLE_TEMPLATES
       : SAMPLE_TEMPLATES.filter((t) => t.category === selectedCategory)
 
-  const handlePublish = () => {
-    alert('Publication en cours... (fonctionnalité bientôt disponible)')
+  const handleAddEmail = () => {
+    if (newEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+      setRecipientEmails([...recipientEmails, newEmail])
+      setNewEmail('')
+    }
+  }
+
+  const handleAddPhone = () => {
+    if (newPhone) {
+      setRecipientPhones([...recipientPhones, newPhone])
+      setNewPhone('')
+    }
+  }
+
+  const removeEmail = (email: string) => setRecipientEmails(recipientEmails.filter(e => e !== email))
+  const removePhone = (phone: string) => setRecipientPhones(recipientPhones.filter(p => p !== phone))
+
+  const handlePublish = async () => {
+    setIsPublishing(true)
+    setShareError(null)
+
+    // Prepare recipients data
+    const recipients = [
+      ...recipientEmails.map(email => ({ email })),
+      ...recipientPhones.map(phone => ({ phone }))
+    ]
+
+    const result = await createPostcard({
+      ...currentPostcard,
+      recipients,
+      // If uploaded file, we might need to handle upload separately in a real app
+      // For now we assume frontImage is base64 or URL
+    })
+
+    if (result.success && result.publicId) {
+      setShareUrl(`${window.location.origin}/view/${result.publicId}`)
+      setCurrentStep('share')
+    } else {
+      setShareError(result.error || 'Une erreur est survenue lors de la création de la carte.')
+    }
+    setIsPublishing(false)
+  }
+
+  const copyToClipboard = () => {
+    if (shareUrl) {
+      navigator.clipboard.writeText(shareUrl)
+      // Could add toast here
+    }
   }
 
   return (
@@ -750,69 +812,185 @@ export default function EditorPage() {
                   </div>
                 </div>
 
-                {/* Publish Button */}
-                <Button
-                  onClick={handlePublish}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold text-lg py-6 h-auto shadow-lg shadow-orange-200 flex items-center justify-center gap-3 transition-all hover:-translate-y-0.5"
-                >
-                  <Send size={20} />
-                  Envoyer ma carte postale
-                </Button>
+                {/* Recipients & Publish Section */}
+                <div className="border-t border-stone-200 pt-6">
+                  <h3 className="font-serif font-bold text-lg text-stone-800 mb-4">Ajouter des destinataires</h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    {/* Emails */}
+                    <div>
+                      <label className="block text-sm font-bold text-stone-700 mb-2">E-mails</label>
+                      <div className="flex gap-2 mb-2">
+                        <input
+                          type="email"
+                          value={newEmail}
+                          onChange={(e) => setNewEmail(e.target.value)}
+                          placeholder="exemple@email.com"
+                          className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-teal-500"
+                          onKeyDown={(e) => e.key === 'Enter' && handleAddEmail()}
+                        />
+                        <button onClick={handleAddEmail} className="bg-stone-100 hover:bg-teal-100 text-stone-600 hover:text-teal-700 p-2 rounded-lg transition-colors"><Check size={18} /></button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {recipientEmails.map(email => (
+                          <span key={email} className="inline-flex items-center gap-1 bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded-md">
+                            {email} <button onClick={() => removeEmail(email)} className="hover:text-red-500"><X size={12} /></button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Phones */}
+                    <div>
+                      <label className="block text-sm font-bold text-stone-700 mb-2">Numéros (SMS)</label>
+                      <div className="flex gap-2 mb-2">
+                        <input
+                          type="tel"
+                          value={newPhone}
+                          onChange={(e) => setNewPhone(e.target.value)}
+                          placeholder="06 12 34 56 78"
+                          className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-teal-500"
+                          onKeyDown={(e) => e.key === 'Enter' && handleAddPhone()}
+                        />
+                        <button onClick={handleAddPhone} className="bg-stone-100 hover:bg-teal-100 text-stone-600 hover:text-teal-700 p-2 rounded-lg transition-colors"><Check size={18} /></button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {recipientPhones.map(phone => (
+                          <span key={phone} className="inline-flex items-center gap-1 bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded-md">
+                            {phone} <button onClick={() => removePhone(phone)} className="hover:text-red-500"><X size={12} /></button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {shareError && (
+                    <div className="p-3 bg-red-50 text-red-600 rounded-lg mb-4 text-sm text-center">
+                      {shareError}
+                    </div>
+                  )}
+
+                  <Button
+                    onClick={handlePublish}
+                    disabled={isPublishing}
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold text-lg py-6 h-auto shadow-lg shadow-orange-200 flex items-center justify-center gap-3 transition-all hover:-translate-y-0.5 disabled:opacity-70"
+                  >
+                    {isPublishing ? (
+                      <>
+                        <RefreshCw size={20} className="animate-spin" /> Envoi en cours...
+                      </>
+                    ) : (
+                      <>
+                        <Send size={20} /> Envoyer ma carte postale
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             )}
 
-            {/* Mobile Card Preview — always visible below editor on small screens */}
-            <div className="lg:hidden mt-8">
-              <div className="flex items-center gap-2 mb-3">
-                <Eye size={14} className="text-teal-500" />
-                <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
-                  Aperçu de votre carte
-                </span>
-                <div className="flex items-center gap-1.5 ml-auto text-stone-400 text-[10px] font-medium">
-                  <RefreshCw size={10} className="animate-spin" style={{ animationDuration: '3s' }} />
-                  Temps réel
+            {/* ==================== STEP: SHARE (SUCCESS) ==================== */}
+            {currentStep === 'share' && shareUrl && (
+              <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8 text-center">
+                <div className="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Send size={40} className="text-teal-600" />
+                </div>
+                <h2 className="text-3xl font-serif font-bold text-stone-800 mb-2">
+                  Carte envoyée !
+                </h2>
+                <p className="text-stone-500 mb-8 max-w-md mx-auto">
+                  Votre carte postale a été créée avec succès. Vous pouvez maintenant la partager avec vos proches.
+                </p>
+
+                <div className="bg-stone-50 rounded-xl p-4 mb-8 border border-stone-200 max-w-lg mx-auto">
+                  <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 text-left">Lien de partage</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={shareUrl}
+                      className="flex-1 bg-white border border-stone-200 rounded-lg px-3 text-sm text-stone-600 focus:outline-none"
+                    />
+                    <Button onClick={copyToClipboard} variant="outline" className="bg-white hover:bg-stone-50 text-stone-600 border-stone-200">
+                      <Copy size={16} className="mr-2" /> Copier
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap justify-center gap-4">
+                  <a href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#25D366] text-white rounded-full font-bold text-sm hover:opacity-90 transition-opacity">
+                    <Share2 size={16} /> WhatsApp
+                  </a>
+                  <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#1877F2] text-white rounded-full font-bold text-sm hover:opacity-90 transition-opacity">
+                    <Facebook size={16} /> Facebook
+                  </a>
+                  <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Regarde ma carte postale !`)}&url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#1DA1F2] text-white rounded-full font-bold text-sm hover:opacity-90 transition-opacity">
+                    <Twitter size={16} /> Twitter
+                  </a>
+                  <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#0A66C2] text-white rounded-full font-bold text-sm hover:opacity-90 transition-opacity">
+                    <Linkedin size={16} /> LinkedIn
+                  </a>
                 </div>
               </div>
-              <div className="flex justify-center">
-                <div className="transform scale-[0.85] origin-top">
-                  <PostcardView postcard={currentPostcard} flipped={showBack} />
+            )}
+
+            {!shareUrl && (
+              <div>
+
+                {/* Mobile Card Preview — always visible below editor on small screens */}
+                <div className="lg:hidden mt-8">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Eye size={14} className="text-teal-500" />
+                    <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+                      Aperçu de votre carte
+                    </span>
+                    <div className="flex items-center gap-1.5 ml-auto text-stone-400 text-[10px] font-medium">
+                      <RefreshCw size={10} className="animate-spin" style={{ animationDuration: '3s' }} />
+                      Temps réel
+                    </div>
+                  </div>
+                  <div className="flex justify-center">
+                    <div className="transform scale-[0.85] origin-top">
+                      <PostcardView postcard={currentPostcard} flipped={showBack} />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Navigation Buttons */}
-            <div className="flex items-center justify-between mt-6">
-              <Button
-                variant="ghost"
-                onClick={goPrev}
-                disabled={currentStepIndex === 0}
-                className={cn(
-                  'rounded-full font-semibold flex items-center gap-2 transition-all',
-                  currentStepIndex === 0
-                    ? 'opacity-0 pointer-events-none'
-                    : 'text-stone-600 hover:text-stone-800 hover:bg-stone-100'
-                )}
-              >
-                <ChevronLeft size={18} />
-                Retour
-              </Button>
+                {/* Navigation Buttons */}
+                <div className="flex items-center justify-between mt-6">
+                  <Button
+                    variant="ghost"
+                    onClick={goPrev}
+                    disabled={currentStepIndex === 0}
+                    className={cn(
+                      'rounded-full font-semibold flex items-center gap-2 transition-all',
+                      currentStepIndex === 0
+                        ? 'opacity-0 pointer-events-none'
+                        : 'text-stone-600 hover:text-stone-800 hover:bg-stone-100'
+                    )}
+                  >
+                    <ChevronLeft size={18} />
+                    Retour
+                  </Button>
 
-              {currentStep !== 'preview' && (
-                <Button
-                  onClick={goNext}
-                  disabled={!canGoNext()}
-                  className={cn(
-                    'rounded-full font-bold flex items-center gap-2 px-6 py-5 h-auto transition-all',
-                    canGoNext()
-                      ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-md shadow-teal-200 hover:-translate-y-0.5'
-                      : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                  {currentStep !== 'preview' && (
+                    <Button
+                      onClick={goNext}
+                      disabled={!canGoNext()}
+                      className={cn(
+                        'rounded-full font-bold flex items-center gap-2 px-6 py-5 h-auto transition-all',
+                        canGoNext()
+                          ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-md shadow-teal-200 hover:-translate-y-0.5'
+                          : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                      )}
+                    >
+                      Continuer
+                      <ChevronRight size={18} />
+                    </Button>
                   )}
-                >
-                  Continuer
-                  <ChevronRight size={18} />
-                </Button>
-              )}
-            </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

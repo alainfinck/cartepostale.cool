@@ -304,7 +304,7 @@ export default function ShowcasePage() {
           </h1>
           <p className="text-stone-300 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
             Transformez vos plus belles photos de vacances en cartes postales virtuelles
-            personnalisées. Plus personnel qu'un post, plus rapide qu'un courrier.
+            personnalisées. Plus personnel qu&apos;un post, plus rapide qu&apos;un courrier.
           </p>
         </div>
       </div>
@@ -366,7 +366,7 @@ export default function ShowcasePage() {
               <Star size={14} /> Fonctionnalités
             </span>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800">
-              Bien plus qu'une carte postale
+              Bien plus qu&apos;une carte postale
             </h2>
             <p className="text-stone-500 mt-4 max-w-xl mx-auto">
               Chaque fonctionnalité a été pensée pour rendre vos souvenirs de voyage inoubliables.
@@ -539,7 +539,7 @@ export default function ShowcasePage() {
             </span>
           </h2>
           <p className="text-teal-100 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-            Créez votre première carte postale en moins de 2 minutes. C'est gratuit, c'est beau,
+            Créez votre première carte postale en moins de 2 minutes. C&apos;est gratuit, c&apos;est beau,
             et ça fait plaisir.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

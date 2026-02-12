@@ -26,6 +26,8 @@ export const Footer = () => {
                     <Link href="/showcase" className="hover:text-teal-600 transition-colors">Découvrir</Link>
                     <Link href="/business" className="hover:text-teal-600 transition-colors">Solutions Pro</Link>
                     <Link href="/pricing" className="hover:text-teal-600 transition-colors">Tarifs</Link>
+                    <Link href="/about" className="hover:text-teal-600 transition-colors">À propos</Link>
+                    <Link href="/contact" className="hover:text-teal-600 transition-colors">Contact</Link>
                 </div>
 
                 <div className="flex justify-center gap-6 mb-8 text-stone-400">
@@ -37,6 +39,11 @@ export const Footer = () => {
                 <p className="text-stone-400 text-sm">
                     © {new Date().getFullYear()} CartePostale.cool. Des sourires dans vos boîtes aux lettres numériques.
                 </p>
+                <div className="flex justify-center gap-6 mt-4 text-xs text-stone-400">
+                    <Link href="/legal/mentions-legales" className="hover:text-stone-600 transition-colors">Mentions Légales</Link>
+                    <Link href="/legal/cgu" className="hover:text-stone-600 transition-colors">CGU / CGV</Link>
+                    <Link href="/legal/privacy" className="hover:text-stone-600 transition-colors">Confidentialité</Link>
+                </div>
             </div>
         </footer>
     )
