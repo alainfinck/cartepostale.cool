@@ -1,4 +1,3 @@
-import React from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Metadata } from 'next'
@@ -128,7 +127,7 @@ export default async function PostcardPage({ params }: PageProps) {
                     À votre tour !
                 </h3>
                 <p className="text-stone-500 mb-6">
-                    Créez et envoyez votre propre carte postale numérique en quelques secondes. C&apos;est gratuit.
+                    Créez et envoyez votre propre carte postale numérique en quelques secondes. {"C'est"} gratuit.
                 </p>
                 <Link href="/editor">
                     <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-6 text-lg rounded-xl shadow-lg shadow-teal-100 transition-transform hover:-translate-y-1">
@@ -139,7 +138,7 @@ export default async function PostcardPage({ params }: PageProps) {
 
             <div className="mt-8 text-center text-stone-400 text-sm">
                 <Link href="/" className="hover:text-stone-600 underline">
-                    Retour à l&apos;accueil
+                    {"Retour à l'accueil"}
                 </Link>
             </div>
 

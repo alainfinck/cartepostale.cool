@@ -17,7 +17,7 @@ export default function ContactPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
                     <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-800 mb-6">
-                        Besoin d'<span className="text-orange-500">aide ?</span>
+                        Besoin d&apos;<span className="text-orange-500">aide ?</span>
                     </h1>
                     <p className="text-xl text-stone-600 max-w-2xl mx-auto">
                         Notre équipe support est basée à Lyon et répond en général sous 24h.
@@ -70,7 +70,7 @@ export default function ContactPage() {
                         <div className="bg-orange-50 p-8 rounded-2xl border border-orange-100">
                             <h3 className="font-bold text-stone-800 mb-2">Avant de nous contacter</h3>
                             <p className="text-stone-600 mb-4">
-                                Avez-vous consulté notre foire aux questions ? La réponse s'y trouve peut-être déjà !
+                                Avez-vous consulté notre foire aux questions ? La réponse s&apos;y trouve peut-être déjà !
                             </p>
                             <Button variant="outline" className="bg-white border-orange-200 text-orange-600 hover:bg-orange-100 hover:text-orange-700">
                                 Consulter la FAQ

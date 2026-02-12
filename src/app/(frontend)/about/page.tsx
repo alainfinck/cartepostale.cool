@@ -16,7 +16,7 @@ export default function AboutPage() {
             <section className="relative py-24 px-4 overflow-hidden">
                 <div className="max-w-7xl mx-auto text-center relative z-10">
                     <h1 className="text-4xl md:text-6xl font-serif font-bold text-stone-800 mb-6">
-                        Ramener l'émotion <br /><span className="text-orange-500">dans vos boîtes aux lettres</span>
+                        Ramener l&apos;émotion <br /><span className="text-orange-500">dans vos boîtes aux lettres</span>
                     </h1>
                     <p className="text-xl text-stone-600 max-w-2xl mx-auto leading-relaxed">
                         Dans un monde numérique éphémère, nous croyons au pouvoir durable d&#39;une carte postale tenue en main.

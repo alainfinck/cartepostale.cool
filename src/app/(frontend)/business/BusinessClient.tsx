@@ -34,13 +34,13 @@ export default function BusinessPage() {
                         </div>
 
                         <h1 className="text-5xl md:text-7xl font-serif font-bold text-white mb-8 leading-tight">
-                            L'impact émotionnel <br />
+                            L&apos;impact émotionnel <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-amber-200">au service de votre marque.</span>
                         </h1>
 
                         <p className="text-teal-50 text-xl mb-10 leading-relaxed max-w-2xl font-light">
-                            Transformez vos relations clients grâce à l'envoi automatisé de cartes postales physiques premium.
-                            Le meilleur du digital combiné à l'authenticité du papier.
+                            Transformez vos relations clients grâce à l&apos;envoi automatisé de cartes postales physiques premium.
+                            Le meilleur du digital combiné à l&apos;authenticité du papier.
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4">
@@ -96,7 +96,7 @@ export default function BusinessPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center max-w-3xl mx-auto mb-16">
                         <h2 className="text-3xl md:text-5xl font-serif font-bold text-teal-900 mb-4">Pour chaque industrie</h2>
-                        <p className="text-lg text-stone-600">Nos solutions s'adaptent à votre secteur pour maximiser l'impact.</p>
+                        <p className="text-lg text-stone-600">Nos solutions s&apos;adaptent à votre secteur pour maximiser l&apos;impact.</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
@@ -156,7 +156,7 @@ export default function BusinessPage() {
                             Créer un compte professionnel
                         </Button>
                         <Button variant="ghost" className="text-white hover:bg-white/10 px-8 py-6 rounded-full text-lg h-auto border border-white/20">
-                            Contacter l'équipe commerciale
+                            Contacter l&apos;équipe commerciale
                         </Button>
                     </div>
                     <p className="mt-6 text-sm text-teal-300 opacity-80">

@@ -99,7 +99,7 @@ export default function Home() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-amber-200">paradis.</span>
             </h1>
             <p className="text-teal-50 text-xl mb-10 leading-relaxed max-w-lg">
-              Le charme d'une carte manuscrite, livrée instantanément. Capturez vos souvenirs de voyage et partagez-les avec style.
+              Le charme d&apos;une carte manuscrite, livrée instantanément. Capturez vos souvenirs de voyage et partagez-les avec style.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/editor">
