@@ -38,7 +38,6 @@ import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import heic2any from 'heic2any'
 import { createPostcard } from '@/actions/postcard-actions'
 import { linkPostcardToUser } from '@/actions/auth-actions'
 
@@ -89,6 +88,7 @@ async function fileToDataUrl(file: File): Promise<string> {
   const isHeic = HEIC_TYPES.includes(file.type) || /\.heic$/i.test(file.name) || /\.heif$/i.test(file.name)
   let blob: Blob = file
   if (isHeic) {
+    const heic2any = (await import('heic2any')).default
     const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 })
     blob = Array.isArray(converted) ? converted[0] : converted
   }
