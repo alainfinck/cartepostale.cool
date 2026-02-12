@@ -28,6 +28,7 @@ import {
   Linkedin,
   Twitter,
   Share2,
+  Maximize2,
 } from 'lucide-react'
 import { Postcard, Template } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -111,11 +112,11 @@ export default function EditorPage() {
 
   // Postcard state
   const [frontImage, setFrontImage] = useState('')
-  const [message, setMessage] = useState('')
-  const [recipientName, setRecipientName] = useState('')
-  const [senderName, setSenderName] = useState('')
+  const [message, setMessage] = useState('Un petit coucou de mes vacances ! Tout se passe merveilleusement bien, les paysages sont magnifiques. On pense bien à vous !')
+  const [recipientName, setRecipientName] = useState('Maman & Papa')
+  const [senderName, setSenderName] = useState('Sarah')
   const [senderEmail, setSenderEmail] = useState('')
-  const [location, setLocation] = useState('')
+  const [location, setLocation] = useState('Antibes, France')
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
 
@@ -362,16 +363,17 @@ export default function EditorPage() {
                   Mise à jour en temps réel
                 </div>
               </div>
-              <PostcardView postcard={currentPostcard} flipped={showBack} className="w-full h-auto aspect-[3/2]" />
-              <p className="text-stone-400 text-xs mt-3 text-center">L&apos;aperçu se met à jour en temps réel</p>
-              <Button
-                variant="outline"
-                className="w-full mt-4 rounded-xl border-stone-200 text-stone-600 hover:bg-stone-50 gap-2"
-                onClick={() => setShowFullscreen(true)}
-              >
-                <Eye size={18} />
-                Voir comme le destinataire (Plein écran)
-              </Button>
+              <PostcardView postcard={currentPostcard} flipped={showBack} className="w-full h-auto aspect-[3/2] shadow-xl rounded-xl border border-stone-100" />
+              <div className="mt-4 flex flex-col items-center">
+                <p className="text-stone-400 text-[10px] uppercase tracking-widest font-bold">L&apos;aperçu se met à jour en temps réel</p>
+                <button
+                  onClick={() => setShowFullscreen(true)}
+                  className="mt-3 text-stone-500 hover:text-teal-600 text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-colors group"
+                >
+                  <Maximize2 size={14} className="group-hover:scale-110 transition-transform" />
+                  Voir en plein écran
+                </button>
+              </div>
             </div>
           </div>
 
@@ -804,10 +806,18 @@ export default function EditorPage() {
             {/* ==================== STEP: APERÇU ==================== */}
             {currentStep === 'preview' && (
               <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
-                <h2 className="text-2xl font-serif font-bold text-stone-800 mb-2">
-                  Votre carte est prête !
-                </h2>
-                <p className="text-stone-500 mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-2xl font-serif font-bold text-stone-800">
+                    Votre carte est prête !
+                  </h2>
+                  <button
+                    onClick={() => setShowFullscreen(true)}
+                    className="text-teal-600 hover:text-teal-700 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  >
+                    <Maximize2 size={14} /> Aperçu plein écran
+                  </button>
+                </div>
+                <p className="text-stone-500 mb-6 text-sm">
                   Vérifiez le rendu final. Cliquez sur la carte pour la retourner.
                 </p>
 
@@ -823,12 +833,14 @@ export default function EditorPage() {
                         {uploadedFileName || 'Modèle sélectionné'}
                       </p>
                     </div>
-                    <button
-                      onClick={() => setCurrentStep('photo')}
-                      className="ml-auto text-teal-500 hover:text-teal-700 text-xs font-bold"
-                    >
-                      Modifier
-                    </button>
+                    {!shareUrl && (
+                      <button
+                        onClick={() => setCurrentStep('photo')}
+                        className="ml-auto text-teal-500 hover:text-teal-700 text-xs font-bold"
+                      >
+                        Modifier
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex items-start gap-3 p-4 bg-stone-50 rounded-xl">
@@ -839,12 +851,14 @@ export default function EditorPage() {
                       </p>
                       <p className="text-stone-700 text-sm mt-0.5 line-clamp-2">{message}</p>
                     </div>
-                    <button
-                      onClick={() => setCurrentStep('redaction')}
-                      className="ml-auto text-teal-500 hover:text-teal-700 text-xs font-bold flex-shrink-0"
-                    >
-                      Modifier
-                    </button>
+                    {!shareUrl && (
+                      <button
+                        onClick={() => setCurrentStep('redaction')}
+                        className="ml-auto text-teal-500 hover:text-teal-700 text-xs font-bold flex-shrink-0"
+                      >
+                        Modifier
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex items-start gap-3 p-4 bg-stone-50 rounded-xl">
@@ -859,270 +873,217 @@ export default function EditorPage() {
                         <span className="font-semibold">{location}</span>
                       </p>
                     </div>
-                    <button
-                      onClick={() => setCurrentStep('redaction')}
-                      className="ml-auto text-teal-500 hover:text-teal-700 text-xs font-bold"
-                    >
-                      Modifier
-                    </button>
+                    {!shareUrl && (
+                      <button
+                        onClick={() => setCurrentStep('redaction')}
+                        className="ml-auto text-teal-500 hover:text-teal-700 text-xs font-bold"
+                      >
+                        Modifier
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                {/* Recipients & Publish Section */}
-                <div className="border-t border-stone-200 pt-6">
-                  <h3 className="font-serif font-bold text-lg text-stone-800 mb-1">Ajouter des destinataires <span className="text-stone-500 font-normal text-sm">(optionnel)</span></h3>
-                  <p className="text-stone-500 text-sm mb-4">
-                    Une fois la carte créée, un lien à partager vous sera fourni. Vous pourrez l’envoyer à qui vous voulez.
-                  </p>
+                {!shareUrl && (
+                  <div className="border-t border-stone-200 pt-6">
+                    <h3 className="font-serif font-bold text-lg text-stone-800 mb-1">Ajouter des destinataires <span className="text-stone-500 font-normal text-sm">(optionnel)</span></h3>
+                    <p className="text-stone-500 text-sm mb-4">
+                      Une fois la carte créée, un lien à partager vous sera fourni. Vous pourrez l’envoyer à qui vous voulez.
+                    </p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    {/* Emails */}
-                    <div>
-                      <label className="block text-sm font-bold text-stone-700 mb-2">E-mails</label>
-                      <div className="flex gap-2 mb-2">
-                        <input
-                          type="email"
-                          value={newEmail}
-                          onChange={(e) => setNewEmail(e.target.value)}
-                          placeholder="exemple@email.com"
-                          className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-teal-500"
-                          onKeyDown={(e) => e.key === 'Enter' && handleAddEmail()}
-                        />
-                        <button onClick={handleAddEmail} className="bg-stone-100 hover:bg-teal-100 text-stone-600 hover:text-teal-700 p-2 rounded-lg transition-colors"><Check size={18} /></button>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {recipientEmails.map(email => (
-                          <span key={email} className="inline-flex items-center gap-1 bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded-md">
-                            {email} <button onClick={() => removeEmail(email)} className="hover:text-red-500"><X size={12} /></button>
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Phones */}
-                    <div>
-                      <label className="block text-sm font-bold text-stone-700 mb-2">Numéros (SMS)</label>
-                      <div className="flex gap-2 mb-2">
-                        <input
-                          type="tel"
-                          value={newPhone}
-                          onChange={(e) => setNewPhone(e.target.value)}
-                          placeholder="06 12 34 56 78"
-                          className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-teal-500"
-                          onKeyDown={(e) => e.key === 'Enter' && handleAddPhone()}
-                        />
-                        <button onClick={handleAddPhone} className="bg-stone-100 hover:bg-teal-100 text-stone-600 hover:text-teal-700 p-2 rounded-lg transition-colors"><Check size={18} /></button>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {recipientPhones.map(phone => (
-                          <span key={phone} className="inline-flex items-center gap-1 bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded-md">
-                            {phone} <button onClick={() => removePhone(phone)} className="hover:text-red-500"><X size={12} /></button>
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Sender Email Section */}
-                  <div className="mt-8 pt-8 border-t border-stone-100">
-                    <div className="bg-teal-50/50 rounded-2xl p-6 border border-teal-100">
-                      <div className="flex items-start gap-3 mb-4">
-                        <div className="bg-teal-500 text-white p-2 rounded-lg mt-0.5">
-                          <User size={18} />
-                        </div>
-                        <div>
-                          <h3 className="font-serif font-bold text-lg text-stone-800">Votre E-mail (Expéditeur)</h3>
-                          <p className="text-stone-500 text-sm mt-1">
-                            Saisissez votre e-mail pour revoir votre carte, consulter les statistiques et suivre son envoi.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="max-w-md">
-                        <input
-                          type="email"
-                          value={senderEmail}
-                          onChange={(e) => setSenderEmail(e.target.value)}
-                          placeholder="votre@email.com"
-                          className="w-full rounded-xl border border-stone-200 px-4 py-3 text-base focus:border-teal-500 focus:ring-teal-500 bg-white shadow-sm transition-all"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {shareUrl && (
-                    <div className="mt-8 bg-stone-50 rounded-2xl p-6 border border-stone-200 text-center animate-in fade-in slide-in-from-bottom-4">
-                      <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Send size={32} className="text-teal-600" />
-                      </div>
-                      <h3 className="text-xl font-serif font-bold text-stone-800 mb-2">Carte prête à être partagée !</h3>
-
-                      <div className="mb-6 max-w-lg mx-auto">
-                        <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 text-left">Lien de partage</p>
-                        <div className="flex gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      {/* Emails */}
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2">E-mails</label>
+                        <div className="flex gap-2 mb-2">
                           <input
-                            type="text"
-                            readOnly
-                            value={shareUrl}
-                            className="flex-1 bg-white border border-stone-200 rounded-lg px-3 text-sm text-stone-600 focus:outline-none py-2"
+                            type="email"
+                            value={newEmail}
+                            onChange={(e) => setNewEmail(e.target.value)}
+                            placeholder="exemple@email.com"
+                            className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-teal-500"
+                            onKeyDown={(e) => e.key === 'Enter' && handleAddEmail()}
                           />
-                          <Button onClick={copyToClipboard} variant="outline" className="bg-white hover:bg-stone-50 text-stone-600 border-stone-200 text-sm py-2 h-auto">
-                            <Copy size={14} className="mr-2" /> Copier
-                          </Button>
+                          <button onClick={handleAddEmail} className="bg-stone-100 hover:bg-teal-100 text-stone-600 hover:text-teal-700 p-2 rounded-lg transition-colors"><Check size={18} /></button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {recipientEmails.map(email => (
+                            <span key={email} className="inline-flex items-center gap-1 bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded-md">
+                              {email} <button onClick={() => removeEmail(email)} className="hover:text-red-500"><X size={12} /></button>
+                            </span>
+                          ))}
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap justify-center gap-3">
-                        <a href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#25D366] text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
-                          <Share2 size={14} /> WhatsApp
-                        </a>
-                        <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#1877F2] text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
-                          <Facebook size={14} /> Facebook
-                        </a>
-                        <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Regarde ma carte postale !`)}&url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#1DA1F2] text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
-                          <Twitter size={14} /> Twitter
-                        </a>
+                      {/* Phones */}
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2">Numéros (SMS)</label>
+                        <div className="flex gap-2 mb-2">
+                          <input
+                            type="tel"
+                            value={newPhone}
+                            onChange={(e) => setNewPhone(e.target.value)}
+                            placeholder="06 12 34 56 78"
+                            className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-teal-500"
+                            onKeyDown={(e) => e.key === 'Enter' && handleAddPhone()}
+                          />
+                          <button onClick={handleAddPhone} className="bg-stone-100 hover:bg-teal-100 text-stone-600 hover:text-teal-700 p-2 rounded-lg transition-colors"><Check size={18} /></button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {recipientPhones.map(phone => (
+                            <span key={phone} className="inline-flex items-center gap-1 bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded-md">
+                              {phone} <button onClick={() => removePhone(phone)} className="hover:text-red-500"><X size={12} /></button>
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  )}
 
-                  {!shareUrl && (
+                    {/* Sender Email Section */}
+                    <div className="mt-8 pt-8 border-t border-stone-100">
+                      <div className="bg-teal-50/50 rounded-2xl p-6 border border-teal-100">
+                        <div className="flex items-start gap-3 mb-4">
+                          <div className="bg-teal-500 text-white p-2 rounded-lg mt-0.5">
+                            <User size={18} />
+                          </div>
+                          <div>
+                            <h3 className="font-serif font-bold text-lg text-stone-800">Votre E-mail (Expéditeur)</h3>
+                            <p className="text-stone-500 text-sm mt-1">
+                              Saisissez votre e-mail pour revoir votre carte, consulter les statistiques et suivre son envoi.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="max-w-md">
+                          <input
+                            type="email"
+                            value={senderEmail}
+                            onChange={(e) => setSenderEmail(e.target.value)}
+                            placeholder="votre@email.com"
+                            className="w-full rounded-xl border border-stone-200 px-4 py-3 text-base focus:border-teal-500 focus:ring-teal-500 bg-white shadow-sm transition-all"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {shareUrl && (
+                  <div className="mt-8 bg-stone-50 rounded-2xl p-6 border border-stone-200 text-center animate-in fade-in slide-in-from-bottom-4">
+                    <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Send size={32} className="text-teal-600" />
+                    </div>
+                    <h3 className="text-xl font-serif font-bold text-stone-800 mb-2">Carte prête à être partagée !</h3>
+
+                    <div className="mb-6 max-w-lg mx-auto">
+                      <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 text-left">Lien de partage</p>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          readOnly
+                          value={shareUrl}
+                          className="flex-1 bg-white border border-stone-200 rounded-lg px-3 text-sm text-stone-600 focus:outline-none py-2"
+                        />
+                        <Button onClick={copyToClipboard} variant="outline" className="bg-white hover:bg-stone-50 text-stone-600 border-stone-200 text-sm py-2 h-auto">
+                          <Copy size={14} className="mr-2" /> Copier
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap justify-center gap-3">
+                      <a href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#25D366] text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
+                        <Share2 size={14} /> WhatsApp
+                      </a>
+                      <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#1877F2] text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
+                        <Facebook size={14} /> Facebook
+                      </a>
+                      <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Regarde ma carte postale !`)}&url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#1DA1F2] text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
+                        <Twitter size={14} /> Twitter
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {!shareUrl && (
+                  <div className="flex flex-col gap-4">
                     <Button
                       onClick={handlePublish}
                       disabled={isPublishing}
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold text-lg py-6 h-auto shadow-lg shadow-orange-200 flex items-center justify-center gap-3 transition-all hover:-translate-y-0.5 disabled:opacity-70"
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-base py-5 h-auto shadow-md shadow-orange-100 flex items-center justify-center gap-2.5 transition-all hover:-translate-y-0.5 disabled:opacity-70"
                     >
                       {isPublishing ? (
                         <>
-                          <RefreshCw size={20} className="animate-spin" /> Envoi en cours...
+                          <RefreshCw size={18} className="animate-spin" /> Envoi en cours...
                         </>
                       ) : (
                         <>
-                          <Send size={20} /> Envoyer ma carte postale
+                          <Send size={18} /> Envoyer ma carte postale
                         </>
                       )}
                     </Button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* ==================== STEP: SHARE (SUCCESS) ==================== */}
-            {shareUrl && (
-              <div className="bg-white rounded-3xl shadow-xl border border-stone-100 p-8 text-center animate-in zoom-in-95 duration-300">
-                <div className="w-20 h-20 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Check size={40} />
-                </div>
-                <h2 className="text-3xl font-serif font-bold text-stone-800 mb-3">
-                  Carte publiée avec succès !
-                </h2>
-                <p className="text-stone-500 mb-8 max-w-md mx-auto">
-                  Votre carte est maintenant accessible en ligne. Partagez le lien avec vos proches.
-                </p>
-
-                <div className="bg-stone-50 p-6 rounded-2xl border border-stone-200 mb-8">
-                  <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Lien de partage</p>
-                  <div className="flex gap-2">
-                    <input
-                      readOnly
-                      value={shareUrl}
-                      className="flex-1 bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm font-mono text-teal-700"
-                    />
-                    <Button onClick={copyToClipboard} className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl px-4">
-                      <Copy size={18} />
-                    </Button>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  <Link
-                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
-                    target="_blank"
-                    className="flex items-center justify-center gap-2 py-3 px-4 bg-[#1877F2]/10 text-[#1877F2] font-bold rounded-xl hover:bg-[#1877F2]/20 transition-colors"
-                  >
-                    <Facebook size={18} /> Facebook
-                  </Link>
-                  <Link
-                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(`Une carte postale de ${senderName} !`)}`}
-                    target="_blank"
-                    className="flex items-center justify-center gap-2 py-3 px-4 bg-[#1DA1F2]/10 text-[#1DA1F2] font-bold rounded-xl hover:bg-[#1DA1F2]/20 transition-colors"
-                  >
-                    <Twitter size={18} /> Twitter
-                  </Link>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link href="/editor" className="flex-1">
-                    <Button variant="outline" className="w-full py-6 rounded-xl border-stone-200 text-stone-600 font-bold hover:bg-stone-50">
-                      Créer une nouvelle carte
-                    </Button>
-                  </Link>
-                  <Link href="/" className="flex-1">
-                    <Button className="w-full py-6 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-lg shadow-teal-100">
-                      Retour à l&apos;accueil
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            )}
-
-            {!shareUrl && (
-              <div>
-
-                {/* Mobile Card Preview — always visible below editor on small screens */}
-                <div className="lg:hidden mt-8">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Eye size={14} className="text-teal-500" />
-                    <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
-                      Aperçu de votre carte
-                    </span>
-                    <div className="flex items-center gap-1.5 ml-auto text-stone-400 text-[10px] font-medium">
-                      <RefreshCw size={10} className="animate-spin" style={{ animationDuration: '3s' }} />
-                      Temps réel
-                    </div>
-                  </div>
-                  <div className="flex justify-center">
-                    <div className="transform scale-[0.85] origin-top">
-                      <PostcardView postcard={currentPostcard} flipped={showBack} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Navigation Buttons */}
-                <div className="flex items-center justify-between mt-6">
-                  <Button
-                    variant="ghost"
-                    onClick={goPrev}
-                    disabled={currentStepIndex === 0}
-                    className={cn(
-                      'rounded-full font-semibold flex items-center gap-2 transition-all',
-                      currentStepIndex === 0
-                        ? 'opacity-0 pointer-events-none'
-                        : 'text-stone-600 hover:text-stone-800 hover:bg-stone-100'
-                    )}
-                  >
-                    <ChevronLeft size={18} />
-                    Retour
-                  </Button>
-
-                  {currentStep !== 'preview' && (
-                    <Button
-                      onClick={goNext}
-                      disabled={!canGoNext()}
-                      className={cn(
-                        'rounded-full font-bold flex items-center gap-2 px-6 py-5 h-auto transition-all',
-                        canGoNext()
-                          ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-md shadow-teal-200 hover:-translate-y-0.5'
-                          : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-                      )}
-                    >
-                      Continuer
-                      <ChevronRight size={18} />
-                    </Button>
-                  )}
-                </div>
+                )}
               </div>
             )}
           </div>
+
+
+          {!shareUrl && (
+            <div>
+
+              {/* Mobile Card Preview — always visible below editor on small screens */}
+              <div className="lg:hidden mt-8">
+                <div className="flex items-center gap-2 mb-3">
+                  <Eye size={14} className="text-teal-500" />
+                  <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+                    Aperçu de votre carte
+                  </span>
+                  <div className="flex items-center gap-1.5 ml-auto text-stone-400 text-[10px] font-medium">
+                    <RefreshCw size={10} className="animate-spin" style={{ animationDuration: '3s' }} />
+                    Temps réel
+                  </div>
+                </div>
+                <div className="flex justify-center">
+                  <div className="transform scale-[0.85] origin-top">
+                    <PostcardView postcard={currentPostcard} flipped={showBack} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Navigation Buttons */}
+              <div className="flex items-center justify-between mt-6">
+                <Button
+                  variant="ghost"
+                  onClick={goPrev}
+                  disabled={currentStepIndex === 0}
+                  className={cn(
+                    'rounded-full font-semibold flex items-center gap-2 transition-all',
+                    currentStepIndex === 0
+                      ? 'opacity-0 pointer-events-none'
+                      : 'text-stone-600 hover:text-stone-800 hover:bg-stone-100'
+                  )}
+                >
+                  <ChevronLeft size={18} />
+                  Retour
+                </Button>
+
+                {currentStep !== 'preview' && (
+                  <Button
+                    onClick={goNext}
+                    disabled={!canGoNext()}
+                    className={cn(
+                      'rounded-full font-bold flex items-center gap-2 px-6 py-5 h-auto transition-all',
+                      canGoNext()
+                        ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-md shadow-teal-200 hover:-translate-y-0.5'
+                        : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                    )}
+                  >
+                    Continuer
+                    <ChevronRight size={18} />
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
