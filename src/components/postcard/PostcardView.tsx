@@ -185,6 +185,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                 className="w-full h-full object-cover"
                             />
 
+                            {/* Branding at top-left */}
+                            <div className="absolute top-6 left-6 bg-stone-900/40 backdrop-blur-md text-white/90 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase shadow-lg border border-white/10 flex items-center gap-2 z-20">
+                                <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse" />
+                                cartepostale.cool
+                            </div>
+
                             {postcard.location && (
                                 <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-sm text-teal-900 px-4 py-2 rounded-lg text-sm font-bold shadow-lg flex items-center gap-2 transform transition-transform group-hover:scale-105">
                                     <MapPin size={16} className="text-orange-500" />

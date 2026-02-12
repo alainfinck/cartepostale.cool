@@ -97,8 +97,11 @@ export default function Home() {
             <div className="max-w-2xl text-center lg:text-left">
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-5 leading-tight drop-shadow-lg">
                 Envoyez un coin de <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-amber-200 inline-flex min-h-[1.2em]">
-                  <WordRotate words={['paradis.', 'montagne.', 'mer.', 'campagne.', 'ville.']} />
+                <span className="inline-block relative">
+                  <WordRotate
+                    words={['paradis.', 'montagne.', 'mer.', 'campagne.', 'ville.']}
+                    className="text-orange-200"
+                  />
                 </span>
               </h1>
               <p className="text-teal-50 text-lg md:text-xl leading-relaxed max-w-lg mx-auto lg:mx-0">
@@ -217,23 +220,6 @@ export default function Home() {
             <div key={card.id} className="flex flex-col items-center group">
               <PostcardView postcard={card} />
               <div className="w-[340px] sm:w-[600px] mt-6 flex justify-between items-center px-4 py-3 bg-white border border-stone-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative">
-                {/* Fixed "VOIR L'ALBUM" button better integrated */}
-                {card.mediaItems && card.mediaItems.length > 0 && (
-                  <div className="absolute -top-12 right-0 left-0 flex justify-center pointer-events-none">
-                    <button
-                      onClick={(e) => {
-                        // This is tricky because PostcardView handles the flip.
-                        // We might need to expose the openAlbum method or just let the user click the card.
-                        // For now, let's keep it as a visual hint that is better integrated.
-                      }}
-                      className="pointer-events-auto flex items-center gap-2 px-5 py-2.5 bg-stone-900 text-white rounded-full transition-all shadow-xl shadow-stone-900/40 backdrop-blur-sm border border-white/10 text-[11px] tracking-[0.2em] uppercase hover:scale-110 active:scale-95 group"
-                    >
-                      <Camera size={16} className="text-white group-hover:rotate-12 transition-transform" />
-                      <span className="font-bold">Voir l'album</span>
-                      <span className="bg-white/20 px-2 py-0.5 rounded-full text-[9px]">{card.mediaItems.length}</span>
-                    </button>
-                  </div>
-                )}
                 <div className="flex items-center gap-4">
                   <button className="flex items-center gap-1.5 text-stone-400 hover:text-red-500 transition-colors group/btn">
                     <Heart size={18} className="group-hover/btn:fill-red-500 transition-colors" />
