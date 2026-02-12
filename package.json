@@ -21,6 +21,7 @@
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts"
   },
   "dependencies": {
+    "@libsql/client": "^0.17.0",
     "@payloadcms/db-postgres": "^3.76.1",
     "@payloadcms/next": "3.76.1",
     "@payloadcms/richtext-lexical": "3.76.1",
