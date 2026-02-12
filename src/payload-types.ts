@@ -69,6 +69,9 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    agencies: Agency;
+    postcards: Postcard;
+    templates: Template;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,13 +81,16 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    agencies: AgenciesSelect<false> | AgenciesSelect<true>;
+    postcards: PostcardsSelect<false> | PostcardsSelect<true>;
+    templates: TemplatesSelect<false> | TemplatesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   fallbackLocale: null;
   globals: {};
@@ -119,7 +125,12 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
+  name?: string | null;
+  role: 'admin' | 'client' | 'user';
+  company?: string | null;
+  cardsCreated?: number | null;
+  plan?: ('free' | 'pro' | 'enterprise') | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -144,7 +155,7 @@ export interface User {
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: number;
   alt: string;
   updatedAt: string;
   createdAt: string;
@@ -160,10 +171,74 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "agencies".
+ */
+export interface Agency {
+  id: number;
+  name: string;
+  logo?: (number | null) | Media;
+  primaryColor?: string | null;
+  imageBank?:
+    | {
+        image?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  qrCodeUrl?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "postcards".
+ */
+export interface Postcard {
+  id: number;
+  frontImage: number | Media;
+  message: string;
+  recipientName: string;
+  senderName: string;
+  location: string;
+  coords?: {
+    lat?: number | null;
+    lng?: number | null;
+  };
+  stampStyle?: ('classic' | 'modern' | 'airmail') | null;
+  date: string;
+  status?: ('published' | 'draft' | 'archived') | null;
+  views?: number | null;
+  shares?: number | null;
+  mediaItems?:
+    | {
+        media?: (number | null) | Media;
+        type?: ('image' | 'video') | null;
+        id?: string | null;
+      }[]
+    | null;
+  isPremium?: boolean | null;
+  agency?: (number | null) | Agency;
+  brandLogo?: (number | null) | Media;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "templates".
+ */
+export interface Template {
+  id: number;
+  name: string;
+  imageUrl: number | Media;
+  category: 'beach' | 'city' | 'mountain' | 'abstract';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: string;
+  id: number;
   key: string;
   data:
     | {
@@ -180,20 +255,32 @@ export interface PayloadKv {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'agencies';
+        value: number | Agency;
+      } | null)
+    | ({
+        relationTo: 'postcards';
+        value: number | Postcard;
+      } | null)
+    | ({
+        relationTo: 'templates';
+        value: number | Template;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -203,10 +290,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -226,7 +313,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -237,6 +324,11 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
+  company?: T;
+  cardsCreated?: T;
+  plan?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -271,6 +363,69 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "agencies_select".
+ */
+export interface AgenciesSelect<T extends boolean = true> {
+  name?: T;
+  logo?: T;
+  primaryColor?: T;
+  imageBank?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  qrCodeUrl?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "postcards_select".
+ */
+export interface PostcardsSelect<T extends boolean = true> {
+  frontImage?: T;
+  message?: T;
+  recipientName?: T;
+  senderName?: T;
+  location?: T;
+  coords?:
+    | T
+    | {
+        lat?: T;
+        lng?: T;
+      };
+  stampStyle?: T;
+  date?: T;
+  status?: T;
+  views?: T;
+  shares?: T;
+  mediaItems?:
+    | T
+    | {
+        media?: T;
+        type?: T;
+        id?: T;
+      };
+  isPremium?: T;
+  agency?: T;
+  brandLogo?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "templates_select".
+ */
+export interface TemplatesSelect<T extends boolean = true> {
+  name?: T;
+  imageUrl?: T;
+  category?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

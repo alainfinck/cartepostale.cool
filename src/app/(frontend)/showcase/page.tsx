@@ -1,0 +1,24 @@
+import React from 'react'
+import { Metadata } from 'next'
+import ShowcaseClient from './ShowcaseClient'
+
+export const metadata: Metadata = {
+    title: 'Galerie & Inspiration - Les Plus Belles Cartes',
+    description: 'Découvrez comment nos utilisateurs partagent leurs souvenirs de voyage. Galerie de cartes postales, témoignages et idées créatives.',
+    openGraph: {
+        title: 'Galerie & Inspiration - Les Plus Belles Cartes | CartePostale.cool',
+        description: 'Découvrez comment nos utilisateurs partagent leurs souvenirs de voyage.',
+        images: [
+            {
+                url: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+                width: 1200,
+                height: 630,
+                alt: 'Galerie CartePostale.cool',
+            },
+        ],
+    },
+}
+
+export default function ShowcasePage() {
+    return <ShowcaseClient />
+}
