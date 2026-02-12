@@ -17,8 +17,9 @@ export default function LegalLayout({
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <nav className="md:col-span-1 space-y-2">
                         <LegalLink href="/legal/mentions-legales">Mentions Légales</LegalLink>
-                        <LegalLink href="/legal/cgu">CGU / CGV</LegalLink>
-                        <LegalLink href="/legal/privacy">Confidentialité</LegalLink>
+                        <LegalLink href="/legal/cgu">CGU</LegalLink>
+                        <LegalLink href="/legal/cgv">CGV</LegalLink>
+                        <LegalLink href="/legal/confidentialite">Confidentialité</LegalLink>
                         <LegalLink href="/legal/cookies">Cookies</LegalLink>
                     </nav>
 

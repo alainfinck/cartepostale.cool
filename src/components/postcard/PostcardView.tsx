@@ -1,18 +1,18 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Postcard } from '@/types';
-import { 
-    RotateCw, 
-    MapPin, 
-    X, 
-    Play, 
-    ChevronLeft, 
-    ChevronRight, 
+import {
+    RotateCw,
+    MapPin,
+    X,
+    Play,
+    ChevronLeft,
+    ChevronRight,
     Camera,
-    Search, 
-    Info 
+    Search,
+    Info
 } from 'lucide-react';
 import { motion, useSpring, useMotionValue, useTransform, PanInfo, useAnimation } from 'framer-motion';
 
@@ -37,11 +37,11 @@ interface PostcardViewProps {
 
 const FALLBACK_FRONT_IMAGE = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80'
 
-const PostcardView: React.FC<PostcardViewProps> = ({ 
-    postcard, 
-    isPreview = false, 
-    flipped, 
-    className, 
+const PostcardView: React.FC<PostcardViewProps> = ({
+    postcard,
+    isPreview = false,
+    flipped,
+    className,
     isLarge = false,
     width,
     height
@@ -56,7 +56,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     // Motion values for rotation
     const rotateY = useMotionValue(flipped ? 180 : 0);
     const springRotateY = useSpring(rotateY, { stiffness: 80, damping: 26 });
-    
+
     // Controls for animation
     const controls = useAnimation();
 
@@ -78,6 +78,43 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     // Zoom de la mini-carte au verso (pour que + / - fonctionnent sans déclencher le flip)
     const [backMapZoom, setBackMapZoom] = useState(11);
 
+    const messageContainerRef = useRef<HTMLDivElement>(null);
+    const messageTextRef = useRef<HTMLParagraphElement>(null);
+    const [autoFontSize, setAutoFontSize] = useState<number>(1);
+
+    // Ajustement automatique de la taille du texte pour qu'il tienne dans le conteneur
+    useLayoutEffect(() => {
+        if (!isFlipped || !messageTextRef.current || !messageContainerRef.current) return;
+
+        const container = messageContainerRef.current;
+        const text = messageTextRef.current;
+        const targetHeight = container.clientHeight;
+        const targetWidth = container.clientWidth;
+
+        if (targetHeight === 0 || targetWidth === 0) return;
+
+        let low = 0.4;
+        let high = 3.5; // Limite haute généreuse
+        let best = 1.0;
+
+        // Recherche par dichotomie de la taille optimale
+        for (let i = 0; i < 8; i++) {
+            const mid = (low + high) / 2;
+            text.style.fontSize = `${mid}rem`;
+            // On vérifie si ça dépasse (avec une petite marge de 4px)
+            if (text.scrollHeight <= targetHeight + 4 && text.scrollWidth <= targetWidth) {
+                best = mid;
+                low = mid;
+            } else {
+                high = mid;
+            }
+        }
+
+        setAutoFontSize(best);
+        // On nettoie le style inline forcé après mesure pour laisser le style React prendre le relais
+        text.style.fontSize = '';
+    }, [isFlipped, postcard.message, isLarge]);
+
     const handleFlip = () => {
         if (isDragging) return;
         const newFlippedState = !isFlipped;
@@ -90,7 +127,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         const currentRotation = rotateY.get();
         // Normalize rotation to 0-360 range
         const normalizedRotation = ((currentRotation % 360) + 360) % 360;
-        
+
         // Determine if we should snap to front (0) or back (180)
         // If rotation is between 90 and 270, snap to back (180)
         if (normalizedRotation > 90 && normalizedRotation < 270) {
@@ -130,7 +167,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         const x = Math.floor(((lng + 180) / 360) * Math.pow(2, zoom));
         const y = Math.floor(
             ((1 - Math.log(Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)) / Math.PI) / 2) *
-                Math.pow(2, zoom)
+            Math.pow(2, zoom)
         );
         return { x, y, z: zoom };
     };
@@ -164,14 +201,14 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         if (!portalRoot || !isMessageOpen) return null;
 
         return createPortal(
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 z-[150] bg-stone-900/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8"
                 onClick={() => setIsMessageOpen(false)}
             >
-                <motion.div 
+                <motion.div
                     initial={{ scale: 0.9, y: 20 }}
                     animate={{ scale: 1, y: 0 }}
                     className="w-full max-w-[95vw] h-[90vh] min-h-0 bg-[#fafaf9] rounded-3xl shadow-2xl p-6 md:p-16 relative overflow-hidden flex flex-col items-center text-center border-8 border-white/50"
@@ -180,7 +217,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     {/* Background decorations */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
                     <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500/5 rounded-full -ml-16 -mb-16 blur-3xl"></div>
-                    
+
                     <button
                         onClick={() => setIsMessageOpen(false)}
                         className="absolute top-3 right-3 md:top-4 md:right-4 z-[100] bg-white hover:bg-stone-100 text-stone-500 hover:text-stone-800 p-4 rounded-full transition-all shadow-2xl border-2 border-stone-100 group/close"
@@ -201,7 +238,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     <div className="w-24 h-1.5 bg-stone-100 rounded-full mb-4 opacity-50 shrink-0"></div>
 
                     <div className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden custom-scrollbar px-4 flex flex-col pt-0">
-                        <p 
+                        <p
                             className="font-handwriting text-stone-700 leading-relaxed text-center whitespace-pre-wrap pt-2 pb-6 w-full max-w-full break-words"
                             style={{ fontSize: `${messageModalFontSize}rem` }}
                         >
@@ -248,20 +285,20 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         if (!portalRoot || !isAlbumOpen || !hasMedia) return null;
 
         return createPortal(
-            <div 
+            <div
                 className="fixed inset-0 z-[150] bg-black/95 backdrop-blur-md flex items-center justify-center p-4"
                 onClick={() => setIsAlbumOpen(false)}
             >
-                <div 
+                <div
                     className="w-full max-w-4xl flex flex-col items-center relative"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <button
-                    onClick={() => setIsAlbumOpen(false)}
-                    className="absolute -top-12 right-0 md:right-0 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-all shadow-lg backdrop-blur-md border border-white/20"
-                >
-                    <X size={24} />
-                </button>
+                        onClick={() => setIsAlbumOpen(false)}
+                        className="absolute -top-12 right-0 md:right-0 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-all shadow-lg backdrop-blur-md border border-white/20"
+                    >
+                        <X size={24} />
+                    </button>
 
                     <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden shadow-2xl flex items-center justify-center mb-6">
                         {postcard.mediaItems![currentMediaIndex].type === 'video' ? (
@@ -342,8 +379,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 <motion.div
                     className={cn(
                         "perspective-1000 cursor-grab active:cursor-grabbing group touch-none",
-                        !width && !height && (isLarge 
-                            ? "w-[95vw] h-[65vw] max-w-[480px] max-h-[320px] sm:w-[600px] sm:h-[400px] md:w-[840px] md:h-[560px] lg:w-[1050px] lg:h-[700px] sm:max-w-none sm:max-h-none portrait:max-h-none" 
+                        !width && !height && (isLarge
+                            ? "w-[95vw] h-[65vw] max-w-[480px] max-h-[320px] sm:w-[600px] sm:h-[400px] md:w-[840px] md:h-[560px] lg:w-[1050px] lg:h-[700px] sm:max-w-none sm:max-h-none portrait:max-h-none"
                             : "w-[340px] h-[240px] sm:w-[600px] sm:h-[400px]"),
                         className
                     )}
@@ -362,13 +399,13 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                         className={cn(
                             "relative w-full h-full transform-style-3d",
                         )}
-                        style={{ 
+                        style={{
                             rotateY: springRotateY,
                             transformStyle: "preserve-3d"
                         }}
                     >
                         {/* Front of Card — masqué en mode verso (Safari: backface-visibility insuffisant) */}
-                        <div 
+                        <div
                             className={cn(
                                 "absolute w-full h-full backface-hidden rounded-xl shadow-2xl overflow-hidden bg-white border border-stone-200",
                                 isFlipped && "invisible pointer-events-none"
@@ -425,13 +462,13 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                         </div>
 
                         {/* Back of Card — masqué en mode recto (Safari: backface-visibility insuffisant) */}
-                        <div 
+                        <div
                             className={cn(
                                 "absolute w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#fafaf9] border border-stone-200 flex overflow-hidden",
                                 isLarge ? "p-4 sm:p-8" : "p-5 sm:p-8",
                                 !isFlipped && "invisible pointer-events-none"
                             )}
-                            style={{ 
+                            style={{
                                 backfaceVisibility: 'hidden',
                                 WebkitBackfaceVisibility: 'hidden',
                                 transform: 'rotateY(180deg)'
@@ -479,26 +516,21 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 {/* Left Side: Message - much wider */}
                                 <div className="flex-[1.6] min-w-0 flex flex-col justify-start relative pt-0 pr-6 sm:pr-8">
 
-                                    <div 
+                                    <div
+                                        ref={messageContainerRef}
                                         className="flex-1 min-w-0 overflow-y-auto custom-scrollbar my-1 cursor-pointer group/msg relative pr-2"
                                         onClick={openMessage}
                                     >
-                                        <p 
+                                        <p
+                                            ref={messageTextRef}
                                             className="font-handwriting text-stone-700 leading-loose sm:leading-loose text-left whitespace-pre-wrap w-full max-w-full break-words"
                                             style={{
-                                                // Peu de texte → plus grand par défaut; barre A/A+ permet de zoomer encore plus
-                                                fontSize: `${
-                                                    (() => {
-                                                        const len = (postcard.message || '').trim().length;
-                                                        const baseRem = len < 80 ? 1.55 : len < 180 ? 1.25 : 1.0;
-                                                        return Math.round(baseRem * backTextScale * 100) / 100;
-                                                    })()
-                                                }rem`
+                                                fontSize: `${autoFontSize * backTextScale}rem`
                                             }}
                                         >
                                             {postcard.message}
                                         </p>
-                                        
+
                                         {/* Zoom hint - shown when hovering */}
                                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover/msg:opacity-100 transition-opacity duration-300">
                                             <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-stone-200 shadow-xl flex items-center gap-2 transform scale-75 sm:scale-100">
@@ -545,7 +577,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                                 </div>
                                             )}
                                         </div>
-                                        
+
                                         {/* Stamp - plus petit et plus réaliste */}
                                         {(() => {
                                             const style = postcard.stampStyle || 'classic';
@@ -553,16 +585,16 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                             const year = (postcard.stampYear || '2024').trim() || '2024';
                                             // Split text for postmark if too long or multiline needed? defaulted to location/date
                                             const pmText = postcard.postmarkText || (postcard.location ? postcard.location.split(',')[0] : 'Digital');
-                                            
+
                                             return (
                                                 <div className="relative group-hover:rotate-2 transition-transform duration-500 ease-out pt-0 pb-2 pr-2">
-                                                    
+
                                                     {/* The Stamp itself - Reduced size (w-20/h-24 on desktop) */}
                                                     <div className={cn(
                                                         "relative shadow-[2px_3px_5px_rgba(0,0,0,0.2)] transform rotate-1",
                                                         isLarge ? "w-10 h-13 sm:w-20 sm:h-24" : "w-10 h-12 sm:w-16 sm:h-20"
                                                     )}>
-                                                        
+
                                                         {/* Classic: perforated edges using radial-gradient mask/clip for realism */}
                                                         {style === 'classic' && (
                                                             <div className="w-full h-full bg-[#fdf5e6] p-1.5 relative overflow-hidden"
@@ -575,10 +607,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                                                 <div className="w-full h-full border-[1.5px] border-orange-300/60 flex flex-col items-center justify-between p-1 bg-white/40">
                                                                     <div className="text-[6px] sm:text-[8px] font-bold text-orange-900/80 uppercase tracking-wide text-center w-full truncate px-1">{label}</div>
                                                                     <div className="flex-1 flex items-center justify-center opacity-80 mix-blend-multiply">
-                                                                         {/* Generic symbol */}
-                                                                         <div className="w-8 h-8 sm:w-12 sm:h-12 border border-orange-200/50 rounded-full flex items-center justify-center">
+                                                                        {/* Generic symbol */}
+                                                                        <div className="w-8 h-8 sm:w-12 sm:h-12 border border-orange-200/50 rounded-full flex items-center justify-center">
                                                                             <img src="https://i.imgur.com/R21Yw3x.png" className="w-6 h-6 sm:w-9 sm:h-9 object-contain grayscale text-orange-900/50 opacity-60" alt="stamp" />
-                                                                         </div>
+                                                                        </div>
                                                                     </div>
                                                                     <div className="text-[6px] sm:text-[8px] font-serif font-bold text-orange-900/60">{year}</div>
                                                                 </div>
@@ -606,10 +638,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                                                     WebkitMask: 'radial-gradient(circle at 50% 50%, white, white)' // Fallback generic because radial zig-zag complex in CSS
                                                                 }}
                                                             >
-                                                                <div className="absolute inset-0 border-4 border-transparent" 
+                                                                <div className="absolute inset-0 border-4 border-transparent"
                                                                     style={{
                                                                         backgroundImage: 'repeating-linear-gradient(135deg, #ef4444 0, #ef4444 10px, transparent 10px, transparent 20px, #3b82f6 20px, #3b82f6 30px, transparent 30px, transparent 40px)'
-                                                                    }} 
+                                                                    }}
                                                                 ></div>
                                                                 <div className="absolute inset-2 bg-white flex flex-col items-center justify-center gap-1 shadow-inner">
                                                                     <div className="text-[5px] sm:text-[6px] font-black text-blue-800 uppercase tracking-widest">AIR MAIL</div>
@@ -641,7 +673,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                                                 <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="1.5" />
                                                                 {/* Inner Circle */}
                                                                 <circle cx="50" cy="50" r="32" fill="none" stroke="currentColor" strokeWidth="1" />
-                                                                
+
                                                                 {/* Wavy lines */}
                                                                 <path d="M10,50 Q30,45 50,50 T90,50" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
                                                                 <path d="M12,56 Q32,51 52,56 T88,56" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
@@ -653,7 +685,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                                                         {pmText.length > 20 ? pmText.substring(0, 18) + '..' : pmText || 'POSTE AERIENNE'}
                                                                     </textPath>
                                                                 </text>
-                                                                
+
                                                                 {/* Center Date */}
                                                                 <text x="50" y="52" fontSize="7" fontFamily="monospace" fontWeight="bold" textAnchor="middle" className="uppercase">
                                                                     {postcard.date.split('/').slice(0, 2).join('/')}
@@ -723,12 +755,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                                             <span className="text-lg font-bold leading-none">−</span>
                                                         </button>
                                                     </div>
-                                                    {/* Overlay loupe au hover — clic ouvre le modal carte (pointer-events-none pour ne pas bloquer les boutons zoom) */}
-                                                    <span className="absolute inset-0 flex items-center justify-center bg-stone-900/40 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none">
-                                                        <span className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/95 shadow-lg text-teal-600">
-                                                            <Search size={isLarge ? 28 : 22} strokeWidth={2.5} />
-                                                        </span>
-                                                    </span>
+                                                    {/* Loupe dans un coin sans overlay au hover */}
+                                                    <div className="absolute bottom-2 right-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+                                                        <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/95 shadow-lg text-teal-600 border border-stone-100">
+                                                            <Search size={isLarge ? 20 : 16} strokeWidth={2.5} />
+                                                        </div>
+                                                    </div>
                                                     <span className="sr-only">Agrandir la carte</span>
                                                 </div>
                                             ) : (
@@ -740,11 +772,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                                 >
                                                     <MapPin size={isLarge ? 32 : 24} className="text-teal-500 transition-opacity group-hover/map:opacity-60" />
                                                     <span className="text-xs sm:text-sm font-semibold text-teal-700 uppercase tracking-wide transition-opacity group-hover/map:opacity-60">Voir la carte</span>
-                                                    <span className="absolute inset-0 flex items-center justify-center bg-stone-900/30 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none">
-                                                        <span className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/95 shadow-lg text-teal-600">
-                                                            <Search size={isLarge ? 24 : 20} strokeWidth={2.5} />
-                                                        </span>
-                                                    </span>
+                                                    {/* Loupe dans un coin sans overlay au hover */}
+                                                    <div className="absolute bottom-2 right-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+                                                        <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/95 shadow-lg text-teal-600 border border-stone-100">
+                                                            <Search size={isLarge ? 20 : 16} strokeWidth={2.5} />
+                                                        </div>
+                                                    </div>
                                                 </button>
                                             )}
                                         </div>
@@ -760,12 +793,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     <span>Faire glisser pour retourner</span>
                 </div>
 
-                </div>
+            </div>
 
 
             {renderAlbumModal()}
             {renderMessageModal()}
-            
+
             {/* New Leaflet Map Modal - Portaled to avoid perspective/transform issues */}
             {isMapOpen && portalRoot && createPortal(
                 <MapModal

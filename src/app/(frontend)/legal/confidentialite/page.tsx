@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     description: 'Politique de confidentialité et protection des données personnelles',
 }
 
-export default function PrivacyPage() {
+export default function ConfidentialitePage() {
     return (
         <>
             <h2>Politique de Confidentialité</h2>

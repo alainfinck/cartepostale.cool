@@ -3,14 +3,14 @@ import React from 'react'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-    title: 'CGU / CGV',
-    description: 'Conditions Générales d\'Utilisation et de Vente de CartePostale.cool',
+    title: 'CGU',
+    description: 'Conditions Générales d\'Utilisation de CartePostale.cool',
 }
 
 export default function CGUPage() {
     return (
         <>
-            <h2>Conditions Générales d&apos;Utilisation et de Vente</h2>
+            <h2>Conditions Générales d&apos;Utilisation</h2>
 
             <p className="text-sm text-stone-500 italic">Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')}</p>
 

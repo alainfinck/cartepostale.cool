@@ -19,7 +19,7 @@ export const Footer = () => {
                 <div className="max-w-7xl mx-auto px-4 text-center">
                     <Link href="/" className="inline-flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
                         <div className="bg-teal-500/10 p-1 rounded-md">
-                             <Mail className="text-teal-600 w-3 h-3" />
+                            <Mail className="text-teal-600 w-3 h-3" />
                         </div>
                         <span className="font-serif font-bold text-sm text-stone-600">cartepostale.cool</span>
                     </Link>
@@ -71,10 +71,12 @@ export const Footer = () => {
                     Partagez vos albums photo (pro, perso) facilement :{' '}
                     <a href="https://www.photopartage.com" target="_blank" rel="noopener noreferrer" className="text-teal-500 hover:underline">photopartage.com</a>
                 </p>
-                <div className="flex justify-center gap-6 mt-4 text-xs text-stone-400">
+                <div className="flex justify-center flex-wrap gap-x-6 gap-y-2 mt-4 text-xs text-stone-400">
                     <Link href="/legal/mentions-legales" className="hover:text-stone-600 transition-colors">Mentions Légales</Link>
-                    <Link href="/legal/cgu" className="hover:text-stone-600 transition-colors">CGU / CGV</Link>
-                    <Link href="/legal/privacy" className="hover:text-stone-600 transition-colors">Confidentialité</Link>
+                    <Link href="/legal/cgu" className="hover:text-stone-600 transition-colors">CGU</Link>
+                    <Link href="/legal/cgv" className="hover:text-stone-600 transition-colors">CGV</Link>
+                    <Link href="/legal/confidentialite" className="hover:text-stone-600 transition-colors">Confidentialité</Link>
+                    <Link href="/legal/cookies" className="hover:text-stone-600 transition-colors">Cookies</Link>
                 </div>
             </div>
         </footer>

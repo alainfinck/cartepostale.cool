@@ -58,8 +58,9 @@ const dropdownPages = [
     { href: '/a-propos', icon: Info, label: 'À propos' },
     { href: '/galerie', icon: ImageIcon, label: 'Galerie' },
     { href: '/legal/cgu', icon: FileText, label: 'CGU' },
+    { href: '/legal/cgv', icon: FileText, label: 'CGV' },
     { href: '/legal/mentions-legales', icon: FileText, label: 'Mentions légales' },
-    { href: '/legal/privacy', icon: FileText, label: 'Confidentialité' },
+    { href: '/legal/confidentialite', icon: FileText, label: 'Confidentialité' },
 ]
 
 export const Navbar = () => {
@@ -159,23 +160,23 @@ export const Navbar = () => {
                         scrolled ? "h-10 md:h-12" : "h-12 md:h-16"
                     )}>
                         <Link href="/" className="flex items-center cursor-pointer group">
-                        <div
-                            className={cn(
-                                "relative bg-gradient-cta group-hover:opacity-90 transition-all p-1.5 rounded-lg mr-2.5 flex items-center justify-center",
-                                scrolled ? "scale-90" : ""
-                            )}
-                        >
-                            <Mail className="text-white" size={scrolled ? 14 : 16} />
                             <div
-                                className="absolute -top-1 -right-1 rounded-full bg-white p-[2px]"
-                                aria-hidden="true"
+                                className={cn(
+                                    "relative bg-gradient-cta group-hover:opacity-90 transition-all p-1.5 rounded-lg mr-2.5 flex items-center justify-center",
+                                    scrolled ? "scale-90" : ""
+                                )}
                             >
-                                <Heart
-                                    className="text-rose-500 drop-shadow-[0_2px_4px_rgba(0,0,0,0.25)]"
-                                    size={scrolled ? 12 : 14}
-                                />
+                                <Mail className="text-white" size={scrolled ? 14 : 16} />
+                                <div
+                                    className="absolute -top-1 -right-1 rounded-full bg-white p-[2px]"
+                                    aria-hidden="true"
+                                >
+                                    <Heart
+                                        className="text-rose-500 drop-shadow-[0_2px_4px_rgba(0,0,0,0.25)]"
+                                        size={scrolled ? 12 : 14}
+                                    />
+                                </div>
                             </div>
-                        </div>
                             <span className={cn(
                                 "font-bold text-stone-800 tracking-tight leading-none transition-all",
                                 scrolled ? "text-sm md:text-base" : "text-base md:text-lg"
@@ -183,7 +184,7 @@ export const Navbar = () => {
                                 cartepostale.cool
                             </span>
                         </Link>
-                         <Link href="/editor">
+                        <Link href="/editor">
                             <Button size="sm" className={cn(
                                 "bg-gradient-cta hover:opacity-95 text-white rounded-full font-bold shadow-lg shadow-pink-500/20 transition-all border-0",
                                 scrolled ? "text-[9px] px-2.5 h-7" : "text-[10px] md:text-xs px-3 h-8"
@@ -424,6 +425,17 @@ export const Navbar = () => {
                                 CGU
                             </Link>
                             <Link
+                                href="/legal/cgv"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={cn(
+                                    "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
+                                    pathname === "/legal/cgv" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
+                                )}
+                            >
+                                <FileText className="w-6 h-6 text-pink-500 flex-shrink-0" />
+                                CGV
+                            </Link>
+                            <Link
                                 href="/legal/mentions-legales"
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={cn(
@@ -435,11 +447,11 @@ export const Navbar = () => {
                                 Mentions légales
                             </Link>
                             <Link
-                                href="/legal/privacy"
+                                href="/legal/confidentialite"
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={cn(
                                     "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
-                                    pathname === "/legal/privacy" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
+                                    pathname === "/legal/confidentialite" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
                                 )}
                             >
                                 <FileText className="w-6 h-6 text-pink-500 flex-shrink-0" />
