@@ -117,6 +117,16 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         }
     };
 
+    // OSM tile coords from lat/lng (for static map on back - avoids iframe + 3D transform issues)
+    const getTileCoord = (lat: number, lng: number, zoom: number) => {
+        const x = Math.floor(((lng + 180) / 360) * Math.pow(2, zoom));
+        const y = Math.floor(
+            ((1 - Math.log(Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)) / Math.PI) / 2) *
+                Math.pow(2, zoom)
+        );
+        return { x, y, z: zoom };
+    };
+
     const openMessage = (e: React.MouseEvent) => {
         e.stopPropagation();
         setIsMessageOpen(true);
@@ -645,25 +655,54 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                         })()}
 
                                     </div>
-                                    {/* Mini carte démo quand coords disponibles */}
-                                    {postcard.coords && (
+                                    {/* Mini carte au verso : tuiles OSM (évite iframe + 3D) ou bouton "Voir la carte" */}
+                                    {(postcard.coords || postcard.location) && (
                                         <div className={cn(
-                                            "mt-2 flex-1 rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner",
+                                            "mt-2 flex-1 rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner min-h-0",
                                             isLarge ? "min-h-[140px] sm:min-h-[200px] md:min-h-[280px]" : "min-h-[80px] sm:min-h-[100px]"
                                         )}>
-                                            <iframe
-                                                title="Carte"
-                                                src={(() => {
-                                                    const { lat, lng } = postcard.coords!
-                                                    const d = 0.025
-                                                    const bbox = [lng - d, lat - d, lng + d, lat + d].join(',')
-                                                    return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lng}`
-                                                })()}
-                                                className={cn(
-                                                    "w-full h-full pointer-events-none border-0",
-                                                    isLarge ? "min-h-[140px] sm:min-h-[200px] md:min-h-[280px]" : "min-h-[80px] sm:min-h-[100px]"
-                                                )}
-                                            />
+                                            {postcard.coords ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={openMap}
+                                                    className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:opacity-95 transition-opacity focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-inset"
+                                                    title="Agrandir la carte"
+                                                >
+                                                    {/* Carte statique en tuiles OSM (s'affiche correctement dans le verso 3D) */}
+                                                    <div className="w-full h-full grid grid-cols-2 grid-rows-2 overflow-hidden">
+                                                        {(() => {
+                                                            const { lat, lng } = postcard.coords!;
+                                                            const zoom = 11;
+                                                            const { x, y, z } = getTileCoord(lat, lng, zoom);
+                                                            const tiles = [
+                                                                [x, y],
+                                                                [x + 1, y],
+                                                                [x, y + 1],
+                                                                [x + 1, y + 1],
+                                                            ];
+                                                            return tiles.map(([tx, ty], i) => (
+                                                                <img
+                                                                    key={i}
+                                                                    src={`https://tile.openstreetmap.org/${z}/${tx}/${ty}.png`}
+                                                                    alt=""
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            ));
+                                                        })()}
+                                                    </div>
+                                                    <span className="sr-only">Agrandir la carte</span>
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={openMap}
+                                                    className="w-full h-full flex flex-col items-center justify-center gap-2 text-stone-500 hover:bg-stone-100/80 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-inset rounded-lg"
+                                                    title="Voir la carte"
+                                                >
+                                                    <MapPin size={isLarge ? 32 : 24} className="text-teal-500" />
+                                                    <span className="text-xs sm:text-sm font-semibold text-teal-700 uppercase tracking-wide">Voir la carte</span>
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                 </div>

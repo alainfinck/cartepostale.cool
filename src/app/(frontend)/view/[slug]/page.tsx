@@ -21,6 +21,25 @@ function isMedia(media: any): media is Media {
     return media && typeof media === 'object' && 'url' in media
 }
 
+// Geocode location string via Nominatim (when postcard has location but no coords)
+async function geocodeLocation(location: string): Promise<{ lat: number; lng: number } | null> {
+    if (!location?.trim()) return null
+    try {
+        const res = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location.trim())}&limit=1`,
+            { headers: { 'User-Agent': 'CartePostaleCool/1.0 (https://cartepostale.cool)' } }
+        )
+        const data = await res.json()
+        const first = data?.[0]
+        if (first?.lat != null && first?.lon != null) {
+            return { lat: Number(first.lat), lng: Number(first.lon) }
+        }
+    } catch {
+        // ignore
+    }
+    return null
+}
+
 // Mapper function
 function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
     let frontImageUrl = payloadPostcard.frontImageURL || ''
@@ -112,6 +131,11 @@ export default async function PostcardPage({ params }: PageProps) {
     }
 
     const frontendPostcard = mapPostcard(payloadPostcard)
+    // Geocode when we have location but no coords so the back map can display
+    if (frontendPostcard.location && !frontendPostcard.coords) {
+        const coords = await geocodeLocation(frontendPostcard.location)
+        if (coords) frontendPostcard.coords = coords
+    }
 
     return (
         <div className="min-h-screen bg-[#fdfbf7] py-6 md:py-12 landscape:py-2 flex flex-col items-center justify-center overflow-x-hidden">

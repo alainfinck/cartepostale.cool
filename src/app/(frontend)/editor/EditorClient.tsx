@@ -455,8 +455,8 @@ export default function EditorPage() {
                 </div>
               </div>
               <PostcardView postcard={currentPostcard} flipped={showBack} className="w-full h-auto aspect-[3/2] shadow-xl rounded-xl border border-stone-100" />
-              <div className="mt-4 flex flex-col items-center gap-4">
-                <p className="text-stone-400 text-[10px] uppercase tracking-widest font-bold">L&apos;aperçu se met à jour en temps réel</p>
+              <div className="mt-4 flex flex-col gap-4">
+                <p className="text-stone-400 text-[10px] uppercase tracking-widest font-bold text-center">L&apos;aperçu se met à jour en temps réel</p>
                 
                 <div className="flex flex-col w-full gap-3">
                   <Button
@@ -468,24 +468,24 @@ export default function EditorPage() {
                     Aperçu en plein écran
                   </Button>
 
-                  {/* Step 2 specific continue button */}
+                  {/* Bouton Continuer à gauche sous la carte */}
                   {currentStep === 'redaction' && (
-                    <Button
-                      onClick={goNext}
-                      disabled={!canGoNext()}
-                      className={cn(
-                        'w-full rounded-xl font-bold flex items-center justify-center gap-2 py-6 h-auto transition-all shadow-lg shadow-teal-100',
-                        canGoNext()
-                          ? 'bg-teal-500 hover:bg-teal-600 text-white'
-                          : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-                      )}
-                    >
-                      Continuer
-                      <ChevronRight size={18} />
-                    </Button>
+                    <div className="flex justify-start">
+                      <Button
+                        onClick={goNext}
+                        disabled={!canGoNext()}
+                        className={cn(
+                          'rounded-xl font-bold flex items-center justify-center gap-2 px-6 py-4 h-auto transition-all shadow-lg shadow-teal-100',
+                          canGoNext()
+                            ? 'bg-teal-500 hover:bg-teal-600 text-white'
+                            : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                        )}
+                      >
+                        Continuer
+                        <ChevronRight size={18} />
+                      </Button>
+                    </div>
                   )}
-
-
                 </div>
               </div>
             </div>
