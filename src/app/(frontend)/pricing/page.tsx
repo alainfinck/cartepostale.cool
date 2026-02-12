@@ -1,7 +1,7 @@
 
 import React from 'react'
 import { Metadata } from 'next'
-import { Check, X, Star, Zap, Globe } from 'lucide-react'
+import { Check, X, Star, Zap, Globe, Gift } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
@@ -12,11 +12,33 @@ export const metadata: Metadata = {
 
 const pricingPlans = [
     {
+        name: 'Gratuit',
+        price: '0€',
+        period: '',
+        description: 'Carte gratuite mais limitée pour découvrir le service.',
+        features: [
+            '1 carte offerte',
+            'Version numérique uniquement',
+            'Album photo (3 photos max)',
+        ],
+        notIncluded: [
+            'Impression et expédition',
+            'Vidéo dans l\'album',
+            'Suivi de l\'envoi',
+        ],
+        buttonText: 'Essayer gratuitement',
+        buttonVariant: 'outline',
+        href: '/editor',
+        popular: false,
+        icon: <Gift className="w-6 h-6 text-teal-500" />
+    },
+    {
         name: 'Occasionnel',
         price: '2.99€',
         period: '/ carte',
         description: 'Parfait pour envoyer une carte de temps en temps.',
         features: [
+            'Album photo (10 photos max + 1 vidéo)',
             'Impression haute qualité',
             'Expédition monde incluse',
             'Personnalisation complète',
@@ -92,7 +114,7 @@ export default function PricingPage() {
 
             {/* Pricing Cards */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 items-start">
                     {pricingPlans.map((plan, index) => (
                         <div
                             key={index}
