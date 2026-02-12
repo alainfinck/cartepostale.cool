@@ -367,10 +367,13 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             transformStyle: "preserve-3d"
                         }}
                     >
-                        {/* Front of Card */}
+                        {/* Front of Card — masqué en mode verso (Safari: backface-visibility insuffisant) */}
                         <div 
-                            className="absolute w-full h-full backface-hidden rounded-xl shadow-2xl overflow-hidden bg-white border border-stone-200"
-                            style={{ backfaceVisibility: 'hidden' }}
+                            className={cn(
+                                "absolute w-full h-full backface-hidden rounded-xl shadow-2xl overflow-hidden bg-white border border-stone-200",
+                                isFlipped && "invisible pointer-events-none"
+                            )}
+                            style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
                         >
                             <img
                                 src={frontImageSrc}
@@ -421,14 +424,16 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             )}
                         </div>
 
-                        {/* Back of Card */}
+                        {/* Back of Card — masqué en mode recto (Safari: backface-visibility insuffisant) */}
                         <div 
                             className={cn(
                                 "absolute w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#fafaf9] border border-stone-200 flex overflow-hidden",
-                                isLarge ? "p-4 sm:p-8" : "p-5 sm:p-8"
+                                isLarge ? "p-4 sm:p-8" : "p-5 sm:p-8",
+                                !isFlipped && "invisible pointer-events-none"
                             )}
                             style={{ 
                                 backfaceVisibility: 'hidden',
+                                WebkitBackfaceVisibility: 'hidden',
                                 transform: 'rotateY(180deg)'
                             }}
                         >
