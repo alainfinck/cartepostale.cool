@@ -56,12 +56,12 @@ export const Postcards: CollectionConfig = {
         {
             name: 'recipientName', // Primary/First recipient name for display
             type: 'text',
-            required: true,
+            required: false,
         },
         {
             name: 'senderName',
             type: 'text',
-            required: true,
+            required: false,
         },
         {
             name: 'senderEmail',
@@ -71,7 +71,7 @@ export const Postcards: CollectionConfig = {
         {
             name: 'location',
             type: 'text',
-            required: true,
+            required: false,
         },
         {
             name: 'coords',

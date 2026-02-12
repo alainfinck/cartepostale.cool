@@ -185,19 +185,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                 className="w-full h-full object-cover"
                             />
 
-                            <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-sm text-teal-900 px-4 py-2 rounded-lg text-sm font-bold shadow-lg flex items-center gap-2 transform transition-transform group-hover:scale-105">
-                                <MapPin size={16} className="text-orange-500" />
-                                <span className="uppercase tracking-wide">{postcard.location}</span>
-                            </div>
-
-                            {hasMedia && (
-                                <button
-                                    onClick={openAlbum}
-                                    className="absolute top-6 right-6 bg-stone-900/80 hover:bg-stone-900 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg backdrop-blur-sm flex items-center gap-2 transition-all hover:scale-105 z-20"
-                                >
-                                    <ImageIcon size={16} />
-                                    <span>Album ({postcard.mediaItems!.length})</span>
-                                </button>
+                            {postcard.location && (
+                                <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-sm text-teal-900 px-4 py-2 rounded-lg text-sm font-bold shadow-lg flex items-center gap-2 transform transition-transform group-hover:scale-105">
+                                    <MapPin size={16} className="text-orange-500" />
+                                    <span className="uppercase tracking-wide">{postcard.location}</span>
+                                </div>
                             )}
 
                             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none"></div>
@@ -216,9 +208,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                             {postcard.message}
                                         </p>
                                     </div>
-                                    <p className="font-handwriting text-stone-800 text-lg sm:text-xl mt-auto self-start text-teal-700 transform -rotate-2 pt-1">
-                                        - {postcard.senderName}
-                                    </p>
+                                    {postcard.senderName && (
+                                        <p className="font-handwriting text-stone-800 text-lg sm:text-xl mt-auto self-start text-teal-700 transform -rotate-2 pt-1">
+                                            - {postcard.senderName}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Right Side: Address & Stamp */}
@@ -280,9 +274,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                                         </div>
                                                     )}
                                                     {/* Postmark circle overlay */}
-                                                    <div className="absolute -left-5 top-4 w-12 h-12 sm:w-14 sm:h-14 border-2 border-stone-900/10 rounded-full flex items-center justify-center transform -rotate-10 pointer-events-none z-20">
-                                                        <div className="text-[5px] sm:text-[6px] font-mono text-stone-500/40 text-center leading-none uppercase font-bold">
-                                                            {postcard.location.split(',')[0]}<br />{postcard.date}
+                                                    <div className="absolute -left-5 top-4 w-12 h-12 sm:w-14 sm:h-14 border-2 border-stone-900/10 rounded-full flex items-center justify-center transform -rotate-10 pointer-events-none z-20 text-center">
+                                                        <div className="text-[5px] sm:text-[6px] font-mono text-stone-500/40 leading-none uppercase font-bold">
+                                                            {postcard.location ? postcard.location.split(',')[0] : 'Digital'}<br />{postcard.date}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -291,10 +285,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({ postcard, isPreview = false
                                     </div>
 
                                     <div className="mt-auto w-full">
-                                        <div className="border-b-2 border-stone-300 border-dotted pb-1 mb-2 font-handwriting text-xl sm:text-2xl text-stone-600 pl-4">
-                                            {postcard.recipientName}
-                                        </div>
-                                        {(postcard.coords || postcard.location) && (
+                                        {postcard.recipientName && (
+                                            <div className="border-b-2 border-stone-300 border-dotted pb-1 mb-2 font-handwriting text-xl sm:text-2xl text-stone-600 pl-4">
+                                                {postcard.recipientName}
+                                            </div>
+                                        )}
+                                        {postcard.location && (
                                             <div className="relative group/map">
                                                 <h4 className="font-bold text-stone-400 text-[10px] uppercase mb-1 tracking-wider flex items-center gap-1">
                                                     <MapPin size={10} /> {postcard.location}

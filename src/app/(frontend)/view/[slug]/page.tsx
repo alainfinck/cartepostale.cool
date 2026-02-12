@@ -78,14 +78,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         }
     }
 
+    const title = `Une carte postale de ${postcard.senderName} vous attend !`
+    const description = `Découvrez la carte postale envoyée par ${postcard.senderName} depuis ${postcard.location}.`
+
     return {
-        title: `Une carte postale de ${postcard.senderName} vous attend !`,
-        description: `Découvrez la carte postale envoyée par ${postcard.senderName} depuis ${postcard.location}.`,
+        title,
+        description,
         openGraph: {
-            title: `Une carte postale de ${postcard.senderName}`,
-            description: `${postcard.senderName} vous envoie une carte depuis ${postcard.location}.`,
-            images: postcard.frontImageURL ? [postcard.frontImageURL] :
-                (isMedia(postcard.frontImage) && postcard.frontImage.url) ? [postcard.frontImage.url] : [],
+            title,
+            description,
+            type: 'article',
+            url: `https://cartepostale.cool/view/${slug}`,
+            siteName: 'CartePostale.cool',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title,
+            description,
         },
     }
 }

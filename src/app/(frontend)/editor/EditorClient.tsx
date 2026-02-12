@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useCallback } from 'react'
+import Link from 'next/link'
 import {
   Upload,
   Type,
@@ -31,6 +32,7 @@ import {
 import { Postcard, Template } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { createPostcard } from '@/actions/postcard-actions'
 
@@ -38,7 +40,6 @@ const STEPS = [
   { id: 'photo', label: 'Photo', icon: Camera },
   { id: 'redaction', label: 'Rédaction', icon: PenTool },
   { id: 'preview', label: 'Aperçu', icon: Eye },
-  { id: 'share', label: 'Envoyer', icon: Send },
 ] as const
 
 type StepId = (typeof STEPS)[number]['id']
@@ -115,6 +116,8 @@ export default function EditorPage() {
   const [senderName, setSenderName] = useState('')
   const [senderEmail, setSenderEmail] = useState('')
   const [location, setLocation] = useState('')
+  const [suggestions, setSuggestions] = useState<any[]>([])
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
 
   const [stampStyle, setStampStyle] = useState<Postcard['stampStyle']>('classic')
   const [stampLabel, setStampLabel] = useState('Digital Poste')
@@ -183,8 +186,12 @@ export default function EditorPage() {
     if (!navigator.geolocation) return
     setIsLocating(true)
     navigator.geolocation.getCurrentPosition(
-      () => {
+      (position) => {
         setIsLocating(false)
+        const { latitude, longitude } = position.coords
+        setCoords({ lat: latitude, lng: longitude })
+        // Reverse geocoding could be added here to set the location string
+        setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
       },
       () => {
         setIsLocating(false)
@@ -221,12 +228,12 @@ export default function EditorPage() {
     frontImage:
       frontImage ||
       'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-    message: message || 'Votre message apparaîtra ici...',
-    recipientName: recipientName || 'Destinataire',
-    senderName: senderName || 'Expéditeur',
+    message: message || '',
+    recipientName: recipientName || '',
+    senderName: senderName || '',
     senderEmail: senderEmail || undefined,
 
-    location: location || 'Quelque part...',
+    location: location || '',
     stampStyle,
     stampLabel: stampLabel.trim() || undefined,
     stampYear: stampYear.trim() || undefined,
@@ -237,6 +244,7 @@ export default function EditorPage() {
     }),
     isPremium,
     mediaItems,
+    coords: coords || undefined,
   }
 
   const filteredTemplates =
@@ -280,7 +288,7 @@ export default function EditorPage() {
 
     if (result.success && result.publicId) {
       setShareUrl(`${window.location.origin}/view/${result.publicId}`)
-      setCurrentStep('share')
+      // No longer switching step, sharing UI appears in 'preview' step
     } else {
       setShareError(result.error || 'Une erreur est survenue lors de la création de la carte.')
     }
@@ -521,28 +529,79 @@ export default function EditorPage() {
                           <MapPin size={16} className="text-teal-500" /> Lieu du souvenir
                         </span>
                       </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
+                      <div className="relative">
+                        <Input
+                          placeholder="Ex: Paris, France"
                           value={location}
-                          onChange={(e) => setLocation(e.target.value)}
-                          placeholder="ex: Bali, Indonésie"
-                          className="w-full rounded-xl border border-stone-200 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-base py-3 px-4 bg-stone-50 focus:bg-white transition-colors placeholder:text-stone-400"
+                          onChange={(e) => {
+                            const val = e.target.value
+                            setLocation(val)
+                            // Search for suggestions
+                            if (val.length > 2) {
+                              fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(val)}&limit=5&lang=fr`)
+                                .then(res => res.json())
+                                .then(data => {
+                                  setSuggestions(data.features || [])
+                                })
+                                .catch(err => console.error('Photon error:', err))
+                            } else {
+                              setSuggestions([])
+                            }
+                          }}
+                          className="pl-10 h-12 bg-stone-50 border-stone-200 focus:border-teal-500 rounded-xl"
                         />
-                        <button
-                          onClick={handleGeolocation}
-                          disabled={isLocating}
-                          className="p-3 bg-stone-100 hover:bg-teal-100 text-stone-500 hover:text-teal-700 rounded-xl border border-stone-200 transition-colors flex-shrink-0"
-                          title="Ma position actuelle"
-                        >
-                          {isLocating ? (
-                            <RefreshCw size={18} className="animate-spin" />
-                          ) : (
-                            <Locate size={18} />
-                          )}
-                        </button>
+                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
+
+                        {/* Suggestions Dropdown */}
+                        {suggestions.length > 0 && (
+                          <div className="absolute z-50 w-full mt-1 bg-white border border-stone-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                            {suggestions.map((s, i) => {
+                              const city = s.properties.city || s.properties.name
+                              const country = s.properties.country
+                              const fullLabel = city && country ? `${city}, ${country}` : city || country || ''
+                              return (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  onClick={() => {
+                                    setLocation(fullLabel)
+                                    setSuggestions([])
+                                    if (s.geometry.coordinates) {
+                                      setCoords({
+                                        lat: s.geometry.coordinates[1],
+                                        lng: s.geometry.coordinates[0]
+                                      })
+                                    }
+                                  }}
+                                  className="w-full text-left px-4 py-3 hover:bg-stone-50 border-b border-stone-50 last:border-0 transition-colors flex items-center gap-3"
+                                >
+                                  <MapPin size={14} className="text-teal-500 shrink-0" />
+                                  <div className="flex flex-col">
+                                    <span className="text-sm font-medium text-stone-800">{city}</span>
+                                    {country && <span className="text-xs text-stone-500">{country}</span>}
+                                  </div>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
                       </div>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleGeolocation}
+                        className="mt-2 text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-lg h-9 px-3 gap-2 ml-auto flex"
+                      >
+                        {isLocating ? (
+                          <RefreshCw size={14} className="animate-spin" />
+                        ) : (
+                          <Navigation size={14} />
+                        )}
+                        <span>Ma position actuelle</span>
+                      </Button>
                     </div>
+
                     <div className="space-y-6">
                       <div>
                         <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
@@ -556,7 +615,6 @@ export default function EditorPage() {
                           className="w-full rounded-xl border border-stone-200 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-base py-3 px-4 bg-stone-50 focus:bg-white transition-colors placeholder:text-stone-400"
                         />
                       </div>
-
                     </div>
                   </section>
 
@@ -891,72 +949,118 @@ export default function EditorPage() {
                     </div>
                   </div>
 
-                  {shareError && (
-                    <div className="p-3 bg-red-50 text-red-600 rounded-lg mb-4 text-sm text-center">
-                      {shareError}
+                  {shareUrl && (
+                    <div className="mt-8 bg-stone-50 rounded-2xl p-6 border border-stone-200 text-center animate-in fade-in slide-in-from-bottom-4">
+                      <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Send size={32} className="text-teal-600" />
+                      </div>
+                      <h3 className="text-xl font-serif font-bold text-stone-800 mb-2">Carte prête à être partagée !</h3>
+
+                      <div className="mb-6 max-w-lg mx-auto">
+                        <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 text-left">Lien de partage</p>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            readOnly
+                            value={shareUrl}
+                            className="flex-1 bg-white border border-stone-200 rounded-lg px-3 text-sm text-stone-600 focus:outline-none py-2"
+                          />
+                          <Button onClick={copyToClipboard} variant="outline" className="bg-white hover:bg-stone-50 text-stone-600 border-stone-200 text-sm py-2 h-auto">
+                            <Copy size={14} className="mr-2" /> Copier
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap justify-center gap-3">
+                        <a href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#25D366] text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
+                          <Share2 size={14} /> WhatsApp
+                        </a>
+                        <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#1877F2] text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
+                          <Facebook size={14} /> Facebook
+                        </a>
+                        <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Regarde ma carte postale !`)}&url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#1DA1F2] text-white rounded-full font-bold text-xs hover:opacity-90 transition-opacity">
+                          <Twitter size={14} /> Twitter
+                        </a>
+                      </div>
                     </div>
                   )}
 
-                  <Button
-                    onClick={handlePublish}
-                    disabled={isPublishing}
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold text-lg py-6 h-auto shadow-lg shadow-orange-200 flex items-center justify-center gap-3 transition-all hover:-translate-y-0.5 disabled:opacity-70"
-                  >
-                    {isPublishing ? (
-                      <>
-                        <RefreshCw size={20} className="animate-spin" /> Envoi en cours...
-                      </>
-                    ) : (
-                      <>
-                        <Send size={20} /> Envoyer ma carte postale
-                      </>
-                    )}
-                  </Button>
+                  {!shareUrl && (
+                    <Button
+                      onClick={handlePublish}
+                      disabled={isPublishing}
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold text-lg py-6 h-auto shadow-lg shadow-orange-200 flex items-center justify-center gap-3 transition-all hover:-translate-y-0.5 disabled:opacity-70"
+                    >
+                      {isPublishing ? (
+                        <>
+                          <RefreshCw size={20} className="animate-spin" /> Envoi en cours...
+                        </>
+                      ) : (
+                        <>
+                          <Send size={20} /> Envoyer ma carte postale
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               </div>
             )}
 
             {/* ==================== STEP: SHARE (SUCCESS) ==================== */}
-            {currentStep === 'share' && shareUrl && (
-              <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8 text-center">
-                <div className="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Send size={40} className="text-teal-600" />
+            {shareUrl && (
+              <div className="bg-white rounded-3xl shadow-xl border border-stone-100 p-8 text-center animate-in zoom-in-95 duration-300">
+                <div className="w-20 h-20 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Check size={40} />
                 </div>
-                <h2 className="text-3xl font-serif font-bold text-stone-800 mb-2">
-                  Carte envoyée !
+                <h2 className="text-3xl font-serif font-bold text-stone-800 mb-3">
+                  Carte publiée avec succès !
                 </h2>
                 <p className="text-stone-500 mb-8 max-w-md mx-auto">
-                  Votre carte postale a été créée avec succès. Vous pouvez maintenant la partager avec vos proches.
+                  Votre carte est maintenant accessible en ligne. Partagez le lien avec vos proches.
                 </p>
 
-                <div className="bg-stone-50 rounded-xl p-4 mb-8 border border-stone-200 max-w-lg mx-auto">
-                  <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 text-left">Lien de partage</p>
+                <div className="bg-stone-50 p-6 rounded-2xl border border-stone-200 mb-8">
+                  <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Lien de partage</p>
                   <div className="flex gap-2">
                     <input
-                      type="text"
                       readOnly
                       value={shareUrl}
-                      className="flex-1 bg-white border border-stone-200 rounded-lg px-3 text-sm text-stone-600 focus:outline-none"
+                      className="flex-1 bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm font-mono text-teal-700"
                     />
-                    <Button onClick={copyToClipboard} variant="outline" className="bg-white hover:bg-stone-50 text-stone-600 border-stone-200">
-                      <Copy size={16} className="mr-2" /> Copier
+                    <Button onClick={copyToClipboard} className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl px-4">
+                      <Copy size={18} />
                     </Button>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap justify-center gap-4">
-                  <a href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#25D366] text-white rounded-full font-bold text-sm hover:opacity-90 transition-opacity">
-                    <Share2 size={16} /> WhatsApp
-                  </a>
-                  <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#1877F2] text-white rounded-full font-bold text-sm hover:opacity-90 transition-opacity">
-                    <Facebook size={16} /> Facebook
-                  </a>
-                  <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Regarde ma carte postale !`)}&url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#1DA1F2] text-white rounded-full font-bold text-sm hover:opacity-90 transition-opacity">
-                    <Twitter size={16} /> Twitter
-                  </a>
-                  <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#0A66C2] text-white rounded-full font-bold text-sm hover:opacity-90 transition-opacity">
-                    <Linkedin size={16} /> LinkedIn
-                  </a>
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  <Link
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                    target="_blank"
+                    className="flex items-center justify-center gap-2 py-3 px-4 bg-[#1877F2]/10 text-[#1877F2] font-bold rounded-xl hover:bg-[#1877F2]/20 transition-colors"
+                  >
+                    <Facebook size={18} /> Facebook
+                  </Link>
+                  <Link
+                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(`Une carte postale de ${senderName} !`)}`}
+                    target="_blank"
+                    className="flex items-center justify-center gap-2 py-3 px-4 bg-[#1DA1F2]/10 text-[#1DA1F2] font-bold rounded-xl hover:bg-[#1DA1F2]/20 transition-colors"
+                  >
+                    <Twitter size={18} /> Twitter
+                  </Link>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link href="/editor" className="flex-1">
+                    <Button variant="outline" className="w-full py-6 rounded-xl border-stone-200 text-stone-600 font-bold hover:bg-stone-50">
+                      Créer une nouvelle carte
+                    </Button>
+                  </Link>
+                  <Link href="/" className="flex-1">
+                    <Button className="w-full py-6 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-lg shadow-teal-100">
+                      Retour à l&apos;accueil
+                    </Button>
+                  </Link>
                 </div>
               </div>
             )}
