@@ -294,7 +294,7 @@ export default function EditorPage() {
                   Mise à jour en temps réel
                 </div>
               </div>
-              <PostcardView postcard={currentPostcard} flipped={showBack} />
+              <PostcardView postcard={currentPostcard} flipped={showBack} className="w-full h-auto aspect-[3/2]" />
               <p className="text-stone-400 text-xs mt-3 text-center">L&apos;aperçu se met à jour en temps réel</p>
               <Button
                 variant="outline"
@@ -830,8 +830,12 @@ export default function EditorPage() {
           >
             <X size={28} />
           </button>
-          <div className="scale-110" onClick={(e) => e.stopPropagation()}>
-            <PostcardView postcard={currentPostcard} flipped={showBack} />
+          <div onClick={(e) => e.stopPropagation()}>
+            <PostcardView
+              postcard={currentPostcard}
+              flipped={showBack}
+              className="w-[90vw] max-w-[1200px] hover:scale-100 aspect-[3/2] h-auto cursor-default"
+            />
           </div>
         </div>
       )}
