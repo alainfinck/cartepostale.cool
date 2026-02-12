@@ -9,6 +9,7 @@ import { Postcard as PayloadPostcard, Media } from '@/payload-types'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import { RotateDevicePrompt } from "@/components/ui/rotate-device-prompt"
 import SocialBar from '@/components/social/SocialBar'
+import ViewPageTitle from '@/components/view/ViewPageTitle'
 
 interface PageProps {
     params: Promise<{
@@ -141,15 +142,11 @@ export default async function PostcardPage({ params }: PageProps) {
         <div className="min-h-screen bg-[#fdfbf7] py-6 md:py-12 landscape:py-2 flex flex-col items-center justify-center overflow-x-hidden">
             <RotateDevicePrompt />
 
-            {/* Header / Context */}
-            <div className="text-center mb-4 md:mb-8 px-4 landscape:mb-2">
-                <h1 className="text-xl md:text-4xl font-serif font-bold text-stone-800 mb-1 md:mb-2 landscape:text-lg">
-                    Vous avez reçu une carte postale !
-                </h1>
-                <p className="text-stone-500 text-sm md:text-lg landscape:text-xs">
-                    De la part de <span className="font-semibold text-teal-600">{frontendPostcard.senderName}</span>
-                </p>
-            </div>
+            {/* Header / Titre avec effet d'apparition */}
+            <ViewPageTitle
+                title="Vous avez reçu une carte postale !"
+                senderName={frontendPostcard.senderName}
+            />
 
             {/* Card View */}
             <div className="w-full max-w-[100vw] md:max-w-4xl flex justify-center perspective-[1000px] mb-6 md:mb-12 px-2 md:px-0 landscape:mb-4">

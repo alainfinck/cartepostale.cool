@@ -665,11 +665,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                                 <button
                                                     type="button"
                                                     onClick={openMap}
-                                                    className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:opacity-95 transition-opacity focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-inset"
+                                                    className="group/map relative w-full h-full flex flex-col items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-inset overflow-hidden"
                                                     title="Agrandir la carte"
                                                 >
                                                     {/* Carte statique en tuiles OSM (s'affiche correctement dans le verso 3D) */}
-                                                    <div className="w-full h-full grid grid-cols-2 grid-rows-2 overflow-hidden">
+                                                    <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 overflow-hidden">
                                                         {(() => {
                                                             const { lat, lng } = postcard.coords!;
                                                             const zoom = 11;
@@ -690,17 +690,28 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                                             ));
                                                         })()}
                                                     </div>
+                                                    {/* Overlay loupe au hover — clic ouvre le modal carte */}
+                                                    <span className="absolute inset-0 flex items-center justify-center bg-stone-900/40 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none">
+                                                        <span className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/95 shadow-lg text-teal-600">
+                                                            <Search size={isLarge ? 28 : 22} strokeWidth={2.5} />
+                                                        </span>
+                                                    </span>
                                                     <span className="sr-only">Agrandir la carte</span>
                                                 </button>
                                             ) : (
                                                 <button
                                                     type="button"
                                                     onClick={openMap}
-                                                    className="w-full h-full flex flex-col items-center justify-center gap-2 text-stone-500 hover:bg-stone-100/80 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-inset rounded-lg"
+                                                    className="group/map relative w-full h-full flex flex-col items-center justify-center gap-2 text-stone-500 hover:bg-stone-100/80 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-inset rounded-lg overflow-hidden"
                                                     title="Voir la carte"
                                                 >
-                                                    <MapPin size={isLarge ? 32 : 24} className="text-teal-500" />
-                                                    <span className="text-xs sm:text-sm font-semibold text-teal-700 uppercase tracking-wide">Voir la carte</span>
+                                                    <MapPin size={isLarge ? 32 : 24} className="text-teal-500 transition-opacity group-hover/map:opacity-60" />
+                                                    <span className="text-xs sm:text-sm font-semibold text-teal-700 uppercase tracking-wide transition-opacity group-hover/map:opacity-60">Voir la carte</span>
+                                                    <span className="absolute inset-0 flex items-center justify-center bg-stone-900/30 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none">
+                                                        <span className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/95 shadow-lg text-teal-600">
+                                                            <Search size={isLarge ? 24 : 20} strokeWidth={2.5} />
+                                                        </span>
+                                                    </span>
                                                 </button>
                                             )}
                                         </div>
