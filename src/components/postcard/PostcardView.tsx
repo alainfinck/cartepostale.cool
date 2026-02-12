@@ -67,7 +67,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [messageModalFontSize, setMessageModalFontSize] = useState(2);
-    // Slider de taille du texte au verso (0.8 = petit, 1.5 = grand)
+    // Slider de taille du texte au verso (0.7 = petit, 2.2 = grand)
     const [backTextScale, setBackTextScale] = useState(1);
 
     const handleFlip = () => {
@@ -370,23 +370,29 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-stone-700">Retourner la carte</span>
                             </div>
 
-                            {postcard.location && (
-                                <div
-                                    className={cn(
-                                        "absolute left-4 sm:left-6 z-10 bg-white/90 backdrop-blur-md text-teal-900 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-bold shadow-lg flex items-center gap-2",
-                                        (postcard.frontCaption || postcard.frontEmoji) ? "bottom-20 sm:bottom-24" : "bottom-4 sm:bottom-6"
-                                    )}
-                                >
-                                    <MapPin size={14} className="text-orange-500 shrink-0" />
-                                    <span className="uppercase tracking-wide truncate max-w-[140px] sm:max-w-[200px]">{postcard.location}</span>
+                            {/* Message démo au-dessus de la localisation (frontCaption sans frontEmoji) */}
+                            {postcard.frontCaption && !postcard.frontEmoji && (
+                                <div className="absolute left-4 sm:left-6 right-4 sm:right-6 z-10 bottom-10 sm:bottom-12 text-stone-800 text-[11px] sm:text-xs font-medium drop-shadow-sm">
+                                    {postcard.frontCaption}
                                 </div>
                             )}
 
-                            {(postcard.frontCaption || postcard.frontEmoji) && (
-                                <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 z-10 flex items-center gap-3 rounded-xl sm:rounded-2xl border border-white/50 bg-white/90 backdrop-blur-md px-4 py-3 sm:px-5 sm:py-3.5 shadow-xl">
-                                    {postcard.frontEmoji && (
-                                        <span className="text-xl sm:text-4xl leading-none shrink-0" aria-hidden>{postcard.frontEmoji}</span>
+                            {postcard.location && (
+                                <div
+                                    className={cn(
+                                        "absolute left-4 sm:left-6 z-10 bg-white/90 backdrop-blur-md text-teal-900 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-semibold shadow-lg flex items-center gap-1.5",
+                                        postcard.frontEmoji ? "bottom-20 sm:bottom-24" : "bottom-4 sm:bottom-6"
                                     )}
+                                >
+                                    <MapPin size={12} className="text-orange-500 shrink-0" />
+                                    <span className="normal-case tracking-wide break-words max-w-[160px] sm:max-w-[220px]">{postcard.location}</span>
+                                </div>
+                            )}
+
+                            {/* Bloc caption + emoji en bas (affiché seulement si frontEmoji) */}
+                            {(postcard.frontCaption || postcard.frontEmoji) && postcard.frontEmoji && (
+                                <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 z-10 flex items-center gap-3 rounded-xl sm:rounded-2xl border border-white/50 bg-white/90 backdrop-blur-md px-4 py-3 sm:px-5 sm:py-3.5 shadow-xl">
+                                    <span className="text-xl sm:text-4xl leading-none shrink-0" aria-hidden>{postcard.frontEmoji}</span>
                                     {postcard.frontCaption ? (
                                         <p className="m-0 text-sm sm:text-lg font-semibold leading-tight tracking-tight text-stone-800 break-words line-clamp-2">
                                             {postcard.frontCaption}
@@ -407,37 +413,35 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 transform: 'rotateY(180deg)'
                             }}
                         >
-                            {/* Flip indicator — top-left */}
-                            <div className="absolute top-4 left-4 z-40 flex items-center gap-1.5 text-stone-400 pointer-events-none group-hover:text-stone-600 transition-all duration-300">
-                                <RotateCw size={isLarge ? 22 : 18} />
-                                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Retourner</span>
-                            </div>
-
-                            {/* Flip indicator — top-right */}
-                            <div className="absolute top-4 right-4 z-40 flex items-center gap-1.5 text-stone-400 pointer-events-none group-hover:text-stone-600 transition-all duration-300 sm:flex">
-                                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider hidden sm:inline">Retourner</span>
-                                <RotateCw size={isLarge ? 22 : 18} />
+                            {/* Top bar: Retourner + Slider taille du texte */}
+                            <div className="absolute top-4 left-4 right-4 z-40 flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-1.5 text-stone-400 pointer-events-none group-hover:text-stone-600 transition-all duration-300">
+                                    <RotateCw size={isLarge ? 22 : 18} />
+                                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Retourner</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/70 border border-stone-200/80 shadow-sm" onClick={(e) => e.stopPropagation()}>
+                                    <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">A</span>
+                                    <input
+                                        type="range"
+                                        min={0.7}
+                                        max={2.2}
+                                        step={0.05}
+                                        value={backTextScale}
+                                        onChange={(e) => setBackTextScale(Number(e.target.value))}
+                                        className={cn("h-1 accent-teal-500 rounded-full appearance-none bg-stone-200 cursor-pointer", isLarge ? "w-20 sm:w-24" : "w-14")}
+                                    />
+                                    <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">A+</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-stone-400 pointer-events-none group-hover:text-stone-600 transition-all duration-300 sm:flex">
+                                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider hidden sm:inline">Retourner</span>
+                                    <RotateCw size={isLarge ? 22 : 18} />
+                                </div>
                             </div>
 
                             {/* Flip indicator — bottom-center (above branding) */}
                             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 text-stone-300 pointer-events-none group-hover:text-stone-500 transition-all duration-300">
                                 <RotateCw size={16} />
                                 <span className="text-[9px] font-bold uppercase tracking-widest">Cliquer pour retourner</span>
-                            </div>
-
-                            {/* Slider taille du texte — en bas de la carte, petit */}
-                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/70 border border-stone-200/80 shadow-sm" onClick={(e) => e.stopPropagation()}>
-                                <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">A</span>
-                                <input
-                                    type="range"
-                                    min={0.8}
-                                    max={1.5}
-                                    step={0.05}
-                                    value={backTextScale}
-                                    onChange={(e) => setBackTextScale(Number(e.target.value))}
-                                    className="w-14 h-1 accent-teal-500 rounded-full appearance-none bg-stone-200 cursor-pointer"
-                                />
-                                <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">A+</span>
                             </div>
 
                             {/* Small branding bottom-left */}
@@ -458,11 +462,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                         <p 
                                             className="font-handwriting text-stone-700 leading-loose sm:leading-loose text-left whitespace-pre-wrap w-full max-w-full break-words"
                                             style={{
-                                                // Peu de texte → plus grand par défaut; slider ajuste la taille
+                                                // Peu de texte → plus grand par défaut; barre A/A+ permet de zoomer encore plus
                                                 fontSize: `${
                                                     (() => {
                                                         const len = (postcard.message || '').trim().length;
-                                                        const baseRem = len < 80 ? 1.35 : len < 180 ? 1.1 : 0.95;
+                                                        const baseRem = len < 80 ? 1.55 : len < 180 ? 1.25 : 1.0;
                                                         return Math.round(baseRem * backTextScale * 100) / 100;
                                                     })()
                                                 }rem`
@@ -641,7 +645,27 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                         })()}
 
                                     </div>
-                                    {/* Pas de localisation ni carte au dos : réservés à la face avant uniquement */}
+                                    {/* Mini carte démo quand coords disponibles */}
+                                    {postcard.coords && (
+                                        <div className={cn(
+                                            "mt-2 flex-1 rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner",
+                                            isLarge ? "min-h-[140px] sm:min-h-[200px] md:min-h-[280px]" : "min-h-[80px] sm:min-h-[100px]"
+                                        )}>
+                                            <iframe
+                                                title="Carte"
+                                                src={(() => {
+                                                    const { lat, lng } = postcard.coords!
+                                                    const d = 0.025
+                                                    const bbox = [lng - d, lat - d, lng + d, lat + d].join(',')
+                                                    return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lng}`
+                                                })()}
+                                                className={cn(
+                                                    "w-full h-full pointer-events-none border-0",
+                                                    isLarge ? "min-h-[140px] sm:min-h-[200px] md:min-h-[280px]" : "min-h-[80px] sm:min-h-[100px]"
+                                                )}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

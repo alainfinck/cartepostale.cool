@@ -82,7 +82,7 @@ export default function Home() {
     id: 'demo-rv',
     frontImage: 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
     location: 'Bali, Indonésie',
-    message: "Un petit coucou magique \nde Bali ! 🌴✨ \n\nLes rizières d'un vert émeraude \nsont à couper le souffle, \net l'ambiance ici est \nd'une sérénité absolue. 🎋\n\nOn passe nos journées à explorer \nl'île en scooter, à la recherche \nde cascades cachées... 🛵💦 \nLa cuisine locale est un délice ! \n\nOn pense fort à vous tous. \nGros bisous ! 🥥🥥🍹",
+    message: "Salut à tous,\n\nOn est à Bali depuis une semaine. On a visité les rizières en terrasse et quelques temples. La nourriture est très bonne et les gens sont sympas. On rentre dans dix jours.\n\nÀ bientôt,\nJulie & Thomas",
     recipientName: "Famille Martin",
     senderName: "Julie & Thomas",
     stampStyle: 'classic',
@@ -94,13 +94,20 @@ export default function Home() {
   const heroPostcard: Postcard = {
     id: 'hero-card',
     frontImage: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=85',
+    frontCaption: 'Bonjour ! Une carte pour vous.',
     location: 'Quelque part dans le monde',
     message: 'Bonjour !\n\nVotre message ici ✉️',
     recipientName: 'À vous',
     senderName: 'Vous',
     stampStyle: 'modern',
     date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }),
-    isPremium: false,
+    isPremium: true,
+    coords: { lat: 43.2965, lng: 5.3698 },
+    mediaItems: [
+      { id: 'h1', type: 'image', url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=800&q=80' },
+      { id: 'h2', type: 'image', url: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80' },
+      { id: 'h3', type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-a-tropical-beach-4268-large.mp4' },
+    ],
   }
 
   return (
