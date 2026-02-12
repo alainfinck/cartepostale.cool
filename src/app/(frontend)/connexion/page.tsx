@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { Metadata } from 'next'
 import ConnexionClient from './ConnexionClient'
 
@@ -8,5 +8,9 @@ export const metadata: Metadata = {
 }
 
 export default function ConnexionPage() {
-    return <ConnexionClient />
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[#fdfbf7] flex items-center justify-center">Chargement...</div>}>
+            <ConnexionClient />
+        </Suspense>
+    )
 }

@@ -6,6 +6,23 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
   },
   auth: true,
+  access: {
+    create: () => true, // Inscription publique autorisée
+    read: ({ req: { user } }) => Boolean(user),
+    update: ({ req: { user } }) => Boolean(user),
+    delete: ({ req: { user } }) => Boolean(user?.role === 'admin'),
+  },
+  hooks: {
+    beforeChange: [
+      ({ data, req, operation }) => {
+        // À la création, forcer le rôle 'user' si l'utilisateur n'est pas admin (éviter inscription en admin)
+        if (operation === 'create' && data && req.user?.role !== 'admin') {
+          data.role = 'user'
+        }
+        return data
+      },
+    ],
+  },
   fields: [
     {
       name: 'name',
