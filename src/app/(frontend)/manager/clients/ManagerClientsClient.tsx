@@ -43,6 +43,22 @@ import {
 import { getAllUsers, createUser, updateUser, deleteUser, type UsersResult } from '@/actions/manager-actions'
 import type { User } from '@/payload-types'
 
+const roleConfig: Record<string, { label: string; className: string }> = {
+  admin: { label: 'Admin', className: 'bg-amber-50 text-amber-700 border-amber-200' },
+  agence: { label: 'Agence', className: 'bg-violet-50 text-violet-700 border-violet-200' },
+  client: { label: 'Client', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+  user: { label: 'User', className: 'bg-stone-50 text-stone-600 border-stone-200' },
+}
+
+function RoleBadge({ role }: { role?: string | null }) {
+  const config = roleConfig[role ?? 'user'] ?? roleConfig.user
+  return (
+    <Badge variant="outline" className={cn('font-medium shadow-none border px-2', config.className)}>
+      {config.label}
+    </Badge>
+  )
+}
+
 export function ManagerClientsClient({ initialData }: { initialData: UsersResult }) {
   const [data, setData] = useState(initialData)
   const [search, setSearch] = useState('')
@@ -167,12 +183,7 @@ export function ManagerClientsClient({ initialData }: { initialData: UsersResult
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={cn(
-                        "font-medium shadow-none border px-2",
-                        user.role === 'admin' ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-stone-50 text-stone-600 border-stone-200"
-                      )}>
-                        {user.role === 'admin' ? 'Administrateur' : 'Client'}
-                      </Badge>
+                      <RoleBadge role={user.role} />
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={cn(
@@ -356,8 +367,10 @@ function UserSheet({ user, isOpen, onClose, onRefresh }: {
                     defaultValue={user?.role || 'user'}
                     className="flex h-11 w-full rounded-md border border-border/50 bg-background/50 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500/30 ring-offset-background"
                   >
-                    <option value="user">Client</option>
-                    <option value="admin">Administrateur</option>
+                    <option value="admin">Admin</option>
+                    <option value="agence">Agence</option>
+                    <option value="client">Client</option>
+                    <option value="user">User</option>
                   </select>
                 </div>
                 <div className="space-y-2">

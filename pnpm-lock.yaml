@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@aws-sdk/client-s3':
+        specifier: ^3.700.0
+        version: 3.989.0
       '@libsql/client':
         specifier: ^0.17.0
         version: 0.17.0

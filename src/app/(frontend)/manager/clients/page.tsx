@@ -1,5 +1,6 @@
+import { Suspense } from 'react'
 import { getAllUsers } from '@/actions/manager-actions'
-import { ManagerClientsClient } from './ManagerClientsClient'
+import { ManagerClientsLayout } from './ManagerClientsLayout'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,11 +9,9 @@ export default async function ManagerClientsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Clients</h1>
-        <p className="text-muted-foreground">Liste des utilisateurs inscrits.</p>
-      </div>
-      <ManagerClientsClient initialData={initialData} />
+      <Suspense fallback={<div className="flex items-center gap-2 text-muted-foreground p-4">Chargement…</div>}>
+        <ManagerClientsLayout initialData={initialData} />
+      </Suspense>
     </div>
   )
 }

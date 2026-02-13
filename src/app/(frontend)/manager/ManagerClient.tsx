@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Pencil, Sticker as StickerIcon } from 'lucide-react'
+import { Pencil } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import { Card, CardContent } from '@/components/ui/card'
@@ -72,7 +72,6 @@ import {
 import PostcardView from '@/components/postcard/PostcardView'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import EditPostcardDialog from './EditPostcardDialog'
-import ManagerStickers from './ManagerStickers'
 
 export type StatusFilter = 'all' | 'published' | 'draft' | 'archived'
 type ViewMode = 'grid' | 'list'
@@ -146,7 +145,6 @@ interface Props {
 }
 
 export default function ManagerClient({ initialData, useEspaceClientActions, useAgenceActions }: Props) {
-    const [activeTab, setActiveTab] = useState<'postcards' | 'stickers'>('postcards')
     const [data, setData] = useState(initialData)
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -347,40 +345,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
 
     return (
         <div className="space-y-6">
-            {/* Navigation Tabs */}
-            {!useEspaceClientActions && !useAgenceActions && (
-                <div className="flex gap-4 border-b border-border/30 pb-1">
-                    <button
-                        onClick={() => setActiveTab('postcards')}
-                        className={cn(
-                            "px-4 py-2 text-sm font-medium transition-colors relative",
-                            activeTab === 'postcards' ? "text-teal-600" : "text-stone-500 hover:text-stone-800"
-                        )}
-                    >
-                        Cartes Postales
-                        {activeTab === 'postcards' && (
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-500 rounded-full" />
-                        )}
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('stickers')}
-                        className={cn(
-                            "px-4 py-2 text-sm font-medium transition-colors relative",
-                            activeTab === 'stickers' ? "text-teal-600" : "text-stone-500 hover:text-stone-800"
-                        )}
-                    >
-                        Stickers
-                        {activeTab === 'stickers' && (
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-500 rounded-full" />
-                        )}
-                    </button>
-                </div>
-            )}
-
-            {activeTab === 'stickers' ? (
-                <ManagerStickers />
-            ) : (
-                <>
+            <>
                     {/* Stats */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                         <StatCard icon={<Mail size={18} />} label="Total" value={totalCards} />
@@ -695,9 +660,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
-                </>
-            )
-            }
+            </>
         </div >
     )
 }
