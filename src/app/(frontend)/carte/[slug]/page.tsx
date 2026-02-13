@@ -13,7 +13,6 @@ import SocialBar from '@/components/social/SocialBar'
 import ViewPageTitle from '@/components/view/ViewPageTitle'
 import DistanceDisplay from '@/components/view/DistanceDisplay'
 import PhotoAlbum from '@/components/view/PhotoAlbum'
-import EnvelopeWrapper from '@/components/view/EnvelopeWrapper'
 import EnvelopeExperience from '@/components/view/EnvelopeExperience'
 
 type SearchParams = {
@@ -227,13 +226,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
             <RotateDevicePrompt />
 
             <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-4 md:mb-6 px-2 md:px-4 relative">
-                {showEnvelope ? (
-                    <EnvelopeWrapper className="w-full max-w-[min(90vw,420px)] md:max-w-[420px]">
-                        {cardBlock}
-                    </EnvelopeWrapper>
-                ) : (
-                    cardBlock
-                )}
+                {cardBlock}
 
                 <div className="absolute -bottom-10 right-4 md:right-8 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
                     <Eye size={14} className="text-stone-300" />
