@@ -501,7 +501,7 @@ export default function EditorPage() {
 
   const [stampStyle, setStampStyle] = useState<Postcard['stampStyle']>('classic')
   const [stampLabel, setStampLabel] = useState('Digital Poste')
-  const [stampYear, setStampYear] = useState('2024')
+  const [stampYear, setStampYear] = useState(() => new Date().getFullYear().toString())
   const [postmarkText, setPostmarkText] = useState('')
   const [uploadedFileName, setUploadedFileName] = useState('')
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)

@@ -744,7 +744,7 @@ function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onUpda
     const [isFlipped, setIsFlipped] = useState(false)
     const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const handleMouseEnter = () => {
-        hoverTimerRef.current = setTimeout(() => setIsFlipped(true), 1000)
+        hoverTimerRef.current = setTimeout(() => setIsFlipped(true), 300)
     }
     const handleMouseLeave = () => {
         if (hoverTimerRef.current) {
@@ -757,7 +757,7 @@ function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onUpda
     return (
         <div className="[perspective:1000px] h-full" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
             <div
-                className="relative h-full transition-transform duration-500 ease-out [transform-style:preserve-3d]"
+                className="relative h-full transition-transform duration-300 ease-out [transform-style:preserve-3d]"
                 style={{ minHeight: '320px', transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
             >
                 <div className="[backface-visibility:hidden] h-full" style={{ transform: 'rotateY(0deg)' }}>
