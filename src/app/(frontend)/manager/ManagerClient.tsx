@@ -13,6 +13,7 @@ import { Pencil } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Plus, Minus } from 'lucide-react'
 import {
     Sheet,
     SheetContent,
@@ -127,6 +128,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
     const [isPending, startTransition] = useTransition()
     const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
     const [editingPostcard, setEditingPostcard] = useState<PayloadPostcard | null>(null)
+    const [columns, setColumns] = useState(3)
 
     useEffect(() => {
         if (!selectedPostcard) {
@@ -270,6 +272,32 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
                         <List size={16} />
                     </Button>
                 </div>
+
+                {viewMode === 'grid' && (
+                    <div className="flex gap-1 rounded-lg border border-border/30 p-1 bg-muted/30">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:bg-muted"
+                            onClick={() => setColumns(Math.max(1, columns - 1))}
+                            disabled={columns <= 1}
+                        >
+                            <Minus size={14} />
+                        </Button>
+                        <div className="flex items-center justify-center min-w-[32px] text-xs font-bold text-stone-600">
+                            {columns}
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:bg-muted"
+                            onClick={() => setColumns(Math.min(6, columns + 1))}
+                            disabled={columns >= 6}
+                        >
+                            <Plus size={14} />
+                        </Button>
+                    </div>
+                )}
             </div>
 
             {/* Loading overlay */}
@@ -278,68 +306,76 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
                     <div className="w-4 h-4 border-2 border-stone-300 border-t-teal-500 rounded-full animate-spin" />
                     Chargement...
                 </div>
-            )}
+            )
+            }
 
             {/* Content */}
-            {postcards.length === 0 ? (
-                <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-20">
-                        <Mail size={48} className="mx-auto text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-medium text-foreground mb-1">Aucune carte trouvée</h3>
-                        <p className="text-muted-foreground text-sm">
-                            {search || statusFilter !== 'all'
-                                ? 'Essayez de modifier vos filtres'
-                                : 'Aucune carte postale dans la base de données'}
-                        </p>
-                    </CardContent>
-                </Card>
-            ) : viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {postcards.map((postcard) => (
-                        <GridCard
-                            key={postcard.id}
-                            postcard={postcard}
-                            onSelect={() => setSelectedPostcard(postcard)}
-                            onEdit={() => setEditingPostcard(postcard)}
-                            onUpdateStatus={handleUpdateStatus}
-                            onDelete={(id) => setDeleteConfirm(id)}
-                        />
-                    ))}
-                </div>
-            ) : (
-                <Card>
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Image</TableHead>
-                                    <TableHead>Expéditeur</TableHead>
-                                    <TableHead>Destinataire</TableHead>
-                                    <TableHead>Lieu</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Statut</TableHead>
-                                    <TableHead className="text-right">Vues</TableHead>
-                                    <TableHead className="text-right">Partages</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {postcards.map((postcard) => (
-                                    <ListRow
-                                        key={postcard.id}
-                                        postcard={postcard}
-                                        onSelect={() => setSelectedPostcard(postcard)}
-                                        onEdit={() => setEditingPostcard(postcard)}
-                                        onUpdateStatus={handleUpdateStatus}
-                                        onDelete={(id) => setDeleteConfirm(id)}
-                                        formatDate={formatDate}
-                                    />
-                                ))}
-                            </TableBody>
-                        </Table>
+            {
+                postcards.length === 0 ? (
+                    <Card>
+                        <CardContent className="flex flex-col items-center justify-center py-20">
+                            <Mail size={48} className="mx-auto text-muted-foreground mb-4" />
+                            <h3 className="text-lg font-medium text-foreground mb-1">Aucune carte trouvée</h3>
+                            <p className="text-muted-foreground text-sm">
+                                {search || statusFilter !== 'all'
+                                    ? 'Essayez de modifier vos filtres'
+                                    : 'Aucune carte postale dans la base de données'}
+                            </p>
+                        </CardContent>
+                    </Card>
+                ) : viewMode === 'grid' ? (
+                    <div
+                        className="grid gap-4"
+                        style={{
+                            gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`
+                        }}
+                    >
+                        {postcards.map((postcard) => (
+                            <GridCard
+                                key={postcard.id}
+                                postcard={postcard}
+                                onSelect={() => setSelectedPostcard(postcard)}
+                                onEdit={() => setEditingPostcard(postcard)}
+                                onUpdateStatus={handleUpdateStatus}
+                                onDelete={(id) => setDeleteConfirm(id)}
+                            />
+                        ))}
                     </div>
-                </Card>
-            )}
+                ) : (
+                    <Card>
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Image</TableHead>
+                                        <TableHead>Expéditeur</TableHead>
+                                        <TableHead>Destinataire</TableHead>
+                                        <TableHead>Lieu</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Statut</TableHead>
+                                        <TableHead className="text-right">Vues</TableHead>
+                                        <TableHead className="text-right">Partages</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {postcards.map((postcard) => (
+                                        <ListRow
+                                            key={postcard.id}
+                                            postcard={postcard}
+                                            onSelect={() => setSelectedPostcard(postcard)}
+                                            onEdit={() => setEditingPostcard(postcard)}
+                                            onUpdateStatus={handleUpdateStatus}
+                                            onDelete={(id) => setDeleteConfirm(id)}
+                                            formatDate={formatDate}
+                                        />
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </Card>
+                )
+            }
 
             {/* Side Panel Details */}
             <DetailsSheet
@@ -394,7 +430,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     )
 }
 
@@ -529,6 +565,16 @@ function GridCard({ postcard, onSelect, onEdit, onUpdateStatus, onDelete }: {
                         <span className="flex items-center gap-1 hover:text-stone-600 transition-colors"><Share2 size={12} /> {postcard.shares || 0}</span>
                     </div>
                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <Link href={`/carte/${postcard.publicId}`} target="_blank" onClick={(e) => e.stopPropagation()}>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-stone-400 hover:text-teal-600 transition-colors rounded-full border border-border/30"
+                                title="Ouvrir dans un nouvel onglet"
+                            >
+                                <ExternalLink size={14} />
+                            </Button>
+                        </Link>
                         <Button
                             variant="ghost"
                             size="icon"
@@ -641,7 +687,15 @@ function DetailsSheet({ postcard, viewStats, isOpen, onClose, onEdit, onUpdateSt
                             <SheetTitle className="text-xl font-bold">Détails de la carte</SheetTitle>
                             <SheetDescription className="text-xs uppercase tracking-widest font-medium">#{postcard.publicId}</SheetDescription>
                         </div>
-                        <StatusBadge status={postcard.status || 'draft'} />
+                        <div className="flex items-center gap-3">
+                            <Link href="/manager">
+                                <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-[11px] text-muted-foreground hover:bg-muted/50 rounded-full border border-border/30">
+                                    <BarChart3 size={12} />
+                                    Stats détaillées
+                                </Button>
+                            </Link>
+                            <StatusBadge status={postcard.status || 'draft'} />
+                        </div>
                     </div>
                 </SheetHeader>
 

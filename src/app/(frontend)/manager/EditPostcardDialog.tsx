@@ -12,9 +12,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Postcard, Media } from '@/payload-types'
-import { updatePostcard } from '@/actions/manager-actions'
-import { Camera, Loader2, Save, X } from 'lucide-react'
+import { Postcard, Media, User } from '@/payload-types'
+import { updatePostcard, getAllUsers } from '@/actions/manager-actions'
+import { Camera, Loader2, Save, X, User as UserIcon, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export type UpdatePostcardFn = (id: number, data: Record<string, unknown>) => Promise<{ success: boolean; error?: string }>
@@ -49,6 +49,10 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
         frontEmoji: '',
         frontImage: '',
     })
+    const [author, setAuthor] = useState<User | null>(null)
+    const [userSearch, setUserSearch] = useState('')
+    const [userResults, setUserResults] = useState<User[]>([])
+    const [isSearchingUsers, setIsSearchingUsers] = useState(false)
     const [imagePreview, setImagePreview] = useState<string | null>(null)
     const [frontImageKey, setFrontImageKey] = useState<string | null>(null)
     const [frontImageMimeType, setFrontImageMimeType] = useState<string | null>(null)
@@ -65,12 +69,32 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
                 frontEmoji: postcard.frontEmoji || '',
                 frontImage: '',
             })
+            setAuthor(typeof postcard.author === 'object' ? postcard.author : null)
+            setUserSearch('')
+            setUserResults([])
             setImagePreview(getFrontImageUrl(postcard))
             setFrontImageKey(null)
             setFrontImageMimeType(null)
             setFrontImageFilesize(null)
         }
     }, [postcard])
+
+    useEffect(() => {
+        if (!userSearch.trim()) {
+            setUserResults([])
+            return
+        }
+        const timer = setTimeout(async () => {
+            setIsSearchingUsers(true)
+            try {
+                const res = await getAllUsers({ search: userSearch, limit: 5 })
+                setUserResults(res.docs)
+            } finally {
+                setIsSearchingUsers(false)
+            }
+        }, 300)
+        return () => clearTimeout(timer)
+    }, [userSearch])
 
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -143,6 +167,10 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
                 dataToUpdate.frontImageFilesize = frontImageFilesize ?? undefined
             } else if (formData.frontImage) {
                 dataToUpdate.frontImage = formData.frontImage
+            }
+
+            if (!updatePostcardFn) {
+                dataToUpdate.author = author?.id ?? null
             }
 
             const updateFn = updatePostcardFn ?? updatePostcard
@@ -247,15 +275,76 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
 
                     <div className="space-y-2">
                         <Label htmlFor="message">Message</Label>
-                        <Textarea
-                            id="message"
-                            value={formData.message}
-                            onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-                            placeholder="Écrivez votre message ici..."
-                            className="min-h-[120px] resize-none"
-                            required
                         />
                     </div>
+
+                    {!updatePostcardFn && (
+                        <div className="space-y-3 p-4 bg-muted/30 rounded-xl border border-border/50">
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Client (Auteur)</Label>
+
+                            {author ? (
+                                <div className="flex items-center justify-between p-2 bg-background rounded-lg border border-border/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-[10px]">
+                                            {(author.name || author.email).charAt(0).toUpperCase()}
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-xs font-semibold truncate">{author.name || 'Sans Nom'}</span>
+                                            <span className="text-[10px] text-muted-foreground truncate">{author.email}</span>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                                        onClick={() => setAuthor(null)}
+                                    >
+                                        <X size={14} />
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        value={userSearch}
+                                        onChange={(e) => setUserSearch(e.target.value)}
+                                        placeholder="Rechercher un client par nom ou email..."
+                                        className="pl-9 bg-background/50"
+                                    />
+                                    {isSearchingUsers && (
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                            <Loader2 size={14} className="animate-spin text-muted-foreground" />
+                                        </div>
+                                    )}
+                                    {userResults.length > 0 && (
+                                        <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg overflow-hidden">
+                                            {userResults.map(user => (
+                                                <button
+                                                    key={user.id}
+                                                    type="button"
+                                                    className="w-full flex items-center gap-3 p-2 hover:bg-muted transition-colors text-left"
+                                                    onClick={() => {
+                                                        setAuthor(user)
+                                                        setUserSearch('')
+                                                        setUserResults([])
+                                                    }}
+                                                >
+                                                    <div className="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-[10px]">
+                                                        {(user.name || user.email).charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div className="flex flex-col min-w-0">
+                                                        <span className="text-xs font-medium truncate">{user.name || 'Sans Nom'}</span>
+                                                        <span className="text-[10px] text-muted-foreground truncate">{user.email}</span>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     <DialogFooter className="gap-2 sm:gap-0">
                         <Button type="button" variant="ghost" onClick={onClose} disabled={isPending}>
