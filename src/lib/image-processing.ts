@@ -115,6 +115,11 @@ export function getOptimizedImageUrl(url: string, options: { width?: number; hei
         return url
     }
 
+    // Ne pas optimiser les images locales du dossier /images/ ou les favicons
+    if (url.startsWith('/images/') || url.startsWith('/favicon.') || url.startsWith('/android-') || url.startsWith('/apple-touch-')) {
+        return url
+    }
+
     const params = []
     if (options.width) params.push(`width=${options.width}`)
     if (options.height) params.push(`height=${options.height}`)
@@ -130,6 +135,12 @@ export function getOptimizedImageUrl(url: string, options: { width?: number; hei
     if (url.startsWith('http')) {
         try {
             const urlObj = new URL(url)
+
+            // On n'optimise que si c'est notre domaine de médias R2
+            if (urlObj.hostname !== 'img.cartepostale.cool' && !urlObj.hostname.includes('r2.cloudflarestorage.com')) {
+                return url
+            }
+
             const domain = `${urlObj.protocol}//${urlObj.host}`
             // On retire le slash initial du pathname pour le format Cloudflare
             const path = urlObj.pathname.startsWith('/') ? urlObj.pathname.slice(1) : urlObj.pathname
@@ -139,7 +150,8 @@ export function getOptimizedImageUrl(url: string, options: { width?: number; hei
         }
     }
 
-    // Si c'est un chemin relatif (ex: /media/foo.jpg ou juste foo.jpg)
-    const cleanPath = url.replace(/^\/media\//, '').replace(/^\//, '')
-    return `${defaultBase}/cdn-cgi/image/${paramsString}/${cleanPath}`
+    // Si c'est un chemin relatif (ex: /media/foo.jpg)
+    // On garde le chemin complet (ex: media/foo.jpg) car c'est ainsi qu'ils sont stockés sur R2
+    const path = url.startsWith('/') ? url.slice(1) : url
+    return `${defaultBase}/cdn-cgi/image/${paramsString}/${path}`
 }
