@@ -1763,144 +1763,108 @@ export default function EditorPage() {
                 </div>
 
                 <div className="p-6 sm:p-8 space-y-8">
-                  {/* Sélecteur de modèle pour comparer le rendu du verso */}
-                  <section className="bg-stone-50 rounded-2xl border border-stone-100 p-4 sm:p-5">
-                    <label className="flex items-center gap-2 text-sm font-bold text-stone-700 mb-3 uppercase tracking-wider">
-                      <Eye size={16} className="text-teal-500" />
-                      Aperçu du verso selon un modèle
-                    </label>
-                    <p className="text-stone-500 text-xs mb-3">
-                      Choisissez un modèle pour voir la différence de rendu côté verso (timbre, mise en page).
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setVersoPreviewTemplateId(null)}
-                        className={cn(
-                          'px-3 py-2 rounded-xl text-sm font-semibold transition-all border-2',
-                          !versoPreviewTemplateId
-                            ? 'border-teal-500 bg-teal-50 text-teal-800 shadow-sm'
-                            : 'border-stone-200 bg-white text-stone-500 hover:border-stone-300 hover:bg-stone-50'
-                        )}
-                      >
-                        Ma rédaction
-                      </button>
-                      {SAMPLE_TEMPLATES.map((tpl) => (
-                        <button
-                          key={tpl.id}
-                          type="button"
-                          onClick={() => setVersoPreviewTemplateId(tpl.id)}
-                          className={cn(
-                            'px-3 py-2 rounded-xl text-sm font-semibold transition-all border-2 flex items-center gap-2',
-                            versoPreviewTemplateId === tpl.id
-                              ? 'border-teal-500 bg-teal-50 text-teal-800 shadow-sm'
-                              : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:bg-stone-50'
-                          )}
-                        >
-                          <span className="w-6 h-6 rounded-md overflow-hidden shrink-0 bg-stone-200">
-                            <img src={tpl.imageUrl} alt="" className="w-full h-full object-cover" />
-                          </span>
-                          <span className="truncate max-w-[120px] sm:max-w-[140px]">{tpl.name}</span>
-                        </button>
-                      ))}
+                  {/* Destinataire & Signature — côte à côte en haut */}
+                  <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
+                        <Users size={16} className="text-teal-500" /> Destinataire
+                      </label>
+                      <input
+                        type="text"
+                        value={recipientName}
+                        onChange={(e) => setRecipientName(e.target.value)}
+                        placeholder="ex: Papa & Maman"
+                        className="w-full rounded-xl border border-stone-200 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-base py-3 px-4 bg-stone-50 focus:bg-white transition-colors placeholder:text-stone-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
+                        <Stamp size={16} className="text-teal-500" /> Signature
+                      </label>
+                      <input
+                        type="text"
+                        value={senderName}
+                        onChange={(e) => setSenderName(e.target.value)}
+                        placeholder="ex: Sarah"
+                        className="w-full rounded-xl border border-stone-200 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-base py-3 px-4 font-sans bg-stone-50 focus:bg-white transition-colors placeholder:text-stone-400"
+                      />
                     </div>
                   </section>
 
-                  {/* Lieu & Destinataire — grid côte à côte */}
-                  <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div>
-                      <label className="flex items-center justify-between text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
-                        <span className="flex items-center gap-2">
-                          <MapPin size={16} className="text-teal-500" /> Lieu du souvenir
-                        </span>
-                      </label>
-                      <div className="relative">
-                        <Input
-                          placeholder="Ex: Paris, France"
-                          value={location}
-                          onChange={(e) => {
-                            const val = e.target.value
-                            setLocation(val)
-                            // Search for suggestions
-                            if (val.length > 2) {
-                              fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(val)}&limit=5&lang=fr`)
-                                .then(res => res.json())
-                                .then(data => {
-                                  setSuggestions(data.features || [])
-                                })
-                                .catch(err => console.error('Photon error:', err))
-                            } else {
-                              setSuggestions([])
-                            }
-                          }}
-                          className="pl-10 h-12 bg-stone-50 border-stone-200 focus:border-teal-500 rounded-xl"
-                        />
-                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
-
-                        {/* Suggestions Dropdown */}
-                        {suggestions.length > 0 && (
-                          <div className="absolute z-50 w-full mt-1 bg-white border border-stone-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                            {suggestions.map((s, i) => {
-                              const city = s.properties.city || s.properties.name
-                              const country = s.properties.country
-                              const fullLabel = city && country ? `${city}, ${country}` : city || country || ''
-                              return (
-                                <button
-                                  key={i}
-                                  type="button"
-                                  onClick={() => {
-                                    setLocation(fullLabel)
-                                    setSuggestions([])
-                                    if (s.geometry.coordinates) {
-                                      setCoords({
-                                        lat: s.geometry.coordinates[1],
-                                        lng: s.geometry.coordinates[0]
-                                      })
-                                    }
-                                  }}
-                                  className="w-full text-left px-4 py-3 hover:bg-stone-50 border-b border-stone-50 last:border-0 transition-colors flex items-center gap-3"
-                                >
-                                  <MapPin size={14} className="text-teal-500 shrink-0" />
-                                  <div className="flex flex-col">
-                                    <span className="text-sm font-medium text-stone-800">{city}</span>
-                                    {country && <span className="text-xs text-stone-500">{country}</span>}
-                                  </div>
-                                </button>
-                              )
-                            })}
-                          </div>
-                        )}
-                      </div>
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleGeolocation}
-                        className="mt-2 text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-lg h-9 px-3 gap-2 ml-auto flex"
-                      >
-                        {isLocating ? (
-                          <RefreshCw size={14} className="animate-spin" />
-                        ) : (
-                          <Navigation size={14} />
-                        )}
-                        <span>Ma position actuelle</span>
-                      </Button>
+                  {/* Lieu du souvenir */}
+                  <section>
+                    <label className="flex items-center justify-between text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
+                      <span className="flex items-center gap-2">
+                        <MapPin size={16} className="text-teal-500" /> Lieu du souvenir
+                      </span>
+                    </label>
+                    <div className="relative">
+                      <Input
+                        placeholder="Ex: Paris, France"
+                        value={location}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          setLocation(val)
+                          if (val.length > 2) {
+                            fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(val)}&limit=5&lang=fr`)
+                              .then(res => res.json())
+                              .then(data => {
+                                setSuggestions(data.features || [])
+                              })
+                              .catch(err => console.error('Photon error:', err))
+                          } else {
+                            setSuggestions([])
+                          }
+                        }}
+                        className="pl-10 h-12 bg-stone-50 border-stone-200 focus:border-teal-500 rounded-xl"
+                      />
+                      <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
+                      {suggestions.length > 0 && (
+                        <div className="absolute z-50 w-full mt-1 bg-white border border-stone-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                          {suggestions.map((s, i) => {
+                            const city = s.properties.city || s.properties.name
+                            const country = s.properties.country
+                            const fullLabel = city && country ? `${city}, ${country}` : city || country || ''
+                            return (
+                              <button
+                                key={i}
+                                type="button"
+                                onClick={() => {
+                                  setLocation(fullLabel)
+                                  setSuggestions([])
+                                  if (s.geometry.coordinates) {
+                                    setCoords({
+                                      lat: s.geometry.coordinates[1],
+                                      lng: s.geometry.coordinates[0]
+                                    })
+                                  }
+                                }}
+                                className="w-full text-left px-4 py-3 hover:bg-stone-50 border-b border-stone-50 last:border-0 transition-colors flex items-center gap-3"
+                              >
+                                <MapPin size={14} className="text-teal-500 shrink-0" />
+                                <div className="flex flex-col">
+                                  <span className="text-sm font-medium text-stone-800">{city}</span>
+                                  {country && <span className="text-xs text-stone-500">{country}</span>}
+                                </div>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      )}
                     </div>
-
-                    <div className="space-y-6">
-                      <div>
-                        <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
-                          <Users size={16} className="text-teal-500" /> Destinataire
-                        </label>
-                        <input
-                          type="text"
-                          value={recipientName}
-                          onChange={(e) => setRecipientName(e.target.value)}
-                          placeholder="ex: Papa & Maman"
-                          className="w-full rounded-xl border border-stone-200 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-base py-3 px-4 bg-stone-50 focus:bg-white transition-colors placeholder:text-stone-400"
-                        />
-                      </div>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleGeolocation}
+                      className="mt-2 text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-lg h-9 px-3 gap-2 flex"
+                    >
+                      {isLocating ? (
+                        <RefreshCw size={14} className="animate-spin" />
+                      ) : (
+                        <Navigation size={14} />
+                      )}
+                      <span>Ma position actuelle</span>
+                    </Button>
                   </section>
 
                   <div className="h-px bg-stone-100" />
@@ -1981,24 +1945,11 @@ export default function EditorPage() {
 
                   <div className="h-px bg-stone-100" />
 
-                  {/* Signature & Timbre — grid côte à côte */}
-                  <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div>
-                      <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
-                        <Stamp size={16} className="text-teal-500" /> Signature
-                      </label>
-                      <input
-                        type="text"
-                        value={senderName}
-                        onChange={(e) => setSenderName(e.target.value)}
-                        placeholder="ex: Sarah"
-                        className="w-full rounded-xl border border-stone-200 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-base py-3 px-4 font-sans bg-stone-50 focus:bg-white transition-colors placeholder:text-stone-400"
-                      />
-                    </div>
-                    <div>
-                      <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
-                        <Stamp size={16} className="text-teal-500" /> Style du Timbre
-                      </label>
+                  {/* Style du Timbre */}
+                  <section>
+                    <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
+                      <Stamp size={16} className="text-teal-500" /> Style du Timbre
+                    </label>
                       <div className="grid grid-cols-3 gap-2">
                         {(
                           [
@@ -2044,7 +1995,6 @@ export default function EditorPage() {
                           />
                         </div>
                       </div>
-                    </div>
                   </section>
 
                   <div className="h-px bg-stone-100" />
