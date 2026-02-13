@@ -73,6 +73,18 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         }
     }, [frontImageSrc]);
 
+    // Vérification différée pour images locales/cache : le navigateur peut ne pas déclencher onLoad
+    useEffect(() => {
+        if (!frontImageSrc) return;
+        const id = setTimeout(() => {
+            const img = frontImageRef.current;
+            if (img?.complete && img.naturalWidth > 0) {
+                setIsFrontImageLoading(false);
+            }
+        }, 50);
+        return () => clearTimeout(id);
+    }, [frontImageSrc]);
+
     // Motion values for rotation
     const rotateY = useMotionValue(flipped ? 180 : 0);
     const springRotateY = useSpring(rotateY, { stiffness: 80, damping: 26 });
