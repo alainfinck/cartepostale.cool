@@ -101,11 +101,17 @@ export function readFileAsDataUrl(file: File): Promise<string> {
 
 /**
  * Retourne une URL d'image optimisée via Cloudflare Image Resizing (cdn-cgi/image).
- * @param url URL de l'image source
+ * Format cible: https://img.domain.com/cdn-cgi/image/params/path/to/image
+ * @param url URL de l'image source (peut être absolue ou juste le nom du fichier)
  * @param options Options de redimensionnement
  */
 export function getOptimizedImageUrl(url: string, options: { width?: number; height?: number; quality?: number; fit?: 'scale-down' | 'contain' | 'cover' | 'crop' | 'pad' } = {}) {
-    if (!url || url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('/') || url.includes('localhost')) {
+    if (!url || url.startsWith('data:') || url.startsWith('blob:') || url.includes('localhost')) {
+        return url
+    }
+
+    // Si c'est déjà une URL optimisée, on ne la touche pas
+    if (url.includes('/cdn-cgi/image/')) {
         return url
     }
 
@@ -118,5 +124,22 @@ export function getOptimizedImageUrl(url: string, options: { width?: number; hei
 
     const paramsString = params.join(',')
 
-    return `/cdn-cgi/image/${paramsString}/${url}`
+    // Domaine par défaut pour les médias si l'URL est relative
+    const defaultBase = 'https://img.cartepostale.cool'
+
+    if (url.startsWith('http')) {
+        try {
+            const urlObj = new URL(url)
+            const domain = `${urlObj.protocol}//${urlObj.host}`
+            // On retire le slash initial du pathname pour le format Cloudflare
+            const path = urlObj.pathname.startsWith('/') ? urlObj.pathname.slice(1) : urlObj.pathname
+            return `${domain}/cdn-cgi/image/${paramsString}/${path}`
+        } catch (e) {
+            return url
+        }
+    }
+
+    // Si c'est un chemin relatif (ex: /media/foo.jpg ou juste foo.jpg)
+    const cleanPath = url.replace(/^\/media\//, '').replace(/^\//, '')
+    return `${defaultBase}/cdn-cgi/image/${paramsString}/${cleanPath}`
 }

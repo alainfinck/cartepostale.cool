@@ -31,8 +31,8 @@ function mediaUrl(media: Media | null | undefined): string {
     if (media.url) return media.url
     if (media.filename) {
         const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')
-        if (base) return `${base}/${encodeURIComponent(media.filename)}`
-        return `/media/${encodeURIComponent(media.filename)}`
+        if (base) return `${base}/${media.filename}`
+        return `/media/${media.filename}`
     }
     return ''
 }
