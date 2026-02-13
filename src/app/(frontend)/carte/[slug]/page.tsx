@@ -29,14 +29,41 @@ function isMedia(media: any): media is Media {
 function mediaUrl(media: Media | null | undefined): string {
     if (!media || typeof media !== 'object') return ''
     if (media.url) return media.url
-    if (media.filename) return `/media/${encodeURIComponent(media.filename)}`
+    if (media.filename) {
+        const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')
+        if (base) return `${base}/${encodeURIComponent(media.filename)}`
+        return `/media/${encodeURIComponent(media.filename)}`
+    }
     return ''
 }
 
 // Normalize legacy API URLs to static /media/ URLs (fixes 400 on public page)
 function normalizeMediaUrl(url: string): string {
-    const match = url.match(/^\/api\/media\/file\/(.+)$/)
-    return match ? `/media/${match[1]}` : url
+    if (!url) return ''
+
+    // Si c'est déjà une URL absolue, ne rien faire
+    if (url.startsWith('http')) return url
+
+    const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')
+
+    const apiMatch = url.match(/^\/api\/media\/file\/(.+)$/)
+    if (apiMatch) {
+        if (base) return `${base}/${apiMatch[1]}`
+        return `/media/${apiMatch[1]}`
+    }
+
+    const mediaMatch = url.match(/^\/media\/(.+)$/)
+    if (mediaMatch) {
+        if (base) return `${base}/${mediaMatch[1]}`
+        return url
+    }
+
+    // Si c'est juste le nom du fichier
+    if (!url.startsWith('/') && base) {
+        return `${base}/${url}`
+    }
+
+    return url
 }
 
 // Geocode location string via Nominatim (when postcard has location but no coords)
