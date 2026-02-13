@@ -183,7 +183,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
     const { slug } = await params
     const resolvedSearchParams = (await (searchParams ?? Promise.resolve({}))) as SearchParams
     const envelopeParam = resolvedSearchParams.enveloppe
-    const showEnvelope = envelopeParam === '1' || envelopeParam === 'true'
+    const showEnvelope = envelopeParam === '1'
 
     const payloadPostcard = await getPostcardByPublicId(slug)
 
@@ -228,11 +228,11 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
 
             <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-4 md:mb-6 px-2 md:px-4 relative">
                 {showEnvelope ? (
-                    cardBlock
-                ) : (
                     <EnvelopeWrapper className="w-full max-w-[min(90vw,420px)] md:max-w-[420px]">
                         {cardBlock}
                     </EnvelopeWrapper>
+                ) : (
+                    cardBlock
                 )}
 
                 <div className="absolute -bottom-10 right-4 md:right-8 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
