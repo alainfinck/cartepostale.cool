@@ -54,12 +54,13 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 }) => {
     const [isFlipped, setIsFlipped] = useState(flipped ?? false);
     const [isDragging, setIsDragging] = useState(false);
-    const [frontImageSrc, setFrontImageSrc] = useState(postcard.frontImage);
-    const [isFrontImageLoading, setIsFrontImageLoading] = useState(true);
+    const [frontImageSrc, setFrontImageSrc] = useState(postcard.frontImage || FALLBACK_FRONT_IMAGE);
+    const [isFrontImageLoading, setIsFrontImageLoading] = useState(!!postcard.frontImage);
 
     useEffect(() => {
-        setFrontImageSrc(postcard.frontImage);
-        setIsFrontImageLoading(true);
+        const url = postcard.frontImage || FALLBACK_FRONT_IMAGE;
+        setFrontImageSrc(url);
+        setIsFrontImageLoading(!!postcard.frontImage);
     }, [postcard.frontImage, postcard.id]);
 
     // Motion values for rotation
