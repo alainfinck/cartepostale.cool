@@ -34,7 +34,6 @@ import {
   Mail,
   CreditCard,
   Crop,
-  ZoomIn,
 } from 'lucide-react'
 import { Postcard, Template, FrontImageCrop } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -104,6 +103,35 @@ async function fileToDataUrl(file: File): Promise<string> {
     reader.readAsDataURL(blob)
   })
   return resizeImageToMax2K(dataUrl)
+}
+
+/** Charge une image depuis une URL et la redimensionne côté client (max 2k, JPEG 80%). */
+async function urlToResizedDataUrl(url: string): Promise<string> {
+  const fullUrl = url.startsWith('http') ? url : (typeof window !== 'undefined' ? window.location.origin + url : url)
+  const res = await fetch(fullUrl)
+  const blob = await res.blob()
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
+  return resizeImageToMax2K(dataUrl)
+}
+
+/** Convertit une data URL (ex. JPEG 80% après resize) en Blob pour l’upload R2. */
+function dataUrlToBlob(dataUrl: string): Promise<Blob> {
+  return fetch(dataUrl).then((r) => r.blob())
+}
+
+/** Lit un fichier en data URL sans resize (pour vidéos). */
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
 }
 
 const POSTCARD_ASPECT = 3 / 2
@@ -219,6 +247,9 @@ const SAMPLE_TEMPLATES: Template[] = [
 
 const EMOJI_SUGGESTIONS = ['✨', '📍', '🌅', '🌴', '💌', '🌊', '🗺️'] as const
 
+/** Emojis rapides pour le message (carte postale). */
+const MESSAGE_EMOJIS = ['❤️', '😊', '🌅', '🌴', '🌊', '☀️', '💌', '✨', '📍', '🗺️', '😘', '👋', '💕', '🌸', '🏖️']
+
 const ALBUM_TIERS = {
   tier1: { photos: 10, videos: 0, price: 1 },
   tier2: { photos: 50, videos: 3, price: 2 }
@@ -247,11 +278,20 @@ export default function EditorPage() {
   const [stampYear, setStampYear] = useState('2024')
   const [postmarkText, setPostmarkText] = useState('')
   const [uploadedFileName, setUploadedFileName] = useState('')
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const [frontImageKey, setFrontImageKey] = useState<string | null>(null)
   const [frontImageMimeType, setFrontImageMimeType] = useState<string | null>(null)
   const [frontImageFilesize, setFrontImageFilesize] = useState<number | null>(null)
   /** Recadrage / zoom de la photo face avant (position en %, scale 1 = fit). */
   const [frontImageCrop, setFrontImageCrop] = useState<FrontImageCrop>({ scale: 1, x: 50, y: 50 })
+  const [showCropPanel, setShowCropPanel] = useState(false)
+  const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null)
+  const [cropContainerSize, setCropContainerSize] = useState<{ w: number; h: number } | null>(null)
+  const cropAreaRef = useRef<HTMLDivElement>(null)
+  const cropImgRef = useRef<HTMLImageElement>(null)
+  const cropDragRef = useRef<{ clientX: number; clientY: number; cropX: number; cropY: number } | null>(null)
+  const messageInputRef = useRef<HTMLTextAreaElement>(null)
+
   const [mediaItems, setMediaItems] = useState<Postcard['mediaItems']>([])
   const [isPremium, setIsPremium] = useState(false)
   const [showFullscreen, setShowFullscreen] = useState(false)
@@ -291,6 +331,34 @@ export default function EditorPage() {
       setHasConfettiFired(true)
     }
   }, [shareUrl, hasConfettiFired])
+
+  // De base : afficher ma position sur la carte (géolocalisation au chargement)
+  useEffect(() => {
+    if (coords || !navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        setCoords({ lat: latitude, lng: longitude })
+        setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
+      },
+      () => { /* refus ou erreur : l’utilisateur peut cliquer sur « Ma position actuelle » */ }
+    )
+  }, [])
+
+  useEffect(() => {
+    if (!showCropPanel || !cropAreaRef.current) {
+      setCropContainerSize(null)
+      return
+    }
+    const el = cropAreaRef.current
+    const ro = new ResizeObserver((entries) => {
+      const { width, height } = entries[0]?.contentRect ?? { width: 0, height: 0 }
+      if (width && height) setCropContainerSize({ w: width, h: height })
+    })
+    ro.observe(el)
+    setCropContainerSize({ w: el.getBoundingClientRect().width, h: el.getBoundingClientRect().height })
+    return () => ro.disconnect()
+  }, [showCropPanel])
 
   const canGoNext = () => {
     switch (currentStep) {
@@ -335,9 +403,18 @@ export default function EditorPage() {
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-    const safeName = `postcard-front-${Date.now()}.${ext}`
     setUploadedFileName(file.name)
+
+    // Resize max 2k, JPEG 80%, puis upload du résultat (pas l’original)
+    const dataUrl = await fileToDataUrl(file).catch(() => null)
+    if (!dataUrl) {
+      setUploadedFileName('')
+      alert('Impossible de charger cette image. Utilisez une photo en JPEG ou PNG.')
+      return
+    }
+
+    const blob = await dataUrlToBlob(dataUrl)
+    const safeName = `postcard-front-${Date.now()}.jpg`
 
     try {
       const presignedRes = await fetch('/api/upload-presigned', {
@@ -345,24 +422,24 @@ export default function EditorPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           filename: safeName,
-          mimeType: file.type || 'image/jpeg',
-          filesize: file.size,
+          mimeType: 'image/jpeg',
+          filesize: blob.size,
         }),
       })
       if (presignedRes.ok) {
         const { url, key } = await presignedRes.json()
         const putRes = await fetch(url, {
           method: 'PUT',
-          body: file,
-          headers: { 'Content-Type': file.type || 'image/jpeg' },
+          body: blob,
+          headers: { 'Content-Type': 'image/jpeg' },
         })
         if (putRes.ok) {
           setFrontImageKey(key)
-          setFrontImageMimeType(file.type || 'image/jpeg')
-          setFrontImageFilesize(file.size)
-          const dataUrl = await fileToDataUrl(file)
+          setFrontImageMimeType('image/jpeg')
+          setFrontImageFilesize(blob.size)
           setFrontImage(dataUrl)
           setFrontImageCrop({ scale: 1, x: 50, y: 50 })
+          setSelectedTemplateId(null)
           return
         }
       }
@@ -372,21 +449,63 @@ export default function EditorPage() {
     setFrontImageKey(null)
     setFrontImageMimeType(null)
     setFrontImageFilesize(null)
-    fileToDataUrl(file).then(setFrontImage).catch(() => {
-      setUploadedFileName('')
-      setFrontImage('')
-      alert('Impossible de charger cette image. Utilisez une photo en JPEG ou PNG.')
-    })
+    setFrontImage(dataUrl)
+    setFrontImageCrop({ scale: 1, x: 50, y: 50 })
+    setSelectedTemplateId(null)
   }, [])
 
-  const handleSelectTemplate = (template: Template) => {
-    setFrontImage(template.imageUrl)
+  const handleSelectTemplate = useCallback(async (template: Template) => {
     setUploadedFileName('')
+    setSelectedTemplateId(template.id)
     setFrontImageKey(null)
     setFrontImageMimeType(null)
     setFrontImageFilesize(null)
     setFrontImageCrop({ scale: 1, x: 50, y: 50 })
-  }
+    try {
+      const resized = await urlToResizedDataUrl(template.imageUrl)
+      setFrontImage(resized)
+    } catch {
+      setFrontImage(template.imageUrl)
+    }
+  }, [])
+
+  const handleCropImgLoad = useCallback(() => {
+    const img = cropImgRef.current
+    if (img?.naturalWidth && img.naturalHeight) setImgNaturalSize({ w: img.naturalWidth, h: img.naturalHeight })
+  }, [])
+
+  const handleCropPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      e.preventDefault()
+      cropDragRef.current = { clientX: e.clientX, clientY: e.clientY, cropX: frontImageCrop.x, cropY: frontImageCrop.y }
+      ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
+    },
+    [frontImageCrop.x, frontImageCrop.y]
+  )
+
+  const handleCropPointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      const drag = cropDragRef.current
+      if (!drag || !imgNaturalSize || !cropAreaRef.current) return
+      const rect = cropAreaRef.current.getBoundingClientRect()
+      const coverScale = Math.max(rect.width / imgNaturalSize.w, rect.height / imgNaturalSize.h)
+      const displayScale = coverScale * frontImageCrop.scale
+      const dx = e.clientX - drag.clientX
+      const dy = e.clientY - drag.clientY
+      const deltaXPercent = (dx / (imgNaturalSize.w * displayScale)) * 100
+      const deltaYPercent = (dy / (imgNaturalSize.h * displayScale)) * 100
+      const newX = Math.max(0, Math.min(100, drag.cropX - deltaXPercent))
+      const newY = Math.max(0, Math.min(100, drag.cropY - deltaYPercent))
+      setFrontImageCrop((c) => ({ ...c, x: newX, y: newY }))
+      cropDragRef.current = { clientX: e.clientX, clientY: e.clientY, cropX: newX, cropY: newY }
+    },
+    [frontImageCrop.scale, imgNaturalSize]
+  )
+
+  const handleCropPointerUp = useCallback((e: React.PointerEvent) => {
+    cropDragRef.current = null
+    ;(e.target as HTMLElement).releasePointerCapture?.(e.pointerId)
+  }, [])
 
   const handleGeolocation = () => {
     if (!navigator.geolocation) return
@@ -413,15 +532,15 @@ export default function EditorPage() {
       const isVideo = file.type.startsWith('video/')
 
       ;(async () => {
-        const previewUrl = await fileToDataUrl(file).catch(() => null)
-        if (!previewUrl) {
-          alert('Impossible de charger un fichier. Utilisez des photos en JPEG ou PNG.')
-          return
-        }
         const type = isVideo ? ('video' as const) : ('image' as const)
         const newId = Date.now() + Math.random().toString()
 
         if (isVideo) {
+          const previewUrl = await readFileAsDataUrl(file).catch(() => null)
+          if (!previewUrl) {
+            alert('Impossible de charger la vidéo.')
+            return
+          }
           setMediaItems((prev) => {
             const videos = (prev || []).filter((i) => i.type === 'video').length
             if (videos >= ALBUM_TIERS.tier2.videos) {
@@ -434,33 +553,38 @@ export default function EditorPage() {
           return
         }
 
-        // Image: upload direct R2 (presigned), fallback base64
+        // Image: resize max 2k JPEG 80%, puis upload R2 (presigned), fallback base64
+        const previewUrl = await fileToDataUrl(file).catch(() => null)
+        if (!previewUrl) {
+          alert('Impossible de charger un fichier. Utilisez des photos en JPEG ou PNG.')
+          return
+        }
         let key: string | undefined
         let mimeType: string | undefined
         let filesize: number | undefined
-        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-        const safeName = `postcard-album-${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${ext}`
+        const blob = await dataUrlToBlob(previewUrl)
+        const safeName = `postcard-album-${Date.now()}-${Math.random().toString(36).slice(2, 9)}.jpg`
         try {
           const presignedRes = await fetch('/api/upload-presigned', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               filename: safeName,
-              mimeType: file.type || 'image/jpeg',
-              filesize: file.size,
+              mimeType: 'image/jpeg',
+              filesize: blob.size,
             }),
           })
           if (presignedRes.ok) {
             const { url, key: k } = await presignedRes.json()
             const putRes = await fetch(url, {
               method: 'PUT',
-              body: file,
-              headers: { 'Content-Type': file.type || 'image/jpeg' },
+              body: blob,
+              headers: { 'Content-Type': 'image/jpeg' },
             })
             if (putRes.ok) {
               key = k
-              mimeType = file.type || 'image/jpeg'
-              filesize = file.size
+              mimeType = 'image/jpeg'
+              filesize = blob.size
             }
           }
         } catch (_) {
@@ -798,7 +922,7 @@ export default function EditorPage() {
                       onClick={() => handleSelectTemplate(template)}
                       className={cn(
                         'relative aspect-[3/2] rounded-xl overflow-hidden border-2 transition-all group/tpl hover:shadow-lg',
-                        frontImage === template.imageUrl && !uploadedFileName
+                        selectedTemplateId === template.id && !uploadedFileName
                           ? 'border-teal-500 ring-2 ring-teal-200 shadow-md'
                           : 'border-transparent hover:border-teal-300'
                       )}
@@ -812,7 +936,7 @@ export default function EditorPage() {
                       <span className="absolute bottom-2 left-2 text-white text-xs font-bold opacity-0 group-hover/tpl:opacity-100 transition-opacity drop-shadow-lg">
                         {template.name}
                       </span>
-                      {frontImage === template.imageUrl && !uploadedFileName && (
+                      {selectedTemplateId === template.id && !uploadedFileName && (
                         <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-teal-500 flex items-center justify-center shadow-md">
                           <Check size={14} className="text-white" />
                         </div>
@@ -821,89 +945,136 @@ export default function EditorPage() {
                   ))}
                 </div>
 
-                {/* Recadrer et zoomer la photo */}
+                {/* Recadrer : icône cliquable → zone glisser + molette */}
                 {frontImage && (
                   <section className="mt-8 pt-8 border-t border-stone-200">
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-100 text-teal-600">
-                        <Crop size={18} />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCropPanel((v) => !v)
+                        if (!showCropPanel) setImgNaturalSize(null)
+                      }}
+                      className={cn(
+                        'flex items-center gap-3 w-full rounded-xl border-2 p-3 text-left transition-all',
+                        showCropPanel
+                          ? 'border-teal-500 bg-teal-50'
+                          : 'border-stone-200 hover:border-teal-200 hover:bg-stone-50'
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+                          showCropPanel ? 'bg-teal-500 text-white' : 'bg-teal-100 text-teal-600'
+                        )}
+                      >
+                        <Crop size={20} />
                       </span>
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-bold text-stone-800 uppercase tracking-wider">
-                          Recadrer et zoomer
+                          Recadrer
                         </h3>
                         <p className="text-xs text-stone-500">
-                          Positionnez la photo sur la face avant
+                          {showCropPanel
+                            ? 'Déplacez l’image à la souris, zoomez avec le curseur'
+                            : 'Cliquez pour recadrer et zoomer sur la photo'}
                         </p>
                       </div>
-                    </div>
-                    <div className="space-y-5">
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <label className="text-xs font-semibold text-stone-600 uppercase tracking-wider flex items-center gap-1.5">
-                            <ZoomIn size={14} />
-                            Zoom
-                          </label>
-                          <span className="text-xs font-medium text-stone-500 tabular-nums">
-                            {Math.round(frontImageCrop.scale * 100)}%
-                          </span>
-                        </div>
-                        <input
-                          type="range"
-                          min={1}
-                          max={2.5}
-                          step={0.05}
-                          value={frontImageCrop.scale}
-                          onChange={(e) =>
-                            setFrontImageCrop((c) => ({ ...c, scale: Number(e.target.value) }))
-                          }
-                          className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
-                        />
+                      <span className="text-stone-400 shrink-0">
+                        {showCropPanel ? '▼' : '▶'}
+                      </span>
+                    </button>
+
+                    {showCropPanel && (
+                      <>
+                      <div
+                        ref={cropAreaRef}
+                        className="mt-4 relative w-full overflow-hidden rounded-xl border-2 border-stone-200 bg-stone-100 aspect-[3/2] select-none cursor-grab active:cursor-grabbing"
+                        onPointerDown={handleCropPointerDown}
+                        onPointerMove={handleCropPointerMove}
+                        onPointerUp={handleCropPointerUp}
+                        onPointerLeave={handleCropPointerUp}
+                        style={{ touchAction: 'none' }}
+                      >
+                        {imgNaturalSize && cropContainerSize ? (
+                          <div
+                            className="absolute pointer-events-none"
+                            style={(() => {
+                              const coverScale = Math.max(
+                                cropContainerSize.w / imgNaturalSize.w,
+                                cropContainerSize.h / imgNaturalSize.h
+                              )
+                              const displayScale = coverScale * frontImageCrop.scale
+                              const w = imgNaturalSize.w * displayScale
+                              const h = imgNaturalSize.h * displayScale
+                              const left =
+                                cropContainerSize.w / 2 -
+                                (frontImageCrop.x / 100) * imgNaturalSize.w * displayScale
+                              const top =
+                                cropContainerSize.h / 2 -
+                                (frontImageCrop.y / 100) * imgNaturalSize.h * displayScale
+                              return { width: w, height: h, left, top }
+                            })()}
+                          >
+                            <img
+                              ref={cropImgRef}
+                              src={frontImage}
+                              alt="Recadrage"
+                              className="block w-full h-full object-contain"
+                              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                              onLoad={handleCropImgLoad}
+                              draggable={false}
+                            />
+                          </div>
+                        ) : (
+                          <img
+                            ref={cropImgRef}
+                            src={frontImage}
+                            alt="Recadrage"
+                            className="absolute inset-0 w-full h-full pointer-events-none object-cover"
+                            style={{ objectPosition: `${frontImageCrop.x}% ${frontImageCrop.y}%` }}
+                            onLoad={handleCropImgLoad}
+                            draggable={false}
+                          />
+                        )}
                       </div>
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <label className="text-xs font-semibold text-stone-600 uppercase tracking-wider">
-                            Position horizontale
-                          </label>
-                          <span className="text-xs font-medium text-stone-500 tabular-nums">
-                            {Math.round(frontImageCrop.x)}%
-                          </span>
+                      <div className="mt-4 space-y-3">
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Zoom</span>
+                            <span className="text-xs font-medium text-stone-500 tabular-nums">
+                              {Math.round(frontImageCrop.scale * 100)}%
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min={1}
+                            max={4}
+                            step={0.05}
+                            value={frontImageCrop.scale}
+                            onChange={(e) =>
+                              setFrontImageCrop((c) => ({ ...c, scale: Number(e.target.value) }))
+                            }
+                            className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                          />
                         </div>
-                        <input
-                          type="range"
-                          min={0}
-                          max={100}
-                          value={frontImageCrop.x}
-                          onChange={(e) =>
-                            setFrontImageCrop((c) => ({ ...c, x: Number(e.target.value) }))
-                          }
-                          className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
-                        />
+                        <Button
+                          type="button"
+                          onClick={() => setShowCropPanel(false)}
+                          className="w-full rounded-xl bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 transition-colors"
+                        >
+                          <Check size={18} className="inline mr-2" />
+                          Valider le recadrage
+                        </Button>
                       </div>
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <label className="text-xs font-semibold text-stone-600 uppercase tracking-wider">
-                            Position verticale
-                          </label>
-                          <span className="text-xs font-medium text-stone-500 tabular-nums">
-                            {Math.round(frontImageCrop.y)}%
-                          </span>
-                        </div>
-                        <input
-                          type="range"
-                          min={0}
-                          max={100}
-                          value={frontImageCrop.y}
-                          onChange={(e) =>
-                            setFrontImageCrop((c) => ({ ...c, y: Number(e.target.value) }))
-                          }
-                          className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
-                        />
-                      </div>
-                      <p className="text-[11px] text-stone-400">
-                        L&apos;aperçu à gauche se met à jour en temps réel. Le cadrage sera enregistré sur la carte.
+                      </>
+
+                    )}
+
+                    {showCropPanel && (
+                      <p className="mt-2 text-[11px] text-stone-400">
+                        L’aperçu à gauche se met à jour en temps réel. Le cadrage sera enregistré sur la carte.
                       </p>
-                    </div>
+                    )}
                   </section>
                 )}
 
@@ -1257,6 +1428,7 @@ export default function EditorPage() {
                       </span>
                     </div>
                     <textarea
+                      ref={messageInputRef}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="Cher(e)... Nous voici au bout du monde, le soleil se couche sur la mer et je pense à vous..."
@@ -1264,6 +1436,41 @@ export default function EditorPage() {
                       maxLength={500}
                       className="w-full min-h-[220px] rounded-2xl border border-stone-200 shadow-inner focus:border-indigo-500 focus:ring-indigo-500 text-lg p-5 font-sans bg-white leading-relaxed text-stone-700 resize-none placeholder:text-stone-300"
                     />
+                    {/* Emojis rapides pour le message */}
+                    <div className="mt-3">
+                      <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-2">
+                        Choisir un emoji
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {MESSAGE_EMOJIS.map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => {
+                              const el = messageInputRef.current
+                              const pos = el ? el.selectionStart : message.length
+                              const before = message.slice(0, pos)
+                              const after = message.slice(pos)
+                              const next = before + emoji + after
+                              if (next.length <= 500) {
+                                setMessage(next)
+                                requestAnimationFrame(() => {
+                                  if (el) {
+                                    el.focus()
+                                    const newPos = pos + emoji.length
+                                    el.setSelectionRange(newPos, newPos)
+                                  }
+                                })
+                              }
+                            }}
+                            className="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-indigo-100 hover:border-indigo-300 hover:bg-indigo-50 text-xl transition-colors"
+                            title={`Insérer ${emoji}`}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     {/* Quick suggestions */}
                     <div className="flex flex-wrap gap-2 mt-4">
                       {[
