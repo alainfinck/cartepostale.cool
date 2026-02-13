@@ -45,7 +45,7 @@ import { linkPostcardToUser } from '@/actions/auth-actions'
 const HEIC_TYPES = ['image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence']
 const MAX_IMAGE_PX = 2048 // 2K max côté le plus long
 
-/** Redimensionne une image (data URL) pour que le plus grand côté soit au max MAX_IMAGE_PX, en JPEG. */
+/** Redimensionne une image (data URL) pour que le plus grand côté soit au max MAX_IMAGE_PX, en JPEG 80%. */
 function resizeImageToMax2K(dataUrl: string, maxPx: number = MAX_IMAGE_PX): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -53,17 +53,18 @@ function resizeImageToMax2K(dataUrl: string, maxPx: number = MAX_IMAGE_PX): Prom
     img.onload = () => {
       let w = img.naturalWidth
       let h = img.naturalHeight
-      if (w <= maxPx && h <= maxPx) {
-        resolve(dataUrl)
-        return
+
+      // On recalcule les dimensions si besoin
+      if (w > maxPx || h > maxPx) {
+        if (w > h) {
+          h = Math.round((h * maxPx) / w)
+          w = maxPx
+        } else {
+          w = Math.round((w * maxPx) / h)
+          h = maxPx
+        }
       }
-      if (w > h) {
-        h = Math.round((h * maxPx) / w)
-        w = maxPx
-      } else {
-        w = Math.round((w * maxPx) / h)
-        h = maxPx
-      }
+
       const canvas = document.createElement('canvas')
       canvas.width = w
       canvas.height = h
@@ -74,7 +75,8 @@ function resizeImageToMax2K(dataUrl: string, maxPx: number = MAX_IMAGE_PX): Prom
       }
       ctx.drawImage(img, 0, 0, w, h)
       try {
-        const resized = canvas.toDataURL('image/jpeg', 0.9)
+        // Toujours exporter en JPEG qualité 80% comme demandé
+        const resized = canvas.toDataURL('image/jpeg', 0.8)
         resolve(resized)
       } catch {
         resolve(dataUrl)
@@ -90,7 +92,7 @@ async function fileToDataUrl(file: File): Promise<string> {
   let blob: Blob = file
   if (isHeic) {
     const heic2any = (await import('heic2any')).default
-    const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 })
+    const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.8 })
     blob = Array.isArray(converted) ? converted[0] : converted
   }
   const dataUrl = await new Promise<string>((resolve, reject) => {

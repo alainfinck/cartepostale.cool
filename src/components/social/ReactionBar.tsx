@@ -62,8 +62,8 @@ export default function ReactionBar({
                             onClick={() => handleToggle(emoji)}
                             disabled={loading === emoji}
                             className={`
-                                flex items-center gap-1 px-2 py-1 rounded-full border text-xs
-                                transition-all duration-300 cursor-pointer shadow-sm hover:scale-105 active:scale-95
+                                flex items-center gap-1.5 px-3 py-2 rounded-full border text-sm
+                                transition-all duration-300 cursor-pointer shadow-sm hover:scale-110 active:scale-95
                                 ${isActive
                                     ? 'bg-teal-50 border-teal-400 text-teal-700 shadow-teal-100/50'
                                     : 'bg-white border-stone-200 text-stone-600 hover:border-stone-300 hover:bg-stone-50'
@@ -71,11 +71,11 @@ export default function ReactionBar({
                                 ${loading === emoji ? 'opacity-50' : ''}
                             `}
                         >
-                            <span className="text-lg sm:text-xl filter drop-shadow-sm transform group-hover:scale-110 transition-transform">{emoji}</span>
+                            <span className="text-2xl sm:text-3xl filter drop-shadow-sm transform group-hover:scale-110 transition-transform">{emoji}</span>
                             {count > 0 && (
                                 <NumberTicker
                                     value={count}
-                                    className="text-xs font-medium text-inherit"
+                                    className="text-sm font-bold text-inherit"
                                 />
                             )}
                         </motion.button>

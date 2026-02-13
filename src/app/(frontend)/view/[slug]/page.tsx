@@ -4,7 +4,8 @@ import { Metadata } from 'next'
 import { getPostcardByPublicId } from '@/actions/postcard-actions'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { ArrowRight, Sparkles, Eye } from 'lucide-react'
+import { NumberTicker } from '@/components/ui/number-ticker'
 import { Postcard as PayloadPostcard, Media } from '@/payload-types'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import { RotateDevicePrompt } from "@/components/ui/rotate-device-prompt"
@@ -151,7 +152,7 @@ export default async function PostcardPage({ params }: PageProps) {
             />
 
             {/* Card View */}
-            <div className="w-full max-w-[100vw] md:max-w-4xl flex justify-center perspective-[1000px] mb-6 md:mb-8 px-2 md:px-0 landscape:mb-4 relative">
+            <div className="w-full max-w-[100vw] md:max-w-4xl flex justify-center perspective-[1000px] mb-4 md:mb-6 px-2 md:px-0 landscape:mb-4 relative">
                 <div className="flex flex-col w-full items-center">
                     <PostcardView
                         postcard={frontendPostcard}
@@ -170,8 +171,10 @@ export default async function PostcardPage({ params }: PageProps) {
                 </div>
 
                 {/* View Counter - Absolute bottom right of the container */}
-                <div className="absolute -bottom-12 right-0 md:right-4 flex items-center gap-2 text-stone-400 text-sm font-medium">
-                    <span>{payloadPostcard.views || 0} vues</span>
+                <div className="absolute -bottom-10 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
+                    <Eye size={14} className="text-stone-300" />
+                    <NumberTicker value={payloadPostcard.views || 0} className="text-stone-400 font-bold" />
+                    <span>vues</span>
                 </div>
             </div>
 

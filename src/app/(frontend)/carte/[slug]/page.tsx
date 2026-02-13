@@ -4,12 +4,14 @@ import { Metadata } from 'next'
 import { getPostcardByPublicId } from '@/actions/postcard-actions'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { ArrowRight, Sparkles, Eye } from 'lucide-react'
+import { NumberTicker } from '@/components/ui/number-ticker'
 import { Postcard as PayloadPostcard, Media } from '@/payload-types'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import { RotateDevicePrompt } from "@/components/ui/rotate-device-prompt"
 import SocialBar from '@/components/social/SocialBar'
 import ViewPageTitle from '@/components/view/ViewPageTitle'
+import DistanceDisplay from '@/components/view/DistanceDisplay'
 
 interface PageProps {
     params: Promise<{
@@ -142,24 +144,35 @@ export default async function PostcardPage({ params }: PageProps) {
         <div className="min-h-screen bg-[#fdfbf7] flex flex-col items-center overflow-x-hidden">
             <RotateDevicePrompt />
 
-            {/* Minimalist Message Hint */}
-            <div className="w-full max-w-7xl px-4 py-8 md:py-12 text-center">
-                <p className="text-stone-400 font-medium uppercase tracking-[0.2em] text-[10px] md:text-xs mb-2">
-                    Carte postale reçue
-                </p>
-                <h1 className="text-2xl md:text-3xl font-serif font-bold text-stone-800">
-                    De la part de {frontendPostcard.senderName} 💌
-                </h1>
-            </div>
+            {/* Header / Titre avec effet d'apparition */}
+            <ViewPageTitle
+                title="Vous avez reçu une carte postale !"
+                senderName={frontendPostcard.senderName}
+            />
 
             {/* Card View */}
-            <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-12 md:mb-20 px-2 md:px-4">
+            <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-4 md:mb-6 px-2 md:px-4 relative">
                 <PostcardView
                     postcard={frontendPostcard}
                     flipped={false}
                     isLarge={true}
                     className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] md:shadow-[0_30px_70px_rgba(0,0,0,0.2)]"
                 />
+
+                {/* Distance Display */}
+                {frontendPostcard.coords && (
+                    <DistanceDisplay
+                        targetCoords={frontendPostcard.coords}
+                        senderName={frontendPostcard.senderName}
+                    />
+                )}
+
+                {/* View Counter */}
+                <div className="absolute -bottom-10 right-4 md:right-8 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
+                    <Eye size={14} className="text-stone-300" />
+                    <NumberTicker value={payloadPostcard.views || 0} className="text-stone-400 font-bold" />
+                    <span>vues</span>
+                </div>
             </div>
 
             {/* Social Bar & Info */}

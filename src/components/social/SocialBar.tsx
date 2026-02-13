@@ -166,9 +166,9 @@ export default function SocialBar({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="w-full max-w-4xl mx-auto px-4 space-y-8 mb-12"
+            className="w-full max-w-4xl mx-auto px-4 space-y-6 mb-12"
         >
-            <div className="max-w-4xl mx-auto space-y-6">
+            <div className="max-w-4xl mx-auto space-y-4">
                 {/* Reactions + Views */}
                 <ReactionBar
                     postcardId={postcardId}

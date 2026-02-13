@@ -13,11 +13,11 @@ import {
     Camera,
     Search,
     Info,
-    Heart
+    Heart,
+    Loader2
 } from 'lucide-react';
-import { motion, useSpring, useMotionValue, useTransform, PanInfo, useAnimation } from 'framer-motion';
-
 import { cn } from '@/lib/utils';
+import { AnimatePresence, motion, useSpring, useMotionValue, useTransform, PanInfo, useAnimation } from 'framer-motion';
 import dynamic from 'next/dynamic'
 
 // Dynamically import MapModal to avoid SSR issues with Leaflet
@@ -55,8 +55,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     const [isFlipped, setIsFlipped] = useState(flipped ?? false);
     const [isDragging, setIsDragging] = useState(false);
     const [frontImageSrc, setFrontImageSrc] = useState(postcard.frontImage);
+    const [isFrontImageLoading, setIsFrontImageLoading] = useState(true);
+
     useEffect(() => {
         setFrontImageSrc(postcard.frontImage);
+        setIsFrontImageLoading(true);
     }, [postcard.frontImage, postcard.id]);
 
     // Motion values for rotation
@@ -423,9 +426,36 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             <img
                                 src={frontImageSrc}
                                 alt="Postcard Front"
-                                className="w-full h-full object-cover pointer-events-none"
-                                onError={() => setFrontImageSrc(FALLBACK_FRONT_IMAGE)}
+                                className={cn(
+                                    "w-full h-full object-cover pointer-events-none transition-opacity duration-700",
+                                    isFrontImageLoading ? "opacity-0" : "opacity-100"
+                                )}
+                                onLoad={() => setIsFrontImageLoading(false)}
+                                onError={() => {
+                                    setFrontImageSrc(FALLBACK_FRONT_IMAGE);
+                                    setIsFrontImageLoading(false);
+                                }}
                             />
+
+                            {/* Loading State for Front Image */}
+                            <AnimatePresence>
+                                {isFrontImageLoading && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-stone-50"
+                                    >
+                                        <div className="relative">
+                                            <Loader2 size={40} className="text-teal-500 animate-spin" />
+                                            <div className="absolute inset-0 blur-xl bg-teal-500/20 animate-pulse rounded-full" />
+                                        </div>
+                                        <p className="mt-4 text-xs font-bold text-stone-400 uppercase tracking-widest animate-pulse">
+                                            Chargement de la photo...
+                                        </p>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
 
                             <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none z-0" />
 
