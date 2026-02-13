@@ -49,6 +49,7 @@ import {
   dataUrlToBlob,
   readFileAsDataUrl,
   MAX_IMAGE_PX,
+  getOptimizedImageUrl,
   JPEG_QUALITY
 } from '@/lib/image-processing'
 
@@ -1532,7 +1533,7 @@ export default function EditorPage() {
                             <video src={item.url} className="w-full h-full object-cover" />
                           ) : (
                             <img
-                              src={item.url}
+                              src={getOptimizedImageUrl(item.url, { width: 400, height: 400, fit: 'cover' })}
                               alt="album item"
                               className="w-full h-full object-cover"
                             />
