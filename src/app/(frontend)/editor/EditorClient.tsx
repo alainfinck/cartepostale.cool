@@ -202,6 +202,9 @@ export default function EditorPage() {
   const [stampYear, setStampYear] = useState('2024')
   const [postmarkText, setPostmarkText] = useState('')
   const [uploadedFileName, setUploadedFileName] = useState('')
+  const [frontImageKey, setFrontImageKey] = useState<string | null>(null)
+  const [frontImageMimeType, setFrontImageMimeType] = useState<string | null>(null)
+  const [frontImageFilesize, setFrontImageFilesize] = useState<number | null>(null)
   const [mediaItems, setMediaItems] = useState<Postcard['mediaItems']>([])
   const [isPremium, setIsPremium] = useState(false)
   const [showFullscreen, setShowFullscreen] = useState(false)
@@ -282,10 +285,45 @@ export default function EditorPage() {
     }
   }
 
-  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const safeName = `postcard-front-${Date.now()}.${ext}`
     setUploadedFileName(file.name)
+
+    try {
+      const presignedRes = await fetch('/api/upload-presigned', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: safeName,
+          mimeType: file.type || 'image/jpeg',
+          filesize: file.size,
+        }),
+      })
+      if (presignedRes.ok) {
+        const { url, key } = await presignedRes.json()
+        const putRes = await fetch(url, {
+          method: 'PUT',
+          body: file,
+          headers: { 'Content-Type': file.type || 'image/jpeg' },
+        })
+        if (putRes.ok) {
+          setFrontImageKey(key)
+          setFrontImageMimeType(file.type || 'image/jpeg')
+          setFrontImageFilesize(file.size)
+          const dataUrl = await fileToDataUrl(file)
+          setFrontImage(dataUrl)
+          return
+        }
+      }
+    } catch (_) {
+      /* fallback to base64 */
+    }
+    setFrontImageKey(null)
+    setFrontImageMimeType(null)
+    setFrontImageFilesize(null)
     fileToDataUrl(file).then(setFrontImage).catch(() => {
       setUploadedFileName('')
       setFrontImage('')
@@ -296,6 +334,9 @@ export default function EditorPage() {
   const handleSelectTemplate = (template: Template) => {
     setFrontImage(template.imageUrl)
     setUploadedFileName('')
+    setFrontImageKey(null)
+    setFrontImageMimeType(null)
+    setFrontImageFilesize(null)
   }
 
   const handleGeolocation = () => {
@@ -422,8 +463,11 @@ export default function EditorPage() {
       const result = await createPostcard({
         ...currentPostcard,
         recipients: [],
-        // If uploaded file, we might need to handle upload separately in a real app
-        // For now we assume frontImage is base64 or URL
+        ...(frontImageKey && {
+          frontImageKey,
+          frontImageMimeType: frontImageMimeType ?? undefined,
+          frontImageFilesize: frontImageFilesize ?? undefined,
+        }),
       })
 
       if (result.success && result.publicId) {

@@ -16,5 +16,7 @@ export const Media: CollectionConfig = {
     staticDir: 'public/media',
     adminThumbnail: 'thumbnail',
     mimeTypes: ['image/*'],
+    // Allow creating media doc with only filename (e.g. after direct upload to R2 via presigned URL)
+    filesRequiredOnCreate: false,
   },
 }

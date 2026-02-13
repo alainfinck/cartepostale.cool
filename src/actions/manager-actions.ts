@@ -130,8 +130,24 @@ export async function updatePostcard(
 
         const updateData: any = { ...data }
 
-        // Handle front image update if it's base64
-        if (data.frontImage && data.frontImage.startsWith('data:image')) {
+        // Handle front image: direct R2 key (presigned upload) or base64 fallback
+        if (data.frontImageKey) {
+            const media = await payload.create({
+                collection: 'media',
+                data: {
+                    alt: `Updated Front Image for postcard ${data.recipientName || 'unnamed'}`,
+                    filename: data.frontImageKey,
+                    mimeType: data.frontImageMimeType || 'image/jpeg',
+                    filesize: data.frontImageFilesize ?? 0,
+                },
+            })
+            updateData.frontImage = media.id
+            const mediaDoc = media as { url?: string | null; filename?: string | null }
+            updateData.frontImageURL = mediaDoc.url ?? (mediaDoc.filename ? `/media/${encodeURIComponent(mediaDoc.filename)}` : undefined)
+            delete updateData.frontImageKey
+            delete updateData.frontImageMimeType
+            delete updateData.frontImageFilesize
+        } else if (data.frontImage && data.frontImage.startsWith('data:image')) {
             const [meta, base64Data] = data.frontImage.split(',')
             const mime = meta.match(/:(.*?);/)?.[1] || 'image/png'
             const extension = mime.split('/')[1] || 'png'

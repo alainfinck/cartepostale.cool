@@ -126,7 +126,23 @@ export async function updateMyPostcard(
 
         const updateData: Record<string, unknown> = { ...data }
 
-        if (data.frontImage && typeof data.frontImage === 'string' && data.frontImage.startsWith('data:image')) {
+        if (data.frontImageKey && typeof data.frontImageKey === 'string') {
+            const media = await payload.create({
+                collection: 'media',
+                data: {
+                    alt: `Face avant - carte ${data.recipientName ?? 'sans nom'}`,
+                    filename: data.frontImageKey,
+                    mimeType: (data.frontImageMimeType as string) || 'image/jpeg',
+                    filesize: (data.frontImageFilesize as number) ?? 0,
+                },
+            })
+            const mediaDoc = media as { url?: string | null; filename?: string | null }
+            updateData.frontImage = media.id
+            updateData.frontImageURL = mediaDoc.url ?? (mediaDoc.filename ? `/media/${encodeURIComponent(mediaDoc.filename)}` : undefined)
+            delete updateData.frontImageKey
+            delete updateData.frontImageMimeType
+            delete updateData.frontImageFilesize
+        } else if (data.frontImage && typeof data.frontImage === 'string' && data.frontImage.startsWith('data:image')) {
             const [meta, base64Data] = (data.frontImage as string).split(',')
             const mime = meta.match(/:(.*?);/)?.[1] || 'image/png'
             const extension = mime.split('/')[1] || 'png'

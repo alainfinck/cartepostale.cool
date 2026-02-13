@@ -50,6 +50,9 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
         frontImage: '',
     })
     const [imagePreview, setImagePreview] = useState<string | null>(null)
+    const [frontImageKey, setFrontImageKey] = useState<string | null>(null)
+    const [frontImageMimeType, setFrontImageMimeType] = useState<string | null>(null)
+    const [frontImageFilesize, setFrontImageFilesize] = useState<number | null>(null)
 
     useEffect(() => {
         if (postcard) {
@@ -60,23 +63,64 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
                 message: postcard.message || '',
                 frontCaption: postcard.frontCaption || '',
                 frontEmoji: postcard.frontEmoji || '',
-                frontImage: '', // Will only hold new image base64 if changed
+                frontImage: '',
             })
             setImagePreview(getFrontImageUrl(postcard))
+            setFrontImageKey(null)
+            setFrontImageMimeType(null)
+            setFrontImageFilesize(null)
         }
     }, [postcard])
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
-        if (file) {
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                const base64 = reader.result as string
-                setImagePreview(base64)
-                setFormData(prev => ({ ...prev, frontImage: base64 }))
+        if (!file) return
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+        const safeName = `postcard-front-${Date.now()}.${ext}`
+
+        try {
+            const presignedRes = await fetch('/api/upload-presigned', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    filename: safeName,
+                    mimeType: file.type || 'image/jpeg',
+                    filesize: file.size,
+                }),
+            })
+            if (presignedRes.ok) {
+                const { url, key } = await presignedRes.json()
+                const putRes = await fetch(url, {
+                    method: 'PUT',
+                    body: file,
+                    headers: { 'Content-Type': file.type || 'image/jpeg' },
+                })
+                if (putRes.ok) {
+                    setFrontImageKey(key)
+                    setFrontImageMimeType(file.type || 'image/jpeg')
+                    setFrontImageFilesize(file.size)
+                    const reader = new FileReader()
+                    reader.onloadend = () => {
+                        setImagePreview(reader.result as string)
+                    }
+                    reader.readAsDataURL(file)
+                    setFormData(prev => ({ ...prev, frontImage: '' }))
+                    return
+                }
             }
-            reader.readAsDataURL(file)
+        } catch (_) {
+            /* fallback to base64 */
         }
+        setFrontImageKey(null)
+        setFrontImageMimeType(null)
+        setFrontImageFilesize(null)
+        const reader = new FileReader()
+        reader.onloadend = () => {
+            const base64 = reader.result as string
+            setImagePreview(base64)
+            setFormData(prev => ({ ...prev, frontImage: base64 }))
+        }
+        reader.readAsDataURL(file)
     }
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -93,7 +137,11 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
                 frontEmoji: formData.frontEmoji,
             }
 
-            if (formData.frontImage) {
+            if (frontImageKey) {
+                dataToUpdate.frontImageKey = frontImageKey
+                dataToUpdate.frontImageMimeType = frontImageMimeType ?? undefined
+                dataToUpdate.frontImageFilesize = frontImageFilesize ?? undefined
+            } else if (formData.frontImage) {
                 dataToUpdate.frontImage = formData.frontImage
             }
 

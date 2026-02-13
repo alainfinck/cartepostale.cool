@@ -53,9 +53,23 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
         let frontImageId: number | undefined;
         let frontImageURL: string | undefined;
 
-        if (data.frontImage) {
+        if (data.frontImageKey) {
+            // Image already uploaded to R2 via presigned URL; create media doc with key only
+            const media = await payload.create({
+                collection: 'media',
+                data: {
+                    alt: `Front Image for postcard ${data.recipientName || 'unnamed'}`,
+                    filename: data.frontImageKey,
+                    mimeType: data.frontImageMimeType || 'image/jpeg',
+                    filesize: data.frontImageFilesize ?? 0,
+                },
+            })
+            frontImageId = media.id as number
+            const mediaDoc = media as { url?: string | null; filename?: string | null }
+            frontImageURL = mediaDoc.url ?? (mediaDoc.filename ? `/media/${encodeURIComponent(mediaDoc.filename)}` : undefined)
+        } else if (data.frontImage) {
             if (data.frontImage.startsWith('data:image')) {
-                // Base64 upload
+                // Base64 upload (fallback: server uploads to R2)
                 const [meta, base64Data] = data.frontImage.split(',');
                 const mime = meta.match(/:(.*?);/)?.[1] || 'image/png';
                 const extension = mime.split('/')[1] || 'png';
@@ -74,7 +88,6 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
                     },
                 })
                 frontImageId = media.id as number;
-                // Persist URL so view page has a stable value (Payload stores in public/media, Next.js serves at /media/)
                 const mediaDoc = media as { url?: string | null; filename?: string | null }
                 frontImageURL = mediaDoc.url ?? (mediaDoc.filename ? `/media/${encodeURIComponent(mediaDoc.filename)}` : undefined)
             } else if (data.frontImage.startsWith('http')) {
@@ -146,7 +159,7 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
         }
 
         // Remove processed fields from spread data to avoid validation errors
-        const { frontImage, mediaItems, id, ...cleanData } = data;
+        const { frontImage, frontImageKey, frontImageMimeType, frontImageFilesize, mediaItems, id, ...cleanData } = data;
 
         // Create the postcard record
         const newPostcard = await payload.create({
