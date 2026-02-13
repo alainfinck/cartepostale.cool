@@ -43,7 +43,27 @@ Les médias sont stockés dans un bucket S3 (ou compatible : **Cloudflare R2**, 
 
    Pour R2, **ne pas** définir `S3_REGION` (l’app utilise `auto` automatiquement quand l’endpoint contient `r2.cloudflarestorage.com`).
 
-   **CORS** : pour les uploads depuis le navigateur (manager/cartes, éditeur), configurer CORS sur le bucket R2 : **Cloudflare** → **R2** → votre bucket → **Settings** → **CORS policy** ; autoriser l’origine de votre site (ex. `https://www.cartepostale.cool`). Sinon erreur 403 sur la requête preflight.
+   **CORS** (obligatoire pour l’éditeur public) : pour les uploads depuis le navigateur (manager/cartes, éditeur), le navigateur envoie une requête préflight (OPTIONS) vers R2 avant le PUT. Sans CORS configuré sur le bucket, R2 répond **403** et vous verrez « Preflight response is not successful » / « access control checks » dans la console, puis « Impossible de créer le lien » après publication.
+
+   Dans **Cloudflare** → **R2** → votre bucket → **Settings** → **CORS policy**, ajoutez une politique (ou remplacez l’existant) par le JSON suivant, en adaptant les origines si besoin :
+
+   ```json
+   [
+     {
+       "AllowedOrigins": [
+         "https://www.cartepostale.cool",
+         "https://cartepostale.cool",
+         "http://localhost:3000"
+       ],
+       "AllowedMethods": ["GET", "PUT", "HEAD"],
+       "AllowedHeaders": ["*"],
+       "ExposeHeaders": ["ETag"],
+       "MaxAgeSeconds": 3600
+     }
+   ]
+   ```
+
+   Sauvegardez, puis réessayez un upload (photo de face ou album) et la publication depuis l’éditeur.
 
 3. **Domaine public R2 (affichage des images)**  
    L’endpoint S3 de R2 n’est pas lisible publiquement. Il faut activer l’accès public sur le bucket et définir l’URL de base :
@@ -78,6 +98,16 @@ Les médias sont stockés dans un bucket S3 (ou compatible : **Cloudflare R2**, 
 | `S3_ENDPOINT`         | Pour Minio / R2 : URL de l’API S3 |
 
 Rendre les objets lisibles (policy du bucket ou domaine public R2) pour que les images s’affichent.
+
+---
+
+## Dépannage
+
+| Symptôme | Cause probable | Action |
+|----------|----------------|--------|
+| **403** sur `r2.cloudflarestorage.com` / « Preflight response is not successful » / « access control checks » | CORS non configuré sur le bucket R2 | Configurer la politique CORS (voir section Cloudflare R2 ci-dessus). |
+| **Impossible de créer le lien** après publication, ou **500** sur l’éditeur | Souvent : upload R2 en 403 → fallback base64 → payload trop volumineux ou erreur serveur | Corriger CORS sur R2 pour que les photos partent bien en PUT ; réessayer la publication. |
+| Images 404 sur la carte publique | `R2_PUBLIC_BASE_URL` non défini ou accès public R2 désactivé | Définir `R2_PUBLIC_BASE_URL` et activer l’accès public (R2.dev ou custom domain) sur le bucket. |
 
 ---
 

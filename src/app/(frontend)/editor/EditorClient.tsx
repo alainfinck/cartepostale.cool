@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   Image as ImageIcon,
   Stamp,
+  Sticker as StickerIcon,
   Send,
   Sparkles,
   X,
@@ -39,7 +40,7 @@ import {
   Plus,
   MoreHorizontal,
 } from 'lucide-react'
-import { Postcard, Template, TemplateCategory, FrontImageCrop } from '@/types'
+import { Postcard, Template, TemplateCategory, FrontImageCrop, StickerPlacement, Sticker } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -57,6 +58,8 @@ import {
   JPEG_QUALITY
 } from '@/lib/image-processing'
 import { UnsplashSearchModal } from '@/components/UnsplashSearchModal'
+import StickerGallery from '@/components/editor/StickerGallery'
+import StickerLayer from '@/components/editor/StickerLayer'
 
 const POSTCARD_ASPECT = 3 / 2
 
@@ -544,6 +547,8 @@ export default function EditorPage() {
   const [isEmailSent, setIsEmailSent] = useState(false)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [showUnsplashModal, setShowUnsplashModal] = useState(false)
+  const [showStickerGallery, setShowStickerGallery] = useState(false)
+  const [stickers, setStickers] = useState<StickerPlacement[]>([])
   const [selectedEmojiCategory, setSelectedEmojiCategory] = useState<EmojiCategoryKey>(EMOJI_CATEGORIES[0].key)
   const emojiPickerRef = useRef<HTMLDivElement>(null)
   const [currentUser, setCurrentUser] = useState<{ id: number; email?: string; name?: string | null } | null>(null)
@@ -811,6 +816,28 @@ export default function EditorPage() {
     const img = cropImgRef.current
     if (img?.naturalWidth && img.naturalHeight) setImgNaturalSize({ w: img.naturalWidth, h: img.naturalHeight })
   }, [])
+
+  const handleStickerSelect = (sticker: Sticker) => {
+    const newSticker: StickerPlacement = {
+      id: Math.random().toString(36).substr(2, 9),
+      stickerId: sticker.id,
+      imageUrl: sticker.image,
+      x: 50,
+      y: 50,
+      scale: 1,
+      rotation: 0
+    }
+    setStickers([...stickers, newSticker])
+    setShowStickerGallery(false)
+  }
+
+  const updateSticker = (id: string, updates: Partial<StickerPlacement>) => {
+    setStickers(stickers.map(s => s.id === id ? { ...s, ...updates } : s))
+  }
+
+  const removeSticker = (id: string) => {
+    setStickers(stickers.filter(s => s.id !== id))
+  }
 
   const handleCropPointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -1153,7 +1180,15 @@ export default function EditorPage() {
                   Mise à jour en temps réel
                 </div>
               </div>
-              <PostcardView postcard={postcardForPreview} flipped={showBack} className="w-full h-auto aspect-[3/2] shadow-xl rounded-xl border border-stone-100" />
+              <div className="relative">
+                <PostcardView postcard={postcardForPreview} flipped={showBack} className="w-full h-auto aspect-[3/2] shadow-xl rounded-xl border border-stone-100" />
+                <StickerLayer
+                  stickers={stickers}
+                  onUpdate={updateSticker}
+                  onRemove={removeSticker}
+                  isActive={!showBack} // Only interactive on front
+                />
+              </div>
               <div className="mt-4 flex flex-col gap-4">
                 <p className="text-stone-400 text-[10px] uppercase tracking-widest font-bold text-center">L&apos;aperçu se met à jour en temps réel</p>
 
@@ -1345,28 +1380,6 @@ export default function EditorPage() {
                       )
                     })}
                   </div>
-                  {selectedTemplate && (
-                    <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3">
-                      <div className="flex-shrink-0 h-16 w-24 overflow-hidden rounded-xl bg-stone-100">
-                        <img
-                          src={selectedTemplate.imageUrl}
-                          alt={selectedTemplate.name}
-                          className="h-16 w-24 object-cover"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-stone-900">{selectedTemplate.name}</p>
-                        {selectedTemplate.description && (
-                          <p className="text-xs text-stone-500">{selectedTemplate.description}</p>
-                        )}
-                        <p className="text-[0.65rem] uppercase tracking-[0.35em] text-stone-400">
-                          {selectedTemplateCategory?.icon
-                            ? `${selectedTemplateCategory.icon} ${selectedTemplateCategory.label}`
-                            : selectedTemplateCategory?.label ?? selectedTemplate.category}
-                        </p>
-                      </div>
-                    </div>
-                  )}
                   <Button
                     type="button"
                     onClick={() => setShowUnsplashModal(true)}
@@ -1578,6 +1591,14 @@ export default function EditorPage() {
                             aria-label="Choisir un emoji par thème"
                           >
                             <Grid size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            className="flex h-10 px-3 items-center justify-center rounded-xl border-2 border-stone-200 bg-white text-stone-400 transition-colors hover:border-teal-400 hover:text-teal-600 gap-2 font-semibold text-xs"
+                            onClick={() => setShowStickerGallery(true)}
+                          >
+                            <StickerIcon size={16} />
+                            Stickers
                           </button>
                         </div>
                         {showEmojiPicker && (
@@ -2150,6 +2171,9 @@ export default function EditorPage() {
                         </div>
                         <h3 className="text-lg font-serif font-bold text-stone-800 mb-2">Impossible de créer le lien</h3>
                         <p className="text-stone-600 text-sm mb-6 max-w-md">{shareError}</p>
+                        <p className="text-stone-500 text-xs mb-4 max-w-md">
+                          Si vous avez ajouté des photos, vérifiez que le stockage (CORS du bucket R2) est bien configuré pour votre domaine.
+                        </p>
                         <div className="flex flex-wrap justify-center gap-3">
                           <Button
                             onClick={() => { setShareError(null); handlePublish(); }}

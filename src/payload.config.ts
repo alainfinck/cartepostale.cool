@@ -18,6 +18,7 @@ import { PostcardTrackingLinks } from './collections/PostcardTrackingLinks'
 import { GalleryCategory } from './collections/GalleryCategory'
 import { GalleryTag } from './collections/GalleryTag'
 import { Gallery } from './collections/Gallery'
+import { Stickers } from './collections/Stickers'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -90,7 +91,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Agencies, Postcards, Templates, Reactions, Comments, PostcardViewEvents, PostcardTrackingLinks, GalleryCategory, GalleryTag, Gallery],
+  collections: [Users, Media, Agencies, Postcards, Templates, Reactions, Comments, PostcardViewEvents, PostcardTrackingLinks, GalleryCategory, GalleryTag, Gallery, Stickers],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

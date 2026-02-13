@@ -483,6 +483,29 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 }}
                             />
 
+                            {/* Stickers Rendering */}
+                            <div className="absolute inset-0 pointer-events-none z-10">
+                                {postcard.stickers?.map((sticker) => (
+                                    <div
+                                        key={sticker.id}
+                                        className="absolute"
+                                        style={{
+                                            left: `${sticker.x}%`,
+                                            top: `${sticker.y}%`,
+                                            transform: `translate(-50%, -50%) scale(${sticker.scale}) rotate(${sticker.rotation}deg)`,
+                                            width: '80px', // Base size, adjusted by scale
+                                            height: '80px',
+                                        }}
+                                    >
+                                        <img
+                                            src={getOptimizedImageUrl(sticker.imageUrl || '', { width: 200 })}
+                                            alt="Sticker"
+                                            className="w-full h-full object-contain"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
                             {/* Loading State for Front Image */}
                             <AnimatePresence>
                                 {isFrontImageLoading && (

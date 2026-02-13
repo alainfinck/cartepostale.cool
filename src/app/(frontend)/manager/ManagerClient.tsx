@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Pencil } from 'lucide-react'
+import { Pencil, Sticker as StickerIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import { Card, CardContent } from '@/components/ui/card'
@@ -72,6 +72,7 @@ import {
 import PostcardView from '@/components/postcard/PostcardView'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import EditPostcardDialog from './EditPostcardDialog'
+import ManagerStickers from './ManagerStickers'
 
 export type StatusFilter = 'all' | 'published' | 'draft' | 'archived'
 type ViewMode = 'grid' | 'list'
@@ -145,6 +146,7 @@ interface Props {
 }
 
 export default function ManagerClient({ initialData, useEspaceClientActions, useAgenceActions }: Props) {
+    const [activeTab, setActiveTab] = useState<'postcards' | 'stickers'>('postcards')
     const [data, setData] = useState(initialData)
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -345,320 +347,357 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
 
     return (
         <div className="space-y-6">
-            {/* Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                <StatCard icon={<Mail size={18} />} label="Total" value={totalCards} />
-                <StatCard icon={<FileText size={18} />} label="Publiées" value={publishedCount} variant="success" />
-                <StatCard icon={<FileText size={18} />} label="Brouillons" value={draftCount} variant="warning" />
-                <StatCard icon={<Archive size={18} />} label="Archivées" value={archivedCount} variant="muted" />
-                <StatCard icon={<Eye size={18} />} label="Vues" value={totalViews} variant="info" />
-                <StatCard icon={<Share2 size={18} />} label="Partages" value={totalShares} variant="info" />
-            </div>
-
-            {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center bg-card/50 backdrop-blur-md p-4 rounded-xl border border-border/50 shadow-sm">
-                <div className="relative flex-1">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                        placeholder="Rechercher par nom, lieu, message..."
-                        value={search}
-                        onChange={(e) => handleSearch(e.target.value)}
-                        className="pl-9 bg-background/50 border-border/50 focus-visible:ring-teal-500/30"
-                    />
-                </div>
-
-                <div className="flex gap-1 bg-muted/30 p-1 rounded-lg border border-border/30">
-                    {(['all', 'published', 'draft', 'archived'] as StatusFilter[]).map((s) => (
-                        <Button
-                            key={s}
-                            variant={statusFilter === s ? 'secondary' : 'ghost'}
-                            size="sm"
-                            onClick={() => handleStatusFilter(s)}
-                            className={cn(
-                                "px-3 text-xs h-8",
-                                statusFilter === s && "bg-background shadow-sm hover:bg-background"
-                            )}
-                        >
-                            {s === 'all' ? 'Tous' : statusConfig[s].label}
-                        </Button>
-                    ))}
-                </div>
-
-                <div className="flex gap-1 rounded-lg border border-border/30 p-1 bg-muted/30">
-                    <Button
-                        variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                        size="icon"
-                        className={cn("h-8 w-8", viewMode === 'grid' && "bg-background shadow-sm hover:bg-background")}
-                        onClick={() => setViewMode('grid')}
+            {/* Navigation Tabs */}
+            {!useEspaceClientActions && !useAgenceActions && (
+                <div className="flex gap-4 border-b border-border/30 pb-1">
+                    <button
+                        onClick={() => setActiveTab('postcards')}
+                        className={cn(
+                            "px-4 py-2 text-sm font-medium transition-colors relative",
+                            activeTab === 'postcards' ? "text-teal-600" : "text-stone-500 hover:text-stone-800"
+                        )}
                     >
-                        <LayoutGrid size={16} />
-                    </Button>
-                    <Button
-                        variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                        size="icon"
-                        className={cn("h-8 w-8", viewMode === 'list' && "bg-background shadow-sm hover:bg-background")}
-                        onClick={() => setViewMode('list')}
+                        Cartes Postales
+                        {activeTab === 'postcards' && (
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-500 rounded-full" />
+                        )}
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('stickers')}
+                        className={cn(
+                            "px-4 py-2 text-sm font-medium transition-colors relative",
+                            activeTab === 'stickers' ? "text-teal-600" : "text-stone-500 hover:text-stone-800"
+                        )}
                     >
-                        <List size={16} />
-                    </Button>
-                </div>
-
-                {viewMode === 'grid' && (
-                    <div className="flex gap-1 rounded-lg border border-border/30 p-1 bg-muted/30">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:bg-muted"
-                            onClick={() => {
-                                setColumns(Math.max(1, columns - 1))
-                                setIsAuto(false)
-                            }}
-                            disabled={columns <= 1}
-                        >
-                            <Minus size={14} />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className={cn(
-                                "flex items-center justify-center min-w-[40px] px-2 text-xs font-bold transition-all",
-                                isAuto ? "text-teal-600 bg-teal-50/50 rounded-md ring-1 ring-teal-500/20 shadow-[0_0_10px_rgba(20,184,166,0.1)]" : "text-stone-600"
-                            )}
-                            onClick={() => setIsAuto(!isAuto)}
-                            title={isAuto ? "Passer en mode manuel" : "Passer en mode automatique"}
-                        >
-                            {columns}
-                            {isAuto && <span className="ml-1 text-[8px] font-black tracking-tighter opacity-70">AUTO</span>}
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:bg-muted"
-                            onClick={() => {
-                                setColumns(Math.min(6, columns + 1))
-                                setIsAuto(false)
-                            }}
-                            disabled={columns >= 6}
-                        >
-                            <Plus size={14} />
-                        </Button>
-                    </div>
-                )}
-            </div>
-
-            {/* Bulk actions bar */}
-            {selectedIds.size > 0 && (
-                <div className="flex flex-wrap items-center gap-3 p-4 rounded-xl border border-teal-200/60 bg-teal-50/50 backdrop-blur-sm shadow-sm">
-                    <span className="text-sm font-medium text-teal-800">
-                        {selectedIds.size} carte{selectedIds.size > 1 ? 's' : ''} sélectionnée{selectedIds.size > 1 ? 's' : ''}
-                    </span>
-                    <Button variant="ghost" size="sm" className="text-teal-700 hover:bg-teal-100" onClick={clearSelection}>
-                        Tout désélectionner
-                    </Button>
-                    <div className="h-4 w-px bg-teal-200" />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="bg-white border-teal-200 text-teal-800 hover:bg-teal-100">
-                                <ArrowUpDown size={14} className="mr-2" />
-                                Changer le statut
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-48">
-                            {(['published', 'draft', 'archived'] as const).map((s) => (
-                                <DropdownMenuItem key={s} onClick={() => handleBulkStatus(s)} className="gap-2">
-                                    <div className={cn('w-2 h-2 rounded-full', s === 'published' ? 'bg-emerald-500' : s === 'draft' ? 'bg-amber-500' : 'bg-stone-400')} />
-                                    {statusConfig[s].label}
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Button variant="outline" size="sm" className="border-red-200 text-red-700 hover:bg-red-50" onClick={() => setDeleteConfirmBulkIds(Array.from(selectedIds))}>
-                        <Trash2 size={14} className="mr-2" />
-                        Supprimer
-                    </Button>
+                        Stickers
+                        {activeTab === 'stickers' && (
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-500 rounded-full" />
+                        )}
+                    </button>
                 </div>
             )}
 
-            {/* Loading overlay */}
-            {isPending && (
-                <div className="flex items-center gap-2 text-sm text-stone-500">
-                    <div className="w-4 h-4 border-2 border-stone-300 border-t-teal-500 rounded-full animate-spin" />
-                    Chargement...
-                </div>
+            {activeTab === 'stickers' ? (
+                <ManagerStickers />
+            ) : (
+                <>
+                    {/* Stats */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                        <StatCard icon={<Mail size={18} />} label="Total" value={totalCards} />
+                        <StatCard icon={<FileText size={18} />} label="Publiées" value={publishedCount} variant="success" />
+                        <StatCard icon={<FileText size={18} />} label="Brouillons" value={draftCount} variant="warning" />
+                        <StatCard icon={<Archive size={18} />} label="Archivées" value={archivedCount} variant="muted" />
+                        <StatCard icon={<Eye size={18} />} label="Vues" value={totalViews} variant="info" />
+                        <StatCard icon={<Share2 size={18} />} label="Partages" value={totalShares} variant="info" />
+                    </div>
+
+                    {/* Toolbar */}
+                    <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center bg-card/50 backdrop-blur-md p-4 rounded-xl border border-border/50 shadow-sm">
+                        <div className="relative flex-1">
+                            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                placeholder="Rechercher par nom, lieu, message..."
+                                value={search}
+                                onChange={(e) => handleSearch(e.target.value)}
+                                className="pl-9 bg-background/50 border-border/50 focus-visible:ring-teal-500/30"
+                            />
+                        </div>
+
+                        <div className="flex gap-1 bg-muted/30 p-1 rounded-lg border border-border/30">
+                            {(['all', 'published', 'draft', 'archived'] as StatusFilter[]).map((s) => (
+                                <Button
+                                    key={s}
+                                    variant={statusFilter === s ? 'secondary' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => handleStatusFilter(s)}
+                                    className={cn(
+                                        "px-3 text-xs h-8",
+                                        statusFilter === s && "bg-background shadow-sm hover:bg-background"
+                                    )}
+                                >
+                                    {s === 'all' ? 'Tous' : statusConfig[s].label}
+                                </Button>
+                            ))}
+                        </div>
+
+                        <div className="flex gap-1 rounded-lg border border-border/30 p-1 bg-muted/30">
+                            <Button
+                                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                                size="icon"
+                                className={cn("h-8 w-8", viewMode === 'grid' && "bg-background shadow-sm hover:bg-background")}
+                                onClick={() => setViewMode('grid')}
+                            >
+                                <LayoutGrid size={16} />
+                            </Button>
+                            <Button
+                                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                                size="icon"
+                                className={cn("h-8 w-8", viewMode === 'list' && "bg-background shadow-sm hover:bg-background")}
+                                onClick={() => setViewMode('list')}
+                            >
+                                <List size={16} />
+                            </Button>
+                        </div>
+
+                        {viewMode === 'grid' && (
+                            <div className="flex gap-1 rounded-lg border border-border/30 p-1 bg-muted/30">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:bg-muted"
+                                    onClick={() => {
+                                        setColumns(Math.max(1, columns - 1))
+                                        setIsAuto(false)
+                                    }}
+                                    disabled={columns <= 1}
+                                >
+                                    <Minus size={14} />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className={cn(
+                                        "flex items-center justify-center min-w-[40px] px-2 text-xs font-bold transition-all",
+                                        isAuto ? "text-teal-600 bg-teal-50/50 rounded-md ring-1 ring-teal-500/20 shadow-[0_0_10px_rgba(20,184,166,0.1)]" : "text-stone-600"
+                                    )}
+                                    onClick={() => setIsAuto(!isAuto)}
+                                    title={isAuto ? "Passer en mode manuel" : "Passer en mode automatique"}
+                                >
+                                    {columns}
+                                    {isAuto && <span className="ml-1 text-[8px] font-black tracking-tighter opacity-70">AUTO</span>}
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:bg-muted"
+                                    onClick={() => {
+                                        setColumns(Math.min(6, columns + 1))
+                                        setIsAuto(false)
+                                    }}
+                                    disabled={columns >= 6}
+                                >
+                                    <Plus size={14} />
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Bulk actions bar */}
+                    {selectedIds.size > 0 && (
+                        <div className="flex flex-wrap items-center gap-3 p-4 rounded-xl border border-teal-200/60 bg-teal-50/50 backdrop-blur-sm shadow-sm">
+                            <span className="text-sm font-medium text-teal-800">
+                                {selectedIds.size} carte{selectedIds.size > 1 ? 's' : ''} sélectionnée{selectedIds.size > 1 ? 's' : ''}
+                            </span>
+                            <Button variant="ghost" size="sm" className="text-teal-700 hover:bg-teal-100" onClick={clearSelection}>
+                                Tout désélectionner
+                            </Button>
+                            <div className="h-4 w-px bg-teal-200" />
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="bg-white border-teal-200 text-teal-800 hover:bg-teal-100">
+                                        <ArrowUpDown size={14} className="mr-2" />
+                                        Changer le statut
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start" className="w-48">
+                                    {(['published', 'draft', 'archived'] as const).map((s) => (
+                                        <DropdownMenuItem key={s} onClick={() => handleBulkStatus(s)} className="gap-2">
+                                            <div className={cn('w-2 h-2 rounded-full', s === 'published' ? 'bg-emerald-500' : s === 'draft' ? 'bg-amber-500' : 'bg-stone-400')} />
+                                            {statusConfig[s].label}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <Button variant="outline" size="sm" className="border-red-200 text-red-700 hover:bg-red-50" onClick={() => setDeleteConfirmBulkIds(Array.from(selectedIds))}>
+                                <Trash2 size={14} className="mr-2" />
+                                Supprimer
+                            </Button>
+                        </div>
+                    )}
+
+                    {/* Loading overlay */}
+                    {isPending && (
+                        <div className="flex items-center gap-2 text-sm text-stone-500">
+                            <div className="w-4 h-4 border-2 border-stone-300 border-t-teal-500 rounded-full animate-spin" />
+                            Chargement...
+                        </div>
+                    )
+                    }
+
+                    {/* Content */}
+                    {
+                        postcards.length === 0 ? (
+                            <Card>
+                                <CardContent className="flex flex-col items-center justify-center py-20">
+                                    <Mail size={48} className="mx-auto text-muted-foreground mb-4" />
+                                    <h3 className="text-lg font-medium text-foreground mb-1">Aucune carte trouvée</h3>
+                                    <p className="text-muted-foreground text-sm">
+                                        {search || statusFilter !== 'all'
+                                            ? 'Essayez de modifier vos filtres'
+                                            : 'Aucune carte postale dans la base de données'}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        ) : viewMode === 'grid' ? (
+                            <div
+                                className="grid gap-4"
+                                style={{
+                                    gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`
+                                }}
+                            >
+                                {postcards.map((postcard) => (
+                                    <GridCard
+                                        key={postcard.id}
+                                        postcard={postcard}
+                                        selected={selectedIds.has(postcard.id)}
+                                        onToggleSelect={() => toggleSelect(postcard.id)}
+                                        onSelect={() => setSelectedPostcard(postcard)}
+                                        onEdit={() => setEditingPostcard(postcard)}
+                                        onUpdateStatus={handleUpdateStatus}
+                                        onDelete={(id) => setDeleteConfirm(id)}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <Card>
+                                <div className="overflow-x-auto">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="w-10">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={postcards.length > 0 && selectedIds.size === postcards.length}
+                                                        ref={(el) => { if (el) el.indeterminate = selectedIds.size > 0 && selectedIds.size < postcards.length }}
+                                                        onChange={toggleSelectAll}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="h-4 w-4 rounded border-border text-teal-600 focus:ring-teal-500 cursor-pointer"
+                                                    />
+                                                </TableHead>
+                                                <TableHead>Image</TableHead>
+                                                <TableHead>Expéditeur</TableHead>
+                                                <TableHead>Destinataire</TableHead>
+                                                <TableHead>Client</TableHead>
+                                                <TableHead>Lieu</TableHead>
+                                                <TableHead>Date</TableHead>
+                                                <TableHead>Statut</TableHead>
+                                                <TableHead className="text-right">Vues</TableHead>
+                                                <TableHead className="text-right">Partages</TableHead>
+                                                <TableHead className="text-right">Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {postcards.map((postcard) => (
+                                                <ListRow
+                                                    key={postcard.id}
+                                                    postcard={postcard}
+                                                    selected={selectedIds.has(postcard.id)}
+                                                    onToggleSelect={() => toggleSelect(postcard.id)}
+                                                    onSelect={() => setSelectedPostcard(postcard)}
+                                                    onEdit={() => setEditingPostcard(postcard)}
+                                                    onUpdateStatus={handleUpdateStatus}
+                                                    onDelete={(id) => setDeleteConfirm(id)}
+                                                    formatDate={formatDate}
+                                                />
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </Card>
+                        )
+                    }
+
+                    {/* Side Panel Details */}
+                    <DetailsSheet
+                        postcard={selectedPostcard}
+                        viewStats={viewStats}
+                        isOpen={!!selectedPostcard}
+                        onClose={() => setSelectedPostcard(null)}
+                        onEdit={() => setEditingPostcard(selectedPostcard)}
+                        onUpdateStatus={handleUpdateStatus}
+                        onDelete={(id) => setDeleteConfirm(id)}
+                        formatDate={formatDate}
+                        useEspaceClientActions={showTrackingLinks}
+                        useAgenceActions={useAgenceActions}
+                        trackingLinks={trackingLinks}
+                        onRefreshTrackingLinks={() => {
+                            if (selectedPostcard && useAgenceActions) {
+                                getAgencyTrackingLinks(selectedPostcard.id).then((res) => {
+                                    setTrackingLinks(res.success && res.links ? res.links : [])
+                                })
+                            } else if (selectedPostcard && useEspaceClientActions) {
+                                getTrackingLinksForPostcard(selectedPostcard.id).then((res) => {
+                                    setTrackingLinks(res.success && res.links ? res.links : [])
+                                })
+                            }
+                        }}
+                    />
+
+                    {/* Edit Dialog */}
+                    <EditPostcardDialog
+                        postcard={editingPostcard}
+                        isOpen={!!editingPostcard}
+                        onClose={() => setEditingPostcard(null)}
+                        onSuccess={() => {
+                            refreshData()
+                            if (selectedPostcard?.id === editingPostcard?.id) {
+                                fetchPostcards({ search: search, status: statusFilter !== 'all' ? statusFilter : undefined }).then(res => {
+                                    const updated = res.docs.find(p => p.id === editingPostcard?.id)
+                                    if (updated) setSelectedPostcard(updated)
+                                })
+                            }
+                        }}
+                        updatePostcardFn={updatePostcardFn}
+                        allowChangeAuthor={!useEspaceClientActions && !useAgenceActions}
+                    />
+
+                    {/* Delete confirmation (single) */}
+                    <Dialog open={deleteConfirm !== null} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+                        <DialogContent className="sm:max-w-sm" onClick={(e) => e.stopPropagation()}>
+                            <DialogHeader>
+                                <DialogTitle>Confirmer la suppression</DialogTitle>
+                                <DialogDescription>
+                                    Cette action est irréversible. La carte postale sera définitivement supprimée.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                                <Button variant="outline" size="sm" onClick={() => setDeleteConfirm(null)}>
+                                    Annuler
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => deleteConfirm !== null && handleDelete(deleteConfirm)}
+                                    disabled={isPending}
+                                >
+                                    {isPending ? 'Suppression…' : 'Supprimer'}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+
+                    {/* Bulk delete confirmation */}
+                    <Dialog open={deleteConfirmBulkIds !== null && deleteConfirmBulkIds.length > 0} onOpenChange={(open) => !open && setDeleteConfirmBulkIds(null)}>
+                        <DialogContent className="sm:max-w-sm" onClick={(e) => e.stopPropagation()}>
+                            <DialogHeader>
+                                <DialogTitle>Supprimer les cartes sélectionnées</DialogTitle>
+                                <DialogDescription>
+                                    {deleteConfirmBulkIds?.length ?? 0} carte{(deleteConfirmBulkIds?.length ?? 0) > 1 ? 's' : ''} seront définitivement supprimée{(deleteConfirmBulkIds?.length ?? 0) > 1 ? 's' : ''}. Cette action est irréversible.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                                <Button variant="outline" size="sm" onClick={() => setDeleteConfirmBulkIds(null)}>
+                                    Annuler
+                                </Button>
+                                <Button variant="destructive" size="sm" onClick={handleBulkDeleteConfirm} disabled={isPending}>
+                                    {isPending ? 'Suppression…' : `Supprimer (${deleteConfirmBulkIds?.length ?? 0})`}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </>
             )
             }
-
-            {/* Content */}
-            {
-                postcards.length === 0 ? (
-                    <Card>
-                        <CardContent className="flex flex-col items-center justify-center py-20">
-                            <Mail size={48} className="mx-auto text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-medium text-foreground mb-1">Aucune carte trouvée</h3>
-                            <p className="text-muted-foreground text-sm">
-                                {search || statusFilter !== 'all'
-                                    ? 'Essayez de modifier vos filtres'
-                                    : 'Aucune carte postale dans la base de données'}
-                            </p>
-                        </CardContent>
-                    </Card>
-                ) : viewMode === 'grid' ? (
-                    <div
-                        className="grid gap-4"
-                        style={{
-                            gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`
-                        }}
-                    >
-                        {postcards.map((postcard) => (
-                            <GridCard
-                                key={postcard.id}
-                                postcard={postcard}
-                                selected={selectedIds.has(postcard.id)}
-                                onToggleSelect={() => toggleSelect(postcard.id)}
-                                onSelect={() => setSelectedPostcard(postcard)}
-                                onEdit={() => setEditingPostcard(postcard)}
-                                onUpdateStatus={handleUpdateStatus}
-                                onDelete={(id) => setDeleteConfirm(id)}
-                            />
-                        ))}
-                    </div>
-                ) : (
-                    <Card>
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-10">
-                                            <input
-                                                type="checkbox"
-                                                checked={postcards.length > 0 && selectedIds.size === postcards.length}
-                                                ref={(el) => { if (el) el.indeterminate = selectedIds.size > 0 && selectedIds.size < postcards.length }}
-                                                onChange={toggleSelectAll}
-                                                onClick={(e) => e.stopPropagation()}
-                                                className="h-4 w-4 rounded border-border text-teal-600 focus:ring-teal-500 cursor-pointer"
-                                            />
-                                        </TableHead>
-                                        <TableHead>Image</TableHead>
-                                        <TableHead>Expéditeur</TableHead>
-                                        <TableHead>Destinataire</TableHead>
-                                        <TableHead>Client</TableHead>
-                                        <TableHead>Lieu</TableHead>
-                                        <TableHead>Date</TableHead>
-                                        <TableHead>Statut</TableHead>
-                                        <TableHead className="text-right">Vues</TableHead>
-                                        <TableHead className="text-right">Partages</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {postcards.map((postcard) => (
-                                        <ListRow
-                                            key={postcard.id}
-                                            postcard={postcard}
-                                            selected={selectedIds.has(postcard.id)}
-                                            onToggleSelect={() => toggleSelect(postcard.id)}
-                                            onSelect={() => setSelectedPostcard(postcard)}
-                                            onEdit={() => setEditingPostcard(postcard)}
-                                            onUpdateStatus={handleUpdateStatus}
-                                            onDelete={(id) => setDeleteConfirm(id)}
-                                            formatDate={formatDate}
-                                        />
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    </Card>
-                )
-            }
-
-            {/* Side Panel Details */}
-            <DetailsSheet
-                postcard={selectedPostcard}
-                viewStats={viewStats}
-                isOpen={!!selectedPostcard}
-                onClose={() => setSelectedPostcard(null)}
-                onEdit={() => setEditingPostcard(selectedPostcard)}
-                onUpdateStatus={handleUpdateStatus}
-                onDelete={(id) => setDeleteConfirm(id)}
-                formatDate={formatDate}
-                useEspaceClientActions={showTrackingLinks}
-                useAgenceActions={useAgenceActions}
-                trackingLinks={trackingLinks}
-                onRefreshTrackingLinks={() => {
-                    if (selectedPostcard && useAgenceActions) {
-                        getAgencyTrackingLinks(selectedPostcard.id).then((res) => {
-                            setTrackingLinks(res.success && res.links ? res.links : [])
-                        })
-                    } else if (selectedPostcard && useEspaceClientActions) {
-                        getTrackingLinksForPostcard(selectedPostcard.id).then((res) => {
-                            setTrackingLinks(res.success && res.links ? res.links : [])
-                        })
-                    }
-                }}
-            />
-
-            {/* Edit Dialog */}
-            <EditPostcardDialog
-                postcard={editingPostcard}
-                isOpen={!!editingPostcard}
-                onClose={() => setEditingPostcard(null)}
-                onSuccess={() => {
-                    refreshData()
-                    if (selectedPostcard?.id === editingPostcard?.id) {
-                        fetchPostcards({ search: search, status: statusFilter !== 'all' ? statusFilter : undefined }).then(res => {
-                            const updated = res.docs.find(p => p.id === editingPostcard?.id)
-                            if (updated) setSelectedPostcard(updated)
-                        })
-                    }
-                }}
-                updatePostcardFn={updatePostcardFn}
-                allowChangeAuthor={!useEspaceClientActions && !useAgenceActions}
-            />
-
-            {/* Delete confirmation (single) */}
-            <Dialog open={deleteConfirm !== null} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
-                <DialogContent className="sm:max-w-sm" onClick={(e) => e.stopPropagation()}>
-                    <DialogHeader>
-                        <DialogTitle>Confirmer la suppression</DialogTitle>
-                        <DialogDescription>
-                            Cette action est irréversible. La carte postale sera définitivement supprimée.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" size="sm" onClick={() => setDeleteConfirm(null)}>
-                            Annuler
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => deleteConfirm !== null && handleDelete(deleteConfirm)}
-                            disabled={isPending}
-                        >
-                            {isPending ? 'Suppression…' : 'Supprimer'}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            {/* Bulk delete confirmation */}
-            <Dialog open={deleteConfirmBulkIds !== null && deleteConfirmBulkIds.length > 0} onOpenChange={(open) => !open && setDeleteConfirmBulkIds(null)}>
-                <DialogContent className="sm:max-w-sm" onClick={(e) => e.stopPropagation()}>
-                    <DialogHeader>
-                        <DialogTitle>Supprimer les cartes sélectionnées</DialogTitle>
-                        <DialogDescription>
-                            {deleteConfirmBulkIds?.length ?? 0} carte{(deleteConfirmBulkIds?.length ?? 0) > 1 ? 's' : ''} seront définitivement supprimée{(deleteConfirmBulkIds?.length ?? 0) > 1 ? 's' : ''}. Cette action est irréversible.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" size="sm" onClick={() => setDeleteConfirmBulkIds(null)}>
-                            Annuler
-                        </Button>
-                        <Button variant="destructive" size="sm" onClick={handleBulkDeleteConfirm} disabled={isPending}>
-                            {isPending ? 'Suppression…' : `Supprimer (${deleteConfirmBulkIds?.length ?? 0})`}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </div >
     )
 }

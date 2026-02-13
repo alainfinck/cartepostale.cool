@@ -192,5 +192,12 @@ export const Postcards: CollectionConfig = {
                 position: 'sidebar',
             },
         },
+        {
+            name: 'stickers',
+            type: 'json',
+            admin: {
+                description: 'Liste des autocollants placés sur la carte (ID, x, y, scale, rotation)',
+            },
+        },
     ],
 }

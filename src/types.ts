@@ -50,6 +50,24 @@ export interface Postcard {
     isPremium?: boolean;
     agencyId?: string;
     brandLogo?: string;
+    stickers?: StickerPlacement[];
+}
+
+export interface Sticker {
+    id: string;
+    name: string;
+    image: string; // URL
+    category?: string;
+}
+
+export interface StickerPlacement {
+    id: string; // Unique instance ID
+    stickerId: string;
+    x: number; // %
+    y: number; // %
+    scale: number;
+    rotation: number;
+    imageUrl?: string; // Cache for display
 }
 
 export interface AgencyConfig {
