@@ -420,7 +420,7 @@ export default function GalerieClient() {
                 Inspirations Voyage
               </h2>
               <p className="text-stone-500 mt-2">
-                Découvrez de vraies cartes envoyées par notre communauté.
+                Découvrez les cartes envoyées par notre communauté.
               </p>
             </div>
 

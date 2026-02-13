@@ -21,17 +21,17 @@ export default function CGUPage() {
 
             <h3>2. Description du Service</h3>
             <p>
-                Le Service permet aux Utilisateurs de créer, personnaliser et envoyer des cartes postales physiques à partir de photos numériques via une interface web ou mobile.
+                Le Service permet aux Utilisateurs de créer, personnaliser et envoyer des cartes postales virtuelles (numériques) à partir de photos et vidéos numériques via une interface web ou mobile.
             </p>
 
             <h3>3. Tarifs et Paiement</h3>
             <p>
-                Les prix sont indiqués en euros toutes taxes comprises (TTC). Le paiement est exigible immédiatement à la commande. Le règlement s&apos;effectue par carte bancaire via notre prestataire de paiement sécurisé (Stripe).
+                Les prix sont indiqués en euros toutes taxes comprises (TTC). Le paiement est exigible immédiatement à la commande pour les options Premium. Le règlement s&apos;effectue par carte bancaire via notre prestataire de paiement sécurisé (Stripe).
             </p>
 
-            <h3>4. Livraison</h3>
+            <h3>4. Livraison numérique</h3>
             <p>
-                Les cartes sont imprimées et expédiées dans les 24h ouvrées suivant la validation de la commande. Les délais de livraison sont ceux de La Poste et des services postaux internationaux. CartePostale.cool ne saurait être tenu responsable des retards d&apos;acheminement imputables aux transporteurs.
+                La livraison des cartes virtuelles est instantanée dès la validation de la création par l&apos;Utilisateur. Un lien unique est généré et peut être partagé par SMS, email ou réseaux sociaux.
             </p>
 
             <h3>5. Droit de rétractation</h3>

@@ -3,17 +3,17 @@ import { Metadata } from 'next'
 import HomeClient from './HomeClient'
 
 export const metadata: Metadata = {
-    title: 'Envoyez de vraies cartes depuis votre téléphone', // Combines with template to become "Envoyez... | CartePostale.cool"
-    description: 'Transformez vos photos numériques en véritables cartes postales papier. Imprimées et expédiées en 24h partout dans le monde. Créez votre souvenir maintenant !',
+    title: 'Partagez vos souvenirs en cartes postales virtuelles',
+    description: 'Transformez vos plus belles photos en cartes postales virtuelles personnalisées. Envoyez un souvenir unique instantanément par SMS, WhatsApp ou email.',
     openGraph: {
-        title: 'Envoyez de vraies cartes depuis votre téléphone | CartePostale.cool',
-        description: 'Transformez vos photos numériques en véritables cartes postales papier. Imprimées et expédiées en 24h partout dans le monde.',
+        title: 'Partagez vos souvenirs en cartes postales virtuelles | CartePostale.cool',
+        description: 'Créez des cartes postales virtuelles inoubliables avec vos propres photos et vidéos. Partage instantané, souvenirs éternels.',
         images: [
             {
                 url: '/media/enveloppe-social2.jpg',
                 width: 1200,
                 height: 630,
-                alt: 'CartePostale.cool - Envoyez un coin de paradis',
+                alt: 'CartePostale.cool - Vos plus beaux souvenirs en un clic',
             },
         ],
     },

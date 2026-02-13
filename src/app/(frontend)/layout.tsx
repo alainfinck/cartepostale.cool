@@ -5,31 +5,31 @@ import { FrontendLayoutWrapper } from '@/components/layout/FrontendLayoutWrapper
 export const metadata = {
   metadataBase: new URL('https://cartepostale.cool'),
   title: {
-    default: 'cartepostale.cool - Envoyez de vraies cartes depuis votre téléphone',
+    default: 'cartepostale.cool - Partagez vos souvenirs en cartes postales virtuelles',
     template: '%s | cartepostale.cool'
   },
-  description: 'Transformez vos photos numériques en véritables cartes postales papier. Imprimées et expédiées en 24h partout dans le monde.',
-  keywords: ['carte postale', 'voyage', 'photos', 'souvenir', 'impression photo', 'application mobile'],
+  description: 'Proposez une expérience unique à vos proches avec des cartes postales virtuelles personnalisées. Instantané, social et mémorable.',
+  keywords: ['carte postale virtuelle', 'voyage', 'photos', 'souvenir numérique', 'partage social', 'application mobile'],
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
     url: 'https://cartepostale.cool',
     siteName: 'cartepostale.cool',
-    title: 'cartepostale.cool - Envoyez de vraies cartes depuis votre téléphone',
-    description: 'Transformez vos photos numériques en véritables cartes postales papier. Imprimées et expédiées en 24h partout dans le monde.',
+    title: 'cartepostale.cool - Partagez vos souvenirs en cartes postales virtuelles',
+    description: 'Transformez vos plus belles photos en cartes postales virtuelles. Partagez vos souvenirs instantanément avec vos proches.',
     images: [
       {
         url: '/media/enveloppe-social2.jpg', // Use the new envelope social share image
         width: 1200,
         height: 630,
-        alt: 'cartepostale.cool - Vos souvenirs en vrai',
+        alt: 'cartepostale.cool - Vos souvenirs, partout, tout de suite',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'cartepostale.cool - Envoyez de vraies cartes',
-    description: 'Transformez vos photos numériques en véritables cartes postales papier.',
+    title: 'cartepostale.cool - Cartes postales virtuelles',
+    description: 'Créez et partagez des cartes postales virtuelles personnalisées de vos voyages.',
     images: ['/media/enveloppe-social2.jpg'],
   },
 }
