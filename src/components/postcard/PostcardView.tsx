@@ -545,17 +545,20 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                         </p>
                                     )}
                                     {hasMedia && (
-                                        <div className="mt-3 self-start" onClick={(e) => e.stopPropagation()}>
+                                        <div
+                                            className="group/album mt-1 -ml-3 p-3 self-start relative z-[60] cursor-default"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
                                             <button
                                                 onClick={openAlbum}
                                                 title="Voir les photos de la carte"
-                                                className="group/album relative inline-flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-[11px] sm:text-xs uppercase tracking-wide shadow-md border-2 border-amber-200/80 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 text-amber-900 hover:from-amber-100 hover:via-orange-100 hover:to-rose-100 hover:shadow-lg hover:border-amber-300/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                                                className="relative inline-flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-[11px] sm:text-xs uppercase tracking-wide shadow-md border-2 border-amber-200/80 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 text-amber-900 group-hover/album:from-amber-100 group-hover/album:via-orange-100 group-hover/album:to-rose-100 group-hover/album:shadow-xl group-hover/album:border-amber-300/90 group-hover/album:scale-[1.05] active:scale-[0.98] transition-all duration-200"
                                             >
-                                                <Camera size={14} className="text-amber-600 sm:text-amber-700" />
+                                                <Camera size={14} className="text-amber-600 sm:text-amber-700 group-hover/album:rotate-6 transition-transform" />
                                                 <span>Album photos</span>
                                                 <span className="text-[10px] text-amber-600/80 font-normal">({postcard.mediaItems!.length})</span>
                                                 {/* Tooltip au survol */}
-                                                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded-md bg-stone-800 text-white text-[10px] font-medium whitespace-nowrap opacity-0 pointer-events-none group-hover/album:opacity-100 group-hover/album:translate-y-0 transition-all duration-200 -translate-y-1 z-50 shadow-lg">
+                                                <span className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 rounded-md bg-stone-800 text-white text-[10px] font-medium whitespace-nowrap opacity-0 pointer-events-none group-hover/album:opacity-100 group-hover/album:translate-y-0 transition-all duration-200 -translate-y-1 z-50 shadow-lg">
                                                     Voir les photos de la carte
                                                 </span>
                                             </button>
