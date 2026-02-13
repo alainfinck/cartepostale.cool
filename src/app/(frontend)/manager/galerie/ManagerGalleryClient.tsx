@@ -47,16 +47,20 @@ import {
     deleteGalleryTag,
     getMediaForGallery,
 } from '@/actions/manager-actions'
+import { getOptimizedImageUrl } from '@/lib/image-processing'
 import type { Gallery, GalleryCategory, GalleryTag } from '@/payload-types'
 
 function getImageUrl(item: Gallery): string | null {
     const img = item.image
     if (!img) return null
+    let url = ''
     if (typeof img === 'object' && img !== null && 'url' in img) {
         const m = img as { url?: string | null; filename?: string | null }
-        return m.url ?? (m.filename ? `/media/${encodeURIComponent(m.filename)}` : null)
+        url = m.url ?? (m.filename ? `/media/${encodeURIComponent(m.filename)}` : '')
     }
-    return null
+
+    if (!url) return null
+    return getOptimizedImageUrl(url, { width: 400 })
 }
 
 export function ManagerGalleryClient({

@@ -142,8 +142,10 @@ export function getOptimizedImageUrl(url: string, options: { width?: number; hei
             }
 
             const domain = `${urlObj.protocol}//${urlObj.host}`
-            // On retire le slash initial du pathname pour le format Cloudflare
-            const path = urlObj.pathname.startsWith('/') ? urlObj.pathname.slice(1) : urlObj.pathname
+            // On retire le slash initial et le préfixe media/ car le bucket est servi à la racine
+            let path = urlObj.pathname.startsWith('/') ? urlObj.pathname.slice(1) : urlObj.pathname
+            path = path.replace(/^media\//, '')
+
             return `${domain}/cdn-cgi/image/${paramsString}/${path}`
         } catch (e) {
             return url
@@ -151,7 +153,7 @@ export function getOptimizedImageUrl(url: string, options: { width?: number; hei
     }
 
     // Si c'est un chemin relatif (ex: /media/foo.jpg)
-    // On garde le chemin complet (ex: media/foo.jpg) car c'est ainsi qu'ils sont stockés sur R2
-    const path = url.startsWith('/') ? url.slice(1) : url
-    return `${defaultBase}/cdn-cgi/image/${paramsString}/${path}`
+    // On retire /media/ car le bucket R2 est servi à la racine sur img.cartepostale.cool
+    const cleanPath = url.replace(/^\/media\//, '').replace(/^\//, '')
+    return `${defaultBase}/cdn-cgi/image/${paramsString}/${cleanPath}`
 }

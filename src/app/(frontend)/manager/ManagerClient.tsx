@@ -78,10 +78,14 @@ function mapToFrontend(p: PayloadPostcard): FrontendPostcard {
     const mediaItems: MediaItem[] = (p.mediaItems || [])
         .map((item: any) => {
             if (isMedia(item.media)) {
+                let url = item.media.url || ''
+                if (!url && item.media.filename) {
+                    url = `/media/${item.media.filename}`
+                }
                 return {
                     id: item.id || Math.random().toString(36).substring(7),
                     type: item.type === 'video' ? 'video' as const : 'image' as const,
-                    url: item.media.url || '',
+                    url: item.type === 'video' ? url : getOptimizedImageUrl(url, { width: 800 }),
                 }
             }
             return null
