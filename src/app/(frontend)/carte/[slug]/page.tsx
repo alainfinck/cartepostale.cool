@@ -144,6 +144,8 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
     }
 }
 
+import { isCoordinate } from '@/lib/utils'
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { slug } = await params
     const postcard = await getPostcardByPublicId(slug)
@@ -155,7 +157,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
 
     const title = `Une carte postale de ${postcard.senderName} vous attend !`
-    const description = `Découvrez la carte postale envoyée par ${postcard.senderName} depuis ${postcard.location}.`
+    const description = isCoordinate(postcard.location)
+        ? `Découvrez la carte envoyée par ${postcard.senderName}.`
+        : `Découvrez la carte envoyée par ${postcard.senderName} depuis ${postcard.location}.`
 
     return {
         title,

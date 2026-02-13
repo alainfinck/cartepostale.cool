@@ -16,7 +16,7 @@ import {
     Heart,
     Loader2
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, isCoordinate } from '@/lib/utils';
 import { AnimatePresence, motion, useSpring, useMotionValue, useTransform, PanInfo, useAnimation } from 'framer-motion';
 import dynamic from 'next/dynamic'
 import { getOptimizedImageUrl } from '@/lib/image-processing';
@@ -514,7 +514,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 </div>
                             )}
 
-                            {postcard.location && (
+                            {postcard.location && !isCoordinate(postcard.location) && (
                                 <div
                                     className={cn(
                                         "absolute left-4 sm:left-6 z-10 bg-white/90 backdrop-blur-md text-teal-900 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-semibold shadow-lg flex items-center gap-1.5 transition-all duration-300",
