@@ -59,6 +59,16 @@ import {
     type CreateTrackingLinkData,
 } from '@/actions/espace-client-actions'
 import { getPostcardViewStats, type PostcardViewStats } from '@/actions/postcard-view-stats'
+import {
+    getAgencyPostcards,
+    updateAgencyPostcard,
+    updateAgencyPostcardStatus,
+    deleteAgencyPostcard,
+    getAgencyPostcardViewStats,
+    createAgencyTrackingLink,
+    getAgencyTrackingLinks,
+    sendAgencyTrackingLinkByEmail,
+} from '@/actions/agence-actions'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import EditPostcardDialog from './EditPostcardDialog'
@@ -130,9 +140,11 @@ interface Props {
     initialData: PostcardsResult
     /** When true, use espace-client Server Actions (getMyPostcards, etc.) instead of manager actions. */
     useEspaceClientActions?: boolean
+    /** When true, use agence Server Actions (getAgencyPostcards, etc.) instead of manager actions. */
+    useAgenceActions?: boolean
 }
 
-export default function ManagerClient({ initialData, useEspaceClientActions }: Props) {
+export default function ManagerClient({ initialData, useEspaceClientActions, useAgenceActions }: Props) {
     const [data, setData] = useState(initialData)
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -166,21 +178,29 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
         return () => window.removeEventListener('resize', updateCols)
     }, [isAuto])
 
+    const showTrackingLinks = useEspaceClientActions || useAgenceActions
+
     useEffect(() => {
         if (!selectedPostcard) {
             setViewStats(null)
             setTrackingLinks([])
             return
         }
-        getPostcardViewStats(selectedPostcard.id).then(setViewStats)
-        if (useEspaceClientActions) {
+        if (useAgenceActions) {
+            getAgencyPostcardViewStats(selectedPostcard.id).then(setViewStats)
+            getAgencyTrackingLinks(selectedPostcard.id).then((res) => {
+                setTrackingLinks(res.success && res.links ? res.links : [])
+            })
+        } else if (useEspaceClientActions) {
+            getPostcardViewStats(selectedPostcard.id).then(setViewStats)
             getTrackingLinksForPostcard(selectedPostcard.id).then((res) => {
                 setTrackingLinks(res.success && res.links ? res.links : [])
             })
         } else {
+            getPostcardViewStats(selectedPostcard.id).then(setViewStats)
             setTrackingLinks([])
         }
-    }, [selectedPostcard?.id, useEspaceClientActions])
+    }, [selectedPostcard?.id, useEspaceClientActions, useAgenceActions])
 
     const postcards = data.docs
 
@@ -192,16 +212,22 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
     const totalViews = postcards.reduce((sum, p) => sum + (p.views || 0), 0)
     const totalShares = postcards.reduce((sum, p) => sum + (p.shares || 0), 0)
 
-    const fetchPostcards = useEspaceClientActions
+    const fetchPostcards = useAgenceActions
         ? (async (filters?: { status?: StatusFilter; search?: string }) =>
-            getMyPostcards({
+            getAgencyPostcards({
                 status: filters?.status !== 'all' ? filters?.status : undefined,
                 search: filters?.search,
             }))
-        : (async (filters: any) => getAllPostcards(filters))
-    const updatePostcardFn = useEspaceClientActions ? updateMyPostcard : updatePostcard
-    const updatePostcardStatusFn = useEspaceClientActions ? updateMyPostcardStatus : updatePostcardStatus
-    const deletePostcardFn = useEspaceClientActions ? deleteMyPostcard : deletePostcard
+        : useEspaceClientActions
+            ? (async (filters?: { status?: StatusFilter; search?: string }) =>
+                getMyPostcards({
+                    status: filters?.status !== 'all' ? filters?.status : undefined,
+                    search: filters?.search,
+                }))
+            : (async (filters: any) => getAllPostcards(filters))
+    const updatePostcardFn = useAgenceActions ? updateAgencyPostcard : useEspaceClientActions ? updateMyPostcard : updatePostcard
+    const updatePostcardStatusFn = useAgenceActions ? updateAgencyPostcardStatus : useEspaceClientActions ? updateMyPostcardStatus : updatePostcardStatus
+    const deletePostcardFn = useAgenceActions ? deleteAgencyPostcard : useEspaceClientActions ? deleteMyPostcard : deletePostcard
 
     const refreshData = useCallback((statusF?: StatusFilter, searchQ?: string) => {
         startTransition(async () => {
@@ -275,7 +301,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
         const ids = Array.from(selectedIds)
         if (!ids.length) return
         startTransition(async () => {
-            if (useEspaceClientActions) {
+            if (useEspaceClientActions || useAgenceActions) {
                 for (const id of ids) {
                     await updatePostcardStatusFn(id, newStatus)
                 }
@@ -298,7 +324,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
             return
         }
         startTransition(async () => {
-            if (useEspaceClientActions) {
+            if (useEspaceClientActions || useAgenceActions) {
                 for (const id of ids) {
                     await deletePostcardFn(id)
                 }
@@ -555,10 +581,15 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
                 onUpdateStatus={handleUpdateStatus}
                 onDelete={(id) => setDeleteConfirm(id)}
                 formatDate={formatDate}
-                useEspaceClientActions={useEspaceClientActions}
+                useEspaceClientActions={showTrackingLinks}
+                useAgenceActions={useAgenceActions}
                 trackingLinks={trackingLinks}
                 onRefreshTrackingLinks={() => {
-                    if (selectedPostcard && useEspaceClientActions) {
+                    if (selectedPostcard && useAgenceActions) {
+                        getAgencyTrackingLinks(selectedPostcard.id).then((res) => {
+                            setTrackingLinks(res.success && res.links ? res.links : [])
+                        })
+                    } else if (selectedPostcard && useEspaceClientActions) {
                         getTrackingLinksForPostcard(selectedPostcard.id).then((res) => {
                             setTrackingLinks(res.success && res.links ? res.links : [])
                         })
@@ -581,7 +612,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
                     }
                 }}
                 updatePostcardFn={updatePostcardFn}
-                allowChangeAuthor={!useEspaceClientActions}
+                allowChangeAuthor={!useEspaceClientActions && !useAgenceActions}
             />
 
             {/* Delete confirmation (single) */}
@@ -939,6 +970,7 @@ function DetailsSheet({
     onDelete,
     formatDate,
     useEspaceClientActions,
+    useAgenceActions,
     trackingLinks,
     onRefreshTrackingLinks,
 }: {
@@ -951,6 +983,7 @@ function DetailsSheet({
     onDelete: (id: number) => void
     formatDate: (d: string) => string
     useEspaceClientActions?: boolean
+    useAgenceActions?: boolean
     trackingLinks?: PostcardTrackingLink[]
     onRefreshTrackingLinks?: () => void
 }) {
@@ -1296,7 +1329,8 @@ function DetailsSheet({
                                 onClick={async () => {
                                     if (!postcard) return
                                     setCreateTrackingPending(true)
-                                    const res = await createTrackingLink(postcard.id, {
+                                    const createFn = useAgenceActions ? createAgencyTrackingLink : createTrackingLink
+                                    const res = await createFn(postcard.id, {
                                         recipientFirstName: createForm.recipientFirstName || undefined,
                                         recipientLastName: createForm.recipientLastName || undefined,
                                         description: createForm.description || undefined,
@@ -1339,7 +1373,8 @@ function DetailsSheet({
                                 onClick={async () => {
                                     if (!emailDialogTracking) return
                                     setEmailSending(true)
-                                    const res = await sendTrackingLinkByEmail(emailDialogTracking.id, emailInput.trim())
+                                    const sendFn = useAgenceActions ? sendAgencyTrackingLinkByEmail : sendTrackingLinkByEmail
+                                    const res = await sendFn(emailDialogTracking.id, emailInput.trim())
                                     setEmailSending(false)
                                     if (res.success) {
                                         setEmailDialogOpen(false)

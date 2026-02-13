@@ -60,7 +60,7 @@ export const Navbar = () => {
     const pathname = usePathname()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [openDropdown, setOpenDropdown] = useState<string | null>(null)
-    const [user, setUser] = useState<{ name?: string | null; email?: string } | null>(null)
+    const [user, setUser] = useState<{ name?: string | null; email?: string; role?: string } | null>(null)
     const [scrolled, setScrolled] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -308,10 +308,10 @@ export const Navbar = () => {
 
                         {user ? (
                             <Link
-                                href="/espace-client"
+                                href={user.role === 'admin' ? '/manager' : user.role === 'agence' ? '/espace-agence' : '/espace-client'}
                                 className={cn(
                                     'font-semibold flex items-center gap-2 text-[15px] rounded-xl px-4 py-3 transition-all',
-                                    pathname?.startsWith('/espace-client')
+                                    (pathname?.startsWith('/espace-client') || pathname?.startsWith('/espace-agence') || pathname?.startsWith('/manager'))
                                         ? 'text-pink-600 bg-pink-50/80'
                                         : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100/80'
                                 )}
@@ -320,7 +320,9 @@ export const Navbar = () => {
                                 <span className="hidden md:inline truncate max-w-[180px]" title={user.email ?? undefined}>
                                     {user.name?.trim() || user.email}
                                 </span>
-                                <span className="md:hidden">Mon espace</span>
+                                <span className="md:hidden">
+                                    {user.role === 'admin' ? 'Manager' : user.role === 'agence' ? 'Espace Agence' : 'Mon espace'}
+                                </span>
                             </Link>
                         ) : (
                             <Link
@@ -485,13 +487,15 @@ export const Navbar = () => {
                         <div className="space-y-2">
                             {user ? (
                                 <Link
-                                    href="/espace-client"
+                                    href={user.role === 'admin' ? '/manager' : user.role === 'agence' ? '/espace-agence' : '/espace-client'}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className="flex items-center gap-4 px-4 py-4 rounded-2xl bg-pink-50 text-pink-700 font-semibold text-[15px]"
                                 >
                                     <LayoutDashboard size={22} />
                                     <span className="truncate">{user.name?.trim() || user.email}</span>
-                                    <span className="text-stone-500 font-normal text-sm">(Mon espace)</span>
+                                    <span className="text-stone-500 font-normal text-sm">
+                                        ({user.role === 'admin' ? 'Manager' : user.role === 'agence' ? 'Espace Agence' : 'Mon espace'})
+                                    </span>
                                 </Link>
                             ) : (
                                 <Link
