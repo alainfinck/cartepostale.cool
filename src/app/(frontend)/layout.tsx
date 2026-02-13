@@ -38,10 +38,8 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
   return (
-    <html lang="fr">
-      <body className="flex flex-col min-h-screen bg-[#faf8f5] font-sans antialiased">
-        <FrontendLayoutWrapper>{children}</FrontendLayoutWrapper>
-      </body>
-    </html>
+    <div className="flex flex-col min-h-screen bg-[#faf8f5] font-sans antialiased">
+      <FrontendLayoutWrapper>{children}</FrontendLayoutWrapper>
+    </div>
   )
 }

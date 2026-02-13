@@ -559,6 +559,8 @@ export default function EditorPage() {
   const [selectedEmojiCategory, setSelectedEmojiCategory] = useState<EmojiCategoryKey>(EMOJI_CATEGORIES[0].key)
   const emojiPickerRef = useRef<HTMLDivElement>(null)
   const [currentUser, setCurrentUser] = useState<{ id: number; email?: string; name?: string | null } | null>(null)
+  const [isRevolutRedirecting, setIsRevolutRedirecting] = useState(false)
+  const [revolutError, setRevolutError] = useState<string | null>(null)
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
   const showBack = currentStep === 'redaction'
@@ -1130,6 +1132,40 @@ export default function EditorPage() {
       navigator.clipboard.writeText(shareUrl)
       setShowCopyToast(true)
       setTimeout(() => setShowCopyToast(false), 2000)
+    }
+  }
+
+  const handlePayWithRevolut = async () => {
+    const amount = getAlbumPrice()
+    if (amount <= 0 || !createdPostcardId || !shareUrl) return
+    setRevolutError(null)
+    setIsRevolutRedirecting(true)
+    try {
+      const res = await fetch('/api/revolut/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amountEur: amount,
+          description: 'Carte postale CartePostale.cool',
+          customerEmail: currentUser?.email || senderEmail || undefined,
+          redirectPath: `/carte/${createdPostcardId}`,
+          merchantOrderReference: createdPostcardId,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setRevolutError(data.error || 'Impossible de créer le paiement Revolut.')
+        return
+      }
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url
+        return
+      }
+      setRevolutError('URL de paiement Revolut manquante.')
+    } catch (e) {
+      setRevolutError(e instanceof Error ? e.message : 'Erreur réseau.')
+    } finally {
+      setIsRevolutRedirecting(false)
     }
   }
 
@@ -2215,6 +2251,34 @@ export default function EditorPage() {
                       </div>
                     ) : (
                       <div className="bg-stone-50 rounded-2xl p-6 sm:p-8 border border-stone-200 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {/* Paiement Revolut : si l'utilisateur a choisi Revolut et qu'il y a un montant à payer */}
+                        {paymentMethod === 'revolut' && getAlbumPrice() > 0 && (
+                          <div className="mb-8 p-6 rounded-2xl bg-gradient-to-br from-[#0070ba] to-[#005ea6] text-white text-left">
+                            <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
+                              <CreditCard size={20} /> Finalisez le paiement avec Revolut
+                            </h3>
+                            <p className="text-white/90 text-sm mb-4">
+                              Votre carte est créée. Cliquez ci-dessous pour payer {getAlbumPrice().toFixed(2)} € et la partager.
+                            </p>
+                            {revolutError && (
+                              <p className="text-red-200 text-sm mb-3">{revolutError}</p>
+                            )}
+                            <Button
+                              onClick={handlePayWithRevolut}
+                              disabled={isRevolutRedirecting}
+                              className="w-full sm:w-auto bg-white text-[#0070ba] hover:bg-white/90 font-bold rounded-xl px-6 py-5 h-auto"
+                            >
+                              {isRevolutRedirecting ? (
+                                <>
+                                  <RefreshCw size={18} className="mr-2 animate-spin" /> Redirection…
+                                </>
+                              ) : (
+                                <>Payer {getAlbumPrice().toFixed(2)} € avec Revolut</>
+                              )}
+                            </Button>
+                          </div>
+                        )}
+
                         <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
                           <Send size={32} className="text-teal-600" />
                         </div>

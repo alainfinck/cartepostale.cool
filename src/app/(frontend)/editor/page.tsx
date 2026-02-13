@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { Metadata } from 'next'
 import EditorClient from './EditorClient'
 
@@ -19,6 +19,18 @@ export const metadata: Metadata = {
   },
 }
 
+function EditorFallback() {
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center" aria-hidden>
+      <span className="text-muted-foreground">Chargement du studio…</span>
+    </div>
+  )
+}
+
 export default function EditorPage() {
-  return <EditorClient />
+  return (
+    <Suspense fallback={<EditorFallback />}>
+      <EditorClient />
+    </Suspense>
+  )
 }
