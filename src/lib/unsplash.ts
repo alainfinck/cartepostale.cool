@@ -31,17 +31,24 @@ export interface UnsplashSearchResponse {
     total_pages: number;
 }
 
+export type UnsplashOrderBy = 'relevant' | 'latest';
+
 /**
  * Searches photos on Unsplash
  */
-export async function searchUnsplashPhotos(query: string, page = 1, perPage = 20): Promise<UnsplashSearchResponse> {
+export async function searchUnsplashPhotos(
+    query: string,
+    page = 1,
+    perPage = 20,
+    orderBy: UnsplashOrderBy = 'relevant'
+): Promise<UnsplashSearchResponse> {
     if (!ACCESS_KEY) {
         console.error('Unsplash Access Key is missing');
         return { results: [], total: 0, total_pages: 0 };
     }
 
     const response = await fetch(
-        `${API_URL}/search/photos?query=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}&client_id=${ACCESS_KEY}`
+        `${API_URL}/search/photos?query=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}&order_by=${orderBy}&client_id=${ACCESS_KEY}`
     );
 
     if (!response.ok) {

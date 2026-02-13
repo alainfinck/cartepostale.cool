@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { BookOpen, ChevronDown, Send } from 'lucide-react'
+import { BookOpen, ChevronDown, Send, Smile } from 'lucide-react'
 import { addComment } from '@/actions/social-actions'
+
+const QUICK_EMOJIS = ['😊', '❤️', '👍', '😍', '✨', '🎉', '🙏', '🌴', '✈️', '💌', '😘', '🌟']
 
 interface Comment {
     id: number
@@ -25,11 +27,35 @@ export default function GuestbookSection({
     comments,
     onCommentAdded,
 }: GuestbookSectionProps) {
-    const [isOpen, setIsOpen] = useState(false)
+    const [isOpen, setIsOpen] = useState(true)
     const [authorName, setAuthorName] = useState('')
     const [content, setContent] = useState('')
     const [isPrivate, setIsPrivate] = useState(false)
     const [submitting, setSubmitting] = useState(false)
+    const contentRef = useRef<HTMLTextAreaElement>(null)
+    const pendingCursorRef = useRef<number | null>(null)
+
+    useEffect(() => {
+        if (pendingCursorRef.current == null || !contentRef.current) return
+        const pos = pendingCursorRef.current
+        pendingCursorRef.current = null
+        contentRef.current.focus()
+        contentRef.current.setSelectionRange(pos, pos)
+    }, [content])
+
+    const insertEmoji = (emoji: string) => {
+        const textarea = contentRef.current
+        if (textarea) {
+            const start = textarea.selectionStart
+            const end = textarea.selectionEnd
+            const before = content.slice(0, start)
+            const after = content.slice(end)
+            pendingCursorRef.current = start + emoji.length
+            setContent(before + emoji + after)
+        } else {
+            setContent((prev) => prev + emoji)
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -103,14 +129,34 @@ export default function GuestbookSection({
                                     maxLength={50}
                                     className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                                 />
-                                <textarea
-                                    placeholder="Votre message..."
-                                    value={content}
-                                    onChange={(e) => setContent(e.target.value)}
-                                    maxLength={500}
-                                    rows={3}
-                                    className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                />
+                                <div>
+                                    <div className="flex items-center gap-1.5 mb-2">
+                                        <Smile size={16} className="text-stone-400 shrink-0" />
+                                        <span className="text-xs font-medium text-stone-500">Ajouter un emoji :</span>
+                                        <div className="flex flex-wrap gap-1">
+                                            {QUICK_EMOJIS.map((emoji) => (
+                                                <button
+                                                    key={emoji}
+                                                    type="button"
+                                                    onClick={() => insertEmoji(emoji)}
+                                                    className="w-8 h-8 flex items-center justify-center rounded-lg text-lg hover:bg-stone-100 transition-colors"
+                                                    title={`Insérer ${emoji}`}
+                                                >
+                                                    {emoji}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <textarea
+                                        ref={contentRef}
+                                        placeholder="Votre message..."
+                                        value={content}
+                                        onChange={(e) => setContent(e.target.value)}
+                                        maxLength={500}
+                                        rows={3}
+                                        className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                                    />
+                                </div>
                                 <div className="flex items-center justify-between">
                                     <label className="flex items-center gap-2 cursor-pointer text-sm text-stone-600 select-none">
                                         <input

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import {
   Plus,
@@ -24,12 +24,17 @@ import {
   Compass,
   ChevronRight,
   Quote,
+  Search,
+  Loader2,
+  ChevronLeft,
+  Minus,
 } from 'lucide-react'
 import { Postcard } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
+import { searchUnsplashPhotos, type UnsplashPhoto, type UnsplashOrderBy } from '@/lib/unsplash'
 
 const SHOWCASE_POSTCARDS: Postcard[] = [
   {
@@ -265,20 +270,70 @@ const STATS = [
   { value: '100%', label: 'Gratuit' },
 ]
 
+const UNSPLASH_DEBOUNCE_MS = 400
+
 export default function GalerieClient() {
   const [postcards, setPostcards] = useState<Postcard[]>([])
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'premium' | 'classic'>('all')
+  const [unsplashQuery, setUnsplashQuery] = useState('')
+  const [unsplashInput, setUnsplashInput] = useState('')
+  const [unsplashResults, setUnsplashResults] = useState<UnsplashPhoto[]>([])
+  const [unsplashLoading, setUnsplashLoading] = useState(false)
+  const [unsplashPage, setUnsplashPage] = useState(1)
+  const [unsplashTotalPages, setUnsplashTotalPages] = useState(0)
+  const [unsplashTotal, setUnsplashTotal] = useState(0)
+  const [unsplashOrderBy, setUnsplashOrderBy] = useState<UnsplashOrderBy>('relevant')
+  const [unsplashCols, setUnsplashCols] = useState(4)
+  const unsplashDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const GRID_COLS_CLASS = ['grid-cols-2', 'grid-cols-3', 'grid-cols-4', 'grid-cols-5', 'grid-cols-6'] as const
 
   useEffect(() => {
     setPostcards(SHOWCASE_POSTCARDS)
   }, [])
 
-  const filteredPostcards =
-    selectedFilter === 'all'
-      ? postcards
-      : selectedFilter === 'premium'
-        ? postcards.filter((p) => p.isPremium)
-        : postcards.filter((p) => !p.isPremium)
+  useEffect(() => {
+    if (!unsplashQuery.trim()) {
+      setUnsplashResults([])
+      setUnsplashTotalPages(0)
+      setUnsplashTotal(0)
+      return
+    }
+    let cancelled = false
+    setUnsplashLoading(true)
+    searchUnsplashPhotos(unsplashQuery, unsplashPage, 24, unsplashOrderBy)
+      .then((res) => {
+        if (!cancelled) {
+          setUnsplashResults(res.results)
+          setUnsplashTotalPages(res.total_pages)
+          setUnsplashTotal(res.total)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setUnsplashResults([])
+      })
+      .finally(() => {
+        if (!cancelled) setUnsplashLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [unsplashQuery, unsplashPage, unsplashOrderBy])
+
+  useEffect(() => {
+    setUnsplashPage(1)
+  }, [unsplashQuery, unsplashOrderBy])
+
+  const handleUnsplashInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setUnsplashInput(value)
+    if (unsplashDebounceRef.current) clearTimeout(unsplashDebounceRef.current)
+    unsplashDebounceRef.current = setTimeout(() => setUnsplashQuery(value.trim()), UNSPLASH_DEBOUNCE_MS)
+  }, [])
+
+  const handleUnsplashSearch = useCallback(() => {
+    if (unsplashDebounceRef.current) clearTimeout(unsplashDebounceRef.current)
+    setUnsplashQuery(unsplashInput.trim())
+  }, [unsplashInput])
 
   return (
     <>
@@ -309,6 +364,249 @@ export default function GalerieClient() {
           </p>
         </div>
       </div>
+
+      {/* Gallery avec barre de recherche Unsplash */}
+      <section className="bg-[#fdfbf7] py-20 sm:py-28">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between mb-8 text-center sm:text-left gap-4">
+            <div>
+              <span className="inline-flex items-center gap-2 text-xs font-bold text-teal-600 uppercase tracking-widest mb-2">
+                <Globe size={14} /> Galerie mondiale
+              </span>
+              <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800">
+                Inspirations Voyage
+              </h2>
+              <p className="text-stone-500 mt-2">
+                Découvrez les cartes envoyées par notre communauté ou recherchez des photos sur Unsplash.
+              </p>
+            </div>
+
+          </div>
+
+          {/* Grand champ de recherche Unsplash */}
+          <div className="max-w-3xl mx-auto mb-12">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 pointer-events-none" />
+                <input
+                  type="search"
+                  value={unsplashInput}
+                  onChange={handleUnsplashInputChange}
+                  onKeyDown={(e) => e.key === 'Enter' && handleUnsplashSearch()}
+                  placeholder="Rechercher des photos sur Unsplash (voyage, plage, ville…)"
+                  className={cn(
+                    'w-full h-14 pl-12 pr-4 rounded-2xl border border-stone-200 bg-white text-stone-800',
+                    'placeholder:text-stone-400 text-[15px] font-medium',
+                    'focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400',
+                    'shadow-sm hover:shadow-md transition-shadow'
+                  )}
+                  aria-label="Recherche Unsplash"
+                />
+              </div>
+              <Button
+                type="button"
+                onClick={handleUnsplashSearch}
+                disabled={unsplashLoading}
+                className="h-14 px-6 rounded-2xl bg-teal-500 hover:bg-teal-600 text-white font-bold shadow-md shrink-0"
+              >
+                {unsplashLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+              </Button>
+            </div>
+            {unsplashQuery && (
+              <p className="mt-2 text-sm text-stone-500 text-center">
+                Résultats pour &quot;{unsplashQuery}&quot; — Propulsé par{' '}
+                <a href="https://unsplash.com/?utm_source=cartepostale&utm_medium=referral" target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline font-medium">Unsplash</a>
+              </p>
+            )}
+          </div>
+
+          {/* Résultats Unsplash : cartes, pagination, filtres de tri */}
+          {unsplashQuery ? (
+            <div className="max-w-7xl mx-auto">
+              {/* Filtres de tri */}
+              {!unsplashLoading && unsplashResults.length > 0 && (
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-stone-500">Trier par :</span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setUnsplashOrderBy('relevant')}
+                        className={cn(
+                          'px-3 py-1.5 rounded-xl text-sm font-bold transition-all',
+                          unsplashOrderBy === 'relevant'
+                            ? 'bg-teal-500 text-white shadow-sm'
+                            : 'bg-white text-stone-500 border border-stone-200 hover:border-stone-300'
+                        )}
+                      >
+                        Pertinent
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setUnsplashOrderBy('latest')}
+                        className={cn(
+                          'px-3 py-1.5 rounded-xl text-sm font-bold transition-all',
+                          unsplashOrderBy === 'latest'
+                            ? 'bg-teal-500 text-white shadow-sm'
+                            : 'bg-white text-stone-500 border border-stone-200 hover:border-stone-300'
+                        )}
+                      >
+                        Récent
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-stone-500">Colonnes :</span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setUnsplashCols((c) => Math.max(2, c - 1))}
+                        disabled={unsplashCols <= 2}
+                        className={cn(
+                          'w-8 h-8 flex items-center justify-center rounded-lg font-bold transition-all',
+                          unsplashCols <= 2
+                            ? 'bg-stone-100 text-stone-300 cursor-not-allowed'
+                            : 'bg-white text-stone-600 border border-stone-200 hover:border-teal-400 hover:text-teal-600'
+                        )}
+                        aria-label="Moins de colonnes"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <span className="text-sm font-bold text-stone-600 min-w-[1.5rem] text-center">{unsplashCols}</span>
+                      <button
+                        type="button"
+                        onClick={() => setUnsplashCols((c) => Math.min(6, c + 1))}
+                        disabled={unsplashCols >= 6}
+                        className={cn(
+                          'w-8 h-8 flex items-center justify-center rounded-lg font-bold transition-all',
+                          unsplashCols >= 6
+                            ? 'bg-stone-100 text-stone-300 cursor-not-allowed'
+                            : 'bg-white text-stone-600 border border-stone-200 hover:border-teal-400 hover:text-teal-600'
+                        )}
+                        aria-label="Plus de colonnes"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <span className="text-sm text-stone-500">
+                    {unsplashTotal > 0 && (
+                      <>Environ {unsplashTotal.toLocaleString('fr-FR')} résultat{unsplashTotal > 1 ? 's' : ''}</>
+                    )}
+                  </span>
+                </div>
+              )}
+
+              {unsplashLoading ? (
+                <div className="flex justify-center py-16">
+                  <Loader2 className="w-10 h-10 animate-spin text-teal-500" />
+                </div>
+              ) : unsplashResults.length === 0 ? (
+                <p className="text-center text-stone-500 py-12">Aucun résultat pour cette recherche. Essayez un autre mot-clé.</p>
+              ) : (
+                <ul className={cn('grid gap-4 list-none p-0 m-0', GRID_COLS_CLASS[unsplashCols - 2])}>
+                  {unsplashResults.map((photo) => {
+                    const editorUrl = `/editor?cover=${encodeURIComponent(photo.urls.regular)}`
+                    return (
+                      <li
+                        key={photo.id}
+                        className="overflow-hidden rounded-2xl shadow-lg shadow-stone-200/60 hover:shadow-xl hover:shadow-stone-300/50 transition-shadow bg-white border border-stone-100 flex flex-col aspect-[3/4]"
+                      >
+                        <div className="relative flex-1 min-h-0">
+                          <img
+                            src={photo.urls.small}
+                            alt={photo.alt_description || photo.description || 'Photo Unsplash'}
+                            loading="lazy"
+                            decoding="async"
+                            className="absolute inset-0 w-full h-full object-cover object-center rounded-t-2xl"
+                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
+                          />
+                          <Link
+                            href={editorUrl}
+                            className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/40 transition-colors rounded-t-2xl group"
+                          >
+                            <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg">
+                              Créer une carte
+                            </span>
+                          </Link>
+                        </div>
+                        <div className="p-2 flex items-center justify-between gap-2 flex-shrink-0 border-t border-stone-100 min-h-[2.5rem]">
+                          <a
+                            href={photo.links.html}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] font-medium text-stone-500 hover:text-teal-600 truncate min-w-0"
+                          >
+                            {photo.user.name}
+                          </a>
+                          <Link
+                            href={editorUrl}
+                            className="text-[10px] font-bold text-teal-600 hover:text-teal-700 whitespace-nowrap shrink-0"
+                          >
+                            Créer une carte
+                          </Link>
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+
+              {/* Pagination */}
+              {!unsplashLoading && unsplashResults.length > 0 && unsplashTotalPages > 1 && (
+                <div className="flex items-center justify-center gap-4 mt-10">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setUnsplashPage((p) => Math.max(1, p - 1))}
+                    disabled={unsplashPage <= 1}
+                    className="rounded-xl gap-1.5"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Précédent
+                  </Button>
+                  <span className="text-sm font-medium text-stone-600">
+                    Page {unsplashPage} / {unsplashTotalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setUnsplashPage((p) => Math.min(unsplashTotalPages, p + 1))}
+                    disabled={unsplashPage >= unsplashTotalPages}
+                    className="rounded-xl gap-1.5"
+                  >
+                    Suivant
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-wrap justify-center gap-x-12 gap-y-24">
+              {postcards.map((card) => (
+                <div key={card.id} className="flex flex-col items-center">
+                  <PostcardView postcard={card} />
+                  <div className="w-[340px] sm:w-[600px] mt-6 flex justify-between items-center px-4 py-3 bg-white border border-stone-100 rounded-2xl shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <Heart
+                        size={16}
+                        className="text-stone-300 hover:text-red-500 cursor-pointer transition-colors"
+                      />
+                      <span className="text-stone-400 text-xs">|</span>
+                      <span className="text-xs font-semibold text-stone-500">
+                        {card.location}
+                      </span>
+                    </div>
+                    <div className="text-xs text-stone-400 font-medium">
+                      par <span className="text-stone-600 font-semibold">{card.senderName}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* How it works */}
       <section className="bg-white py-20 sm:py-28">
@@ -402,77 +700,6 @@ export default function GalerieClient() {
               <div key={index} className="text-center">
                 <div className="text-3xl md:text-4xl font-bold text-white mb-1">{stat.value}</div>
                 <div className="text-teal-100 text-sm font-medium">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Gallery */}
-      <section className="bg-[#fdfbf7] py-20 sm:py-28">
-        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between mb-12 text-center sm:text-left gap-4">
-            <div>
-              <span className="inline-flex items-center gap-2 text-xs font-bold text-teal-600 uppercase tracking-widest mb-2">
-                <Globe size={14} /> Galerie mondiale
-              </span>
-              <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800">
-                Inspirations Voyage
-              </h2>
-              <p className="text-stone-500 mt-2">
-                Découvrez les cartes envoyées par notre communauté.
-              </p>
-            </div>
-
-            {/* Filters */}
-            <div className="flex gap-2">
-              {(
-                [
-                  { key: 'all', label: 'Toutes' },
-                  { key: 'premium', label: 'Premium' },
-                  { key: 'classic', label: 'Classique' },
-                ] as const
-              ).map((filter) => (
-                <button
-                  key={filter.key}
-                  onClick={() => setSelectedFilter(filter.key)}
-                  className={cn(
-                    'px-4 py-2 rounded-full text-sm font-bold transition-all',
-                    selectedFilter === filter.key
-                      ? 'bg-teal-500 text-white shadow-sm'
-                      : 'bg-white text-stone-500 border border-stone-200 hover:border-stone-300'
-                  )}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-x-12 gap-y-24">
-            {filteredPostcards.map((card) => (
-              <div key={card.id} className="flex flex-col items-center">
-                <PostcardView postcard={card} />
-                <div className="w-[340px] sm:w-[600px] mt-6 flex justify-between items-center px-4 py-3 bg-white border border-stone-100 rounded-2xl shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <Heart
-                      size={16}
-                      className="text-stone-300 hover:text-red-500 cursor-pointer transition-colors"
-                    />
-                    <span className="text-stone-400 text-xs">|</span>
-                    <span className="text-xs font-semibold text-stone-500">
-                      {card.location}
-                    </span>
-                    {card.isPremium && (
-                      <span className="text-[10px] font-bold bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                        Premium
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-xs text-stone-400 font-medium">
-                    par <span className="text-stone-600 font-semibold">{card.senderName}</span>
-                  </div>
-                </div>
               </div>
             ))}
           </div>

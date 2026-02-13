@@ -63,7 +63,6 @@ const dropdownFonctionnalites = [
 const dropdownDecouvrir = [
     { href: '/galerie', icon: ImageIcon, title: 'Galerie', description: 'Cartes postales créées par la communauté' },
     { href: '/a-propos', icon: Info, title: 'À propos', description: 'Notre histoire et notre équipe' },
-    { href: '/legal/mentions-legales', icon: FileText, title: 'Mentions légales', description: 'Informations légales' },
 ]
 
 
@@ -276,7 +275,7 @@ export const Navbar = () => {
                         <NavDropdown
                             id="decouvrir"
                             label="Découvrir"
-                            active={pathname === '/galerie' || pathname === '/a-propos' || pathname?.startsWith('/legal')}
+                            active={pathname === '/galerie' || pathname === '/a-propos'}
                         >
                             <div className="p-2">
                                 {dropdownDecouvrir.map((item) => (

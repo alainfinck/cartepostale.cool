@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import confetti from 'canvas-confetti'
 import {
   Upload,
@@ -487,6 +488,7 @@ const ALBUM_TIERS = {
 } as const
 
 export default function EditorPage() {
+  const searchParams = useSearchParams()
   const [currentStep, setCurrentStep] = useState<StepId>('photo')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isLocating, setIsLocating] = useState(false)
@@ -560,6 +562,19 @@ export default function EditorPage() {
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
   const showBack = currentStep === 'redaction'
+
+  // Image de couverture depuis la galerie (param ?cover=...)
+  useEffect(() => {
+    const cover = searchParams.get('cover')
+    if (cover && typeof cover === 'string' && (cover.startsWith('http') || cover.startsWith('/'))) {
+      setFrontImage(cover)
+      if (typeof window !== 'undefined' && window.history.replaceState) {
+        const url = new URL(window.location.href)
+        url.searchParams.delete('cover')
+        window.history.replaceState({}, '', url.pathname + (url.search || ''))
+      }
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (currentStep === 'preview' && !isPublishing) {
