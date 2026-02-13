@@ -87,7 +87,7 @@ export async function linkPostcardToUser(postcardId: string, email: string) {
         const protocol = host.includes('localhost') ? 'http' : 'https';
         
         const magicLink = `${protocol}://${host}/api/magic-login?token=${token}`;
-        const postcardUrl = `${protocol}/view/${postcardId}`;
+        const postcardUrl = `${protocol}://${host}/view/${postcardId}`;
 
         // Resolve generic type for frontImage which can be number | Media | null
         let postcardImageUrl = (postcard as any).frontImageURL;
