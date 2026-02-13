@@ -9,13 +9,22 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 const BUCKET = process.env.S3_BUCKET
 const ENDPOINT = process.env.S3_ENDPOINT
-const ACCESS_KEY = process.env.S3_ACCESS_KEY_ID
-const SECRET_KEY = process.env.S3_SECRET_ACCESS_KEY
 const MAX_SIZE = 10 * 1024 * 1024 // 10 MB
 const IMAGE_MIME = /^image\/(jpeg|jpg|png|webp|gif)$/i
 const SAFE_FILENAME = /^[a-zA-Z0-9._-]+$/
 
+/** Normalize and validate R2/S3 Access Key ID. Sigv4 credential must be "accessKeyId/date/region/service/aws4_request"; if the ID contains "=" or "/", R2 returns "Credential should have at least 5 slash-separated parts, not 1". */
+function getAccessKeyId(): string | null {
+  const raw = process.env.S3_ACCESS_KEY_ID?.trim()
+  if (!raw) return null
+  // Reject values that would break Sigv4 (e.g. "key=value" or pasted twice)
+  if (raw.includes('=') || raw.includes('/')) return null
+  return raw
+}
+
 function getS3Client(): S3Client | null {
+  const ACCESS_KEY = getAccessKeyId()
+  const SECRET_KEY = process.env.S3_SECRET_ACCESS_KEY?.trim() || null
   if (!BUCKET || !ACCESS_KEY || !SECRET_KEY || !ENDPOINT) return null
   const isR2 = ENDPOINT.includes('r2.cloudflarestorage.com')
   return new S3Client({
@@ -27,6 +36,16 @@ function getS3Client(): S3Client | null {
 }
 
 export async function POST(request: NextRequest) {
+  const accessKey = getAccessKeyId()
+  if (process.env.S3_ACCESS_KEY_ID?.trim() && !accessKey) {
+    return NextResponse.json(
+      {
+        error:
+          "S3_ACCESS_KEY_ID invalide : ne doit contenir que l'Access Key ID (sans '=' ni '/'). Vérifiez la variable d'environnement (ex. dans Coolify).",
+      },
+      { status: 503 }
+    )
+  }
   if (!getS3Client()) {
     return NextResponse.json(
       { error: 'Upload direct R2 non configuré' },

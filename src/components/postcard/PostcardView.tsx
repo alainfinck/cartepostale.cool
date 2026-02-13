@@ -454,6 +454,14 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                     "w-full h-full object-cover pointer-events-none transition-opacity duration-700",
                                     isFrontImageLoading ? "opacity-0" : "opacity-100"
                                 )}
+                                style={
+                                    postcard.frontImageCrop
+                                        ? {
+                                            objectPosition: `${postcard.frontImageCrop.x}% ${postcard.frontImageCrop.y}%`,
+                                            transform: `scale(${postcard.frontImageCrop.scale})`,
+                                          }
+                                        : undefined
+                                }
                                 onLoad={() => setIsFrontImageLoading(false)}
                                 onError={() => {
                                     if (frontImageSrc !== FALLBACK_FRONT_IMAGE) {

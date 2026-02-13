@@ -5,6 +5,7 @@ import type { Where } from 'payload'
 import config from '@payload-config'
 import { Postcard, User, Agency, Gallery, GalleryCategory, GalleryTag } from '@/payload-types'
 import { getCurrentUser } from '@/lib/auth'
+import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3'
 
 async function requireAdmin(): Promise<void> {
     const user = await getCurrentUser()
@@ -721,5 +722,75 @@ export async function getMediaForGallery(params?: { limit?: number; search?: str
     } catch (error) {
         console.error('Error fetching media for gallery:', error)
         return { docs: [] }
+    }
+}
+
+const R2_BUCKET = process.env.S3_BUCKET
+const R2_ENDPOINT = process.env.S3_ENDPOINT
+const R2_ACCESS_KEY = process.env.S3_ACCESS_KEY_ID
+const R2_SECRET_KEY = process.env.S3_SECRET_ACCESS_KEY
+const R2_PUBLIC_BASE_URL = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')
+
+function getR2Client(): S3Client | null {
+    if (!R2_BUCKET || !R2_ACCESS_KEY || !R2_SECRET_KEY || !R2_ENDPOINT) return null
+    const isR2 = R2_ENDPOINT.includes('r2.cloudflarestorage.com')
+    return new S3Client({
+        credentials: { accessKeyId: R2_ACCESS_KEY, secretAccessKey: R2_SECRET_KEY },
+        region: process.env.S3_REGION || (isR2 ? 'auto' : 'us-east-1'),
+        endpoint: R2_ENDPOINT,
+        forcePathStyle: true,
+    })
+}
+
+export interface R2ObjectItem {
+    key: string
+    size: number
+    lastModified: string | null
+    publicUrl: string | null
+}
+
+export interface ListR2Result {
+    objects: R2ObjectItem[]
+    prefixes: string[]
+    publicBaseUrl: string | null
+    configured: boolean
+}
+
+/** List R2 bucket contents (admin only). Prefix without trailing slash; empty = root. */
+export async function listR2Objects(prefix?: string, maxKeys = 100): Promise<ListR2Result> {
+    await requireAdmin()
+    const client = getR2Client()
+    if (!client || !R2_BUCKET) {
+        return { objects: [], prefixes: [], publicBaseUrl: R2_PUBLIC_BASE_URL ?? null, configured: false }
+    }
+    try {
+        const delimiter = '/'
+        const cmd = new ListObjectsV2Command({
+            Bucket: R2_BUCKET,
+            Prefix: prefix ? (prefix.endsWith('/') ? prefix : prefix + '/') : '',
+            Delimiter: delimiter,
+            MaxKeys: maxKeys,
+        })
+        const out = await client.send(cmd)
+        const objects: R2ObjectItem[] = (out.Contents ?? []).map((c) => {
+            const key = c.Key ?? ''
+            const pathEncoded = key.split('/').map(encodeURIComponent).join('/')
+            return {
+                key,
+                size: c.Size ?? 0,
+                lastModified: c.LastModified?.toISOString() ?? null,
+                publicUrl: R2_PUBLIC_BASE_URL ? `${R2_PUBLIC_BASE_URL}/${pathEncoded}` : null,
+            }
+        })
+        const prefixes: string[] = (out.CommonPrefixes ?? []).map((p) => (p.Prefix ?? '').replace(/\/$/, ''))
+        return {
+            objects,
+            prefixes,
+            publicBaseUrl: R2_PUBLIC_BASE_URL ?? null,
+            configured: true,
+        }
+    } catch (error) {
+        console.error('Error listing R2:', error)
+        return { objects: [], prefixes: [], publicBaseUrl: R2_PUBLIC_BASE_URL ?? null, configured: true }
     }
 }

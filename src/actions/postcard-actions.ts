@@ -101,7 +101,22 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
         if (data.mediaItems && Array.isArray(data.mediaItems)) {
             for (let i = 0; i < data.mediaItems.length; i++) {
                 const item = data.mediaItems[i];
-                if (item.url && item.url.startsWith('data:')) {
+                if (item.key) {
+                    // Image already uploaded to R2 via presigned URL; create media doc with key only
+                    const media = await payload.create({
+                        collection: 'media',
+                        data: {
+                            alt: `Album item for postcard`,
+                            filename: item.key,
+                            mimeType: item.mimeType || 'image/jpeg',
+                            filesize: item.filesize ?? 0,
+                        },
+                    })
+                    processedMediaItems.push({
+                        media: media.id,
+                        type: item.type || 'image'
+                    });
+                } else if (item.url && item.url.startsWith('data:')) {
                     const [meta, base64Data] = item.url.split(',');
                     const mime = meta.match(/:(.*?);/)?.[1] || 'image/png';
                     const extension = mime.split('/')[1] || 'png';

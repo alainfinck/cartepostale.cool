@@ -33,8 +33,10 @@ import {
   MessageSquare,
   Mail,
   CreditCard,
+  Crop,
+  ZoomIn,
 } from 'lucide-react'
-import { Postcard, Template } from '@/types'
+import { Postcard, Template, FrontImageCrop } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -102,6 +104,49 @@ async function fileToDataUrl(file: File): Promise<string> {
     reader.readAsDataURL(blob)
   })
   return resizeImageToMax2K(dataUrl)
+}
+
+const POSTCARD_ASPECT = 3 / 2
+
+/**
+ * Génère une image recadrée 3:2 à partir d'une data URL et des paramètres de zoom/position.
+ * Utilisé à l'enregistrement pour "figer" le cadrage choisi par l'utilisateur.
+ */
+function bakeFrontImageCrop(dataUrl: string, crop: FrontImageCrop, outputPx = 1200): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const imgW = img.naturalWidth
+      const imgH = img.naturalHeight
+      const cw = Math.round(outputPx)
+      const ch = Math.round(outputPx / POSTCARD_ASPECT)
+      const coverScale = Math.max(cw / imgW, ch / imgH)
+      const userScale = crop.scale
+      const visibleW = cw / (coverScale * userScale)
+      const visibleH = ch / (coverScale * userScale)
+      const centerX = (crop.x / 100) * imgW
+      const centerY = (crop.y / 100) * imgH
+      const sx = Math.max(0, Math.min(imgW - visibleW, centerX - visibleW / 2))
+      const sy = Math.max(0, Math.min(imgH - visibleH, centerY - visibleH / 2))
+      const canvas = document.createElement('canvas')
+      canvas.width = cw
+      canvas.height = ch
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        resolve(dataUrl)
+        return
+      }
+      ctx.drawImage(img, sx, sy, visibleW, visibleH, 0, 0, cw, ch)
+      try {
+        resolve(canvas.toDataURL('image/jpeg', 0.88))
+      } catch {
+        resolve(dataUrl)
+      }
+    }
+    img.onerror = () => reject(new Error('Image load failed'))
+    img.src = dataUrl
+  })
 }
 
 const STEPS = [
@@ -205,6 +250,8 @@ export default function EditorPage() {
   const [frontImageKey, setFrontImageKey] = useState<string | null>(null)
   const [frontImageMimeType, setFrontImageMimeType] = useState<string | null>(null)
   const [frontImageFilesize, setFrontImageFilesize] = useState<number | null>(null)
+  /** Recadrage / zoom de la photo face avant (position en %, scale 1 = fit). */
+  const [frontImageCrop, setFrontImageCrop] = useState<FrontImageCrop>({ scale: 1, x: 50, y: 50 })
   const [mediaItems, setMediaItems] = useState<Postcard['mediaItems']>([])
   const [isPremium, setIsPremium] = useState(false)
   const [showFullscreen, setShowFullscreen] = useState(false)
@@ -315,6 +362,7 @@ export default function EditorPage() {
           setFrontImageFilesize(file.size)
           const dataUrl = await fileToDataUrl(file)
           setFrontImage(dataUrl)
+          setFrontImageCrop({ scale: 1, x: 50, y: 50 })
           return
         }
       }
@@ -337,6 +385,7 @@ export default function EditorPage() {
     setFrontImageKey(null)
     setFrontImageMimeType(null)
     setFrontImageFilesize(null)
+    setFrontImageCrop({ scale: 1, x: 50, y: 50 })
   }
 
   const handleGeolocation = () => {
@@ -357,51 +406,84 @@ export default function EditorPage() {
   }
 
   const handleAlbumUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return
-    const files = Array.from(e.target.files)
+    const files = Array.from(e.target.files || [])
+    e.target.value = ''
 
-    setMediaItems((prev = []) => {
-      let updated = [...prev]
-      const currentPhotos = updated.filter(i => i.type === 'image').length
-      const currentVideos = updated.filter(i => i.type === 'video').length
+    for (const file of files) {
+      const isVideo = file.type.startsWith('video/')
 
-      for (const file of files) {
-        const isVideo = file.type.startsWith('video/')
-
-        // Enforce max limits (Tier 2)
-        const photoCount = updated.filter(i => i.type === 'image').length
-        const videoCount = updated.filter(i => i.type === 'video').length
+      ;(async () => {
+        const previewUrl = await fileToDataUrl(file).catch(() => null)
+        if (!previewUrl) {
+          alert('Impossible de charger un fichier. Utilisez des photos en JPEG ou PNG.')
+          return
+        }
+        const type = isVideo ? ('video' as const) : ('image' as const)
+        const newId = Date.now() + Math.random().toString()
 
         if (isVideo) {
-          if (videoCount >= ALBUM_TIERS.tier2.videos) {
-            alert(`Limite de ${ALBUM_TIERS.tier2.videos} vidéos atteinte.`)
-            continue
-          }
-        } else {
-          if (photoCount >= ALBUM_TIERS.tier2.photos) {
-            alert(`Limite de ${ALBUM_TIERS.tier2.photos} photos atteinte.`)
-            continue
-          }
+          setMediaItems((prev) => {
+            const videos = (prev || []).filter((i) => i.type === 'video').length
+            if (videos >= ALBUM_TIERS.tier2.videos) {
+              alert(`Limite de ${ALBUM_TIERS.tier2.videos} vidéos atteinte.`)
+              return prev || []
+            }
+            return [...(prev || []), { id: newId, type: 'video', url: previewUrl } as any]
+          })
+          setIsPremium(true)
+          return
         }
 
-        // Process file
-        fileToDataUrl(file).then(url => {
-          const newItem = {
-            id: Date.now() + Math.random().toString(),
-            type: isVideo ? 'video' : 'image',
-            url,
-          } as any
-          setMediaItems(current => {
-            const next = [...(current || []), newItem]
-            setIsPremium(next.length > 0)
-            return next
+        // Image: upload direct R2 (presigned), fallback base64
+        let key: string | undefined
+        let mimeType: string | undefined
+        let filesize: number | undefined
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+        const safeName = `postcard-album-${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${ext}`
+        try {
+          const presignedRes = await fetch('/api/upload-presigned', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              filename: safeName,
+              mimeType: file.type || 'image/jpeg',
+              filesize: file.size,
+            }),
           })
-        }).catch(() => {
-          alert('Impossible de charger une des images. Utilisez des photos en JPEG ou PNG.')
+          if (presignedRes.ok) {
+            const { url, key: k } = await presignedRes.json()
+            const putRes = await fetch(url, {
+              method: 'PUT',
+              body: file,
+              headers: { 'Content-Type': file.type || 'image/jpeg' },
+            })
+            if (putRes.ok) {
+              key = k
+              mimeType = file.type || 'image/jpeg'
+              filesize = file.size
+            }
+          }
+        } catch (_) {
+          /* fallback to base64 */
+        }
+
+        setMediaItems((prev) => {
+          const photos = (prev || []).filter((i) => i.type === 'image').length
+          if (photos >= ALBUM_TIERS.tier2.photos) {
+            alert(`Limite de ${ALBUM_TIERS.tier2.photos} photos atteinte.`)
+            return prev || []
+          }
+          const newItem = {
+            id: newId,
+            type: 'image',
+            url: previewUrl,
+            ...(key && { key, mimeType, filesize }),
+          } as any
+          return [...(prev || []), newItem]
         })
-      }
-      return updated
-    })
+        setIsPremium(true)
+      })()
+    }
   }
 
   const getAlbumPrice = () => {
@@ -428,6 +510,7 @@ export default function EditorPage() {
     frontImage:
       frontImage ||
       '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
+    frontImageCrop: frontImage ? frontImageCrop : undefined,
     frontCaption: frontCaption.trim() || undefined,
     frontEmoji: frontEmoji.trim() || undefined,
     message: message || '',
@@ -460,13 +543,33 @@ export default function EditorPage() {
     setShareError(null)
 
     try {
+      let finalFrontImage = currentPostcard.frontImage
+      let sendKey = frontImageKey
+      let sendMime = frontImageMimeType
+      let sendFilesize = frontImageFilesize
+      const hasCrop = frontImageCrop.scale !== 1 || frontImageCrop.x !== 50 || frontImageCrop.y !== 50
+      const canBake = frontImage && (frontImage.startsWith('data:') || frontImage.startsWith('http') || frontImage.startsWith('/'))
+      if (canBake && hasCrop) {
+        try {
+          const imgUrl = frontImage.startsWith('data:') ? frontImage : (typeof window !== 'undefined' && frontImage.startsWith('/') ? window.location.origin + frontImage : frontImage)
+          const dataUrl = frontImage.startsWith('data:') ? frontImage : await fetch(imgUrl).then((r) => r.blob()).then((b) => new Promise<string>((res, rej) => { const reader = new FileReader(); reader.onloadend = () => res(reader.result as string); reader.onerror = rej; reader.readAsDataURL(b) }))
+          finalFrontImage = await bakeFrontImageCrop(dataUrl, frontImageCrop)
+          sendKey = null
+          sendMime = null
+          sendFilesize = null
+        } catch (_) {
+          /* keep original image if bake fails */
+        }
+      }
+
       const result = await createPostcard({
         ...currentPostcard,
+        frontImage: finalFrontImage,
         recipients: [],
-        ...(frontImageKey && {
-          frontImageKey,
-          frontImageMimeType: frontImageMimeType ?? undefined,
-          frontImageFilesize: frontImageFilesize ?? undefined,
+        ...(sendKey && {
+          frontImageKey: sendKey,
+          frontImageMimeType: sendMime ?? undefined,
+          frontImageFilesize: sendFilesize ?? undefined,
         }),
       })
 
@@ -717,6 +820,92 @@ export default function EditorPage() {
                     </button>
                   ))}
                 </div>
+
+                {/* Recadrer et zoomer la photo */}
+                {frontImage && (
+                  <section className="mt-8 pt-8 border-t border-stone-200">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-100 text-teal-600">
+                        <Crop size={18} />
+                      </span>
+                      <div>
+                        <h3 className="text-sm font-bold text-stone-800 uppercase tracking-wider">
+                          Recadrer et zoomer
+                        </h3>
+                        <p className="text-xs text-stone-500">
+                          Positionnez la photo sur la face avant
+                        </p>
+                      </div>
+                    </div>
+                    <div className="space-y-5">
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="text-xs font-semibold text-stone-600 uppercase tracking-wider flex items-center gap-1.5">
+                            <ZoomIn size={14} />
+                            Zoom
+                          </label>
+                          <span className="text-xs font-medium text-stone-500 tabular-nums">
+                            {Math.round(frontImageCrop.scale * 100)}%
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={1}
+                          max={2.5}
+                          step={0.05}
+                          value={frontImageCrop.scale}
+                          onChange={(e) =>
+                            setFrontImageCrop((c) => ({ ...c, scale: Number(e.target.value) }))
+                          }
+                          className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                            Position horizontale
+                          </label>
+                          <span className="text-xs font-medium text-stone-500 tabular-nums">
+                            {Math.round(frontImageCrop.x)}%
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={frontImageCrop.x}
+                          onChange={(e) =>
+                            setFrontImageCrop((c) => ({ ...c, x: Number(e.target.value) }))
+                          }
+                          className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                            Position verticale
+                          </label>
+                          <span className="text-xs font-medium text-stone-500 tabular-nums">
+                            {Math.round(frontImageCrop.y)}%
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={frontImageCrop.y}
+                          onChange={(e) =>
+                            setFrontImageCrop((c) => ({ ...c, y: Number(e.target.value) }))
+                          }
+                          className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                        />
+                      </div>
+                      <p className="text-[11px] text-stone-400">
+                        L&apos;aperçu à gauche se met à jour en temps réel. Le cadrage sera enregistré sur la carte.
+                      </p>
+                    </div>
+                  </section>
+                )}
 
                 {/* Face avant : texte + emoji */}
                 <section className="mt-8 pt-8 border-t border-stone-200">
@@ -1071,9 +1260,9 @@ export default function EditorPage() {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="Cher(e)... Nous voici au bout du monde, le soleil se couche sur la mer et je pense à vous..."
-                      rows={5}
+                      rows={8}
                       maxLength={500}
-                      className="w-full rounded-2xl border border-stone-200 shadow-inner focus:border-indigo-500 focus:ring-indigo-500 text-sm p-5 font-handwriting text-lg bg-white leading-relaxed text-stone-700 resize-none placeholder:text-stone-300"
+                      className="w-full min-h-[220px] rounded-2xl border border-stone-200 shadow-inner focus:border-indigo-500 focus:ring-indigo-500 text-lg p-5 font-sans bg-white leading-relaxed text-stone-700 resize-none placeholder:text-stone-300"
                     />
                     {/* Quick suggestions */}
                     <div className="flex flex-wrap gap-2 mt-4">
@@ -1108,7 +1297,7 @@ export default function EditorPage() {
                         value={senderName}
                         onChange={(e) => setSenderName(e.target.value)}
                         placeholder="ex: Sarah"
-                        className="w-full rounded-xl border border-stone-200 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-xl py-3 px-4 font-handwriting bg-stone-50 focus:bg-white transition-colors placeholder:text-stone-400"
+                        className="w-full rounded-xl border border-stone-200 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-base py-3 px-4 font-sans bg-stone-50 focus:bg-white transition-colors placeholder:text-stone-400"
                       />
                     </div>
                     <div>

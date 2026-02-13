@@ -39,7 +39,11 @@ Les médias sont stockés dans un bucket S3 (ou compatible : **Cloudflare R2**, 
    | `S3_ENDPOINT`          | URL S3 de R2 | `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` |
    | `R2_PUBLIC_BASE_URL`   | URL publique du bucket (R2.dev subdomain ou custom domain, sans slash final) | `https://pub-xxxxx.r2.dev` |
 
+   **Important** : `S3_ACCESS_KEY_ID` doit contenir **uniquement** la valeur de l’Access Key (pas de format `key=value`, pas d’espaces avant/après). Sinon erreur Sigv4 « Credential should have at least 5 slash-separated parts, not 1 » et 401 sur les uploads.
+
    Pour R2, **ne pas** définir `S3_REGION` (l’app utilise `auto` automatiquement quand l’endpoint contient `r2.cloudflarestorage.com`).
+
+   **CORS** : pour les uploads depuis le navigateur (manager/cartes, éditeur), configurer CORS sur le bucket R2 : **Cloudflare** → **R2** → votre bucket → **Settings** → **CORS policy** ; autoriser l’origine de votre site (ex. `https://www.cartepostale.cool`). Sinon erreur 403 sur la requête preflight.
 
 3. **Domaine public R2 (affichage des images)**  
    L’endpoint S3 de R2 n’est pas lisible publiquement. Il faut activer l’accès public sur le bucket et définir l’URL de base :

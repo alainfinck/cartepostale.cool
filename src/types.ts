@@ -4,9 +4,21 @@ export interface MediaItem {
     url: string;
 }
 
+/** Position de recadrage de la photo (pour aperçu / éditeur). x,y en % (0–100). */
+export interface FrontImageCrop {
+    /** Zoom : 1 = fit, >1 = zoom (ex. 1.5 = 150%). */
+    scale: number;
+    /** Point focal horizontal (%). 50 = centre. */
+    x: number;
+    /** Point focal vertical (%). 50 = centre. */
+    y: number;
+}
+
 export interface Postcard {
     id: string;
     frontImage: string;
+    /** Recadrage / zoom de la face avant (éditeur uniquement, non persisté). */
+    frontImageCrop?: FrontImageCrop;
     frontCaption?: string;
     frontEmoji?: string;
     message: string;
