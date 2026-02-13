@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Pencil } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { getOptimizedImageUrl } from '@/lib/image-processing'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Minus } from 'lucide-react'
@@ -65,9 +66,12 @@ function isMedia(media: any): media is Media {
 }
 
 function getFrontImageUrl(postcard: PayloadPostcard): string {
-    if (postcard.frontImageURL) return postcard.frontImageURL
-    if (isMedia(postcard.frontImage) && postcard.frontImage.url) return postcard.frontImage.url
-    return '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
+    let url = ''
+    if (postcard.frontImageURL) url = postcard.frontImageURL
+    else if (isMedia(postcard.frontImage) && postcard.frontImage.url) url = postcard.frontImage.url
+    else url = '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
+
+    return getOptimizedImageUrl(url, { width: 400 })
 }
 
 function mapToFrontend(p: PayloadPostcard): FrontendPostcard {

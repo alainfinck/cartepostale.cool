@@ -162,7 +162,7 @@ export default function Home() {
                 </Link>
               </div>
               <p className="text-stone-500 text-sm flex items-center justify-center lg:justify-start gap-2">
-                <span>À partir de 1,99€ par carte</span>
+                <span>À partir de 0€ par carte</span>
                 <span className="text-stone-300">·</span>
                 <span>Sans abonnement</span>
               </p>
@@ -395,32 +395,70 @@ export default function Home() {
       <section className="bg-[#fefaf4] border-t border-stone-100 py-20">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <div className="inline-flex items-center justify-center gap-2 px-3 py-1.5 bg-pink-50 text-pink-600 text-xs font-bold uppercase tracking-[0.2em] rounded-full shadow-sm mb-4">
-            Prix par carte
+            Nos Tarifs
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-4">
             Simple et transparent
           </h2>
           <p className="text-stone-500 text-lg">
-            Pas d&apos;abonnement, pas de mauvaise surprise : vous payez uniquement chaque fois que vous envoyez une carte postale réelle.
+            Choisissez l&apos;option qui vous convient le mieux pour envoyer vos souvenirs.
           </p>
         </div>
 
-        <div className="max-w-md mx-auto px-4 mt-12">
-          <div className="relative bg-white border border-pink-100 rounded-[32px] shadow-[0_20px_60px_rgba(240,156,194,0.25)] overflow-hidden">
+        <div className="max-w-5xl mx-auto px-4 mt-12 grid md:grid-cols-2 gap-8">
+          {/* Carte Gratuite */}
+          <div className="relative bg-white border border-stone-100 rounded-[32px] shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
+            <div className="bg-stone-100 text-stone-600 text-center px-10 py-7">
+              <div className="text-sm uppercase tracking-[0.4em] font-semibold opacity-90">Option Découverte</div>
+              <div className="mt-4 text-5xl font-bold leading-tight">0€</div>
+              <p className="text-lg opacity-90 mt-2">la carte limitée</p>
+            </div>
+            <div className="px-10 py-8 space-y-4">
+              {[
+                "Création assistée",
+                "Templates standard",
+                "Texte personnalisable",
+                "Partage par lien unique",
+                "Galerie publique",
+                "Affichage basse résolution",
+                "Filigrane discret",
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-3 text-stone-500 text-base font-medium">
+                  <Check className="text-stone-400" size={18} />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+            <div className="px-10 pb-10 pt-1">
+              <div className="max-w-xs mx-auto">
+                <Link href="/editor" className="w-full">
+                  <Button variant="outline" className="w-full border-2 border-stone-200 text-stone-600 rounded-full font-bold text-lg py-5 hover:bg-stone-50">
+                    Essayer gratuitement
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Carte Premium */}
+          <div className="relative bg-white border border-pink-100 rounded-[32px] shadow-[0_20px_60px_rgba(240,156,194,0.25)] overflow-hidden transform md:scale-105 z-10">
+            <div className="absolute top-0 right-0 bg-pink-500 text-white text-[10px] uppercase tracking-widest font-black px-4 py-1.5 rounded-bl-2xl">
+              Populaire
+            </div>
             <div className="bg-gradient-to-r from-pink-500 to-orange-400 text-white text-center px-10 py-7">
-              <div className="text-sm uppercase tracking-[0.4em] font-semibold opacity-90">Prix par carte</div>
+              <div className="text-sm uppercase tracking-[0.4em] font-semibold opacity-90">Carte Unique</div>
               <div className="mt-4 text-5xl font-bold leading-tight">1,99€</div>
-              <p className="text-lg opacity-90 mt-2">par carte postale</p>
+              <p className="text-lg opacity-90 mt-2">sans publicité</p>
             </div>
             <div className="px-10 py-8 space-y-4">
               {[
                 "Upload de vos propres images",
-                "Templates prédéfinis inclus",
-                "Texte personnalisable recto & verso",
-                "Timbres décoratifs fun",
-                "Téléchargement HD (PNG/PDF)",
-                "Partage par lien & email",
-                "Pas d'abonnement ni engagement",
+                "Toutes les fonctionnalités Premium",
+                "Album photos & Vidéos",
+                "Haute résolution (PNG/PDF)",
+                "Sans filigrane",
+                "Livre d'or interactif",
+                "Lien privé & sécurisé",
               ].map((item) => (
                 <div key={item} className="flex items-center gap-3 text-stone-600 text-base font-semibold">
                   <Check className="text-emerald-500" size={18} />
@@ -432,7 +470,7 @@ export default function Home() {
               <div className="max-w-xs mx-auto">
                 <Link href="/editor" className="w-full">
                   <Button className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full font-bold text-lg py-5 shadow-lg shadow-pink-500/30 border-0">
-                    Commencer maintenant 🪄
+                    Créer ma carte 🪄
                   </Button>
                 </Link>
               </div>

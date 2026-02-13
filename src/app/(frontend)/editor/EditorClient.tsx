@@ -232,10 +232,10 @@ export default function EditorPage() {
   const showBack = currentStep === 'redaction'
 
   useEffect(() => {
-    if (currentStep === 'preview' && !shareUrl && !isPublishing && !shareError) {
+    if (currentStep === 'preview' && !isPublishing) {
       handlePublish()
     }
-  }, [currentStep, shareUrl, isPublishing, shareError])
+  }, [currentStep])
 
   // Trigger confetti once when shareUrl becomes available
   useEffect(() => {
@@ -548,7 +548,7 @@ export default function EditorPage() {
   }
 
   const currentPostcard: Postcard = {
-    id: 'editor-preview',
+    id: createdPostcardId || 'editor-preview',
     frontImage:
       frontImage ||
       '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
@@ -1594,7 +1594,7 @@ export default function EditorPage() {
                     {isPublishing ? (
                       <div className="bg-stone-50 rounded-2xl p-10 border border-stone-100 flex flex-col items-center justify-center text-center">
                         <RefreshCw size={32} className="text-teal-500 animate-spin mb-4" />
-                        <p className="text-stone-500 font-medium font-serif">Création de votre lien de partage...</p>
+                        <p className="text-stone-500 font-medium font-serif">{createdPostcardId ? 'Mise à jour de votre carte...' : 'Création de votre lien de partage...'}</p>
                       </div>
                     ) : shareError ? (
                       <div className="bg-red-50 rounded-2xl p-8 border border-red-100 flex flex-col items-center justify-center text-center">
@@ -1622,7 +1622,7 @@ export default function EditorPage() {
                     ) : !shareUrl ? (
                       <div className="bg-stone-50 rounded-2xl p-10 border border-stone-100 flex flex-col items-center justify-center text-center">
                         <RefreshCw size={32} className="text-teal-500 animate-spin mb-4" />
-                        <p className="text-stone-500 font-medium font-serif">Création de votre lien de partage...</p>
+                        <p className="text-stone-500 font-medium font-serif">{createdPostcardId ? 'Mise à jour de votre carte...' : 'Création de votre lien de partage...'}</p>
                       </div>
                     ) : (
                       <div className="bg-stone-50 rounded-2xl p-6 sm:p-8 border border-stone-200 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">

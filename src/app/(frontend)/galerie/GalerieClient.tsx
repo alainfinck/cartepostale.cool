@@ -29,6 +29,7 @@ import { Postcard } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { getOptimizedImageUrl } from '@/lib/image-processing'
 
 const SHOWCASE_POSTCARDS: Postcard[] = [
   {
@@ -285,7 +286,7 @@ export default function GalerieClient() {
       <div className="relative bg-stone-900 h-[420px] flex items-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="/images/demo/photo-1488646953014-85cb44e25828.jpg"
+            src={getOptimizedImageUrl("/images/demo/photo-1488646953014-85cb44e25828.jpg", { width: 1920 })}
             className="w-full h-full object-cover opacity-30"
             alt="Travel background"
           />
@@ -524,7 +525,7 @@ export default function GalerieClient() {
       <section className="relative bg-teal-900 py-20 sm:py-24 overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="/images/demo/photo-1476514525535-07fb3b4ae5f1.jpg"
+            src={getOptimizedImageUrl("/images/demo/photo-1476514525535-07fb3b4ae5f1.jpg", { width: 1920 })}
             className="w-full h-full object-cover opacity-20 mix-blend-overlay"
             alt=""
           />

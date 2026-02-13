@@ -49,6 +49,23 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
 
         const payload = await getPayload({ config })
 
+        // Check if we already have a postcard with this publicId to update it
+        let existingId: string | number | null = null;
+        if (data.id && data.id !== 'editor-preview') {
+            // Check if it's the publicId or internal ID
+            const existing = await payload.find({
+                collection: 'postcards',
+                where: {
+                    publicId: {
+                        equals: data.id,
+                    },
+                },
+            })
+            if (existing.totalDocs > 0) {
+                existingId = existing.docs[0].id
+            }
+        }
+
         // Handle images
         let frontImageId: number | undefined;
         let frontImageURL: string | undefined;
@@ -141,64 +158,87 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
                 } else if (item.media) {
                     // Already have a media ID
                     processedMediaItems.push(item);
+                } else if (item.url && (item.url.startsWith('http') || item.url.startsWith('/'))) {
+                    // Already an URL (maybe from previous save)
+                    // We need to find the media by URL or just keep it as is if it's already an ID
+                    // In Payload 3, if it's a relationship, it should be an ID.
+                    // If we are updating, we might already have the media items as IDs.
+                    processedMediaItems.push(item);
                 }
             }
         }
 
-        // Generate a unique public ID
-        let publicId = generatePublicId()
-        let isUnique = false
-        let retries = 0
+        // Remove processed fields from spread data to avoid validation errors
+        const { frontImage: _, frontImageKey: __, frontImageMimeType: ___, frontImageFilesize: ____, mediaItems: _____, id, ...cleanData } = data;
 
-        // Ensure uniqueness
-        while (!isUnique && retries < 5) {
-            const existing = await payload.find({
+        if (existingId) {
+            // Update existing postcard
+            await payload.update({
                 collection: 'postcards',
-                where: {
-                    publicId: {
-                        equals: publicId,
+                id: existingId,
+                data: {
+                    ...cleanData,
+                    ...(frontImageId && { frontImage: frontImageId }),
+                    ...(frontImageURL && { frontImageURL: frontImageURL }),
+                    mediaItems: processedMediaItems,
+                    date: new Date().toISOString(),
+                    status: 'published',
+                },
+            })
+            return { success: true, publicId: data.id }
+        } else {
+            // Generate a unique public ID
+            let publicId = generatePublicId()
+            let isUnique = false
+            let retries = 0
+
+            // Ensure uniqueness
+            while (!isUnique && retries < 5) {
+                const existing = await payload.find({
+                    collection: 'postcards',
+                    where: {
+                        publicId: {
+                            equals: publicId,
+                        },
                     },
+                })
+
+                if (existing.totalDocs === 0) {
+                    isUnique = true
+                } else {
+                    publicId = generatePublicId()
+                    retries++
+                }
+            }
+
+            if (!isUnique) {
+                throw new Error('Could not generate a unique ID. Please try again.')
+            }
+
+            // Create the postcard record
+            const newPostcard = await payload.create({
+                collection: 'postcards',
+                data: {
+                    ...cleanData,
+                    frontImage: frontImageId,
+                    frontImageURL: frontImageURL,
+                    mediaItems: processedMediaItems,
+                    publicId,
+                    date: new Date().toISOString(),
+                    status: 'published', // Automatically publish when created from editor
                 },
             })
 
-            if (existing.totalDocs === 0) {
-                isUnique = true
-            } else {
-                publicId = generatePublicId()
-                retries++
+            // Simulate sending emails/SMS (Log to console)
+            if (data.recipients && Array.isArray(data.recipients)) {
+                console.log(`[SIMULATION] Sending postcard ${publicId} to:`, data.recipients)
+                // In a real app, you would integrate Resend/Twilio here
             }
+
+            return { success: true, publicId }
         }
-
-        if (!isUnique) {
-            throw new Error('Could not generate a unique ID. Please try again.')
-        }
-
-        // Remove processed fields from spread data to avoid validation errors
-        const { frontImage, frontImageKey, frontImageMimeType, frontImageFilesize, mediaItems, id, ...cleanData } = data;
-
-        // Create the postcard record
-        const newPostcard = await payload.create({
-            collection: 'postcards',
-            data: {
-                ...cleanData,
-                frontImage: frontImageId,
-                frontImageURL: frontImageURL,
-                mediaItems: processedMediaItems,
-                publicId,
-                date: new Date().toISOString(),
-                status: 'published', // Automatically publish when created from editor
-            },
-        })
-
-        // Simulate sending emails/SMS (Log to console)
-        if (data.recipients && Array.isArray(data.recipients)) {
-            console.log(`[SIMULATION] Sending postcard ${publicId} to:`, data.recipients)
-            // In a real app, you would integrate Resend/Twilio here
-        }
-
-        return { success: true, publicId }
     } catch (error) {
-        console.error('Error creating postcard:', error)
+        console.error('Error creating/updating postcard:', error)
         if (isHeifUploadError(error)) {
             return {
                 success: false,
