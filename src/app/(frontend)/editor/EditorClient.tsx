@@ -837,12 +837,12 @@ export default function EditorPage() {
                 {/* Upload Zone */}
                 <div
                   className={cn(
-                    'relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all hover:border-teal-400 hover:bg-teal-50/50 mb-8 group',
+                    'relative border-2 border-dashed rounded-2xl text-center cursor-pointer transition-all hover:border-teal-400 hover:bg-teal-50/50 mb-8 group',
                     frontImage && !uploadedFileName
-                      ? 'border-stone-200 bg-stone-50'
+                      ? 'border-stone-200 bg-stone-50 p-8'
                       : uploadedFileName
-                        ? 'border-teal-400 bg-teal-50/30'
-                        : 'border-stone-300'
+                        ? 'border-teal-400 bg-teal-50/30 p-4'
+                        : 'border-stone-300 p-8'
                   )}
                   onClick={() => fileInputRef.current?.click()}
                 >
@@ -854,12 +854,23 @@ export default function EditorPage() {
                     onChange={handleFileUpload}
                   />
                   {uploadedFileName ? (
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center">
-                        <Check size={28} className="text-teal-600" />
+                    <div className="flex items-center gap-4 justify-center text-left">
+                      {frontImage && (
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-stone-200 bg-stone-100 flex-shrink-0">
+                          <img
+                            src={frontImage}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center inline-flex mb-1">
+                          <Check size={16} className="text-teal-600" />
+                        </div>
+                        <p className="text-teal-700 font-semibold truncate">{uploadedFileName}</p>
+                        <p className="text-stone-400 text-xs">Cliquez pour changer</p>
                       </div>
-                      <p className="text-teal-700 font-semibold">{uploadedFileName}</p>
-                      <p className="text-stone-400 text-sm">Cliquez pour changer</p>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-3">
