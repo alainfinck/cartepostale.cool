@@ -487,7 +487,6 @@ const ALBUM_TIERS = {
 
 export default function EditorPage() {
   const [currentStep, setCurrentStep] = useState<StepId>('photo')
-  const [selectedCategory, setSelectedCategory] = useState<TemplateCategory | 'all'>('all')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isLocating, setIsLocating] = useState(false)
 
@@ -1018,6 +1017,7 @@ export default function EditorPage() {
       year: 'numeric',
     }),
     isPremium,
+    stickers,
     mediaItems,
     coords: coords || undefined,
   }
@@ -1037,10 +1037,7 @@ export default function EditorPage() {
       })()
       : currentPostcard
 
-  const filteredTemplates =
-    selectedCategory === 'all'
-      ? SAMPLE_TEMPLATES
-      : SAMPLE_TEMPLATES.filter((t) => t.category === selectedCategory)
+  const filteredTemplates = SAMPLE_TEMPLATES
   const selectedTemplate = selectedTemplateId
     ? SAMPLE_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? null
     : null
@@ -1311,24 +1308,6 @@ export default function EditorPage() {
                   <div className="flex-1 h-px bg-stone-200" />
                 </div>
 
-                {/* Category Filter */}
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {TEMPLATE_CATEGORIES.map((cat) => (
-                    <button
-                      key={cat.key}
-                      onClick={() => setSelectedCategory(cat.key)}
-                      className={cn(
-                        'px-4 py-1.5 rounded-full text-sm font-semibold transition-all',
-                        selectedCategory === cat.key
-                          ? 'bg-teal-500 text-white shadow-sm'
-                          : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
-                      )}
-                    >
-                      {cat.icon ? `${cat.icon} ${cat.label}` : cat.label}
-                    </button>
-                  ))}
-                </div>
-
                 {/* Modèles : raccourcis de base + "..." pour ouvrir le modal */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -1594,10 +1573,11 @@ export default function EditorPage() {
                           </button>
                           <button
                             type="button"
-                            className="flex h-10 px-3 items-center justify-center rounded-xl border-2 border-stone-200 bg-white text-stone-400 transition-colors hover:border-teal-400 hover:text-teal-600 gap-2 font-semibold text-xs"
+                            className="flex h-12 px-5 items-center justify-center rounded-xl border-2 border-stone-200 bg-white text-stone-500 transition-colors hover:border-teal-400 hover:text-teal-600 gap-2 font-semibold text-sm"
                             onClick={() => setShowStickerGallery(true)}
+                            aria-label="Ajouter des stickers"
                           >
-                            <StickerIcon size={16} />
+                            <StickerIcon size={20} />
                             Stickers
                           </button>
                         </div>
@@ -2529,22 +2509,6 @@ export default function EditorPage() {
                 <X size={20} />
               </button>
             </div>
-            <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-stone-100 bg-stone-50/50">
-              {TEMPLATE_CATEGORIES.map((cat) => (
-                <button
-                  key={cat.key}
-                  onClick={() => setSelectedCategory(cat.key)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-full text-sm font-semibold transition-all',
-                    selectedCategory === cat.key
-                      ? 'bg-teal-500 text-white shadow-sm'
-                      : 'bg-white border border-stone-200 text-stone-600 hover:border-teal-200 hover:text-teal-600'
-                  )}
-                >
-                  {cat.icon ? `${cat.icon} ${cat.label}` : cat.label}
-                </button>
-              ))}
-            </div>
             <div className="flex-1 overflow-y-auto p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {filteredTemplates.map((template) => {
@@ -2648,6 +2612,26 @@ export default function EditorPage() {
         onSelect={handleSelectUnsplashImage}
         location={location}
       />
+      {/* Modal galerie stickers */}
+      {showStickerGallery && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center sm:p-4"
+          onClick={() => setShowStickerGallery(false)}
+          aria-modal
+          role="dialog"
+          aria-label="Choisir un sticker"
+        >
+          <div
+            className="w-full max-w-lg max-h-[85vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <StickerGallery
+              onSelect={handleStickerSelect}
+              onClose={() => setShowStickerGallery(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

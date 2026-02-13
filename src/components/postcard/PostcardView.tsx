@@ -58,6 +58,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     const [frontImageSrc, setFrontImageSrc] = useState(postcard.frontImage || FALLBACK_FRONT_IMAGE);
     const [isFrontImageLoading, setIsFrontImageLoading] = useState(!!postcard.frontImage);
     const frontImageRef = useRef<HTMLImageElement>(null);
+    const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const url = postcard.frontImage || FALLBACK_FRONT_IMAGE;
@@ -458,30 +460,101 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 opacity: frontOpacity
                             }}
                         >
-                            <img
-                                ref={frontImageRef}
-                                src={getOptimizedImageUrl(frontImageSrc, { width: 1600 })}
-                                alt="Postcard Front"
-                                className={cn(
-                                    "w-full h-full object-cover pointer-events-none transition-opacity duration-700",
-                                    isFrontImageLoading ? "opacity-0" : "opacity-100"
-                                )}
-                                style={
-                                    postcard.frontImageCrop
-                                        ? {
-                                            objectPosition: `${postcard.frontImageCrop.x}% ${postcard.frontImageCrop.y}%`,
-                                            transform: `scale(${postcard.frontImageCrop.scale})`,
+                            <div className="absolute inset-0 z-0">
+                                {postcard.frontImageCrop && imgNaturalSize ? (
+                                    <div
+                                        className="absolute pointer-events-none"
+                                        style={(() => {
+                                            // Manual cover + user crop logic (matching EditorClient.tsx)
+                                            // The container aspect is fixed at 3/2 (same as POSTCARD_ASPECT)
+                                            const containerW = 100 // % of parent
+                                            const containerH = 100 // % of parent
+                                            const POSTCARD_ASPECT = 3 / 2
+
+                                            // We simulate the cover scale first
+                                            // In CSS %, we need to know the ratio.
+                                            // Let's use relative units.
+                                            const imgAspect = imgNaturalSize.w / imgNaturalSize.h
+
+                                            let w, h, left, top;
+
+                                            if (imgAspect > POSTCARD_ASPECT) {
+                                                // Image is wider than postcard (height-limited)
+                                                h = 100 * postcard.frontImageCrop.scale
+                                                w = h * imgAspect / POSTCARD_ASPECT
+                                            } else {
+                                                // Image is taller than postcard (width-limited)
+                                                w = 100 * postcard.frontImageCrop.scale
+                                                h = w / imgAspect * POSTCARD_ASPECT
+                                            }
+
+                                            left = 50 - (postcard.frontImageCrop.x / 100) * w
+                                            top = 50 - (postcard.frontImageCrop.y / 100) * h
+
+                                            return {
+                                                width: `${w}%`,
+                                                height: `${h}%`,
+                                                left: `${left}%`,
+                                                top: `${top}%`
+                                            }
+                                        })()}
+                                    >
+                                        <img
+                                            ref={frontImageRef}
+                                            src={getOptimizedImageUrl(frontImageSrc, { width: 1600 })}
+                                            alt="Postcard Front"
+                                            className={cn(
+                                                "block w-full h-full object-cover transition-opacity duration-700",
+                                                isFrontImageLoading ? "opacity-0" : "opacity-100"
+                                            )}
+                                            onLoad={(e) => {
+                                                setImgNaturalSize({
+                                                    w: e.currentTarget.naturalWidth,
+                                                    h: e.currentTarget.naturalHeight
+                                                })
+                                                setIsFrontImageLoading(false)
+                                            }}
+                                            onError={() => {
+                                                if (frontImageSrc !== FALLBACK_FRONT_IMAGE) {
+                                                    setFrontImageSrc(FALLBACK_FRONT_IMAGE);
+                                                }
+                                                setIsFrontImageLoading(false);
+                                            }}
+                                        />
+                                    </div>
+                                ) : (
+                                    <img
+                                        ref={frontImageRef}
+                                        src={getOptimizedImageUrl(frontImageSrc, { width: 1600 })}
+                                        alt="Postcard Front"
+                                        className={cn(
+                                            "w-full h-full object-cover pointer-events-none transition-opacity duration-700",
+                                            isFrontImageLoading ? "opacity-0" : "opacity-100"
+                                        )}
+                                        style={
+                                            postcard.frontImageCrop
+                                                ? {
+                                                    objectPosition: `${postcard.frontImageCrop.x}% ${postcard.frontImageCrop.y}%`,
+                                                    transform: `scale(${postcard.frontImageCrop.scale})`,
+                                                }
+                                                : undefined
                                         }
-                                        : undefined
-                                }
-                                onLoad={() => setIsFrontImageLoading(false)}
-                                onError={() => {
-                                    if (frontImageSrc !== FALLBACK_FRONT_IMAGE) {
-                                        setFrontImageSrc(FALLBACK_FRONT_IMAGE);
-                                    }
-                                    setIsFrontImageLoading(false);
-                                }}
-                            />
+                                        onLoad={(e) => {
+                                            setImgNaturalSize({
+                                                w: e.currentTarget.naturalWidth,
+                                                h: e.currentTarget.naturalHeight
+                                            })
+                                            setIsFrontImageLoading(false)
+                                        }}
+                                        onError={() => {
+                                            if (frontImageSrc !== FALLBACK_FRONT_IMAGE) {
+                                                setFrontImageSrc(FALLBACK_FRONT_IMAGE);
+                                            }
+                                            setIsFrontImageLoading(false);
+                                        }}
+                                    />
+                                )}
+                            </div>
 
                             {/* Stickers Rendering */}
                             <div className="absolute inset-0 pointer-events-none z-10">
