@@ -241,7 +241,7 @@ export default function Home() {
             <div className="mt-12 flex flex-col items-center gap-8 max-w-xl text-center">
               <div className="h-px w-24 bg-stone-200" />
               <p className="text-stone-500 italic">
-                "Une expérience immersive : touchez la carte pour découvrir son verso et les détails de votre message."
+                &quot;Une expérience immersive : touchez la carte pour découvrir son verso et les détails de votre message.&quot;
               </p>
               <Link href="/editor">
                 <Button className="bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-95 text-white rounded-full font-bold shadow-lg shadow-pink-500/25 flex items-center gap-3 px-10 py-7 text-lg transition-all duration-300 h-auto border-0">
@@ -311,7 +311,7 @@ export default function Home() {
                 <Share2 className="w-8 h-8 text-pink-600" />
               </div>
               <h3 className="text-xl font-bold text-stone-800 mb-3">Vos proches réagissent !</h3>
-              <p className="text-stone-600 text-base leading-relaxed">Plus qu'une simple lecture : ils peuvent liker, commenter et signer votre livre d'or. Interactivité garantie.</p>
+              <p className="text-stone-600 text-base leading-relaxed">Plus qu&apos;une simple lecture : ils peuvent liker, commenter et signer votre livre d&apos;or. Interactivité garantie.</p>
             </div>
 
             <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white border border-stone-100 shadow-lg shadow-stone-200/30 hover:shadow-xl hover:shadow-purple-200/20 hover:border-purple-200/60 transition-all duration-300 hover:-translate-y-1">

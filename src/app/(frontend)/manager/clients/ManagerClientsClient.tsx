@@ -235,7 +235,7 @@ export function ManagerClientsClient({ initialData }: { initialData: UsersResult
           <DialogHeader>
             <DialogTitle>Supprimer le client</DialogTitle>
             <DialogDescription>
-              Cette action est irréversible. L'utilisateur et toutes ses données seront définitivement supprimés.
+              Cette action est irréversible. L&apos;utilisateur et toutes ses données seront définitivement supprimés.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0 mt-4">

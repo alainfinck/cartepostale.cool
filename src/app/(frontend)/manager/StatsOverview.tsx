@@ -28,13 +28,13 @@ export function StatsOverview({ stats, viewStats }: { stats: Stats; viewStats?: 
             {/* Title & Date */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-1">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-stone-800">Vue d'ensemble</h2>
+                    <h2 className="text-2xl font-bold tracking-tight text-stone-800">Vue d&apos;ensemble</h2>
                     <p className="text-stone-500 text-sm">Statistiques globales de votre plateforme.</p>
                 </div>
                 <div className="flex items-center gap-2 bg-white/50 backdrop-blur-sm border border-border/50 px-3 py-1.5 rounded-lg shadow-sm">
                     <Calendar size={14} className="text-stone-400" />
                     <span className="text-xs font-semibold text-stone-600 uppercase tracking-tight">
-                        Aujourd'hui, {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+                        Aujourd&apos;hui, {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
                     </span>
                 </div>
             </div>

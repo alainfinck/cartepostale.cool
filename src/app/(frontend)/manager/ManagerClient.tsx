@@ -148,10 +148,10 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
 
     const fetchPostcards = useEspaceClientActions
         ? (async (filters?: { status?: StatusFilter; search?: string }) =>
-              getMyPostcards({
-                  status: filters?.status !== 'all' ? filters?.status : undefined,
-                  search: filters?.search,
-              }))
+            getMyPostcards({
+                status: filters?.status !== 'all' ? filters?.status : undefined,
+                search: filters?.search,
+            }))
         : (async (filters: any) => getAllPostcards(filters))
     const updatePostcardFn = useEspaceClientActions ? updateMyPostcard : updatePostcard
     const updatePostcardStatusFn = useEspaceClientActions ? updateMyPostcardStatus : updatePostcardStatus
@@ -496,7 +496,7 @@ function GridCard({ postcard, onSelect, onEdit, onUpdateStatus, onDelete }: {
                     </div>
                 )}
                 <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <p className="text-white text-xs line-clamp-2 italic">"{postcard.message}"</p>
+                    <p className="text-white text-xs line-clamp-2 italic">&quot;{postcard.message}&quot;</p>
                 </div>
             </div>
 
@@ -755,7 +755,7 @@ function DetailsSheet({ postcard, viewStats, isOpen, onClose, onEdit, onUpdateSt
                                     <div className="absolute top-0 right-0 p-2 opacity-5 pointer-events-none">
                                         <FileText size={48} />
                                     </div>
-                                    "{postcard.message}"
+                                    &quot;{postcard.message}&quot;
                                 </div>
                             </div>
                         )}

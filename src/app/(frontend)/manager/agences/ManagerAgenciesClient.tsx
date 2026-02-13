@@ -226,7 +226,7 @@ export function ManagerAgenciesClient({ initialAgencies }: { initialAgencies: Ag
             <Dialog open={deleteConfirm !== null} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
                 <DialogContent className="sm:max-w-sm" onClick={(e) => e.stopPropagation()}>
                     <DialogHeader>
-                        <DialogTitle>Supprimer l'agence</DialogTitle>
+                        <DialogTitle>Supprimer l&apos;agence</DialogTitle>
                         <DialogDescription>
                             Cette action est irréversible. Toutes les données liées à cette agence seront définitivement supprimées.
                         </DialogDescription>
@@ -312,7 +312,7 @@ function AgencySheet({ agency, isOpen, onClose, onRefresh }: {
                             <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">Informations Agence</h4>
 
                             <div className="space-y-2">
-                                <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">Nom de l'agence</label>
+                                <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">Nom de l&apos;agence</label>
                                 <div className="relative">
                                     <Building2 className="absolute left-3 top-3 h-4 w-4 text-stone-300" />
                                     <Input name="name" required defaultValue={agency?.name || ''} placeholder="Ex: Office de Tourisme de Paris" className="pl-10 bg-background/50 border-border/50" />
