@@ -72,18 +72,33 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
         let frontImageURL: string | undefined;
 
         if (data.frontImageKey) {
-            // Image already uploaded to R2 via presigned URL; create media doc with key only
-            const media = await payload.create({
+            // Check if media already exists with this filename
+            const existingMedia = await payload.find({
                 collection: 'media',
-                data: {
-                    alt: `Front Image for postcard ${data.recipientName || 'unnamed'}`,
-                    filename: data.frontImageKey,
-                    mimeType: data.frontImageMimeType || 'image/jpeg',
-                    filesize: data.frontImageFilesize ?? 0,
+                where: {
+                    filename: {
+                        equals: data.frontImageKey,
+                    },
                 },
             })
-            frontImageId = media.id as number
-            const mediaDoc = media as { url?: string | null; filename?: string | null }
+
+            if (existingMedia.totalDocs > 0) {
+                frontImageId = existingMedia.docs[0].id as number
+            } else {
+                // Image already uploaded to R2 via presigned URL; create media doc with key only
+                const media = await payload.create({
+                    collection: 'media',
+                    data: {
+                        alt: `Front Image for postcard ${data.recipientName || 'unnamed'}`,
+                        filename: data.frontImageKey,
+                        mimeType: data.frontImageMimeType || 'image/jpeg',
+                        filesize: data.frontImageFilesize ?? 0,
+                    },
+                })
+                frontImageId = media.id as number
+            }
+            // Temporarily cast to any to access dynamic properties of created/found media doc
+            const mediaDoc = (frontImageId ? await payload.findByID({ collection: 'media', id: frontImageId }) : {}) as { url?: string | null; filename?: string | null }
             frontImageURL = mediaDoc.url ?? (mediaDoc.filename ? `/media/${encodeURIComponent(mediaDoc.filename)}` : undefined)
         } else if (data.frontImage) {
             if (data.frontImage.startsWith('data:image')) {
@@ -120,18 +135,34 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
             for (let i = 0; i < data.mediaItems.length; i++) {
                 const item = data.mediaItems[i];
                 if (item.key) {
-                    // Image already uploaded to R2 via presigned URL; create media doc with key only
-                    const media = await payload.create({
+                    // Check if media already exists with this filename
+                    const existingMedia = await payload.find({
                         collection: 'media',
-                        data: {
-                            alt: `Album item for postcard`,
-                            filename: item.key,
-                            mimeType: item.mimeType || 'image/jpeg',
-                            filesize: item.filesize ?? 0,
+                        where: {
+                            filename: {
+                                equals: item.key,
+                            },
                         },
                     })
+
+                    let mediaId: string | number;
+                    if (existingMedia.totalDocs > 0) {
+                        mediaId = existingMedia.docs[0].id
+                    } else {
+                        // Image already uploaded to R2 via presigned URL; create media doc with key only
+                        const media = await payload.create({
+                            collection: 'media',
+                            data: {
+                                alt: `Album item for postcard`,
+                                filename: item.key,
+                                mimeType: item.mimeType || 'image/jpeg',
+                                filesize: item.filesize ?? 0,
+                            },
+                        })
+                        mediaId = media.id
+                    }
                     processedMediaItems.push({
-                        media: media.id,
+                        media: mediaId,
                         type: item.type || 'image'
                     });
                 } else if (item.url && item.url.startsWith('data:')) {

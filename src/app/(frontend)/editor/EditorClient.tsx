@@ -1845,7 +1845,7 @@ export default function EditorPage() {
                     </label>
                     <div className="relative">
                       <Input
-                        placeholder="Ex: Paris, France"
+                        placeholder="Tapez un lieu (ville, pays, région…)"
                         value={location}
                         onChange={(e) => {
                           const val = e.target.value
@@ -2122,6 +2122,23 @@ export default function EditorPage() {
                       </div>
                     </div>
                   </section>
+
+                  {/* Bouton Continuer en bas à droite (étape rédaction) */}
+                  <div className="flex justify-end pt-4">
+                    <Button
+                      onClick={goNext}
+                      disabled={!canGoNext()}
+                      className={cn(
+                        'rounded-full font-bold flex items-center gap-2 px-6 py-5 h-auto transition-all',
+                        canGoNext()
+                          ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-md shadow-teal-200 hover:-translate-y-0.5'
+                          : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                      )}
+                    >
+                      Continuer
+                      <ChevronRight size={18} />
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
