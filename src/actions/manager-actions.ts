@@ -725,10 +725,12 @@ export async function getMediaForGallery(params?: { limit?: number; search?: str
     }
 }
 
+const cleanEnv = (v?: string) => v?.trim().replace(/^['"]|['"]$/g, '').split('=').pop()?.trim() || ''
+
 const R2_BUCKET = process.env.S3_BUCKET
 const R2_ENDPOINT = process.env.S3_ENDPOINT
-const R2_ACCESS_KEY = process.env.S3_ACCESS_KEY_ID
-const R2_SECRET_KEY = process.env.S3_SECRET_ACCESS_KEY
+const R2_ACCESS_KEY = cleanEnv(process.env.S3_ACCESS_KEY_ID)
+const R2_SECRET_KEY = cleanEnv(process.env.S3_SECRET_ACCESS_KEY)
 const R2_PUBLIC_BASE_URL = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')
 
 function getR2Client(): S3Client | null {
@@ -736,7 +738,7 @@ function getR2Client(): S3Client | null {
     const isR2 = R2_ENDPOINT.includes('r2.cloudflarestorage.com')
     return new S3Client({
         credentials: { accessKeyId: R2_ACCESS_KEY, secretAccessKey: R2_SECRET_KEY },
-        region: process.env.S3_REGION || (isR2 ? 'auto' : 'us-east-1'),
+        region: process.env.S3_REGION || 'us-east-1',
         endpoint: R2_ENDPOINT,
         forcePathStyle: true,
     })

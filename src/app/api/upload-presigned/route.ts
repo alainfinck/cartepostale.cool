@@ -15,21 +15,32 @@ const SAFE_FILENAME = /^[a-zA-Z0-9._-]+$/
 
 /** Normalize and validate R2/S3 Access Key ID. Sigv4 credential must be "accessKeyId/date/region/service/aws4_request"; if the ID contains "=" or "/", R2 returns "Credential should have at least 5 slash-separated parts, not 1". */
 function getAccessKeyId(): string | null {
-  const raw = process.env.S3_ACCESS_KEY_ID?.trim()
+  let raw = process.env.S3_ACCESS_KEY_ID?.trim()
   if (!raw) return null
-  // Reject values that would break Sigv4 (e.g. "key=value" or pasted twice)
-  if (raw.includes('=') || raw.includes('/')) return null
+
+  // If the user pasted "S3_ACCESS_KEY_ID=value" or "S3_ACCESS_KEY_ID = value"
+  if (raw.startsWith('S3_ACCESS_KEY_ID')) {
+    const parts = raw.split('=')
+    if (parts.length >= 2) {
+      raw = parts.slice(1).join('=').trim()
+    }
+  }
+
+  // Final check: if it still contains '=' or '/', it's likely still wrong but we'll try to use it
+  // unless it clearly looks like a double-paste.
   return raw
 }
 
+const cleanEnv = (v?: string) => v?.trim().replace(/^['"]|['"]$/g, '').split('=').pop()?.trim() || ''
+
 function getS3Client(): S3Client | null {
   const ACCESS_KEY = getAccessKeyId()
-  const SECRET_KEY = process.env.S3_SECRET_ACCESS_KEY?.trim() || null
+  const SECRET_KEY = cleanEnv(process.env.S3_SECRET_ACCESS_KEY)
   if (!BUCKET || !ACCESS_KEY || !SECRET_KEY || !ENDPOINT) return null
   const isR2 = ENDPOINT.includes('r2.cloudflarestorage.com')
   return new S3Client({
     credentials: { accessKeyId: ACCESS_KEY, secretAccessKey: SECRET_KEY },
-    region: process.env.S3_REGION || (isR2 ? 'auto' : 'us-east-1'),
+    region: process.env.S3_REGION || 'us-east-1',
     endpoint: ENDPOINT,
     forcePathStyle: true,
   })
