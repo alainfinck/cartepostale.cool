@@ -15,16 +15,19 @@ const pricingPlans = [
         name: 'Gratuit',
         price: '0€',
         period: '',
-        description: 'Carte gratuite mais limitée pour découvrir le service.',
+        description: 'Carte 100% virtuelle pour découvrir le service.',
         features: [
             '1 carte offerte',
             'Version numérique uniquement',
+            'Optimisation Mobile & Cloud',
+            'Images Auto-Optimisées (WebP)',
             'Album photo (3 photos max)',
+            'Filigrane discret'
         ],
         notIncluded: [
-            'Impression et expédition',
+            'Haute résolution (HD)',
             'Vidéo dans l\'album',
-            'Suivi de l\'envoi',
+            'Zéro publicité',
         ],
         buttonText: 'Essayer gratuitement',
         buttonVariant: 'outline',
@@ -34,47 +37,49 @@ const pricingPlans = [
     },
     {
         name: 'Occasionnel',
-        price: '2.99€',
+        price: '1.99€',
         period: '/ carte',
-        description: 'Parfait pour envoyer une carte de temps en temps.',
+        description: 'Pour une carte premium sans publicité.',
         features: [
+            'Vitesse Éclair (AVIF/WebP)',
             'Album photo (10 photos max + 1 vidéo)',
-            'Impression haute qualité',
-            'Expédition monde incluse',
+            'Haute résolution (HD)',
+            'Expédition virtuelle instantanée',
             'Personnalisation complète',
-            'Suivi de l\'envoi',
+            'Livre d\'or interactif',
+            'Zéro publicité'
         ],
         notIncluded: [
-            'Tarifs réduits',
-            'Envois en masse',
+            'Tarifs dégressifs',
+            'Envois groupés',
             'Support prioritaire'
         ],
         buttonText: 'Envoyer une carte',
         buttonVariant: 'outline',
         href: '/editor',
-        popular: false,
+        popular: true,
         icon: <Globe className="w-6 h-6 text-stone-500" />
     },
     {
         name: 'Voyageur',
         price: '9.99€',
         period: '/ mois',
-        description: 'Pour les amoureux du voyage et des souvenirs.',
+        description: 'Pour les amoureux du partage et des souvenirs.',
         features: [
-            '5 cartes incluses / mois',
-            'Carte suppl. à 1.99€',
+            '10 cartes incluses / mois',
+            'Carte suppl. à 0.99€',
             'Tout ce qui est dans Occasionnel',
-            'Carnet d\'adresses illimité',
-            'Historique complet',
+            'Musique d\'ambiance premium',
+            'Historique illimité',
             'Badge "Voyageur" sur votre profil'
         ],
         notIncluded: [
-            'Envoi API',
+            'Envoi API / Pro',
         ],
-        buttonText: 'Commencer l\'essai gratuit',
+        buttonText: 'Commencer l\'abonnement',
         buttonVariant: 'default',
         href: '/register?plan=traveler',
-        popular: true,
+        popular: false,
         icon: <Star className="w-6 h-6 text-orange-500" />
     },
     {
@@ -145,8 +150,8 @@ export default function PricingPage() {
                                 <Link href={plan.href} className="block mb-8">
                                     <Button
                                         className={`w-full py-6 text-lg font-bold rounded-xl transition-all ${plan.popular
-                                                ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-orange-500/30'
-                                                : 'bg-white hover:bg-stone-50 text-stone-800 border-2 border-stone-200 hover:border-stone-300'
+                                            ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-orange-500/30'
+                                            : 'bg-white hover:bg-stone-50 text-stone-800 border-2 border-stone-200 hover:border-stone-300'
                                             }`}
                                     >
                                         {plan.buttonText}

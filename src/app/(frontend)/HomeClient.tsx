@@ -200,7 +200,7 @@ export default function Home() {
               L&apos;émotion d&apos;une vraie carte, la magie du numérique
             </h2>
             <p className="text-stone-500 text-lg max-w-2xl mx-auto">
-              Vos photos sublimes au recto, votre message manuscrit au verso. Une véritable carte postale, sans les délais de la poste.
+              Vos photos sublimes au recto, votre message manuscrit au verso. Une véritable carte postale 100% virtuelle, sans les délais de la poste.
             </p>
           </div>
 
@@ -395,33 +395,33 @@ export default function Home() {
       <section className="bg-[#fefaf4] border-t border-stone-100 py-20">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <div className="inline-flex items-center justify-center gap-2 px-3 py-1.5 bg-pink-50 text-pink-600 text-xs font-bold uppercase tracking-[0.2em] rounded-full shadow-sm mb-4">
-            Nos Tarifs
+            Nos Offres
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-4">
-            Simple et transparent
+            Simple et 100% Virtuel
           </h2>
           <p className="text-stone-500 text-lg">
-            Choisissez l&apos;option qui vous convient le mieux pour envoyer vos souvenirs.
+            Envoyez vos souvenirs instantanément, sans attendre le facteur.
           </p>
         </div>
 
-        <div className="max-w-5xl mx-auto px-4 mt-12 grid md:grid-cols-2 gap-8">
+        <div className="max-w-5xl mx-auto px-4 mt-12 grid md:grid-cols-2 gap-8 items-start">
           {/* Carte Gratuite */}
           <div className="relative bg-white border border-stone-100 rounded-[32px] shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
             <div className="bg-stone-100 text-stone-600 text-center px-10 py-7">
-              <div className="text-sm uppercase tracking-[0.4em] font-semibold opacity-90">Option Découverte</div>
-              <div className="mt-4 text-5xl font-bold leading-tight">0€</div>
+              <div className="text-sm uppercase tracking-[0.4em] font-semibold opacity-90">Offre Découverte</div>
+              <div className="mt-4 text-5xl font-bold leading-tight">Gratuit</div>
               <p className="text-lg opacity-90 mt-2">la carte limitée</p>
             </div>
             <div className="px-10 py-8 space-y-4">
               {[
-                "Création assistée",
-                "Templates standard",
+                "Carte 100% Virtuelle",
+                "Optimisation Mobile & Cloud",
+                "Images Auto-Optimisées (WebP)",
+                "Templates standard inclus",
                 "Texte personnalisable",
                 "Partage par lien unique",
-                "Galerie publique",
-                "Affichage basse résolution",
-                "Filigrane discret",
+                "Filigrane CartePostale.cool",
               ].map((item) => (
                 <div key={item} className="flex items-center gap-3 text-stone-500 text-base font-medium">
                   <Check className="text-stone-400" size={18} />
@@ -433,32 +433,32 @@ export default function Home() {
               <div className="max-w-xs mx-auto">
                 <Link href="/editor" className="w-full">
                   <Button variant="outline" className="w-full border-2 border-stone-200 text-stone-600 rounded-full font-bold text-lg py-5 hover:bg-stone-50">
-                    Essayer gratuitement
+                    Essayer maintenant
                   </Button>
                 </Link>
               </div>
             </div>
           </div>
 
-          {/* Carte Premium */}
+          {/* Carte Occasionnel */}
           <div className="relative bg-white border border-pink-100 rounded-[32px] shadow-[0_20px_60px_rgba(240,156,194,0.25)] overflow-hidden transform md:scale-105 z-10">
             <div className="absolute top-0 right-0 bg-pink-500 text-white text-[10px] uppercase tracking-widest font-black px-4 py-1.5 rounded-bl-2xl">
               Populaire
             </div>
             <div className="bg-gradient-to-r from-pink-500 to-orange-400 text-white text-center px-10 py-7">
-              <div className="text-sm uppercase tracking-[0.4em] font-semibold opacity-90">Carte Unique</div>
+              <div className="text-sm uppercase tracking-[0.4em] font-semibold opacity-90">Plan Occasionnel</div>
               <div className="mt-4 text-5xl font-bold leading-tight">1,99€</div>
-              <p className="text-lg opacity-90 mt-2">sans publicité</p>
+              <p className="text-lg opacity-90 mt-2">par carte premium</p>
             </div>
             <div className="px-10 py-8 space-y-4">
               {[
-                "Upload de vos propres images",
-                "Toutes les fonctionnalités Premium",
-                "Album photos & Vidéos",
-                "Haute résolution (PNG/PDF)",
-                "Sans filigrane",
+                "Vitesse Éclair (AVIF/WebP)",
+                "Zéro Publicité / Sans Filigrane",
+                "Upload de vos photos HD",
+                "Album photos complet & Vidéo",
+                "Musique d'ambiance au choix",
                 "Livre d'or interactif",
-                "Lien privé & sécurisé",
+                "Lien privé & protégé",
               ].map((item) => (
                 <div key={item} className="flex items-center gap-3 text-stone-600 text-base font-semibold">
                   <Check className="text-emerald-500" size={18} />
@@ -476,6 +476,15 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="mt-16 text-center">
+          <p className="text-stone-400 text-sm mb-6">Besoin de plus ? Packs Voyageurs, Offres Pro et plus encore.</p>
+          <Link href="/pricing">
+            <Button variant="ghost" className="text-stone-600 font-bold hover:text-pink-600 hover:bg-pink-50 rounded-full px-8 py-4 h-auto border border-stone-200">
+              Voir tous les tarifs et options →
+            </Button>
+          </Link>
         </div>
       </section>
 
