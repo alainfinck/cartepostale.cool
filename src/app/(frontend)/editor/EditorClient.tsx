@@ -56,6 +56,7 @@ import {
   getOptimizedImageUrl,
   JPEG_QUALITY
 } from '@/lib/image-processing'
+import { UnsplashSearchModal } from '@/components/UnsplashSearchModal'
 
 const POSTCARD_ASPECT = 3 / 2
 
@@ -542,6 +543,7 @@ export default function EditorPage() {
   const [isSendingEmail, setIsSendingEmail] = useState(false)
   const [isEmailSent, setIsEmailSent] = useState(false)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [showUnsplashModal, setShowUnsplashModal] = useState(false)
   const [selectedEmojiCategory, setSelectedEmojiCategory] = useState<EmojiCategoryKey>(EMOJI_CATEGORIES[0].key)
   const emojiPickerRef = useRef<HTMLDivElement>(null)
   const [currentUser, setCurrentUser] = useState<{ id: number; email?: string; name?: string | null } | null>(null)
@@ -780,6 +782,30 @@ export default function EditorPage() {
       setFrontImage(template.imageUrl)
     }
   }, [])
+
+  const handleSelectUnsplashImage = useCallback(async (imageUrl: string) => {
+    setShowUnsplashModal(false)
+    setUploadedFileName('Photo Unsplash')
+    setFrontImageKey(null)
+    setFrontImageMimeType(null)
+    setFrontImageFilesize(null)
+    setFrontImageCrop({ scale: 1, x: 50, y: 50 })
+
+    try {
+      const resized = await urlToResizedDataUrl(imageUrl)
+      setFrontImage(resized)
+    } catch (err) {
+      console.error('Error processing Unsplash image:', err)
+      setFrontImage(imageUrl)
+    }
+
+    void confetti({
+      particleCount: 40,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#14b8a6', '#f59e0b', '#ef4444'],
+    })
+  }, [urlToResizedDataUrl])
 
   const handleCropImgLoad = useCallback(() => {
     const img = cropImgRef.current
@@ -1176,16 +1202,39 @@ export default function EditorPage() {
                   Importez votre plus belle photo ou choisissez parmi nos modèles.
                 </p>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                  <Button
+                    onClick={() => fileInputRef.current?.click()}
+                    variant="outline"
+                    className="h-16 rounded-2xl border-2 border-stone-200 hover:border-teal-400 hover:bg-teal-50/50 flex items-center justify-center gap-3 text-stone-700 font-bold transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-stone-100 group-hover:bg-teal-100 flex items-center justify-center transition-colors">
+                      <Upload size={20} className="text-stone-400 group-hover:text-teal-600 transition-colors" />
+                    </div>
+                    <span>Importer ma photo</span>
+                  </Button>
+                  <Button
+                    onClick={() => setShowUnsplashModal(true)}
+                    variant="outline"
+                    className="h-16 rounded-2xl border-2 border-stone-200 hover:border-teal-400 hover:bg-teal-50/50 flex items-center justify-center gap-3 text-stone-700 font-bold transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-stone-100 group-hover:bg-teal-100 flex items-center justify-center transition-colors">
+                      <ImageIcon size={20} className="text-stone-400 group-hover:text-teal-600 transition-colors" />
+                    </div>
+                    <span>Chercher sur Unsplash</span>
+                  </Button>
+                </div>
+
                 {/* Upload Zone */}
                 <div
                   className={cn(
-                    'relative border-2 border-dashed rounded-2xl text-center cursor-pointer transition-all hover:border-teal-400 hover:bg-teal-50/50 mb-8 group',
+                    'relative border-2 border-dashed rounded-2xl text-center cursor-pointer transition-all hover:border-teal-400 hover:bg-teal-50/50 mb-8 group overflow-hidden',
                     isDropActive
                       ? 'border-teal-400 bg-teal-50/40 p-8'
                       : uploadedFileName
-                        ? 'border-teal-400 bg-teal-50/30 p-4'
+                        ? 'border-teal-400 bg-teal-50/10 p-4'
                         : frontImage && !uploadedFileName
-                          ? 'border-stone-200 bg-stone-50 p-8'
+                          ? 'border-stone-200 bg-shadow-sm p-8'
                           : 'border-stone-300 p-8'
                   )}
                   onClick={() => fileInputRef.current?.click()}
@@ -1204,7 +1253,7 @@ export default function EditorPage() {
                   {uploadedFileName ? (
                     <div className="flex items-center gap-4 justify-center text-left">
                       {frontImage && (
-                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-stone-200 bg-stone-100 flex-shrink-0">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-teal-200 bg-stone-100 flex-shrink-0 shadow-sm transition-transform hover:scale-105">
                           <img
                             src={frontImage}
                             alt=""
@@ -1213,11 +1262,14 @@ export default function EditorPage() {
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center inline-flex mb-1">
-                          <Check size={16} className="text-teal-600" />
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-6 h-6 rounded-full bg-teal-500 flex items-center justify-center">
+                            <Check size={14} className="text-white" />
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-teal-600">Image sélectionnée</span>
                         </div>
-                        <p className="text-teal-700 font-semibold truncate">{uploadedFileName}</p>
-                        <p className="text-stone-400 text-xs">Cliquez pour changer</p>
+                        <p className="text-stone-800 font-bold truncate">{uploadedFileName}</p>
+                        <p className="text-stone-400 text-[10px] font-bold uppercase tracking-wider mt-1 group-hover:text-teal-500 transition-colors">Cliquez pour changer</p>
                       </div>
                     </div>
                   ) : (
@@ -1950,51 +2002,51 @@ export default function EditorPage() {
                     <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
                       <Stamp size={16} className="text-teal-500" /> Style du Timbre
                     </label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {(
-                          [
-                            { value: 'classic', label: 'Classique' },
-                            { value: 'modern', label: 'Moderne' },
-                            { value: 'airmail', label: 'Par Avion' },
-                          ] as const
-                        ).map((style) => (
-                          <button
-                            key={style.value}
-                            onClick={() => setStampStyle(style.value)}
-                            className={cn(
-                              'py-3 px-2 rounded-xl text-xs font-bold capitalize transition-all border-2',
-                              stampStyle === style.value
-                                ? 'border-teal-500 bg-teal-50 text-teal-800 shadow-sm'
-                                : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-300 hover:bg-white'
-                            )}
-                          >
-                            {style.label}
-                          </button>
-                        ))}
+                    <div className="grid grid-cols-3 gap-2">
+                      {(
+                        [
+                          { value: 'classic', label: 'Classique' },
+                          { value: 'modern', label: 'Moderne' },
+                          { value: 'airmail', label: 'Par Avion' },
+                        ] as const
+                      ).map((style) => (
+                        <button
+                          key={style.value}
+                          onClick={() => setStampStyle(style.value)}
+                          className={cn(
+                            'py-3 px-2 rounded-xl text-xs font-bold capitalize transition-all border-2',
+                            stampStyle === style.value
+                              ? 'border-teal-500 bg-teal-50 text-teal-800 shadow-sm'
+                              : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-300 hover:bg-white'
+                          )}
+                        >
+                          {style.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 mt-3">
+                      <div>
+                        <label className="block text-xs font-medium text-stone-500 mb-1">Texte du timbre</label>
+                        <input
+                          type="text"
+                          value={stampLabel}
+                          onChange={(e) => setStampLabel(e.target.value)}
+                          placeholder="ex: Digital Poste"
+                          className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-teal-500"
+                        />
                       </div>
-                      <div className="grid grid-cols-2 gap-3 mt-3">
-                        <div>
-                          <label className="block text-xs font-medium text-stone-500 mb-1">Texte du timbre</label>
-                          <input
-                            type="text"
-                            value={stampLabel}
-                            onChange={(e) => setStampLabel(e.target.value)}
-                            placeholder="ex: Digital Poste"
-                            className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-teal-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-stone-500 mb-1">Année</label>
-                          <input
-                            type="text"
-                            value={stampYear}
-                            onChange={(e) => setStampYear(e.target.value)}
-                            placeholder="ex: 2024"
-                            maxLength={4}
-                            className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-teal-500"
-                          />
-                        </div>
+                      <div>
+                        <label className="block text-xs font-medium text-stone-500 mb-1">Année</label>
+                        <input
+                          type="text"
+                          value={stampYear}
+                          onChange={(e) => setStampYear(e.target.value)}
+                          placeholder="ex: 2024"
+                          maxLength={4}
+                          className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-teal-500"
+                        />
                       </div>
+                    </div>
                   </section>
 
                   <div className="h-px bg-stone-100" />
@@ -2580,6 +2632,12 @@ export default function EditorPage() {
           </div>
         )
       }
-    </div >
+      <UnsplashSearchModal
+        isOpen={showUnsplashModal}
+        onClose={() => setShowUnsplashModal(false)}
+        onSelect={handleSelectUnsplashImage}
+        location={location}
+      />
+    </div>
   )
 }
