@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { getManagerStats } from '@/actions/manager-actions'
 import { getGlobalViewStats } from '@/actions/postcard-view-stats'
-import { StatsOverview } from '../StatsOverview'
+import { StatsOverview } from './StatsOverview'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Mail, Users, Building2 } from 'lucide-react'
