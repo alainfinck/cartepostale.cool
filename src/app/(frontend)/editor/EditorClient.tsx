@@ -1202,29 +1202,6 @@ export default function EditorPage() {
                   Importez votre plus belle photo ou choisissez parmi nos modèles.
                 </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                  <Button
-                    onClick={() => fileInputRef.current?.click()}
-                    variant="outline"
-                    className="h-16 rounded-2xl border-2 border-stone-200 hover:border-teal-400 hover:bg-teal-50/50 flex items-center justify-center gap-3 text-stone-700 font-bold transition-all group"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-stone-100 group-hover:bg-teal-100 flex items-center justify-center transition-colors">
-                      <Upload size={20} className="text-stone-400 group-hover:text-teal-600 transition-colors" />
-                    </div>
-                    <span>Importer ma photo</span>
-                  </Button>
-                  <Button
-                    onClick={() => setShowUnsplashModal(true)}
-                    variant="outline"
-                    className="h-16 rounded-2xl border-2 border-stone-200 hover:border-teal-400 hover:bg-teal-50/50 flex items-center justify-center gap-3 text-stone-700 font-bold transition-all group"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-stone-100 group-hover:bg-teal-100 flex items-center justify-center transition-colors">
-                      <ImageIcon size={20} className="text-stone-400 group-hover:text-teal-600 transition-colors" />
-                    </div>
-                    <span>Chercher sur Unsplash</span>
-                  </Button>
-                </div>
-
                 {/* Upload Zone */}
                 <div
                   className={cn(
@@ -1390,6 +1367,15 @@ export default function EditorPage() {
                       </div>
                     </div>
                   )}
+                  <Button
+                    type="button"
+                    onClick={() => setShowUnsplashModal(true)}
+                    variant="outline"
+                    className="w-full h-12 rounded-2xl border-2 border-stone-200 hover:border-teal-400 hover:bg-teal-50/50 flex items-center justify-center gap-3 text-stone-700 font-semibold transition-all group"
+                  >
+                    <ImageIcon size={20} className="text-stone-400 group-hover:text-teal-600 transition-colors" />
+                    <span>Chercher sur Unsplash</span>
+                  </Button>
                 </div>
 
                 {/* Recadrer : icône cliquable → zone glisser + molette */}
