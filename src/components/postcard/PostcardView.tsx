@@ -378,9 +378,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             <div className="flex flex-col items-center gap-6 select-none">
                 <motion.div
                     className={cn(
-                        "perspective-1000 cursor-grab active:cursor-grabbing group touch-none",
+                        "perspective-1000 cursor-pointer active:cursor-grabbing group touch-none",
                         !width && !height && (isLarge
-                            ? "w-[95vw] h-[65vw] max-w-[480px] max-h-[320px] sm:w-[600px] sm:h-[400px] md:w-[840px] md:h-[560px] lg:w-[1050px] lg:h-[700px] sm:max-w-none sm:max-h-none portrait:max-h-none"
+                            ? "w-[95vw] h-[65vw] max-w-[500px] max-h-[333px] sm:w-[660px] sm:h-[440px] md:w-[900px] md:h-[600px] lg:w-[1125px] lg:h-[750px] sm:max-w-none sm:max-h-none portrait:max-h-none"
                             : "w-[340px] h-[240px] sm:w-[600px] sm:h-[400px]"),
                         className
                     )}
@@ -407,10 +407,14 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                         {/* Front of Card — masqué en mode verso (Safari: backface-visibility insuffisant) */}
                         <div
                             className={cn(
-                                "absolute w-full h-full backface-hidden rounded-xl shadow-2xl overflow-hidden bg-white border border-stone-200",
-                                isFlipped && "invisible pointer-events-none"
+                                "absolute w-full h-full backface-hidden rounded-xl overflow-hidden",
+                                isFlipped ? "pointer-events-none" : ""
                             )}
-                            style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+                            style={{
+                                backfaceVisibility: 'hidden',
+                                WebkitBackfaceVisibility: 'hidden',
+                                transform: 'translateZ(1px)'
+                            }}
                         >
                             <img
                                 src={frontImageSrc}
@@ -419,19 +423,23 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 onError={() => setFrontImageSrc(FALLBACK_FRONT_IMAGE)}
                             />
 
-
-
                             <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none z-0" />
 
                             {/* Indication "Retourner la carte" au survol — en haut à droite */}
-                            <div className="absolute top-4 right-4 z-20 flex items-center gap-2 rounded-lg bg-white/90 backdrop-blur-md px-3 py-2 shadow-lg border border-white/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <div className={cn(
+                                "absolute top-4 right-4 z-20 flex items-center gap-2 rounded-lg bg-white/90 backdrop-blur-md px-3 py-2 shadow-lg border border-white/50 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none",
+                                isFlipped ? "opacity-0 invisible" : "group-hover:opacity-100"
+                            )}>
                                 <RotateCw size={isLarge ? 20 : 16} className="text-stone-600 shrink-0" />
                                 <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-stone-700">Retourner la carte</span>
                             </div>
 
                             {/* Message démo au-dessus de la localisation (frontCaption sans frontEmoji) */}
                             {postcard.frontCaption && !postcard.frontEmoji && (
-                                <div className="absolute left-4 sm:left-6 right-4 sm:right-6 z-10 bottom-10 sm:bottom-12 text-stone-800 text-[11px] sm:text-xs font-medium drop-shadow-sm">
+                                <div className={cn(
+                                    "absolute left-4 sm:left-6 right-4 sm:right-6 z-10 bottom-10 sm:bottom-12 text-stone-800 text-[11px] sm:text-xs font-medium drop-shadow-sm transition-all duration-300",
+                                    isFlipped ? "opacity-0 invisible" : "opacity-100 visible"
+                                )}>
                                     {postcard.frontCaption}
                                 </div>
                             )}
@@ -439,8 +447,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             {postcard.location && (
                                 <div
                                     className={cn(
-                                        "absolute left-4 sm:left-6 z-10 bg-white/90 backdrop-blur-md text-teal-900 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-semibold shadow-lg flex items-center gap-1.5",
-                                        postcard.frontEmoji ? "bottom-20 sm:bottom-24" : "bottom-4 sm:bottom-6"
+                                        "absolute left-4 sm:left-6 z-10 bg-white/90 backdrop-blur-md text-teal-900 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-semibold shadow-lg flex items-center gap-1.5 transition-all duration-300",
+                                        postcard.frontEmoji ? "bottom-20 sm:bottom-24" : "bottom-4 sm:bottom-6",
+                                        isFlipped ? "opacity-0 invisible" : "opacity-100 visible"
                                     )}
                                 >
                                     <MapPin size={12} className="text-orange-500 shrink-0" />
@@ -450,7 +459,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
                             {/* Bloc caption + emoji en bas (affiché seulement si frontEmoji) */}
                             {(postcard.frontCaption || postcard.frontEmoji) && postcard.frontEmoji && (
-                                <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 z-10 flex items-center gap-3 rounded-xl sm:rounded-2xl border border-white/50 bg-white/90 backdrop-blur-md px-4 py-3 sm:px-5 sm:py-3.5 shadow-xl">
+                                <div className={cn(
+                                    "absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 z-10 flex items-center gap-3 rounded-xl sm:rounded-2xl border border-white/50 bg-white/90 backdrop-blur-md px-4 py-3 sm:px-5 sm:py-3.5 shadow-xl transition-all duration-300",
+                                    isFlipped ? "opacity-0 invisible" : "opacity-100 visible"
+                                )}>
                                     <span className="text-xl sm:text-4xl leading-none shrink-0" aria-hidden>{postcard.frontEmoji}</span>
                                     {postcard.frontCaption ? (
                                         <p className="m-0 text-sm sm:text-lg font-semibold leading-tight tracking-tight text-stone-800 break-words line-clamp-2">
@@ -464,18 +476,21 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                         {/* Back of Card — masqué en mode recto (Safari: backface-visibility insuffisant) */}
                         <div
                             className={cn(
-                                "absolute w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#fafaf9] border border-stone-200 flex overflow-hidden",
+                                "absolute w-full h-full backface-hidden rounded-xl bg-[#fafaf9] flex overflow-hidden",
                                 isLarge ? "p-4 sm:p-8" : "p-5 sm:p-8",
-                                !isFlipped && "invisible pointer-events-none"
+                                !isFlipped ? "pointer-events-none" : ""
                             )}
                             style={{
                                 backfaceVisibility: 'hidden',
                                 WebkitBackfaceVisibility: 'hidden',
-                                transform: 'rotateY(180deg)'
+                                transform: 'rotateY(180deg) translateZ(1px)'
                             }}
                         >
                             {/* Top bar: Retourner + Slider taille du texte */}
-                            <div className="absolute top-4 left-4 right-4 z-40 flex items-center justify-between gap-3">
+                            <div className={cn(
+                                "absolute top-4 left-4 right-4 z-40 flex items-center justify-between gap-3 transition-opacity duration-300",
+                                !isFlipped ? "opacity-0 invisible" : "opacity-100 visible"
+                            )}>
                                 <div className="flex items-center gap-1.5 text-stone-400 pointer-events-none group-hover:text-stone-600 transition-all duration-300">
                                     <RotateCw size={isLarge ? 22 : 18} />
                                     <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Retourner</span>
@@ -500,19 +515,31 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             </div>
 
                             {/* Flip indicator — bottom-center (above branding) */}
-                            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 text-stone-300 pointer-events-none group-hover:text-stone-500 transition-all duration-300">
+                            <div className={cn(
+                                "absolute bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 text-stone-300 pointer-events-none group-hover:text-stone-500 transition-all duration-300",
+                                !isFlipped ? "opacity-0 invisible" : "opacity-100 visible"
+                            )}>
                                 <RotateCw size={16} />
                                 <span className="text-[9px] font-bold uppercase tracking-widest">Cliquer pour retourner</span>
                             </div>
 
                             {/* Small branding bottom-left */}
-                            <div className="absolute bottom-3 left-6 text-stone-300 text-[8px] font-bold tracking-[0.2em] uppercase flex items-center gap-1.5">
+                            <div className={cn(
+                                "absolute bottom-3 left-6 text-stone-300 text-[8px] font-bold tracking-[0.2em] uppercase flex items-center gap-1.5 transition-opacity duration-300",
+                                !isFlipped ? "opacity-0 invisible" : "opacity-100 visible"
+                            )}>
                                 <div className="w-1 h-1 bg-stone-200 rounded-full" />
                                 cartepostale.cool
                             </div>
-                            <div className="absolute left-[62%] top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50"></div>
+                            <div className={cn(
+                                "absolute left-[62%] top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50 transition-opacity duration-300",
+                                !isFlipped ? "opacity-0 invisible" : "opacity-100 visible"
+                            )}></div>
 
-                            <div className="flex w-full h-full gap-8 sm:gap-14 pt-10 sm:pt-12">
+                            <div className={cn(
+                                "flex w-full h-full gap-8 sm:gap-14 pt-10 sm:pt-12 transition-all duration-300",
+                                !isFlipped ? "opacity-0 invisible" : "opacity-100 visible"
+                            )}>
                                 {/* Left Side: Message - much wider */}
                                 <div className="flex-[1.6] min-w-0 flex flex-col justify-start relative pt-0 pr-6 sm:pr-8">
 

@@ -160,7 +160,7 @@ export default function Home() {
                 <PostcardView
                   postcard={heroPostcard}
                   isPreview
-                  isLarge={false}
+                  isLarge={true}
                   className="rounded-3xl shadow-2xl shadow-stone-200/50"
                 />
               </div>
@@ -170,18 +170,18 @@ export default function Home() {
       </div>
 
       {/* Section Recto/Verso */}
-      <section className="py-16 bg-white border-b border-stone-100 overflow-hidden relative">
-         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-            <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-pink-100/30 rounded-full blur-3xl" />
-            <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-purple-100/30 rounded-full blur-3xl" />
-         </div>
+      <section className="py-16 border-b border-stone-100 overflow-hidden relative">
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-pink-100/30 rounded-full blur-3xl" />
+          <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-purple-100/30 rounded-full blur-3xl" />
+        </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
-             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-pink-50 border border-pink-100 rounded-full text-pink-700 text-xs font-bold uppercase tracking-widest mb-4">
-                <Repeat size={12} />
-                <span>Double Face</span>
-             </div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-pink-50 border border-pink-100 rounded-full text-pink-700 text-xs font-bold uppercase tracking-widest mb-4">
+              <Repeat size={12} />
+              <span>Double Face</span>
+            </div>
             <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-4">
               L&apos;émotion d&apos;une vraie carte, la magie du numérique
             </h2>
@@ -193,35 +193,35 @@ export default function Home() {
           <div className="flex flex-col items-center justify-center">
             {/* Carte Postale Interactive à Effet Rotatif */}
             <div className="relative perspective-1000 group">
-               {/* Bulle d'indication avec un style plus premium */}
-               <div className="absolute -top-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-20">
-                  <div className="bg-stone-800 text-white text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-full shadow-2xl flex items-center gap-2">
-                    <Repeat size={12} className="animate-spin-slow" />
-                    CLIQUEZ OU GLISSEZ POUR TOURNER
-                  </div>
-                  <div className="w-px h-4 bg-stone-300" />
-               </div>
-               
-               <div className="animate-float-3d hover-tilt-3d transition-all duration-500">
-                  <PostcardView 
-                    postcard={demoCard} 
-                    isPreview={true} 
-                    isLarge={true}
-                    className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] group-hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] max-w-[95vw] md:max-w-5xl lg:max-w-7xl mx-auto" 
-                  />
-               </div>
+              {/* Bulle d'indication avec un style plus premium */}
+              <div className="absolute -top-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-20">
+                <div className="bg-stone-800 text-white text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-full shadow-2xl flex items-center gap-2">
+                  <Repeat size={12} className="animate-spin-slow" />
+                  CLIQUEZ OU GLISSEZ POUR TOURNER
+                </div>
+                <div className="w-px h-4 bg-stone-300" />
+              </div>
+
+              <div className="animate-float-3d hover-tilt-3d transition-all duration-500">
+                <PostcardView
+                  postcard={demoCard}
+                  isPreview={true}
+                  isLarge={true}
+                  className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] group-hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] max-w-[95vw] md:max-w-5xl lg:max-w-7xl mx-auto"
+                />
+              </div>
             </div>
-            
+
             <div className="mt-12 flex flex-col items-center gap-8 max-w-xl text-center">
-               <div className="h-px w-24 bg-stone-200" />
-               <p className="text-stone-500 italic">
-                 "Une expérience immersive : touchez la carte pour découvrir son verso et les détails de votre message."
-               </p>
-               <Link href="/editor">
-                  <Button className="bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-95 text-white rounded-full font-bold shadow-lg shadow-pink-500/25 flex items-center gap-3 px-10 py-7 text-lg transition-all duration-300 h-auto border-0">
-                    <Plus size={24} /> Créer ma carte maintenant
-                  </Button>
-               </Link>
+              <div className="h-px w-24 bg-stone-200" />
+              <p className="text-stone-500 italic">
+                "Une expérience immersive : touchez la carte pour découvrir son verso et les détails de votre message."
+              </p>
+              <Link href="/editor">
+                <Button className="bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-95 text-white rounded-full font-bold shadow-lg shadow-pink-500/25 flex items-center gap-3 px-10 py-7 text-lg transition-all duration-300 h-auto border-0">
+                  <Plus size={24} /> Créer ma carte maintenant
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -296,7 +296,7 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-white">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between mb-16 text-center sm:text-left gap-4">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-stone-800">Inspirations Voyage</h2>
@@ -365,7 +365,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="max-w-5xl mx-auto px-4 mt-12">
+        <div className="max-w-md mx-auto px-4 mt-12">
           <div className="relative bg-white border border-pink-100 rounded-[32px] shadow-[0_20px_60px_rgba(240,156,194,0.25)] overflow-hidden">
             <div className="bg-gradient-to-r from-pink-500 to-orange-400 text-white text-center px-10 py-7">
               <div className="text-sm uppercase tracking-[0.4em] font-semibold opacity-90">Prix par carte</div>
