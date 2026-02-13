@@ -13,11 +13,11 @@ import SocialBar from '@/components/social/SocialBar'
 import ViewPageTitle from '@/components/view/ViewPageTitle'
 import DistanceDisplay from '@/components/view/DistanceDisplay'
 import PhotoAlbum from '@/components/view/PhotoAlbum'
+import EnvelopeWrapper from '@/components/view/EnvelopeWrapper'
 
 interface PageProps {
-    params: Promise<{
-        slug: string
-    }>
+    params: Promise<{ slug: string }>
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 // Helper to check if media is an object
@@ -170,8 +170,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
 }
 
-export default async function PostcardPage({ params }: PageProps) {
+export default async function PostcardPage({ params, searchParams }: PageProps) {
     const { slug } = await params
+    const resolvedSearchParams = await (searchParams ?? Promise.resolve({}))
+    const envelopeParam = resolvedSearchParams?.enveloppe
+    const showEnvelope = envelopeParam === '1' || envelopeParam === 'true'
+
     const payloadPostcard = await getPostcardByPublicId(slug)
 
     if (!payloadPostcard) {
@@ -185,6 +189,23 @@ export default async function PostcardPage({ params }: PageProps) {
         if (coords) frontendPostcard.coords = coords
     }
 
+    const cardBlock = (
+        <>
+            <PostcardView
+                postcard={frontendPostcard}
+                flipped={false}
+                isLarge={true}
+                className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] md:shadow-[0_30px_70px_rgba(0,0,0,0.2)] hover:shadow-[0_28px_60px_rgba(0,0,0,0.2)] md:hover:shadow-[0_40px_90px_rgba(0,0,0,0.25)]"
+            />
+            {frontendPostcard.coords && (
+                <DistanceDisplay
+                    targetCoords={frontendPostcard.coords}
+                    senderName={frontendPostcard.senderName}
+                />
+            )}
+        </>
+    )
+
     return (
         <div className="min-h-screen bg-[#fdfbf7] flex flex-col items-center overflow-x-hidden">
             <RotateDevicePrompt />
@@ -195,21 +216,14 @@ export default async function PostcardPage({ params }: PageProps) {
                 senderName={frontendPostcard.senderName}
             />
 
-            {/* Card View */}
+            {/* Card View — avec effet enveloppe si ?enveloppe=1 */}
             <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-4 md:mb-6 px-2 md:px-4 relative">
-                <PostcardView
-                    postcard={frontendPostcard}
-                    flipped={false}
-                    isLarge={true}
-                    className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] md:shadow-[0_30px_70px_rgba(0,0,0,0.2)] hover:shadow-[0_28px_60px_rgba(0,0,0,0.2)] md:hover:shadow-[0_40px_90px_rgba(0,0,0,0.25)]"
-                />
-
-                {/* Distance Display */}
-                {frontendPostcard.coords && (
-                    <DistanceDisplay
-                        targetCoords={frontendPostcard.coords}
-                        senderName={frontendPostcard.senderName}
-                    />
+                {showEnvelope ? (
+                    <EnvelopeWrapper className="w-full max-w-[min(90vw,420px)] md:max-w-[420px]">
+                        {cardBlock}
+                    </EnvelopeWrapper>
+                ) : (
+                    cardBlock
                 )}
 
                 {/* View Counter */}

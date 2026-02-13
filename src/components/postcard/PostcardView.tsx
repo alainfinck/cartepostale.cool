@@ -244,13 +244,13 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[150] bg-stone-900/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8"
+                className="fixed inset-0 z-[150] bg-stone-900/90 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
                 onClick={() => setIsMessageOpen(false)}
             >
                 <motion.div
                     initial={{ scale: 0.9, y: 20 }}
                     animate={{ scale: 1, y: 0 }}
-                    className="w-full max-w-[95vw] h-[90vh] min-h-0 bg-[#fafaf9] rounded-3xl shadow-2xl p-6 md:p-16 relative overflow-hidden flex flex-col items-center text-center border-8 border-white/50"
+                    className="w-full max-w-[95vw] md:max-w-xl h-[90vh] md:max-h-[65vh] md:h-auto min-h-0 bg-[#fafaf9] rounded-3xl shadow-2xl p-6 md:p-8 relative overflow-hidden flex flex-col items-center text-center border-8 border-white/50"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Background decorations */}
