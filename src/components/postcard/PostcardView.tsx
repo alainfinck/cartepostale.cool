@@ -61,8 +61,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
     useEffect(() => {
         const url = postcard.frontImage || FALLBACK_FRONT_IMAGE;
-        setFrontImageSrc(url);
-        setIsFrontImageLoading(!!postcard.frontImage);
+        if (url !== frontImageSrc) {
+            setFrontImageSrc(url);
+            setIsFrontImageLoading(true);
+        } else if (frontImageRef.current?.complete) {
+            setIsFrontImageLoading(false);
+        }
     }, [postcard.frontImage, postcard.id]);
 
     // Si l'image est déjà en cache, onLoad ne se déclenche pas — on vérifie img.complete
@@ -72,7 +76,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         if (img.complete && img.naturalWidth > 0) {
             setIsFrontImageLoading(false);
         }
-    }, [frontImageSrc]);
+    }, [frontImageSrc, postcard.id]);
 
     // Vérification différée pour images locales/cache : le navigateur peut ne pas déclencher onLoad
     useEffect(() => {
@@ -84,7 +88,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             }
         }, 50);
         return () => clearTimeout(id);
-    }, [frontImageSrc]);
+    }, [frontImageSrc, postcard.id]);
 
     // Motion values for rotation
     const rotateY = useMotionValue(flipped ? 180 : 0);

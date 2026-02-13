@@ -2,6 +2,9 @@ export interface MediaItem {
     id: string;
     type: 'image' | 'video';
     url: string;
+    key?: string;
+    mimeType?: string;
+    filesize?: number;
 }
 
 /** Position de recadrage de la photo (pour aperçu / éditeur). x,y en % (0–100). */
@@ -67,8 +70,8 @@ export interface Lead {
 }
 
 export type TemplateCategory =
-  | 'beach' | 'city' | 'nature' | 'travel'
-  | 'romantic' | 'festive' | 'food' | 'abstract';
+    | 'beach' | 'city' | 'nature' | 'travel'
+    | 'romantic' | 'festive' | 'food' | 'abstract';
 
 export interface Template {
     id: string;

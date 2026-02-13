@@ -37,6 +37,7 @@ import {
   Grid,
   Minus,
   Plus,
+  MoreHorizontal,
 } from 'lucide-react'
 import { Postcard, Template, TemplateCategory, FrontImageCrop } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -119,6 +120,9 @@ const TEMPLATE_CATEGORIES: { key: TemplateCategory | 'all'; label: string; icon?
   { key: 'food', label: 'Gastronomie', icon: '\u{1F37D}\u{FE0F}' },
   { key: 'abstract', label: 'Abstrait', icon: '\u{1F3A8}' },
 ]
+
+/** IDs des modèles affichés en raccourci (icônes cliquables). */
+const BASE_TEMPLATE_IDS = ['tpl-1', 'tpl-2', 'tpl-4', 'tpl-8', 'tpl-13'] as const
 
 const SAMPLE_TEMPLATES: Template[] = [
   // === Plage (beach) ===
@@ -522,6 +526,7 @@ export default function EditorPage() {
   const [isPremium, setIsPremium] = useState(false)
   const [showFullscreen, setShowFullscreen] = useState(false)
   const [showRecipientModal, setShowRecipientModal] = useState(false)
+  const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [fullscreenScale, setFullscreenScale] = useState(1)
 
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal' | 'revolut' | null>(null)
@@ -968,15 +973,15 @@ export default function EditorPage() {
   const postcardForPreview: Postcard =
     currentStep === 'redaction' && versoPreviewTemplateId
       ? (() => {
-          const tpl = SAMPLE_TEMPLATES.find((t) => t.id === versoPreviewTemplateId)
-          if (!tpl) return currentPostcard
-          return {
-            ...currentPostcard,
-            message: tpl.message ?? currentPostcard.message,
-            location: tpl.location ?? currentPostcard.location,
-            stampStyle: tpl.stampStyle ?? currentPostcard.stampStyle,
-          }
-        })()
+        const tpl = SAMPLE_TEMPLATES.find((t) => t.id === versoPreviewTemplateId)
+        if (!tpl) return currentPostcard
+        return {
+          ...currentPostcard,
+          message: tpl.message ?? currentPostcard.message,
+          location: tpl.location ?? currentPostcard.location,
+          stampStyle: tpl.stampStyle ?? currentPostcard.stampStyle,
+        }
+      })()
       : currentPostcard
 
   const filteredTemplates =
@@ -1016,9 +1021,16 @@ export default function EditorPage() {
         }
       }
 
+      // Build optimized payload to avoid Next.js payload size limits
+      // Strip large Base64 strings if we have an R2 key (sendKey/item.key)
       const result = await createPostcard({
         ...currentPostcard,
-        frontImage: finalFrontImage,
+        frontImage: sendKey ? undefined : finalFrontImage,
+        mediaItems: currentPostcard.mediaItems?.map(item => ({
+          ...item,
+          // Only send the Base64 URL if we don't have an R2 key
+          url: item.key ? undefined : item.url
+        })),
         recipients: [],
         ...(sendKey && {
           frontImageKey: sendKey,
@@ -1253,47 +1265,60 @@ export default function EditorPage() {
                   ))}
                 </div>
 
-                {/* Template Dropdown */}
+                {/* Modèles : raccourcis de base + "..." pour ouvrir le modal */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold text-stone-700">Choisissez un modèle</p>
-                    <span className="text-xs uppercase tracking-wider text-stone-400">
-                      {filteredTemplates.length} {filteredTemplates.length === 1 ? 'modèle' : 'modèles'}
-                    </span>
-                  </div>
-                  <div className="relative">
-                    <label htmlFor="template-select" className="sr-only">
-                      Modèle
-                    </label>
-                    <select
-                      id="template-select"
-                      value={selectedTemplateId ?? ''}
-                      onChange={(event) => {
-                        const template = filteredTemplates.find((tpl) => tpl.id === event.target.value)
-                        if (template) handleSelectTemplate(template)
-                      }}
-                      className="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 pr-10 text-sm font-medium text-stone-700 transition focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-100 appearance-none"
+                    <button
+                      type="button"
+                      onClick={() => setShowTemplateModal(true)}
+                      className="flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-600 transition hover:border-teal-300 hover:bg-stone-50 hover:text-teal-600"
+                      aria-label="Voir tous les modèles"
                     >
-                      <option value="">Choisir un modèle</option>
-                      {filteredTemplates.map((template) => (
-                        <option key={template.id} value={template.id}>
-                          {template.name}
-                          {template.description ? ` – ${template.description}` : ''}
-                        </option>
-                      ))}
-                    </select>
-                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs leading-none text-stone-400">
-                      ▼
-                    </span>
+                      <MoreHorizontal size={16} />
+                      Plus de modèles
+                    </button>
                   </div>
-                  {filteredTemplates.length === 0 && (
-                    <p className="text-xs text-stone-500">
-                      Aucun modèle disponible dans cette catégorie pour le moment.
-                    </p>
-                  )}
+                  <div className="grid grid-cols-3 gap-2">
+                    {BASE_TEMPLATE_IDS.map((id) => {
+                      const tpl = SAMPLE_TEMPLATES.find((t) => t.id === id)
+                      if (!tpl) return null
+                      const cat = TEMPLATE_CATEGORIES.find((c) => c.key === tpl.category)
+                      const isSelected = selectedTemplateId === tpl.id
+                      return (
+                        <button
+                          key={tpl.id}
+                          type="button"
+                          onClick={() => handleSelectTemplate(tpl)}
+                          className={cn(
+                            'flex items-center gap-2 rounded-2xl border p-2.5 text-left transition-all min-w-0 max-w-full',
+                            isSelected
+                              ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-200'
+                              : 'border-stone-200 bg-white hover:border-teal-200 hover:bg-stone-50'
+                          )}
+                          title={tpl.description ? `${tpl.name} – ${tpl.description}` : tpl.name}
+                        >
+                          <div className="h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-stone-100">
+                            <img
+                              src={tpl.imageUrl}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-semibold text-stone-800 truncate">{tpl.name}</p>
+                            <p className="flex items-center gap-0.5 text-[0.65rem] uppercase tracking-wider text-stone-400">
+                              {cat?.icon && <span>{cat.icon}</span>}
+                              <span className="truncate">{cat?.label ?? tpl.category}</span>
+                            </p>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
                   {selectedTemplate && (
                     <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3">
-                    <div className="flex-shrink-0 h-16 w-24 overflow-hidden rounded-xl bg-stone-100">
+                      <div className="flex-shrink-0 h-16 w-24 overflow-hidden rounded-xl bg-stone-100">
                         <img
                           src={selectedTemplate.imageUrl}
                           alt={selectedTemplate.name}
@@ -1483,81 +1508,81 @@ export default function EditorPage() {
                       <label className="mb-2 block text-xs font-semibold text-stone-600 uppercase tracking-wider">
                         Emoji
                       </label>
-                    <div className="relative">
-                      <div className="flex flex-wrap items-center gap-2">
-                        {EMOJI_SUGGESTIONS.map((emoji) => (
+                      <div className="relative">
+                        <div className="flex flex-wrap items-center gap-2">
+                          {EMOJI_SUGGESTIONS.map((emoji) => (
+                            <button
+                              key={emoji}
+                              type="button"
+                              onClick={() => setFrontEmoji(emoji)}
+                              className={cn(
+                                'flex h-10 w-10 items-center justify-center rounded-xl border-2 text-xl transition-all',
+                                frontEmoji === emoji
+                                  ? 'border-teal-500 bg-teal-50 text-teal-700 shadow-sm'
+                                  : 'border-stone-200 bg-white text-stone-500 hover:border-teal-300 hover:bg-teal-50/50'
+                              )}
+                              title={`Choisir ${emoji}`}
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                          <Input
+                            placeholder="✨"
+                            value={frontEmoji}
+                            onChange={(e) => setFrontEmoji(e.target.value)}
+                            maxLength={4}
+                            className="h-10 w-16 rounded-xl border-stone-200 text-center text-lg tracking-widest"
+                          />
                           <button
-                            key={emoji}
                             type="button"
-                            onClick={() => setFrontEmoji(emoji)}
-                            className={cn(
-                              'flex h-10 w-10 items-center justify-center rounded-xl border-2 text-xl transition-all',
-                              frontEmoji === emoji
-                                ? 'border-teal-500 bg-teal-50 text-teal-700 shadow-sm'
-                                : 'border-stone-200 bg-white text-stone-500 hover:border-teal-300 hover:bg-teal-50/50'
-                            )}
-                            title={`Choisir ${emoji}`}
+                            className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-stone-200 bg-white text-stone-400 transition-colors hover:border-teal-400 hover:text-teal-600"
+                            onClick={() => setShowEmojiPicker((value) => !value)}
+                            aria-label="Choisir un emoji par thème"
                           >
-                            {emoji}
+                            <Grid size={16} />
                           </button>
-                        ))}
-                        <Input
-                          placeholder="✨"
-                          value={frontEmoji}
-                          onChange={(e) => setFrontEmoji(e.target.value)}
-                          maxLength={4}
-                          className="h-10 w-16 rounded-xl border-stone-200 text-center text-lg tracking-widest"
-                        />
-                        <button
-                          type="button"
-                          className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-stone-200 bg-white text-stone-400 transition-colors hover:border-teal-400 hover:text-teal-600"
-                          onClick={() => setShowEmojiPicker((value) => !value)}
-                          aria-label="Choisir un emoji par thème"
-                        >
-                          <Grid size={16} />
-                        </button>
-                      </div>
-                      {showEmojiPicker && (
-                        <div
-                          ref={emojiPickerRef}
-                          className="absolute z-20 mt-2 w-full rounded-2xl border border-stone-200 bg-white p-3 shadow-xl shadow-stone-400/20"
-                        >
-                          <div className="flex flex-wrap gap-2 border-b border-stone-100 pb-3">
-                            {EMOJI_CATEGORIES.map((category) => (
-                              <button
-                                key={category.key}
-                                type="button"
-                                onClick={() => setSelectedEmojiCategory(category.key)}
-                                className={cn(
-                                  'flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold transition-all',
-                                  selectedEmojiCategory === category.key
-                                    ? 'border-teal-500 bg-teal-50 text-teal-700 shadow-sm'
-                                    : 'border-stone-200 bg-white text-stone-500 hover:border-teal-300'
-                                )}
-                              >
-                                <span>{category.icon}</span>
-                                {category.label}
-                              </button>
-                            ))}
-                          </div>
-                          <div className="mt-3 grid grid-cols-6 gap-2 max-h-48 overflow-y-auto pb-1">
-                            {currentEmojiCategory.emojis.map((emoji) => (
-                              <button
-                                key={emoji}
-                                type="button"
-                                onClick={() => {
-                                  setFrontEmoji(emoji)
-                                  setShowEmojiPicker(false)
-                                }}
-                                className="flex h-10 w-10 items-center justify-center rounded-xl border border-stone-100 bg-stone-50 text-2xl transition hover:border-teal-300 hover:bg-teal-50"
-                              >
-                                {emoji}
-                              </button>
-                            ))}
-                          </div>
                         </div>
-                      )}
-                    </div>
+                        {showEmojiPicker && (
+                          <div
+                            ref={emojiPickerRef}
+                            className="absolute z-20 mt-2 w-full rounded-2xl border border-stone-200 bg-white p-3 shadow-xl shadow-stone-400/20"
+                          >
+                            <div className="flex flex-wrap gap-2 border-b border-stone-100 pb-3">
+                              {EMOJI_CATEGORIES.map((category) => (
+                                <button
+                                  key={category.key}
+                                  type="button"
+                                  onClick={() => setSelectedEmojiCategory(category.key)}
+                                  className={cn(
+                                    'flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold transition-all',
+                                    selectedEmojiCategory === category.key
+                                      ? 'border-teal-500 bg-teal-50 text-teal-700 shadow-sm'
+                                      : 'border-stone-200 bg-white text-stone-500 hover:border-teal-300'
+                                  )}
+                                >
+                                  <span>{category.icon}</span>
+                                  {category.label}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="mt-3 grid grid-cols-6 gap-2 max-h-48 overflow-y-auto pb-1">
+                              {currentEmojiCategory.emojis.map((emoji) => (
+                                <button
+                                  key={emoji}
+                                  type="button"
+                                  onClick={() => {
+                                    setFrontEmoji(emoji)
+                                    setShowEmojiPicker(false)
+                                  }}
+                                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-stone-100 bg-stone-50 text-2xl transition hover:border-teal-300 hover:bg-teal-50"
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                   {(frontCaption.trim() || frontEmoji.trim()) && (
@@ -2470,6 +2495,93 @@ export default function EditorPage() {
           </div>
         )
       }
+
+      {/* Modal : tous les modèles avec catégories */}
+      {showTemplateModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-8 overflow-auto"
+          onClick={() => setShowTemplateModal(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-3xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-stone-200 flex flex-col"
+          >
+            <div className="flex items-center justify-between shrink-0 border-b border-stone-200 px-6 py-4">
+              <h3 className="text-lg font-bold text-stone-800">Tous les modèles</h3>
+              <button
+                type="button"
+                onClick={() => setShowTemplateModal(false)}
+                className="p-2 rounded-full text-stone-500 hover:bg-stone-100 hover:text-stone-700 transition"
+                aria-label="Fermer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-stone-100 bg-stone-50/50">
+              {TEMPLATE_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.key}
+                  onClick={() => setSelectedCategory(cat.key)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-full text-sm font-semibold transition-all',
+                    selectedCategory === cat.key
+                      ? 'bg-teal-500 text-white shadow-sm'
+                      : 'bg-white border border-stone-200 text-stone-600 hover:border-teal-200 hover:text-teal-600'
+                  )}
+                >
+                  {cat.icon ? `${cat.icon} ${cat.label}` : cat.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {filteredTemplates.map((template) => {
+                  const cat = TEMPLATE_CATEGORIES.find((c) => c.key === template.category)
+                  const isSelected = selectedTemplateId === template.id
+                  return (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => {
+                        handleSelectTemplate(template)
+                        setShowTemplateModal(false)
+                      }}
+                      className={cn(
+                        'flex items-center gap-3 rounded-2xl border p-3 text-left transition-all w-full',
+                        isSelected
+                          ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-200'
+                          : 'border-stone-200 bg-white hover:border-teal-200 hover:bg-stone-50'
+                      )}
+                    >
+                      <div className="h-14 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-stone-100">
+                        <img
+                          src={template.imageUrl}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-stone-900">{template.name}</p>
+                        {template.description && (
+                          <p className="text-xs text-stone-500 line-clamp-1">{template.description}</p>
+                        )}
+                        <p className="text-[0.65rem] uppercase tracking-wider text-stone-400 mt-0.5">
+                          {cat?.icon ? `${cat.icon} ${cat.label}` : cat?.label ?? template.category}
+                        </p>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+              {filteredTemplates.length === 0 && (
+                <p className="text-sm text-stone-500 text-center py-8">
+                  Aucun modèle dans cette catégorie pour le moment.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal destinataire : iframe de la page réelle */}
       {
