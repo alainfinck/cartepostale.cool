@@ -27,6 +27,8 @@ interface EditPostcardDialogProps {
     onSuccess: () => void
     /** When provided, used instead of the default admin updatePostcard (e.g. for espace client). */
     updatePostcardFn?: UpdatePostcardFn
+    /** When true, show the "Client (Auteur)" field so the manager can change the user associated with the card. */
+    allowChangeAuthor?: boolean
 }
 
 function isMedia(media: any): media is Media {
@@ -39,7 +41,7 @@ function getFrontImageUrl(postcard: Postcard): string {
     return '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
 }
 
-export default function EditPostcardDialog({ postcard, isOpen, onClose, onSuccess, updatePostcardFn }: EditPostcardDialogProps) {
+export default function EditPostcardDialog({ postcard, isOpen, onClose, onSuccess, updatePostcardFn, allowChangeAuthor = false }: EditPostcardDialogProps) {
     const [isPending, startTransition] = useTransition()
     const [formData, setFormData] = useState({
         senderName: '',
@@ -169,7 +171,7 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
                 dataToUpdate.frontImage = formData.frontImage
             }
 
-            if (!updatePostcardFn) {
+            if (allowChangeAuthor) {
                 dataToUpdate.author = author?.id ?? null
             }
 
@@ -285,9 +287,9 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
                         />
                     </div>
 
-                    {!updatePostcardFn && (
+                    {allowChangeAuthor && (
                         <div className="space-y-3 p-4 bg-muted/30 rounded-xl border border-border/50">
-                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Client (Auteur)</Label>
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Client (Compte associé)</Label>
 
                             {author ? (
                                 <div className="flex items-center justify-between p-2 bg-background rounded-lg border border-border/50">

@@ -394,6 +394,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
                                         <TableHead>Image</TableHead>
                                         <TableHead>Expéditeur</TableHead>
                                         <TableHead>Destinataire</TableHead>
+                                        <TableHead>Client</TableHead>
                                         <TableHead>Lieu</TableHead>
                                         <TableHead>Date</TableHead>
                                         <TableHead>Statut</TableHead>
@@ -448,6 +449,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
                     }
                 }}
                 updatePostcardFn={updatePostcardFn}
+                allowChangeAuthor={!useEspaceClientActions}
             />
 
             {/* Delete confirmation */}
@@ -667,6 +669,11 @@ function ListRow({ postcard, onSelect, onEdit, onUpdateStatus, onDelete, formatD
             </TableCell>
             <TableCell className="font-semibold text-stone-800">{postcard.senderName}</TableCell>
             <TableCell className="text-stone-600">{postcard.recipientName}</TableCell>
+            <TableCell className="text-stone-500 max-w-[140px] truncate text-xs">
+                {typeof postcard.author === 'object' && postcard.author
+                    ? (postcard.author.name || postcard.author.email || '—')
+                    : '—'}
+            </TableCell>
             <TableCell className="text-stone-500 max-w-[150px] truncate">{postcard.location}</TableCell>
             <TableCell className="text-stone-400 text-xs font-medium uppercase">{formatDate(postcard.date)}</TableCell>
             <TableCell><StatusBadge status={postcard.status || 'draft'} /></TableCell>

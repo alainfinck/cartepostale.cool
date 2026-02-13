@@ -277,7 +277,7 @@ export interface Template {
   id: number;
   name: string;
   imageUrl: number | Media;
-  category: 'beach' | 'city' | 'mountain' | 'abstract';
+  category: 'beach' | 'city' | 'nature' | 'travel' | 'romantic' | 'festive' | 'food' | 'abstract';
   updatedAt: string;
   createdAt: string;
 }

@@ -3,6 +3,7 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { Postcard } from '@/payload-types'
+import { getCurrentUser } from '@/lib/auth'
 
 // Simple ID generator for public URLs (shorter than UUID)
 function generatePublicId(length = 4) {
@@ -168,8 +169,11 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
             }
         }
 
-        // Remove processed fields from spread data to avoid validation errors
-        const { frontImage: _, frontImageKey: __, frontImageMimeType: ___, frontImageFilesize: ____, mediaItems: _____, id, ...cleanData } = data;
+        // Remove processed fields from spread data to avoid validation errors (author comes from server only)
+        const { frontImage: _, frontImageKey: __, frontImageMimeType: ___, frontImageFilesize: ____, mediaItems: _____, id, author: _author, authorId: _authorId, ...cleanData } = data;
+
+        const currentUser = await getCurrentUser();
+        const authorPayload = currentUser ? { author: currentUser.id } : {};
 
         if (existingId) {
             // Update existing postcard
@@ -183,6 +187,7 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
                     mediaItems: processedMediaItems,
                     date: new Date().toISOString(),
                     status: 'published',
+                    ...authorPayload,
                 },
             })
             return { success: true, publicId: data.id }
@@ -215,7 +220,7 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
                 throw new Error('Could not generate a unique ID. Please try again.')
             }
 
-            // Create the postcard record
+            // Create the postcard record (author set if user is logged in)
             const newPostcard = await payload.create({
                 collection: 'postcards',
                 data: {
@@ -226,6 +231,7 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
                     publicId,
                     date: new Date().toISOString(),
                     status: 'published', // Automatically publish when created from editor
+                    ...authorPayload,
                 },
             })
 

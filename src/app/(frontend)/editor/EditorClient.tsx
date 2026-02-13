@@ -35,7 +35,7 @@ import {
   CreditCard,
   Crop,
 } from 'lucide-react'
-import { Postcard, Template, FrontImageCrop } from '@/types'
+import { Postcard, Template, TemplateCategory, FrontImageCrop } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -105,62 +105,314 @@ const STEPS = [
 
 type StepId = (typeof STEPS)[number]['id']
 
+const TEMPLATE_CATEGORIES: { key: TemplateCategory | 'all'; label: string; icon?: string }[] = [
+  { key: 'all', label: 'Tous' },
+  { key: 'beach', label: 'Plage', icon: '\u{1F3D6}\u{FE0F}' },
+  { key: 'city', label: 'Ville', icon: '\u{1F3D9}\u{FE0F}' },
+  { key: 'nature', label: 'Nature', icon: '\u{1F33F}' },
+  { key: 'travel', label: 'Voyage', icon: '\u2708\u{FE0F}' },
+  { key: 'romantic', label: 'Romantique', icon: '\u2764\u{FE0F}' },
+  { key: 'festive', label: 'F\u00EAtes', icon: '\u{1F389}' },
+  { key: 'food', label: 'Gastronomie', icon: '\u{1F37D}\u{FE0F}' },
+  { key: 'abstract', label: 'Abstrait', icon: '\u{1F3A8}' },
+]
+
 const SAMPLE_TEMPLATES: Template[] = [
+  // === Plage (beach) ===
   {
     id: 'tpl-1',
     name: 'Plage tropicale',
-    imageUrl:
-      '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
-    category: 'Beach',
+    description: 'Sable blanc et eaux cristallines',
+    imageUrl: '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
+    category: 'beach',
+    frontCaption: 'Paradis tropical',
+    frontEmoji: '\u{1F334}',
+    message: 'Les pieds dans le sable, le soleil sur la peau... Le paradis existe et j\u2019y suis ! Bisous sal\u00E9s depuis cette plage de r\u00EAve.',
+    location: '\u00CEles Maldives',
+    stampStyle: 'airmail',
   },
   {
     id: 'tpl-2',
     name: 'Coucher de soleil',
-    imageUrl:
-      '/images/demo/photo-1476514525535-07fb3b4ae5f1.jpg',
-    category: 'Beach',
+    description: 'Couleurs flamboyantes sur l\u2019oc\u00E9an',
+    imageUrl: '/images/demo/photo-1476514525535-07fb3b4ae5f1.jpg',
+    category: 'beach',
+    frontCaption: 'Golden hour',
+    frontEmoji: '\u{1F305}',
+    message: 'Le ciel s\u2019embrase chaque soir ici... Un spectacle magique qu\u2019aucune photo ne peut vraiment capturer. Vous me manquez !',
+    location: 'Bali, Indon\u00E9sie',
+    stampStyle: 'classic',
   },
   {
     id: 'tpl-3',
-    name: 'Paris romantique',
-    imageUrl:
-      '/images/demo/photo-1502602898657-3e91760cbb34.jpg',
-    category: 'City',
+    name: 'Paradis turquoise',
+    description: 'Lagon aux eaux transparentes',
+    imageUrl: '/images/demo/photo-1506929562872-bb421503ef21.jpg',
+    category: 'beach',
+    frontCaption: 'Eaux turquoise',
+    frontEmoji: '\u{1F30A}',
+    message: 'L\u2019eau est tellement claire qu\u2019on voit les poissons depuis la surface ! Un vrai aquarium naturel. On ne veut plus rentrer !',
+    location: 'Bora Bora, Polyn\u00E9sie',
+    stampStyle: 'airmail',
   },
+  // === Ville (city) ===
   {
     id: 'tpl-4',
-    name: 'Tokyo néons',
-    imageUrl:
-      '/images/demo/photo-1540959733332-eab4deabeeaf.jpg',
-    category: 'City',
+    name: 'Paris romantique',
+    description: 'La Tour Eiffel au cr\u00E9puscule',
+    imageUrl: '/images/demo/photo-1502602898657-3e91760cbb34.jpg',
+    category: 'city',
+    frontCaption: 'Paris, je t\u2019aime',
+    frontEmoji: '\u2764\u{FE0F}',
+    message: 'Paris brille de mille feux ce soir. On a flan\u00E9 le long de la Seine, crois\u00E9 et macaron au Jardin du Luxembourg. La vie est belle !',
+    location: 'Paris, France',
+    stampStyle: 'classic',
   },
   {
     id: 'tpl-5',
-    name: 'Alpes suisses',
-    imageUrl:
-      '/images/demo/photo-1531366936337-7c912a4589a7.jpg',
-    category: 'Mountain',
+    name: 'Tokyo n\u00E9ons',
+    description: 'Lumi\u00E8res de Shibuya la nuit',
+    imageUrl: '/images/demo/photo-1540959733332-eab4deabeeaf.jpg',
+    category: 'city',
+    frontCaption: 'N\u00E9ons de Tokyo',
+    frontEmoji: '\u{1F3EE}',
+    message: 'Tokyo est une explosion de couleurs et de saveurs ! Les ramen sont incroyables et les temples magnifiques. Quelle \u00E9nergie !',
+    location: 'Tokyo, Japon',
+    stampStyle: 'modern',
   },
   {
     id: 'tpl-6',
-    name: 'Côte Amalfitaine',
-    imageUrl:
-      '/images/demo/photo-1534113414509-0eec2bfb493f.jpg',
-    category: 'City',
+    name: 'Skyline moderne',
+    description: 'Gratte-ciels et architecture futuriste',
+    imageUrl: '/images/demo/photo-1486074218988-66a98816c117.jpg',
+    category: 'city',
+    frontCaption: 'Skyline vertigineux',
+    frontEmoji: '\u{1F3D9}\u{FE0F}',
+    message: 'Vue imprenable depuis le rooftop ! La ville s\u2019\u00E9tend \u00E0 perte de vue, c\u2019est vertigineux. On se sent tout petit face \u00E0 ces g\u00E9ants de verre.',
+    location: 'Dubai, \u00C9mirats arabes unis',
+    stampStyle: 'modern',
   },
   {
     id: 'tpl-7',
-    name: 'Forêt enchantée',
-    imageUrl:
-      '/images/demo/photo-1448375240586-882707db888b.jpg',
-    category: 'Mountain',
+    name: 'Nuit urbaine',
+    description: 'Ambiance nocturne en ville',
+    imageUrl: '/images/demo/photo-1486406146926-c627a92ad1ab.jpg',
+    category: 'city',
+    frontCaption: 'City lights',
+    frontEmoji: '\u{1F303}',
+    message: 'La ville ne dort jamais ! Petite balade nocturne entre les buildings illumin\u00E9s. L\u2019ambiance est \u00E9lectrique, on adore.',
+    location: 'New York, USA',
+    stampStyle: 'modern',
   },
+  // === Nature ===
   {
     id: 'tpl-8',
-    name: 'Désert doré',
-    imageUrl:
-      '/images/demo/photo-1509316785289-025f5b846b35.jpg',
-    category: 'Abstract',
+    name: 'Alpes suisses',
+    description: 'Sommets enneig\u00E9s majestueux',
+    imageUrl: '/images/demo/photo-1531366936337-7c912a4589a7.jpg',
+    category: 'nature',
+    frontCaption: 'Sommets majestueux',
+    frontEmoji: '\u{1F3D4}\u{FE0F}',
+    message: 'L\u2019air pur des montagnes, le silence des sommets... On a fait une randonn\u00E9e sublime avec vue sur le glacier. Inoubliable !',
+    location: 'Zermatt, Suisse',
+    stampStyle: 'classic',
+  },
+  {
+    id: 'tpl-9',
+    name: 'For\u00EAt enchant\u00E9e',
+    description: 'Lumi\u00E8re filtrant \u00E0 travers les arbres',
+    imageUrl: '/images/demo/photo-1448375240586-882707db888b.jpg',
+    category: 'nature',
+    frontCaption: 'For\u00EAt magique',
+    frontEmoji: '\u{1F332}',
+    message: 'Promenade f\u00E9\u00E9rique en for\u00EAt ce matin. La lumi\u00E8re filtrait entre les arbres comme dans un conte. Le calme absolu, quel bonheur.',
+    location: 'For\u00EAt-Noire, Allemagne',
+    stampStyle: 'classic',
+  },
+  {
+    id: 'tpl-10',
+    name: 'Champs de lavande',
+    description: 'Rang\u00E9es violettes \u00E0 perte de vue',
+    imageUrl: '/images/demo/photo-1499856871958-5b9627545d1a.jpg',
+    category: 'nature',
+    frontCaption: 'Mer de lavande',
+    frontEmoji: '\u{1F33B}',
+    message: 'Un oc\u00E9an violet \u00E0 perte de vue, le parfum enivrant de la lavande... La Provence est un enchantement pour tous les sens !',
+    location: 'Valensole, Provence',
+    stampStyle: 'classic',
+  },
+  {
+    id: 'tpl-11',
+    name: 'Jungle luxuriante',
+    description: 'V\u00E9g\u00E9tation tropicale dense',
+    imageUrl: '/images/demo/photo-1528164344705-47542687000d.jpg',
+    category: 'nature',
+    frontCaption: 'Jungle sauvage',
+    frontEmoji: '\u{1F33F}',
+    message: 'Au c\u0153ur de la jungle, entour\u00E9s de verdure et de chants d\u2019oiseaux exotiques. Une aventure extraordinaire !',
+    location: 'Costa Rica',
+    stampStyle: 'airmail',
+  },
+  {
+    id: 'tpl-12',
+    name: 'Lac paisible',
+    description: 'Reflets sur un lac de montagne',
+    imageUrl: '/images/demo/photo-1439396087961-99bc12bd8959.jpg',
+    category: 'nature',
+    frontCaption: 'S\u00E9r\u00E9nit\u00E9',
+    frontEmoji: '\u{1F4A7}',
+    message: 'Le lac est un miroir parfait ce matin. Pas un bruit, juste le vent dans les arbres. Un moment de paix absolue.',
+    location: 'Lac de C\u00F4me, Italie',
+    stampStyle: 'classic',
+  },
+  // === Voyage (travel) ===
+  {
+    id: 'tpl-13',
+    name: 'C\u00F4te Amalfitaine',
+    description: 'Villages color\u00E9s sur les falaises',
+    imageUrl: '/images/demo/photo-1534113414509-0eec2bfb493f.jpg',
+    category: 'travel',
+    frontCaption: 'Dolce Vita',
+    frontEmoji: '\u{1F1EE}\u{1F1F9}',
+    message: 'Les villages color\u00E9s accroch\u00E9s aux falaises, la mer turquoise en contrebas... La c\u00F4te Amalfitaine est un r\u00EAve \u00E9veill\u00E9 !',
+    location: 'Amalfi, Italie',
+    stampStyle: 'airmail',
+  },
+  {
+    id: 'tpl-14',
+    name: 'Santorini grecque',
+    description: 'Maisons blanches et d\u00F4mes bleus',
+    imageUrl: '/images/demo/photo-1503614472-8c93d56e92ce.jpg',
+    category: 'travel',
+    frontCaption: 'Bleu \u00E9g\u00E9en',
+    frontEmoji: '\u{1F1EC}\u{1F1F7}',
+    message: 'Le blanc immacul\u00E9 des maisons, le bleu profond de la mer \u00C9g\u00E9e... Santorini est encore plus belle en vrai. On est sous le charme !',
+    location: 'Santorini, Gr\u00E8ce',
+    stampStyle: 'airmail',
+  },
+  {
+    id: 'tpl-15',
+    name: 'Escapade resort',
+    description: 'Piscine et d\u00E9tente tropicale',
+    imageUrl: '/images/demo/photo-1520250497591-112f2f40a3f4.jpg',
+    category: 'travel',
+    frontCaption: 'Escapade de r\u00EAve',
+    frontEmoji: '\u{1F334}',
+    message: 'Piscine \u00E0 d\u00E9bordement, cocktails frais et farniente... Le resort est un petit coin de paradis. On recharge les batteries !',
+    location: 'Phuket, Tha\u00EFlande',
+    stampStyle: 'modern',
+  },
+  {
+    id: 'tpl-16',
+    name: 'Aventure lointaine',
+    description: 'Paysages grandioses et d\u00E9couverte',
+    imageUrl: '/images/demo/photo-1501785888041-af3ef285b470.jpg',
+    category: 'travel',
+    frontCaption: 'L\u2019aventure nous appelle',
+    frontEmoji: '\u{1F30D}',
+    message: 'On explore des terres inconnues, chaque virage r\u00E9v\u00E8le un panorama plus beau que le pr\u00E9c\u00E9dent. Le monde est immense et magnifique !',
+    location: 'Nouvelle-Z\u00E9lande',
+    stampStyle: 'airmail',
+  },
+  // === Romantique ===
+  {
+    id: 'tpl-17',
+    name: 'Amour \u00E9ternel',
+    description: 'Coucher de soleil romantique',
+    imageUrl: '/images/demo/photo-1493976040374-85c8e12f0c0e.jpg',
+    category: 'romantic',
+    frontCaption: 'Avec tout mon amour',
+    frontEmoji: '\u{1F495}',
+    message: 'Chaque coucher de soleil me rappelle combien je suis chanceux(se) de partager ces moments avec toi. Je t\u2019aime, tout simplement.',
+    location: 'Venise, Italie',
+    stampStyle: 'classic',
+  },
+  {
+    id: 'tpl-18',
+    name: 'Spa d\u00E9tente',
+    description: 'Bien-\u00EAtre et relaxation',
+    imageUrl: '/images/demo/photo-1556761175-5973dc0f32e7.jpg',
+    category: 'romantic',
+    frontCaption: 'Pause bien-\u00EAtre',
+    frontEmoji: '\u{1F9D6}',
+    message: 'Massage, jacuzzi et th\u00E9 \u00E0 la menthe... On se fait chouchouter comme des rois. Un week-end ressour\u00E7ant dont on avait bien besoin !',
+    location: 'Marrakech, Maroc',
+    stampStyle: 'modern',
+  },
+  // === F\u00EAtes (festive) ===
+  {
+    id: 'tpl-19',
+    name: 'Feux d\u2019artifice',
+    description: 'C\u00E9l\u00E9bration lumineuse dans le ciel',
+    imageUrl: '/images/demo/photo-1530103043960-ef38714abb15.jpg',
+    category: 'festive',
+    frontCaption: 'F\u00EAte et lumi\u00E8res',
+    frontEmoji: '\u{1F386}',
+    message: 'Quel spectacle ! Le ciel s\u2019est illumin\u00E9 de mille couleurs. On a f\u00EAt\u00E9 \u00E7a en grand, des souvenirs plein la t\u00EAte !',
+    location: 'Sydney, Australie',
+    stampStyle: 'modern',
+  },
+  {
+    id: 'tpl-20',
+    name: 'C\u00E9l\u00E9bration',
+    description: 'Ambiance festive et joyeuse',
+    imageUrl: '/images/demo/photo-1516426122078-c23e76319801.jpg',
+    category: 'festive',
+    frontCaption: 'Vive la f\u00EAte !',
+    frontEmoji: '\u{1F389}',
+    message: 'Musique, danse et rires \u00E0 gogo ! L\u2019ambiance est incroyable, tout le monde est dans la joie. On f\u00EAte la vie !',
+    location: 'Rio de Janeiro, Br\u00E9sil',
+    stampStyle: 'modern',
+  },
+  // === Gastronomie (food) ===
+  {
+    id: 'tpl-21',
+    name: 'Pause caf\u00E9',
+    description: 'Caf\u00E9 et douceurs du matin',
+    imageUrl: '/images/demo/photo-1527333656061-ca7adf608ae1.jpg',
+    category: 'food',
+    frontCaption: 'Coffee time',
+    frontEmoji: '\u2615',
+    message: 'Un petit caf\u00E9 en terrasse, un croissant dor\u00E9 et le journal du matin... Les petits plaisirs simples qui font le bonheur du voyageur.',
+    location: 'Lisbonne, Portugal',
+    stampStyle: 'classic',
+  },
+  {
+    id: 'tpl-22',
+    name: 'Chocolat artisanal',
+    description: 'D\u00E9lices sucr\u00E9s \u00E0 savourer',
+    imageUrl: '/images/demo/photo-1527529482837-4698179dc6ce.jpg',
+    category: 'food',
+    frontCaption: 'Douceurs gourmandes',
+    frontEmoji: '\u{1F36B}',
+    message: 'On a d\u00E9couvert un chocolatier artisanal exceptionnel ! Chaque bouche est une explosion de saveurs. On vous ram\u00E8ne des \u00E9chantillons !',
+    location: 'Bruxelles, Belgique',
+    stampStyle: 'classic',
+  },
+  // === Abstrait ===
+  {
+    id: 'tpl-23',
+    name: 'D\u00E9sert dor\u00E9',
+    description: 'Dunes de sable \u00E0 l\u2019infini',
+    imageUrl: '/images/demo/photo-1509316785289-025f5b846b35.jpg',
+    category: 'abstract',
+    frontCaption: 'Oc\u00E9an de sable',
+    frontEmoji: '\u{1F3DC}\u{FE0F}',
+    message: 'Le silence du d\u00E9sert est assourdissant. Les dunes s\u2019\u00E9tendent \u00E0 perte de vue, sculpt\u00E9es par le vent. Un paysage hypnotique.',
+    location: 'Sahara, Maroc',
+    stampStyle: 'airmail',
+  },
+  {
+    id: 'tpl-24',
+    name: 'Paysage abstrait',
+    description: 'Nature aux couleurs surr\u00E9alistes',
+    imageUrl: '/images/demo/photo-1483347756197-71ef80e95f73.jpg',
+    category: 'abstract',
+    frontCaption: 'R\u00EAve \u00E9veill\u00E9',
+    frontEmoji: '\u{1F3A8}',
+    message: 'La nature est la plus grande artiste. Ces couleurs, ces formes... On croirait un tableau vivant. Magnifique.',
+    location: 'Islande',
+    stampStyle: 'modern',
   },
 ]
 
@@ -176,7 +428,7 @@ const ALBUM_TIERS = {
 
 export default function EditorPage() {
   const [currentStep, setCurrentStep] = useState<StepId>('photo')
-  const [selectedCategory, setSelectedCategory] = useState<Template['category'] | 'all'>('all')
+  const [selectedCategory, setSelectedCategory] = useState<TemplateCategory | 'all'>('all')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isLocating, setIsLocating] = useState(false)
 
@@ -198,6 +450,8 @@ export default function EditorPage() {
   const [postmarkText, setPostmarkText] = useState('')
   const [uploadedFileName, setUploadedFileName] = useState('')
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+  /** À l'étape Rédaction : id du modèle utilisé pour l'aperçu du verso (null = ma rédaction). */
+  const [versoPreviewTemplateId, setVersoPreviewTemplateId] = useState<string | null>(null)
   const [frontImageKey, setFrontImageKey] = useState<string | null>(null)
   const [frontImageMimeType, setFrontImageMimeType] = useState<string | null>(null)
   const [frontImageFilesize, setFrontImageFilesize] = useState<number | null>(null)
@@ -228,6 +482,7 @@ export default function EditorPage() {
   const [hasConfettiFired, setHasConfettiFired] = useState(false)
   const [isSendingEmail, setIsSendingEmail] = useState(false)
   const [isEmailSent, setIsEmailSent] = useState(false)
+  const [currentUser, setCurrentUser] = useState<{ id: number; email?: string; name?: string | null } | null>(null)
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
   const showBack = currentStep === 'redaction'
@@ -250,6 +505,16 @@ export default function EditorPage() {
       setHasConfettiFired(true)
     }
   }, [shareUrl, hasConfettiFired])
+
+  useEffect(() => {
+    fetch('/api/users/me', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.user) setCurrentUser({ id: data.user.id, email: data.user.email, name: data.user.name ?? null })
+        else setCurrentUser(null)
+      })
+      .catch(() => setCurrentUser(null))
+  }, [])
 
   // De base : afficher ma position sur la carte (géolocalisation au chargement)
   useEffect(() => {
@@ -380,6 +645,12 @@ export default function EditorPage() {
     setFrontImageMimeType(null)
     setFrontImageFilesize(null)
     setFrontImageCrop({ scale: 1, x: 50, y: 50 })
+    // Pre-fill fields from template
+    if (template.frontCaption) setFrontCaption(template.frontCaption)
+    if (template.frontEmoji) setFrontEmoji(template.frontEmoji)
+    if (template.message) setMessage(template.message)
+    if (template.location) setLocation(template.location)
+    if (template.stampStyle) setStampStyle(template.stampStyle)
     try {
       const resized = await urlToResizedDataUrl(template.imageUrl)
       setFrontImage(resized)
@@ -576,6 +847,21 @@ export default function EditorPage() {
     coords: coords || undefined,
   }
 
+  /** Aperçu : à l'étape Rédaction, si un modèle verso est choisi, on affiche le verso avec son style (timbre, message, lieu). */
+  const postcardForPreview: Postcard =
+    currentStep === 'redaction' && versoPreviewTemplateId
+      ? (() => {
+          const tpl = SAMPLE_TEMPLATES.find((t) => t.id === versoPreviewTemplateId)
+          if (!tpl) return currentPostcard
+          return {
+            ...currentPostcard,
+            message: tpl.message ?? currentPostcard.message,
+            location: tpl.location ?? currentPostcard.location,
+            stampStyle: tpl.stampStyle ?? currentPostcard.stampStyle,
+          }
+        })()
+      : currentPostcard
+
   const filteredTemplates =
     selectedCategory === 'all'
       ? SAMPLE_TEMPLATES
@@ -704,7 +990,7 @@ export default function EditorPage() {
                   Mise à jour en temps réel
                 </div>
               </div>
-              <PostcardView postcard={currentPostcard} flipped={showBack} className="w-full h-auto aspect-[3/2] shadow-xl rounded-xl border border-stone-100" />
+              <PostcardView postcard={postcardForPreview} flipped={showBack} className="w-full h-auto aspect-[3/2] shadow-xl rounded-xl border border-stone-100" />
               <div className="mt-4 flex flex-col gap-4">
                 <p className="text-stone-400 text-[10px] uppercase tracking-widest font-bold text-center">L&apos;aperçu se met à jour en temps réel</p>
 
@@ -820,26 +1106,18 @@ export default function EditorPage() {
 
                 {/* Category Filter */}
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {(['all', 'Beach', 'City', 'Mountain', 'Abstract'] as const).map((cat) => (
+                  {TEMPLATE_CATEGORIES.map((cat) => (
                     <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
+                      key={cat.key}
+                      onClick={() => setSelectedCategory(cat.key)}
                       className={cn(
                         'px-4 py-1.5 rounded-full text-sm font-semibold transition-all',
-                        selectedCategory === cat
+                        selectedCategory === cat.key
                           ? 'bg-teal-500 text-white shadow-sm'
                           : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
                       )}
                     >
-                      {cat === 'all'
-                        ? 'Tous'
-                        : cat === 'Beach'
-                          ? 'Plage'
-                          : cat === 'City'
-                            ? 'Ville'
-                            : cat === 'Mountain'
-                              ? 'Nature'
-                              : 'Abstrait'}
+                      {cat.icon ? `${cat.icon} ${cat.label}` : cat.label}
                     </button>
                   ))}
                 </div>
@@ -1248,6 +1526,49 @@ export default function EditorPage() {
                 </div>
 
                 <div className="p-6 sm:p-8 space-y-8">
+                  {/* Sélecteur de modèle pour comparer le rendu du verso */}
+                  <section className="bg-stone-50 rounded-2xl border border-stone-100 p-4 sm:p-5">
+                    <label className="flex items-center gap-2 text-sm font-bold text-stone-700 mb-3 uppercase tracking-wider">
+                      <Eye size={16} className="text-teal-500" />
+                      Aperçu du verso selon un modèle
+                    </label>
+                    <p className="text-stone-500 text-xs mb-3">
+                      Choisissez un modèle pour voir la différence de rendu côté verso (timbre, mise en page).
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setVersoPreviewTemplateId(null)}
+                        className={cn(
+                          'px-3 py-2 rounded-xl text-sm font-semibold transition-all border-2',
+                          !versoPreviewTemplateId
+                            ? 'border-teal-500 bg-teal-50 text-teal-800 shadow-sm'
+                            : 'border-stone-200 bg-white text-stone-500 hover:border-stone-300 hover:bg-stone-50'
+                        )}
+                      >
+                        Ma rédaction
+                      </button>
+                      {SAMPLE_TEMPLATES.map((tpl) => (
+                        <button
+                          key={tpl.id}
+                          type="button"
+                          onClick={() => setVersoPreviewTemplateId(tpl.id)}
+                          className={cn(
+                            'px-3 py-2 rounded-xl text-sm font-semibold transition-all border-2 flex items-center gap-2',
+                            versoPreviewTemplateId === tpl.id
+                              ? 'border-teal-500 bg-teal-50 text-teal-800 shadow-sm'
+                              : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:bg-stone-50'
+                          )}
+                        >
+                          <span className="w-6 h-6 rounded-md overflow-hidden shrink-0 bg-stone-200">
+                            <img src={tpl.imageUrl} alt="" className="w-full h-full object-cover" />
+                          </span>
+                          <span className="truncate max-w-[120px] sm:max-w-[140px]">{tpl.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+
                   {/* Lieu & Destinataire — grid côte à côte */}
                   <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
@@ -1701,7 +2022,7 @@ export default function EditorPage() {
                       </div>
                     )}
 
-                    {/* Sender Email Section */}
+                    {/* Sender Email Section — masquée si connecté (carte déjà associée au compte) */}
                     <div className="mt-12 pt-8 border-t border-stone-100">
                       <div className="bg-teal-50/50 rounded-2xl p-6 border border-teal-100">
                         <div className="flex items-start gap-4 mb-4">
@@ -1709,14 +2030,28 @@ export default function EditorPage() {
                             <User size={20} />
                           </div>
                           <div>
-                            <h3 className="font-serif font-bold text-lg text-stone-800">Votre E-mail (Expéditeur)</h3>
+                            <h3 className="font-serif font-bold text-lg text-stone-800">
+                              {currentUser ? 'Connecté à votre compte' : 'Votre E-mail (Expéditeur)'}
+                            </h3>
                             <p className="text-stone-500 text-sm mt-1 leading-relaxed">
-                              Saisissez votre e-mail pour revoir votre carte, consulter les statistiques et suivre son envoi.
+                              {currentUser
+                                ? 'Cette carte est automatiquement associée à votre compte. Vous la retrouverez dans Mon espace.'
+                                : 'Saisissez votre e-mail pour revoir votre carte, consulter les statistiques et suivre son envoi.'}
                             </p>
                           </div>
                         </div>
                         <div className="max-w-md flex gap-2">
-                          {isEmailSent ? (
+                          {currentUser ? (
+                            <div className="w-full flex items-center gap-3 bg-teal-50 border border-teal-200 text-teal-800 px-4 py-3 rounded-xl">
+                              <div className="bg-teal-100 p-1 rounded-full">
+                                <Check size={16} className="text-teal-600" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="font-bold text-sm">Connecté en tant que {currentUser.name?.trim() || currentUser.email}</p>
+                                <p className="text-xs text-teal-600">Carte enregistrée dans votre espace.</p>
+                              </div>
+                            </div>
+                          ) : isEmailSent ? (
                             <div className="w-full flex items-center gap-3 bg-teal-50 border border-teal-200 text-teal-800 px-4 py-3 rounded-xl animate-in fade-in slide-in-from-top-2">
                               <div className="bg-teal-100 p-1 rounded-full">
                                 <Check size={16} className="text-teal-600" />
@@ -1752,7 +2087,6 @@ export default function EditorPage() {
                                     const result = await linkPostcardToUser(createdPostcardId, senderEmail)
                                     if (result.success) {
                                       setIsEmailSent(true);
-                                      // alert("Compte créé/lié ! Un email avec votre lien de connexion magique vous a été envoyé.")
                                     } else {
                                       alert("Erreur: " + (result.error || "Impossible de lier le compte."))
                                     }
@@ -1805,7 +2139,7 @@ export default function EditorPage() {
                   </div>
                   <div className="flex justify-center">
                     <div className="transform scale-[0.85] origin-top">
-                      <PostcardView postcard={currentPostcard} flipped={showBack} />
+                      <PostcardView postcard={postcardForPreview} flipped={showBack} />
                     </div>
                   </div>
                 </div>
@@ -1867,7 +2201,7 @@ export default function EditorPage() {
                 <X size={48} strokeWidth={3} />
               </button>
               <PostcardView
-                postcard={currentPostcard}
+                postcard={postcardForPreview}
                 flipped={showBack}
                 className="w-full max-w-[1700px] h-auto aspect-[3/2] shadow-2xl hover:scale-100 cursor-default"
               />

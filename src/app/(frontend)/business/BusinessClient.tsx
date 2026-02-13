@@ -9,207 +9,328 @@ import {
     Palette,
     Database,
     ImageIcon,
-    Users2
+    Users2,
+    BarChart3,
+    Trophy,
+    Percent,
+    Eye,
+    CheckCircle2,
+    LayoutDashboard,
+    Compass
 } from 'lucide-react'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
+import { motion } from 'framer-motion'
 
-export default function BusinessPage() {
+export default function BusinessClient() {
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    }
+
+    const itemVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: {
+            y: 0,
+            opacity: 1,
+            transition: {
+                duration: 0.5,
+                ease: "easeOut"
+            }
+        }
+    }
+
     return (
-        <div className="bg-[#fdfbf7] min-h-screen font-sans">
+        <div className="bg-[#fdfbf7] min-h-screen font-sans selection:bg-teal-100">
             {/* Hero Section */}
-            <section className="relative bg-teal-950 min-h-[600px] flex items-center overflow-hidden">
+            <section className="relative bg-[#061e1e] min-h-[85vh] flex items-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <img
                         src={getOptimizedImageUrl("/images/demo/photo-1486406146926-c627a92ad1ab.jpg", { width: 1920 })}
                         alt="Business Background"
-                        className="w-full h-full object-cover opacity-20 mix-blend-overlay"
+                        className="w-full h-full object-cover opacity-30 mix-blend-overlay scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-teal-950 via-teal-900/95 to-teal-800/80"></div>
+                    <div className="absolute inset-0 bg-gradient-to-b from-teal-950/40 via-teal-950/80 to-[#061e1e]"></div>
                 </div>
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full py-20">
-                    <div className="max-w-3xl">
-                        <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md px-4 py-1.5 rounded-full text-orange-200 text-sm font-semibold mb-8 border border-white/10">
-                            <Palette size={16} className="text-orange-400" /> Marque blanche
-                        </div>
+                    <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        variants={containerVariants}
+                        className="max-w-4xl"
+                    >
+                        <motion.div variants={itemVariants} className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-xl px-4 py-2 rounded-full text-teal-200 text-sm font-bold mb-8 border border-white/10 shadow-2xl">
+                            <Zap size={16} className="text-orange-400" /> SOLUTIONS POUR LE TOURISME & ENTREPRISES
+                        </motion.div>
 
-                        <h1 className="text-5xl md:text-7xl font-serif font-bold text-white mb-8 leading-tight">
-                            Votre marque sur <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-amber-200">chaque carte postale.</span>
-                        </h1>
+                        <motion.h1 variants={itemVariants} className="text-5xl md:text-8xl font-serif font-bold text-white mb-8 leading-[1.1] tracking-tight">
+                            Faites rayonner <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 via-amber-200 to-teal-200">votre destination.</span>
+                        </motion.h1>
 
-                        <p className="text-teal-50 text-xl mb-10 leading-relaxed max-w-2xl font-light">
-                            Agences et professionnels : diffusez votre image de marque sur des cartes postales personnalisées.
-                            Vos clients reçoivent un objet tangible à votre effigie — données clients, CRM et envois sous votre nom.
-                        </p>
+                        <motion.p variants={itemVariants} className="text-teal-50/80 text-xl md:text-2xl mb-12 leading-relaxed max-w-2xl font-light">
+                            Offrez à vos visiteurs une expérience mémorable. Une banque d'images pro, votre branding sur chaque carte, et des statistiques en temps réel. Simple, puissant, élégant.
+                        </motion.p>
 
-                        <div className="flex flex-col sm:flex-row gap-4">
+                        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-6">
                             <Button
                                 asChild
-                                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-7 rounded-full text-lg font-semibold transition-all shadow-lg shadow-orange-900/20 flex items-center gap-2"
+                                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white px-10 py-8 rounded-2xl text-xl font-bold transition-all shadow-2xl shadow-orange-950/40 flex items-center gap-3 border-0"
                             >
-                                <Link href="/connexion/inscription">Parler à un expert <ArrowRight size={20} /></Link>
+                                <Link href="/contact">Démarrer maintenant <ArrowRight size={24} /></Link>
                             </Button>
                             <Button
                                 asChild
                                 variant="outline"
-                                className="bg-transparent border-white/20 text-white hover:bg-white/10 px-8 py-7 rounded-full text-lg font-semibold transition-all flex items-center gap-2"
+                                className="bg-white/5 backdrop-blur-md border-white/20 text-white hover:bg-white/10 px-10 py-8 rounded-2xl text-xl font-bold transition-all flex items-center gap-3"
                             >
                                 <Link href="/pricing">Voir les tarifs</Link>
                             </Button>
-                        </div>
-                    </div>
+                        </motion.div>
+                    </motion.div>
                 </div>
             </section>
 
-            {/* Marque blanche - Section dédiée */}
-            <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto -mt-20 relative z-20">
-                <div className="bg-white rounded-3xl shadow-xl shadow-stone-200/50 border border-stone-100 overflow-hidden">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-                        <div className="p-12 lg:p-16 flex flex-col justify-center">
-                            <div className="inline-flex items-center gap-2 bg-teal-50 text-teal-700 px-3 py-1.5 rounded-full text-sm font-semibold mb-6 w-fit">
-                                <Palette size={16} /> Solution marque blanche
-                            </div>
-                            <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800 mb-6">
-                                Diffusez votre image de marque sur chaque envoi
-                            </h2>
-                            <p className="text-stone-600 text-lg leading-relaxed mb-8">
-                                Vos cartes postales arborent <strong>votre logo</strong>, vos couleurs et votre charte graphique.
-                                Les agences et les pros envoient sous leur propre marque : les clients ne voient que vous.
-                            </p>
-                            <ul className="space-y-4 text-stone-600">
-                                {[
-                                    'Logo et identité visuelle sur les cartes',
-                                    'Expérience et envois 100 % à votre nom',
-                                    'Personnalisation des modèles et messages',
-                                ].map((item, i) => (
-                                    <li key={i} className="flex items-center gap-3">
-                                        <span className="w-6 h-6 rounded-full bg-teal-500 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">✓</span>
-                                        {item}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                        <div className="bg-gradient-to-br from-teal-50 to-stone-50 p-12 lg:p-16 flex items-center justify-center">
-                            <div className="text-center max-w-sm">
-                                <div className="w-24 h-24 rounded-2xl bg-white shadow-lg border border-stone-100 mx-auto mb-4 flex items-center justify-center">
-                                    <ImageIcon className="w-12 h-12 text-teal-600" />
-                                </div>
-                                <p className="text-stone-500 font-medium">Votre marque sur chaque carte</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Value Proposition: données clients, marque, automatisation */}
-            <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-                <div className="text-center max-w-2xl mx-auto mb-14">
-                    <h2 className="text-3xl md:text-4xl font-serif font-bold text-teal-900 mb-4">Agences & pros : tout sous contrôle</h2>
-                    <p className="text-lg text-stone-600">
-                        Centralisez les infos clients, pilotez vos envois et diffusez votre image de marque sur vos cartes postales.
-                    </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {[
-                        {
-                            icon: <Database className="w-8 h-8 text-orange-500" />,
-                            title: "Données clients à portée de main",
-                            desc: "Agences et professionnels disposent de toutes les infos sur leurs clients : contacts, historique, préférences. Import CRM, listes, segments — une seule base pour vos campagnes postales."
-                        },
-                        {
-                            icon: <Palette className="w-8 h-8 text-teal-500" />,
-                            title: "Image de marque sur les cartes",
-                            desc: "Chaque carte postale porte votre logo et votre identité. Vous diffusez votre marque physiquement : anniversaires, remerciements, relances — toujours à votre image."
-                        },
-                        {
-                            icon: <Zap className="w-8 h-8 text-purple-500" />,
-                            title: "Automatisation & suivi",
-                            desc: "Connectez votre CRM ou notre API. Déclenchez des envois selon les événements, suivez les envois et mesurez l'engagement (QR, analytics) pour optimiser vos campagnes."
-                        }
-                    ].map((feature, idx) => (
-                        <div key={idx} className="bg-white p-8 rounded-2xl shadow-xl shadow-stone-200/50 border border-stone-100 hover:transform hover:-translate-y-1 transition-all duration-300">
-                            <div className="bg-stone-50 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
-                                {feature.icon}
-                            </div>
-                            <h3 className="text-xl font-serif font-bold text-stone-800 mb-3">{feature.title}</h3>
-                            <p className="text-stone-600 leading-relaxed">{feature.desc}</p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            {/* Use Cases Section */}
-            <section className="py-20 bg-stone-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center max-w-3xl mx-auto mb-16">
-                        <h2 className="text-3xl md:text-5xl font-serif font-bold text-teal-900 mb-4">Agences & pros : votre marque en avant</h2>
-                        <p className="text-lg text-stone-600">Utilisez vos données clients et diffusez votre image de marque sur des cartes postales qui vous ressemblent.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                        <div className="space-y-8">
-                            {[
-                                {
-                                    title: "Agences de Voyage & Tourisme",
-                                    desc: "Centralisez les infos de vos voyageurs et envoyez des cartes à votre marque après le séjour — avis, fidélisation, notoriété.",
-                                    icon: <Globe2 size={24} />
-                                },
-                                {
-                                    title: "Immobilier",
-                                    desc: "Félicitez vos clients pour leur nouvel achat ou prospectez un quartier avec des cartes à votre logo et à votre image.",
-                                    icon: <Building2 size={24} />
-                                },
-                                {
-                                    title: "E-commerce & DNVB",
-                                    desc: "Remerciez vos meilleurs clients ou réactivez les paniers abandonnés avec une carte postale à votre marque.",
-                                    icon: <Users2 size={24} />
-                                }
-                            ].map((item, i) => (
-                                <div key={i} className="flex gap-6 group">
-                                    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300">
-                                        {item.icon}
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-bold text-stone-800 mb-2">{item.title}</h3>
-                                        <p className="text-stone-600">{item.desc}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="bg-white p-2 rounded-2xl shadow-2xl rotate-2 hover:rotate-0 transition-transform duration-500">
+            {/* Core Features Grid */}
+            <section className="py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center mb-32">
+                    <motion.div
+                        initial={{ opacity: 0, x: -30 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        className="relative"
+                    >
+                        <div className="absolute -inset-4 bg-orange-100 rounded-[40px] rotate-2 -z-10 blur-2xl opacity-50"></div>
+                        <div className="bg-white rounded-[40px] p-2 shadow-2xl overflow-hidden border border-stone-100">
                             <img
-                                src={getOptimizedImageUrl("/images/demo/photo-1556761175-5973dc0f32e7.jpg", { width: 1200 })}
-                                alt="Meeting"
-                                className="rounded-xl w-full"
+                                src={getOptimizedImageUrl("/images/demo/photo-1502602898657-3e91760cbb34.jpg", { width: 1000 })}
+                                alt="Image Bank Preview"
+                                className="rounded-[36px] w-full"
                             />
                         </div>
+                        <div className="absolute -bottom-10 -right-10 bg-white p-6 rounded-3xl shadow-2xl border border-stone-100 hidden md:block max-w-[240px]">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="p-2 bg-teal-100 rounded-lg text-teal-600">
+                                    <ImageIcon size={20} />
+                                </div>
+                                <span className="font-bold text-stone-800">Banque d'images</span>
+                            </div>
+                            <p className="text-sm text-stone-500 leading-relaxed">Mettez à disposition vos plus beaux clichés pour vos visiteurs.</p>
+                        </div>
+                    </motion.div>
+
+                    <div className="space-y-8">
+                        <div className="inline-flex items-center gap-2 bg-orange-50 text-orange-600 px-4 py-2 rounded-full text-sm font-black uppercase tracking-widest">
+                            Photothèque Locale
+                        </div>
+                        <h2 className="text-4xl md:text-6xl font-serif font-bold text-stone-900 leading-tight">
+                            Vos photos, leurs souvenirs.
+                        </h2>
+                        <p className="text-xl text-stone-600 leading-relaxed">
+                            Alimentez une banque d'images exclusive pour votre territoire ou établissement. Vos visiteurs peuvent choisir parmi vos clichés professionnels pour créer leurs cartes, garantissant une esthétique parfaite pour chaque envoi.
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-8">
+                            <div className="flex items-start gap-3">
+                                <CheckCircle2 className="text-teal-500 mt-1 flex-shrink-0" />
+                                <span className="font-bold text-stone-700">Contrôle éditorial total</span>
+                            </div>
+                            <div className="flex items-start gap-3">
+                                <CheckCircle2 className="text-teal-500 mt-1 flex-shrink-0" />
+                                <span className="font-bold text-stone-700">Mise en avant du patrimoine</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center flex-row-reverse">
+                    <div className="order-2 lg:order-1 space-y-8">
+                        <div className="inline-flex items-center gap-2 bg-teal-50 text-teal-600 px-4 py-2 rounded-full text-sm font-black uppercase tracking-widest">
+                            Co-Branding Automatique
+                        </div>
+                        <h2 className="text-4xl md:text-6xl font-serif font-bold text-stone-900 leading-tight">
+                            Votre logo <br />sur chaque carte.
+                        </h2>
+                        <p className="text-xl text-stone-600 leading-relaxed">
+                            Renforcez votre image de marque sans effort. Votre logo et votre identité visuelle sont automatiquement intégrés sur toutes les cartes créées via votre espace, qu'elles utilisent vos photos ou celles des visiteurs.
+                        </p>
+                        <div className="bg-stone-50 p-8 rounded-3xl border border-stone-100">
+                            <p className="text-stone-500 italic text-lg whitespace-pre-line">
+                                "Une visibilité organique exceptionnelle : chaque carte postale devient une ambassadrice de votre marque auprès de l'entourage de vos visiteurs."
+                            </p>
+                        </div>
+                    </div>
+
+                    <motion.div
+                        initial={{ opacity: 0, x: 30 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        className="order-1 lg:order-2 relative"
+                    >
+                        <div className="absolute -inset-4 bg-teal-100 rounded-[40px] -rotate-2 -z-10 blur-2xl opacity-50"></div>
+                        <div className="bg-stone-900 rounded-[40px] p-8 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center min-h-[400px]">
+                            <div className="absolute top-0 right-0 p-8 opacity-10">
+                                <Palette size={200} className="text-white" />
+                            </div>
+                            <div className="relative z-10 text-center text-white">
+                                <div className="w-24 h-24 bg-white rounded-3xl mb-6 mx-auto flex items-center justify-center shadow-xl">
+                                    <span className="text-teal-900 font-serif font-black text-2xl">VOTRE LOGO</span>
+                                </div>
+                                <h3 className="text-2xl font-serif font-bold mb-2">Signature Visuelle</h3>
+                                <p className="text-teal-200/60 uppercase tracking-widest text-xs font-bold">Intégration Marque Blanche</p>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* Statistics Section */}
+            <section className="py-32 bg-[#0a1515] text-white overflow-hidden relative">
+                <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 w-full h-full bg-teal-500/10 rounded-full blur-[120px]"></div>
+
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="text-center max-w-3xl mx-auto mb-24">
+                        <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md px-4 py-2 rounded-full text-teal-300 text-sm font-black uppercase tracking-widest mb-6 border border-white/10">
+                            <BarChart3 size={16} /> Analytics & Insights
+                        </div>
+                        <h2 className="text-4xl md:text-6xl font-serif font-bold mb-8">Pilotez votre impact.</h2>
+                        <p className="text-xl text-teal-200/70 leading-relaxed">
+                            Accédez à un tableau de bord complet pour mesurer l'engagement. Suivez le nombre de cartes envoyées, les photos les plus populaires et la portée géographique de votre destination.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div className="bg-white/5 backdrop-blur-xl p-10 rounded-[32px] border border-white/10 group hover:bg-white/10 transition-all">
+                            <div className="w-16 h-16 bg-teal-500/20 rounded-2xl flex items-center justify-center mb-8 text-teal-400 group-hover:scale-110 transition-transform">
+                                <LayoutDashboard size={32} />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-4">Stats de diffusion</h3>
+                            <p className="text-teal-100/60 leading-relaxed">Nombre de cartes envoyées par jour, mois ou événement spécifique.</p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-xl p-10 rounded-[32px] border border-white/10 group hover:bg-white/10 transition-all">
+                            <div className="w-16 h-16 bg-orange-500/20 rounded-2xl flex items-center justify-center mb-8 text-orange-400 group-hover:scale-110 transition-transform">
+                                <Eye size={32} />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-4">Photos populaires</h3>
+                            <p className="text-teal-100/60 leading-relaxed">Identifiez les visuels qui plaisent le plus à vos visiteurs pour vos futures campagnes.</p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-xl p-10 rounded-[32px] border border-white/10 group hover:bg-white/10 transition-all">
+                            <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center mb-8 text-purple-400 group-hover:scale-110 transition-transform">
+                                <Users2 size={32} />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-4">Portée Sociale</h3>
+                            <p className="text-teal-100/60 leading-relaxed">Estimez le nombre de personnes ayant découvert votre destination grâce aux cartes.</p>
+                        </div>
+                    </div>
+
+                    <div className="mt-20 p-8 rounded-[32px] bg-gradient-to-r from-teal-900/40 to-transparent border border-white/5 flex flex-col md:flex-row items-center gap-6 justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-red-500/20 rounded-full text-red-400">
+                                <span className="block w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                            </div>
+                            <p className="text-teal-100/80 font-medium">Le contenu des cartes reste 100% privé et sécurisé pour vos utilisateurs.</p>
+                        </div>
+                        <Link href="/contact" className="text-orange-400 font-bold hover:text-orange-300 transition-colors flex items-center gap-2">
+                            En savoir plus sur la protection des données <ArrowRight size={16} />
+                        </Link>
                     </div>
                 </div>
             </section>
 
-            {/* Pricing / CTA Strip */}
-            <section className="py-20 bg-teal-900 text-white overflow-hidden relative">
-                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-
-                <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-                    <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">Diffusez votre marque sur chaque carte</h2>
-                    <p className="text-teal-100 text-lg mb-10 max-w-2xl mx-auto">
-                        Solution marque blanche pour agences et professionnels : données clients, envois personnalisés, image de marque sur vos cartes postales.
-                    </p>
-                    <div className="flex flex-col sm:flex-row justify-center gap-4">
-                        <Button asChild className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 rounded-full text-lg h-auto shadow-lg shadow-orange-900/30">
-                            <Link href="/connexion/inscription">Créer un compte professionnel</Link>
-                        </Button>
-                        <Button asChild variant="ghost" className="text-white hover:bg-white/10 px-8 py-6 rounded-full text-lg h-auto border border-white/20">
-                            <Link href="/contact">Contacter l&apos;équipe commerciale</Link>
-                        </Button>
+            {/* Marketing & Coupons Section */}
+            <section className="py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                    <div className="space-y-8">
+                        <div className="inline-flex items-center gap-2 bg-purple-50 text-purple-600 px-4 py-2 rounded-full text-sm font-black uppercase tracking-widest">
+                            Marketing Direct
+                        </div>
+                        <h2 className="text-4xl md:text-6xl font-serif font-bold text-stone-900 leading-tight">
+                            Convertissez <br />les destinataires.
+                        </h2>
+                        <p className="text-xl text-stone-600 leading-relaxed">
+                            Transformez chaque carte en opportunité de vente. Insérez des offres promotionnelles ou des bons de réduction exclusifs (codes promo, QR codes) visibles uniquement par ceux qui reçoivent la carte.
+                        </p>
+                        <ul className="space-y-6">
+                            {[
+                                { title: "Offres personnalisées", icon: <Percent size={20} className="text-purple-500" /> },
+                                { title: "Bons de réduction traçables", icon: <Trophy size={20} className="text-purple-500" /> },
+                                { title: "Call-to-action dynamique", icon: <ArrowRight size={20} className="text-purple-500" /> }
+                            ].map((item, i) => (
+                                <li key={i} className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="p-2 bg-purple-50 rounded-lg">
+                                        {item.icon}
+                                    </div>
+                                    <span className="font-bold text-stone-800 text-lg">{item.title}</span>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
-                    <p className="mt-6 text-sm text-teal-300 opacity-80">
-                        Aucune carte de crédit requise pour commencer • 10 envois offerts
-                    </p>
+
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        className="relative"
+                    >
+                        <div className="absolute -inset-10 bg-gradient-to-br from-purple-100 to-teal-100 rounded-full blur-[100px] opacity-30"></div>
+                        <div className="relative bg-white p-12 rounded-[48px] shadow-2xl border border-stone-100 overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-bl-[100px]"></div>
+                            <div className="w-16 h-1 bg-purple-500 mb-8"></div>
+                            <h3 className="text-3xl font-serif font-bold text-stone-900 mb-4">Offre Spéciale Visitors</h3>
+                            <p className="text-stone-500 text-lg mb-8 italic leading-relaxed">
+                                "Bonjour ! Profitez de -15% sur votre prochaine visite avec le code"
+                            </p>
+                            <div className="bg-stone-50 border-2 border-dashed border-stone-200 p-6 rounded-2xl text-center mb-8 group-hover:border-purple-300 transition-colors">
+                                <span className="text-3xl font-black text-stone-800 tracking-[0.2em] font-mono">EXPLORE25</span>
+                            </div>
+                            <Button className="w-full bg-stone-900 hover:bg-black text-white py-6 rounded-xl font-bold flex items-center justify-center gap-2">
+                                Réserver mon activité <Compass size={20} />
+                            </Button>
+                        </div>
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* Testimonials / Trust */}
+            <section className="py-32 bg-stone-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <h2 className="text-3xl font-serif font-bold text-stone-400 uppercase tracking-[0.3em] mb-16">Ils nous font confiance</h2>
+                    <div className="flex flex-wrap justify-center items-center gap-16 md:gap-32 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+                        {/* Fake placeholders for logos */}
+                        <div className="text-2xl font-black tracking-tighter text-stone-800">OFFICE TOURISME</div>
+                        <div className="text-2xl font-black tracking-tighter text-stone-800">HOTEL&RELAIS</div>
+                        <div className="text-2xl font-black tracking-tighter text-stone-800">CAMPING++</div>
+                        <div className="text-2xl font-black tracking-tighter text-stone-800">ALPINE RESORT</div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Final CTA */}
+            <section className="py-40 bg-[#061e1e] relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('/images/ui/grid.svg')] opacity-10"></div>
+                <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                    >
+                        <h2 className="text-5xl md:text-7xl font-serif font-bold text-white mb-8">Prêt à transformer <br />votre communication ?</h2>
+                        <p className="text-teal-100/60 text-xl mb-12 max-w-2xl mx-auto font-light leading-relaxed">
+                            Rejoignez les destinations et établissements qui réinventent le souvenir voyageur. Nos experts vous accompagnent dans la mise en place de votre banque d'images et de votre branding.
+                        </p>
+                        <div className="flex flex-col sm:flex-row justify-center gap-6">
+                            <Button asChild className="bg-orange-500 hover:bg-orange-600 text-white px-12 py-8 rounded-2xl text-xl font-bold h-auto shadow-2xl shadow-orange-950/40 border-0">
+                                <Link href="/contact">Demander une démo</Link>
+                            </Button>
+                            <Button asChild variant="outline" className="bg-transparent text-white hover:bg-white/10 px-12 py-8 rounded-2xl text-xl font-bold h-auto border-white/20">
+                                <Link href="/pricing">Consulter les prix</Link>
+                            </Button>
+                        </div>
+                    </motion.div>
                 </div>
             </section>
         </div>

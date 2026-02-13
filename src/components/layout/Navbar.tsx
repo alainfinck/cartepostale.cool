@@ -98,6 +98,11 @@ export const Navbar = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [])
 
+    // Fermer les dropdowns à chaque changement de page (ex. clic sur Connexion)
+    useEffect(() => {
+        setOpenDropdown(null)
+    }, [pathname])
+
     const NavDropdown = ({
         id,
         label,

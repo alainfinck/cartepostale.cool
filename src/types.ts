@@ -66,11 +66,22 @@ export interface Lead {
     location: string;
 }
 
+export type TemplateCategory =
+  | 'beach' | 'city' | 'nature' | 'travel'
+  | 'romantic' | 'festive' | 'food' | 'abstract';
+
 export interface Template {
     id: string;
     name: string;
+    description?: string;
     imageUrl: string;
-    category: 'Beach' | 'City' | 'Mountain' | 'Abstract';
+    category: TemplateCategory;
+    // Donnees pre-remplies
+    frontCaption?: string;
+    frontEmoji?: string;
+    message?: string;
+    location?: string;
+    stampStyle?: 'classic' | 'modern' | 'airmail';
 }
 
 export interface User {
