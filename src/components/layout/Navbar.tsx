@@ -54,6 +54,18 @@ const dropdownTarifs = [
     { href: '/pricing', icon: Zap, label: 'Pro & Agence', price: 'Sur devis', desc: '' },
 ]
 
+const dropdownFonctionnalites = [
+    { href: '/#fonctionnalites', icon: Zap, title: 'Vue d\'ensemble', description: 'Toutes les fonctionnalités' },
+    { href: '/editor', icon: Plus, title: 'Créer une carte', description: 'Éditeur en ligne' },
+    { href: '/galerie', icon: ImageIcon, title: 'Galerie', description: 'Exemples et inspiration' },
+]
+
+const dropdownDecouvrir = [
+    { href: '/galerie', icon: ImageIcon, title: 'Galerie', description: 'Cartes postales créées par la communauté' },
+    { href: '/a-propos', icon: Info, title: 'À propos', description: 'Notre histoire et notre équipe' },
+    { href: '/legal/mentions-legales', icon: FileText, title: 'Mentions légales', description: 'Informations légales' },
+]
+
 
 
 export const Navbar = () => {
@@ -236,25 +248,55 @@ export const Navbar = () => {
                     </Link>
 
                     <div className="hidden sm:flex items-center gap-1" ref={dropdownRef}>
-                        <Link
-                            href="/#fonctionnalites"
-                            className={cn(
-                                'font-semibold transition-all duration-200 rounded-xl px-4 py-3 text-stone-600 hover:text-stone-900 hover:bg-stone-100/80 text-[15px]',
-                                pathname === '/' ? 'text-stone-900' : ''
-                            )}
+                        <NavDropdown
+                            id="fonctionnalites"
+                            label="Fonctionnalités"
+                            active={pathname === '/' || pathname === '/editor' || pathname === '/galerie'}
                         >
-                            Fonctionnalités
-                        </Link>
+                            <div className="p-2">
+                                {dropdownFonctionnalites.map((item) => (
+                                    <Link
+                                        key={item.href + item.title}
+                                        href={item.href}
+                                        className={cn(
+                                            'flex gap-3 px-4 py-3 rounded-xl transition-colors',
+                                            (item.href === '/#fonctionnalites' ? pathname === '/' : pathname === item.href) ? 'bg-pink-50' : 'hover:bg-stone-50'
+                                        )}
+                                    >
+                                        <item.icon className="w-5 h-5 text-pink-500 shrink-0 mt-0.5" />
+                                        <div>
+                                            <div className="font-semibold text-[15px] text-stone-800">{item.title}</div>
+                                            <div className="text-sm text-stone-500 mt-0.5">{item.description}</div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </NavDropdown>
 
-                        <Link
-                            href="/galerie"
-                            className={cn(
-                                'font-semibold transition-all duration-200 rounded-xl px-4 py-3 text-stone-600 hover:text-stone-900 hover:bg-stone-100/80 text-[15px]',
-                                pathname === '/galerie' ? 'text-stone-900' : ''
-                            )}
+                        <NavDropdown
+                            id="decouvrir"
+                            label="Découvrir"
+                            active={pathname === '/galerie' || pathname === '/a-propos' || pathname?.startsWith('/legal')}
                         >
-                            Découvrir
-                        </Link>
+                            <div className="p-2">
+                                {dropdownDecouvrir.map((item) => (
+                                    <Link
+                                        key={item.href + item.title}
+                                        href={item.href}
+                                        className={cn(
+                                            'flex gap-3 px-4 py-3 rounded-xl transition-colors',
+                                            pathname === item.href ? 'bg-pink-50' : 'hover:bg-stone-50'
+                                        )}
+                                    >
+                                        <item.icon className="w-5 h-5 text-pink-500 shrink-0 mt-0.5" />
+                                        <div>
+                                            <div className="font-semibold text-[15px] text-stone-800">{item.title}</div>
+                                            <div className="text-sm text-stone-500 mt-0.5">{item.description}</div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </NavDropdown>
 
                         <NavDropdown
                             id="tarifs"
