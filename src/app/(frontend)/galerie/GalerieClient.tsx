@@ -28,6 +28,7 @@ import {
   Loader2,
   ChevronLeft,
   Minus,
+  Info,
 } from 'lucide-react'
 import { Postcard } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -263,6 +264,10 @@ const TESTIMONIALS = [
   },
 ]
 
+const EDITOR_STUDIO_URL = 'https://www.cartepostale.cool/editor'
+const IMAGE_SEARCH_TOOLTIP =
+  'Saisissez un mot-clé pour rechercher une image dans notre studio CartePostale et cliquez pour ouvrir l’éditeur.'
+
 const STATS = [
   { value: '50 000+', label: 'Cartes envoyées' },
   { value: '120+', label: 'Pays couverts' },
@@ -377,7 +382,17 @@ export default function GalerieClient() {
                 Inspirations Voyage
               </h2>
               <p className="text-stone-500 mt-2">
-                Découvrez les cartes envoyées par notre communauté ou recherchez des photos sur Unsplash.
+                Découvrez les cartes envoyées par notre communauté ou recherchez une image dans notre studio en ligne&nbsp;
+                <a
+                  href={EDITOR_STUDIO_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-teal-600 font-semibold hover:underline"
+                  title="Ouvre l'éditeur CartePostale pour sélectionner une image"
+                >
+                  cartepostale.cool/editor
+                </a>
+                .
               </p>
             </div>
 
@@ -393,14 +408,15 @@ export default function GalerieClient() {
                   value={unsplashInput}
                   onChange={handleUnsplashInputChange}
                   onKeyDown={(e) => e.key === 'Enter' && handleUnsplashSearch()}
-                  placeholder="Rechercher des photos sur Unsplash (voyage, plage, ville…)"
+                  placeholder="Rechercher une image (voyage, plage, ville…)"
                   className={cn(
                     'w-full h-14 pl-12 pr-4 rounded-2xl border border-stone-200 bg-white text-stone-800',
                     'placeholder:text-stone-400 text-[15px] font-medium',
                     'focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400',
                     'shadow-sm hover:shadow-md transition-shadow'
                   )}
-                  aria-label="Recherche Unsplash"
+                  aria-label="Recherche d'image"
+                  title={IMAGE_SEARCH_TOOLTIP}
                 />
               </div>
               <Button
@@ -408,14 +424,43 @@ export default function GalerieClient() {
                 onClick={handleUnsplashSearch}
                 disabled={unsplashLoading}
                 className="h-14 px-6 rounded-2xl bg-teal-500 hover:bg-teal-600 text-white font-bold shadow-md shrink-0"
+                title="Lance la recherche d'image dans le studio CartePostale"
               >
                 {unsplashLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
               </Button>
             </div>
+            <div
+              className="flex items-center justify-center gap-1 text-xs text-stone-500 mt-2 max-w-3xl mx-auto"
+              title={IMAGE_SEARCH_TOOLTIP}
+            >
+              <Info size={14} className="text-teal-600" />
+              <span className="font-medium">
+                Les résultats s’affichent dans le studio en ligne{' '}
+                <a
+                  href={EDITOR_STUDIO_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-teal-600 hover:underline"
+                  title="Accédez directement à l'éditeur CartePostale pour personnaliser votre image"
+                >
+                  cartepostale.cool/editor
+                </a>
+                .
+              </span>
+            </div>
             {unsplashQuery && (
               <p className="mt-2 text-sm text-stone-500 text-center">
-                Résultats pour &quot;{unsplashQuery}&quot; — Propulsé par{' '}
-                <a href="https://unsplash.com/?utm_source=cartepostale&utm_medium=referral" target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline font-medium">Unsplash</a>
+                Résultats pour &quot;{unsplashQuery}&quot; — Visualisez-les dans{' '}
+                <a
+                  href={EDITOR_STUDIO_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-teal-600 hover:underline font-medium"
+                  title="Accédez à l’éditeur CartePostale pour personnaliser votre image"
+                >
+                  notre studio en ligne
+                </a>
+                .
               </p>
             )}
           </div>

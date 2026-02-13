@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useTransition, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useTransition, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import {
     Search, LayoutGrid, List, Eye, Share2, Mail, Trash2,
@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Pencil } from 'lucide-react'
+import { Pencil, RotateCcw } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import { Card, CardContent } from '@/components/ui/card'
@@ -744,20 +744,13 @@ function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onUpda
 }) {
     const imageUrl = getFrontImageUrl(postcard)
     const [isFlipped, setIsFlipped] = useState(false)
-    const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-    const handleMouseEnter = () => {
-        hoverTimerRef.current = setTimeout(() => setIsFlipped(true), 300)
-    }
-    const handleMouseLeave = () => {
-        if (hoverTimerRef.current) {
-            clearTimeout(hoverTimerRef.current)
-            hoverTimerRef.current = null
-        }
-        setIsFlipped(false)
+    const toggleFlip = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation()
+        setIsFlipped((prev) => !prev)
     }
 
     return (
-        <div className="[perspective:1000px] h-full" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+        <div className="[perspective:1000px] h-full">
             <div
                 className="relative h-full transition-transform duration-300 ease-out [transform-style:preserve-3d]"
                 style={{ minHeight: '320px', transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
@@ -827,39 +820,50 @@ function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onUpda
                                     <span className="flex items-center gap-1 hover:text-stone-600 transition-colors"><Eye size={12} /> {postcard.views || 0}</span>
                                     <span className="flex items-center gap-1 hover:text-stone-600 transition-colors"><Share2 size={12} /> {postcard.shares || 0}</span>
                                 </div>
-                                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                    <Link href={`/carte/${postcard.publicId}`} target="_blank" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-stone-400 hover:text-teal-600 transition-colors rounded-full border border-border/30"
+                                        onClick={toggleFlip}
+                                        title={isFlipped ? 'Retourner recto' : 'Voir le verso'}
+                                    >
+                                        <RotateCcw size={14} />
+                                    </Button>
+                                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                        <Link href={`/carte/${postcard.publicId}`} target="_blank" onClick={(e) => e.stopPropagation()}>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-stone-400 hover:text-teal-600 transition-colors rounded-full border border-border/30"
+                                                title="Ouvrir dans un nouvel onglet"
+                                            >
+                                                <ExternalLink size={14} />
+                                            </Button>
+                                        </Link>
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-8 w-8 text-stone-400 hover:text-teal-600 transition-colors rounded-full border border-border/30"
-                                            title="Ouvrir dans un nouvel onglet"
+                                            onClick={(e) => { e.stopPropagation(); onEdit() }}
+                                            className="h-8 w-8 text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-all rounded-full border border-border/30"
+                                            title="Modifier"
                                         >
-                                            <ExternalLink size={14} />
+                                            <Pencil size={14} />
                                         </Button>
-                                    </Link>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={(e) => { e.stopPropagation(); onEdit() }}
-                                        className="h-8 w-8 text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-all rounded-full border border-border/30"
-                                        title="Modifier"
-                                    >
-                                        <Pencil size={14} />
-                                    </Button>
-                                    <StatusDropdown
-                                        currentStatus={postcard.status || 'draft'}
-                                        onUpdate={onUpdateStatus}
-                                        postcardId={postcard.id}
-                                    />
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={(e) => { e.stopPropagation(); onDelete(postcard.id) }}
-                                        className="h-8 w-8 text-stone-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-full"
-                                    >
-                                        <Trash2 size={14} />
-                                    </Button>
+                                        <StatusDropdown
+                                            currentStatus={postcard.status || 'draft'}
+                                            onUpdate={onUpdateStatus}
+                                            postcardId={postcard.id}
+                                        />
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={(e) => { e.stopPropagation(); onDelete(postcard.id) }}
+                                            className="h-8 w-8 text-stone-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-full"
+                                        >
+                                            <Trash2 size={14} />
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

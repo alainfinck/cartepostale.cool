@@ -535,7 +535,7 @@ export default function EditorPage() {
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [fullscreenScale, setFullscreenScale] = useState(1)
 
-  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal' | 'revolut' | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal' | 'revolut' | null>('revolut')
 
   // Sharing state
   const [isPublishing, setIsPublishing] = useState(false)
@@ -1703,35 +1703,10 @@ export default function EditorPage() {
                   Règlement
                 </h2>
                 <p className="text-stone-500 mb-8">
-                  Choisissez votre méthode de paiement sécurisée pour valider votre commande.
+                  Paiement sécurisé via Revolut. Vous pourrez finaliser le paiement à l&apos;étape suivante.
                 </p>
 
-                {/* Promo de lancement */}
-                <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl p-6 sm:p-8 mb-8 text-white relative overflow-hidden shadow-lg shadow-teal-200">
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="bg-white/20 backdrop-blur-md p-2 rounded-xl">
-                        <Sparkles size={24} className="text-white" />
-                      </div>
-                      <span className="font-bold uppercase tracking-widest text-xs text-teal-100">Offre Exceptionnelle</span>
-                    </div>
-                    <h3 className="text-2xl font-serif font-bold mb-2">Lancement du produit !</h3>
-                    <p className="text-teal-50/90 leading-relaxed mb-6">
-                      C&apos;est le lancement officiel ! Profitez-en : <strong className="text-white">toutes les options premium sont gratuites</strong> aujourd&apos;hui.
-                    </p>
-                    <Button
-                      onClick={() => setCurrentStep('preview')}
-                      className="bg-white text-teal-600 hover:bg-white/90 font-bold px-8 py-6 h-auto rounded-xl shadow-xl shadow-teal-900/20 w-full sm:w-auto transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
-                    >
-                      Continuer Gratuitement
-                      <ChevronRight size={18} />
-                    </Button>
-                  </div>
-                  <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
-                  <div className="absolute -left-10 -top-10 w-40 h-40 bg-teal-400/20 rounded-full blur-3xl" />
-                </div>
-
-                {/* Order Summary */}
+                {/* Récap commande */}
                 <div className="bg-stone-50 rounded-xl p-4 mb-8 border border-stone-100">
                   <div className="flex justify-between items-center mb-2 text-sm text-stone-600">
                     <span>Carte postale virtuelle</span>
@@ -1749,92 +1724,48 @@ export default function EditorPage() {
                   <div className="border-t border-stone-200 my-3" />
                   <div className="flex justify-between items-center font-bold text-stone-800 text-lg">
                     <span>Total</span>
-                    <div className="flex flex-col items-end">
-                      <span className="text-stone-300 line-through text-sm">{getAlbumPrice().toFixed(2)} €</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-teal-600">0.00 €</span>
-                        <span className="bg-teal-100 text-teal-600 text-[10px] px-2 py-0.5 rounded-full uppercase">Launch Offer</span>
-                      </div>
-                    </div>
+                    <span>{getAlbumPrice().toFixed(2)} €</span>
                   </div>
                 </div>
 
-                {/* Payment Methods */}
-                <div className="space-y-3">
-                  <label className="text-sm font-bold text-stone-800 uppercase tracking-wider mb-2 block">
-                    Moyen de paiement
-                  </label>
+                {/* Paiement Revolut uniquement (API Revolut) */}
+                <div className="rounded-2xl border-2 border-teal-500 bg-teal-50/50 p-6 mb-8 ring-1 ring-teal-500 shadow-sm">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-[#0070ba] flex items-center justify-center text-white font-bold text-lg">
+                      R
+                    </div>
+                    <div>
+                      <p className="font-bold text-stone-800 text-lg">Revolut Pay</p>
+                      <p className="text-sm text-stone-500">Paiement par carte ou app Revolut — rapide et sécurisé</p>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-xs text-stone-500">
+                    Le lien de paiement Revolut s&apos;affichera à l&apos;étape « Aperçu » si votre commande est payante.
+                  </p>
+                </div>
 
-                  {/* Stripe */}
-                  <button
-                    onClick={() => setPaymentMethod('stripe')}
+                <div className="flex items-center justify-between gap-4">
+                  <Button
+                    variant="ghost"
+                    onClick={goPrev}
+                    className="rounded-full font-semibold flex items-center gap-2 px-5 py-5 h-auto text-stone-600 hover:text-stone-800 hover:bg-stone-100 transition-all"
+                  >
+                    <ChevronLeft size={18} />
+                    Retour
+                  </Button>
+                  <Button
+                    onClick={goNext}
+                    disabled={!canGoNext()}
                     className={cn(
-                      "w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left",
-                      paymentMethod === 'stripe'
-                        ? "border-teal-500 bg-teal-50/50 ring-1 ring-teal-500 shadow-sm"
-                        : "border-stone-200 hover:border-teal-200 hover:bg-stone-50"
+                      'rounded-full font-bold flex items-center gap-2 px-6 py-5 h-auto transition-all',
+                      canGoNext()
+                        ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-md shadow-teal-200 hover:-translate-y-0.5'
+                        : 'bg-stone-200 text-stone-400 cursor-not-allowed'
                     )}
                   >
-                    <div className={cn(
-                      "w-6 h-6 rounded-full border flex items-center justify-center transition-colors",
-                      paymentMethod === 'stripe' ? "border-teal-500 bg-teal-500" : "border-stone-300"
-                    )}>
-                      {paymentMethod === 'stripe' && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-stone-800">Carte Bancaire</span>
-                        <div className="flex gap-2">
-                          <CreditCard size={20} className="text-stone-400" />
-                        </div>
-                      </div>
-                      <p className="text-xs text-stone-500">Via Stripe (Sécurisé)</p>
-                    </div>
-                  </button>
-
-                  {/* PayPal */}
-                  <button
-                    onClick={() => setPaymentMethod('paypal')}
-                    className={cn(
-                      "w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left",
-                      paymentMethod === 'paypal'
-                        ? "border-teal-500 bg-teal-50/50 ring-1 ring-teal-500 shadow-sm"
-                        : "border-stone-200 hover:border-teal-200 hover:bg-stone-50"
-                    )}
-                  >
-                    <div className={cn(
-                      "w-6 h-6 rounded-full border flex items-center justify-center transition-colors",
-                      paymentMethod === 'paypal' ? "border-teal-500 bg-teal-500" : "border-stone-300"
-                    )}>
-                      {paymentMethod === 'paypal' && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
-                    </div>
-                    <div className="flex-1">
-                      <span className="font-bold text-stone-800">PayPal</span>
-                      <p className="text-xs text-stone-500">Payer avec votre compte PayPal</p>
-                    </div>
-                  </button>
-
-                  {/* Revolut */}
-                  <button
-                    onClick={() => setPaymentMethod('revolut')}
-                    className={cn(
-                      "w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left",
-                      paymentMethod === 'revolut'
-                        ? "border-teal-500 bg-teal-50/50 ring-1 ring-teal-500 shadow-sm"
-                        : "border-stone-200 hover:border-teal-200 hover:bg-stone-50"
-                    )}
-                  >
-                    <div className={cn(
-                      "w-6 h-6 rounded-full border flex items-center justify-center transition-colors",
-                      paymentMethod === 'revolut' ? "border-teal-500 bg-teal-500" : "border-stone-300"
-                    )}>
-                      {paymentMethod === 'revolut' && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
-                    </div>
-                    <div className="flex-1">
-                      <span className="font-bold text-stone-800">Revolut Pay</span>
-                      <p className="text-xs text-stone-500">Rapide et sans frais</p>
-                    </div>
-                  </button>
+                    Continuer
+                    <ChevronRight size={18} />
+                  </Button>
                 </div>
               </div>
             )}
@@ -2119,9 +2050,16 @@ export default function EditorPage() {
                             </span>
                           </div>
                         ) : (
-                          <div className="flex flex-col items-end">
-                            <span className="text-stone-400">Option payante (dès +1€)</span>
-                            <span className="text-[9px] text-stone-300 uppercase tracking-tighter font-bold">10 photos: 1€ | 50 photos + 3 vid: 2€</span>
+                          <div className="flex flex-col items-end gap-1 text-right">
+                            <span className="text-stone-400 uppercase tracking-[0.2em] font-semibold text-[10px]">
+                              Option payante (dès +1€)
+                            </span>
+                            <div className="bg-gradient-to-r from-orange-50 via-orange-100 to-orange-50 border border-orange-200 text-stone-800 text-[11px] font-bold px-3 py-2 rounded-full shadow-sm uppercase tracking-[0.15em]">
+                              10 photos : 1€ &nbsp;|&nbsp; 50 photos + 3 vidéos : 2€
+                            </div>
+                            <span className="text-[9px] text-orange-500 uppercase tracking-[0.3em] font-semibold">
+                              Visible lors de la sélection
+                            </span>
                           </div>
                         )}
                       </div>
@@ -2653,9 +2591,7 @@ export default function EditorPage() {
                           : 'bg-stone-200 text-stone-400 cursor-not-allowed'
                       )}
                     >
-                      {currentStep === 'payment'
-                        ? `Payer ${getAlbumPrice().toFixed(2)} €`
-                        : 'Continuer'}
+                      Continuer
                       <ChevronRight size={18} />
                     </Button>
                   )}
