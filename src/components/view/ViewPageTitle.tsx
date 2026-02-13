@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, easeOut } from 'framer-motion'
 import { Heart } from 'lucide-react'
 import { fireSideCannons } from '@/components/ui/confetti'
 import { TextAnimate } from '@/components/ui/text-animate'
@@ -35,7 +35,7 @@ export default function ViewPageTitle({ title, senderName }: ViewPageTitleProps)
         className="flex items-baseline justify-center gap-2 text-stone-500 mt-2 md:mt-4"
         initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        transition={{ delay: 1.8, duration: 1.2, ease: "easeOut" }}
+        transition={{ delay: 1.8, duration: 1.2, ease: easeOut }}
       >
         <span className="text-lg md:text-xl font-medium tracking-wide whitespace-nowrap">De la part de</span>
         <span className="font-bold text-teal-600 flex items-center gap-2 text-2xl md:text-4xl lg:text-5xl font-serif whitespace-nowrap">

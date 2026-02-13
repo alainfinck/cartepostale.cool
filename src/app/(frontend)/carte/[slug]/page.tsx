@@ -15,9 +15,13 @@ import DistanceDisplay from '@/components/view/DistanceDisplay'
 import PhotoAlbum from '@/components/view/PhotoAlbum'
 import EnvelopeWrapper from '@/components/view/EnvelopeWrapper'
 
+type SearchParams = {
+    [key: string]: string | string[] | undefined
+}
+
 interface PageProps {
     params: Promise<{ slug: string }>
-    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
+    searchParams?: Promise<SearchParams>
 }
 
 // Helper to check if media is an object
@@ -172,8 +176,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function PostcardPage({ params, searchParams }: PageProps) {
     const { slug } = await params
-    const resolvedSearchParams = await (searchParams ?? Promise.resolve({}))
-    const envelopeParam = resolvedSearchParams?.enveloppe
+    const resolvedSearchParams = (await (searchParams ?? Promise.resolve({}))) as SearchParams
+    const envelopeParam = resolvedSearchParams.enveloppe
     const showEnvelope = envelopeParam === '1' || envelopeParam === 'true'
 
     const payloadPostcard = await getPostcardByPublicId(slug)

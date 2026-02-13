@@ -1,3 +1,5 @@
+ 'use client'
+ 
 import React from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -19,7 +21,7 @@ import {
     Compass
 } from 'lucide-react'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
-import { motion } from 'framer-motion'
+import { motion, easeOut } from 'framer-motion'
 
 export default function BusinessClient() {
     const containerVariants = {
@@ -39,7 +41,7 @@ export default function BusinessClient() {
             opacity: 1,
             transition: {
                 duration: 0.5,
-                ease: "easeOut"
+                ease: easeOut
             }
         }
     }
