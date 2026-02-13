@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Pencil } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -46,6 +47,7 @@ import { getAllPostcards, updatePostcardStatus, deletePostcard, PostcardsResult 
 import { getPostcardViewStats, type PostcardViewStats } from '@/actions/postcard-view-stats'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
+import EditPostcardDialog from './EditPostcardDialog'
 
 type StatusFilter = 'all' | 'published' | 'draft' | 'archived'
 type ViewMode = 'grid' | 'list'
@@ -116,6 +118,7 @@ export default function ManagerClient({ initialData }: Props) {
     const [viewStats, setViewStats] = useState<PostcardViewStats | null>(null)
     const [isPending, startTransition] = useTransition()
     const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
+    const [editingPostcard, setEditingPostcard] = useState<PayloadPostcard | null>(null)
 
     useEffect(() => {
         if (!selectedPostcard) {
@@ -274,6 +277,7 @@ export default function ManagerClient({ initialData }: Props) {
                             key={postcard.id}
                             postcard={postcard}
                             onSelect={() => setSelectedPostcard(postcard)}
+                            onEdit={() => setEditingPostcard(postcard)}
                             onUpdateStatus={handleUpdateStatus}
                             onDelete={(id) => setDeleteConfirm(id)}
                         />
@@ -302,6 +306,7 @@ export default function ManagerClient({ initialData }: Props) {
                                         key={postcard.id}
                                         postcard={postcard}
                                         onSelect={() => setSelectedPostcard(postcard)}
+                                        onEdit={() => setEditingPostcard(postcard)}
                                         onUpdateStatus={handleUpdateStatus}
                                         onDelete={(id) => setDeleteConfirm(id)}
                                         formatDate={formatDate}
@@ -319,9 +324,27 @@ export default function ManagerClient({ initialData }: Props) {
                 viewStats={viewStats}
                 isOpen={!!selectedPostcard}
                 onClose={() => setSelectedPostcard(null)}
+                onEdit={() => setEditingPostcard(selectedPostcard)}
                 onUpdateStatus={handleUpdateStatus}
                 onDelete={(id) => setDeleteConfirm(id)}
                 formatDate={formatDate}
+            />
+
+            {/* Edit Dialog */}
+            <EditPostcardDialog
+                postcard={editingPostcard}
+                isOpen={!!editingPostcard}
+                onClose={() => setEditingPostcard(null)}
+                onSuccess={() => {
+                    refreshData()
+                    if (selectedPostcard?.id === editingPostcard?.id) {
+                        // Update selected postcard data too
+                        getAllPostcards({ search: search, status: statusFilter !== 'all' ? statusFilter : undefined }).then(res => {
+                            const updated = res.docs.find(p => p.id === editingPostcard?.id)
+                            if (updated) setSelectedPostcard(updated)
+                        })
+                    }
+                }}
             />
 
             {/* Delete confirmation */}
@@ -420,9 +443,10 @@ function StatusDropdown({ currentStatus, onUpdate, postcardId }: {
     )
 }
 
-function GridCard({ postcard, onSelect, onUpdateStatus, onDelete }: {
+function GridCard({ postcard, onSelect, onEdit, onUpdateStatus, onDelete }: {
     postcard: PayloadPostcard
     onSelect: () => void
+    onEdit: () => void
     onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
     onDelete: (id: number) => void
 }) {
@@ -482,6 +506,15 @@ function GridCard({ postcard, onSelect, onUpdateStatus, onDelete }: {
                         <span className="flex items-center gap-1 hover:text-stone-600 transition-colors"><Share2 size={12} /> {postcard.shares || 0}</span>
                     </div>
                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => { e.stopPropagation(); onEdit() }}
+                            className="h-8 w-8 text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-all rounded-full border border-border/30"
+                            title="Modifier"
+                        >
+                            <Pencil size={14} />
+                        </Button>
                         <StatusDropdown
                             currentStatus={postcard.status || 'draft'}
                             onUpdate={onUpdateStatus}
@@ -502,9 +535,10 @@ function GridCard({ postcard, onSelect, onUpdateStatus, onDelete }: {
     )
 }
 
-function ListRow({ postcard, onSelect, onUpdateStatus, onDelete, formatDate }: {
+function ListRow({ postcard, onSelect, onEdit, onUpdateStatus, onDelete, formatDate }: {
     postcard: PayloadPostcard
     onSelect: () => void
+    onEdit: () => void
     onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
     onDelete: (id: number) => void
     formatDate: (d: string) => string
@@ -532,6 +566,15 @@ function ListRow({ postcard, onSelect, onUpdateStatus, onDelete, formatDate }: {
                             <ExternalLink size={14} />
                         </Button>
                     </Link>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-all rounded-full"
+                        onClick={() => onEdit()}
+                        title="Modifier"
+                    >
+                        <Pencil size={14} />
+                    </Button>
                     <StatusDropdown
                         currentStatus={postcard.status || 'draft'}
                         onUpdate={onUpdateStatus}
@@ -552,11 +595,12 @@ function ListRow({ postcard, onSelect, onUpdateStatus, onDelete, formatDate }: {
     )
 }
 
-function DetailsSheet({ postcard, viewStats, isOpen, onClose, onUpdateStatus, onDelete, formatDate }: {
+function DetailsSheet({ postcard, viewStats, isOpen, onClose, onEdit, onUpdateStatus, onDelete, formatDate }: {
     postcard: PayloadPostcard | null
     viewStats: PostcardViewStats | null
     isOpen: boolean
     onClose: () => void
+    onEdit: () => void
     onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
     onDelete: (id: number) => void
     formatDate: (d: string) => string
@@ -726,6 +770,16 @@ function DetailsSheet({ postcard, viewStats, isOpen, onClose, onUpdateStatus, on
                                     ))}
                                 </DropdownMenuContent>
                             </DropdownMenu>
+
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={onEdit}
+                                className="w-12 h-12 text-teal-600 border-border/50 hover:bg-teal-50 rounded-xl transition-colors"
+                                title="Modifier"
+                            >
+                                <Pencil size={18} />
+                            </Button>
 
                             <Button
                                 variant="outline"

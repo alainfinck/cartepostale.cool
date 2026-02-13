@@ -119,6 +119,54 @@ export async function deletePostcard(
     }
 }
 
+export async function updatePostcard(
+    id: number,
+    data: any
+): Promise<{ success: boolean; error?: string }> {
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+
+        const updateData: any = { ...data }
+
+        // Handle front image update if it's base64
+        if (data.frontImage && data.frontImage.startsWith('data:image')) {
+            const [meta, base64Data] = data.frontImage.split(',')
+            const mime = meta.match(/:(.*?);/)?.[1] || 'image/png'
+            const extension = mime.split('/')[1] || 'png'
+            const buffer = Buffer.from(base64Data, 'base64')
+
+            const media = await payload.create({
+                collection: 'media',
+                data: {
+                    alt: `Updated Front Image for postcard ${data.recipientName || 'unnamed'}`,
+                },
+                file: {
+                    data: buffer,
+                    mimetype: mime,
+                    name: `postcard-front-${Date.now()}.${extension}`,
+                    size: buffer.length,
+                },
+            })
+
+            updateData.frontImage = media.id
+            const mediaDoc = media as { url?: string | null; filename?: string | null }
+            updateData.frontImageURL = mediaDoc.url ?? (mediaDoc.filename ? `/media/${mediaDoc.filename}` : undefined)
+        }
+
+        await payload.update({
+            collection: 'postcards',
+            id,
+            data: updateData,
+        })
+
+        return { success: true }
+    } catch (error: any) {
+        console.error('Error updating postcard:', error)
+        return { success: false, error: error.message || 'Failed to update postcard' }
+    }
+}
+
 export interface ManagerStats {
     totalPostcards: number
     publishedPostcards: number
