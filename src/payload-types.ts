@@ -75,6 +75,7 @@ export interface Config {
     reactions: Reaction;
     comments: Comment;
     'postcard-view-events': PostcardViewEvent;
+    'postcard-tracking-links': PostcardTrackingLink;
     'gallery-categories': GalleryCategory;
     'gallery-tags': GalleryTag;
     gallery: Gallery;
@@ -93,6 +94,7 @@ export interface Config {
     reactions: ReactionsSelect<false> | ReactionsSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
     'postcard-view-events': PostcardViewEventsSelect<false> | PostcardViewEventsSelect<true>;
+    'postcard-tracking-links': PostcardTrackingLinksSelect<false> | PostcardTrackingLinksSelect<true>;
     'gallery-categories': GalleryCategoriesSelect<false> | GalleryCategoriesSelect<true>;
     'gallery-tags': GalleryTagsSelect<false> | GalleryTagsSelect<true>;
     gallery: GallerySelect<false> | GallerySelect<true>;
@@ -365,6 +367,34 @@ export interface PostcardViewEvent {
    * ID de session visiteur (déduplication)
    */
   sessionId: string;
+  /**
+   * Lien de tracking si la vue provient de /v/[token]
+   */
+  trackingLink?: (number | null) | PostcardTrackingLink;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "postcard-tracking-links".
+ */
+export interface PostcardTrackingLink {
+  id: number;
+  postcard: number | Postcard;
+  /**
+   * Identifiant court pour l’URL /v/[token]
+   */
+  token: string;
+  recipientFirstName?: string | null;
+  recipientLastName?: string | null;
+  description?: string | null;
+  sentVia?: ('link' | 'email' | 'whatsapp' | 'sms') | null;
+  /**
+   * Date d’envoi (email / WhatsApp / SMS)
+   */
+  sentAt?: string | null;
+  views?: number | null;
+  author: number | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -478,6 +508,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'postcard-view-events';
         value: number | PostcardViewEvent;
+      } | null)
+    | ({
+        relationTo: 'postcard-tracking-links';
+        value: number | PostcardTrackingLink;
       } | null)
     | ({
         relationTo: 'gallery-categories';
@@ -710,6 +744,24 @@ export interface PostcardViewEventsSelect<T extends boolean = true> {
   region?: T;
   city?: T;
   sessionId?: T;
+  trackingLink?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "postcard-tracking-links_select".
+ */
+export interface PostcardTrackingLinksSelect<T extends boolean = true> {
+  postcard?: T;
+  token?: T;
+  recipientFirstName?: T;
+  recipientLastName?: T;
+  description?: T;
+  sentVia?: T;
+  sentAt?: T;
+  views?: T;
+  author?: T;
   updatedAt?: T;
   createdAt?: T;
 }

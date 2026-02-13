@@ -1,7 +1,9 @@
 import { headers } from 'next/headers'
 import type { User } from '@/payload-types'
 
-export type CurrentUser = Pick<User, 'id' | 'email' | 'name' | 'role' | 'plan' | 'company' | 'cardsCreated'>
+export type CurrentUser = Pick<User, 'id' | 'email' | 'name' | 'role' | 'plan' | 'company' | 'cardsCreated'> & {
+  agency?: number | null
+}
 
 /**
  * Returns the currently logged-in user from Payload (cookie).
@@ -22,6 +24,8 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     const data = await res.json().catch(() => ({}))
     if (!res.ok || !data?.user) return null
     const u = data.user as User
+    const agencyRaw = (u as any).agency
+    const agencyId = typeof agencyRaw === 'object' && agencyRaw ? agencyRaw.id : (typeof agencyRaw === 'number' ? agencyRaw : null)
     return {
       id: u.id,
       email: u.email,
@@ -30,6 +34,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
       plan: u.plan ?? null,
       company: u.company ?? null,
       cardsCreated: u.cardsCreated ?? null,
+      agency: agencyId,
     }
   } catch {
     return null

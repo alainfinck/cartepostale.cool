@@ -12,6 +12,8 @@ export interface RecordPostcardViewParams {
     userAgent: string
     openedAt: string
     referrer?: string
+    /** When the view comes from /v/[token], pass the token to attach the event to the tracking link. */
+    trackingToken?: string
 }
 
 export interface RecordPostcardViewResult {
@@ -37,22 +39,43 @@ export async function recordPostcardView(data: RecordPostcardViewParams): Promis
             ? [uaResult.os.name, uaResult.os.version].filter(Boolean).join(' ')
             : undefined
 
+        let trackingLinkId: number | undefined
+        if (data.trackingToken?.trim()) {
+            const trackingResult = await payload.find({
+                collection: 'postcard-tracking-links',
+                where: { token: { equals: data.trackingToken.trim() } },
+                limit: 1,
+                depth: 0,
+                overrideAccess: true,
+            })
+            const tracking = trackingResult.docs[0]
+            const trackingPostcardId = typeof tracking?.postcard === 'object' ? (tracking.postcard as { id?: number })?.id : tracking?.postcard
+            if (tracking && trackingPostcardId === data.postcardId) {
+                trackingLinkId = tracking.id
+            }
+        }
+
+        const eventData: Record<string, unknown> = {
+            postcard: data.postcardId,
+            openedAt: data.openedAt,
+            sessionId: data.sessionId,
+            userAgent: data.userAgent,
+            browser: browser ?? undefined,
+            os: os ?? undefined,
+            referrer: data.referrer ?? undefined,
+            country: country ?? undefined,
+            countryCode: countryCode ?? undefined,
+            region: region ?? undefined,
+            city: city ?? undefined,
+        }
+        if (trackingLinkId != null) {
+            eventData.trackingLink = trackingLinkId
+        }
+
         const event = await payload.create({
             collection: 'postcard-view-events',
-            data: {
-                postcard: data.postcardId,
-                openedAt: data.openedAt,
-                sessionId: data.sessionId,
-                userAgent: data.userAgent,
-                browser: browser ?? undefined,
-                os: os ?? undefined,
-                referrer: data.referrer ?? undefined,
-                country: country ?? undefined,
-                countryCode: country ?? undefined,
-                region: region ?? undefined,
-                city: city ?? undefined,
-            },
-        })
+            data: eventData as Record<string, unknown>,
+        } as Parameters<typeof payload.create>[0])
 
         const postcard = await payload.findByID({
             collection: 'postcards',
@@ -66,6 +89,22 @@ export async function recordPostcardView(data: RecordPostcardViewParams): Promis
             },
             overrideAccess: true,
         })
+
+        if (trackingLinkId != null) {
+            const trackingDoc = await payload.findByID({
+                collection: 'postcard-tracking-links',
+                id: trackingLinkId,
+                depth: 0,
+            })
+            await payload.update({
+                collection: 'postcard-tracking-links',
+                id: trackingLinkId,
+                data: {
+                    views: (trackingDoc.views ?? 0) + 1,
+                },
+                overrideAccess: true,
+            })
+        }
 
         return { success: true, eventId: event.id }
     } catch (error) {

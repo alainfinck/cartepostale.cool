@@ -15,9 +15,15 @@ export const Users: CollectionConfig = {
   hooks: {
     beforeChange: [
       ({ data, req, operation }) => {
-        // À la création, forcer le rôle 'user' si l'utilisateur n'est pas admin (éviter inscription en admin)
+        // À la création, forcer le rôle 'user' si l'utilisateur n'est pas admin (éviter inscription en admin/agence)
         if (operation === 'create' && data && req.user?.role !== 'admin') {
           data.role = 'user'
+        }
+        // En modification, empêcher l'auto-attribution du rôle admin ou agence
+        if (operation === 'update' && data && req.user?.role !== 'admin') {
+          if (data.role === 'admin' || data.role === 'agence') {
+            data.role = req.user?.role ?? 'user'
+          }
         }
         return data
       },
@@ -33,11 +39,20 @@ export const Users: CollectionConfig = {
       type: 'select',
       options: [
         { label: 'Admin', value: 'admin' },
+        { label: 'Agence', value: 'agence' },
         { label: 'Client', value: 'client' },
         { label: 'User', value: 'user' },
       ],
       defaultValue: 'user',
       required: true,
+    },
+    {
+      name: 'agency',
+      type: 'relationship',
+      relationTo: 'agencies',
+      admin: {
+        condition: (data) => data?.role === 'agence',
+      },
     },
     {
       name: 'company',

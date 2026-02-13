@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useState, useTransition, useCallback, useEffect } from 'react'
+import React, { useState, useTransition, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import {
     Search, LayoutGrid, List, Eye, Share2, Mail, Trash2,
     ChevronDown, ExternalLink, MapPin, Calendar, User,
     Users, Archive, FileText, BarChart3, ArrowUpDown,
     Building2, Image as ImageIcon, Cloud, LogOut, Menu, User as UserIcon,
+    Link2, Copy, MessageCircle, Send,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -45,13 +46,17 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
-import { Postcard as PayloadPostcard, Media } from '@/payload-types'
-import { getAllPostcards, updatePostcardStatus, deletePostcard, updatePostcard, PostcardsResult } from '@/actions/manager-actions'
+import { Postcard as PayloadPostcard, Media, PostcardTrackingLink } from '@/payload-types'
+import { getAllPostcards, updatePostcardStatus, deletePostcard, updatePostcard, updatePostcardStatusBulk, deletePostcardsBulk, PostcardsResult } from '@/actions/manager-actions'
 import {
     getMyPostcards,
     updateMyPostcard,
     updateMyPostcardStatus,
     deleteMyPostcard,
+    createTrackingLink,
+    getTrackingLinksForPostcard,
+    sendTrackingLinkByEmail,
+    type CreateTrackingLinkData,
 } from '@/actions/espace-client-actions'
 import { getPostcardViewStats, type PostcardViewStats } from '@/actions/postcard-view-stats'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -139,6 +144,9 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
     const [editingPostcard, setEditingPostcard] = useState<PayloadPostcard | null>(null)
     const [columns, setColumns] = useState(3)
     const [isAuto, setIsAuto] = useState(true)
+    const [trackingLinks, setTrackingLinks] = useState<PostcardTrackingLink[]>([])
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+    const [deleteConfirmBulkIds, setDeleteConfirmBulkIds] = useState<number[] | null>(null)
 
     useEffect(() => {
         if (!isAuto) return
@@ -161,10 +169,18 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
     useEffect(() => {
         if (!selectedPostcard) {
             setViewStats(null)
+            setTrackingLinks([])
             return
         }
         getPostcardViewStats(selectedPostcard.id).then(setViewStats)
-    }, [selectedPostcard?.id])
+        if (useEspaceClientActions) {
+            getTrackingLinksForPostcard(selectedPostcard.id).then((res) => {
+                setTrackingLinks(res.success && res.links ? res.links : [])
+            })
+        } else {
+            setTrackingLinks([])
+        }
+    }, [selectedPostcard?.id, useEspaceClientActions])
 
     const postcards = data.docs
 
@@ -238,6 +254,66 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
             day: '2-digit',
             month: 'short',
             year: 'numeric',
+        })
+    }
+
+    const toggleSelect = (id: number) => {
+        setSelectedIds((prev) => {
+            const next = new Set(prev)
+            if (next.has(id)) next.delete(id)
+            else next.add(id)
+            return next
+        })
+    }
+    const toggleSelectAll = () => {
+        if (selectedIds.size === postcards.length) setSelectedIds(new Set())
+        else setSelectedIds(new Set(postcards.map((p) => p.id)))
+    }
+    const clearSelection = () => setSelectedIds(new Set())
+
+    const handleBulkStatus = (newStatus: 'published' | 'draft' | 'archived') => {
+        const ids = Array.from(selectedIds)
+        if (!ids.length) return
+        startTransition(async () => {
+            if (useEspaceClientActions) {
+                for (const id of ids) {
+                    await updatePostcardStatusFn(id, newStatus)
+                }
+            } else {
+                const result = await updatePostcardStatusBulk(ids, newStatus)
+                if (!result.success && result.error) {
+                    alert(result.error)
+                    return
+                }
+            }
+            clearSelection()
+            refreshData()
+        })
+    }
+
+    const handleBulkDeleteConfirm = () => {
+        const ids = deleteConfirmBulkIds ?? []
+        if (!ids.length) {
+            setDeleteConfirmBulkIds(null)
+            return
+        }
+        startTransition(async () => {
+            if (useEspaceClientActions) {
+                for (const id of ids) {
+                    await deletePostcardFn(id)
+                }
+            } else {
+                const result = await deletePostcardsBulk(ids)
+                if (!result.success && result.error) {
+                    alert(result.error)
+                    setDeleteConfirmBulkIds(null)
+                    return
+                }
+            }
+            setDeleteConfirmBulkIds(null)
+            if (selectedPostcard && ids.includes(selectedPostcard.id)) setSelectedPostcard(null)
+            clearSelection()
+            refreshData()
         })
     }
 
@@ -344,6 +420,39 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
                 )}
             </div>
 
+            {/* Bulk actions bar */}
+            {selectedIds.size > 0 && (
+                <div className="flex flex-wrap items-center gap-3 p-4 rounded-xl border border-teal-200/60 bg-teal-50/50 backdrop-blur-sm shadow-sm">
+                    <span className="text-sm font-medium text-teal-800">
+                        {selectedIds.size} carte{selectedIds.size > 1 ? 's' : ''} sélectionnée{selectedIds.size > 1 ? 's' : ''}
+                    </span>
+                    <Button variant="ghost" size="sm" className="text-teal-700 hover:bg-teal-100" onClick={clearSelection}>
+                        Tout désélectionner
+                    </Button>
+                    <div className="h-4 w-px bg-teal-200" />
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="bg-white border-teal-200 text-teal-800 hover:bg-teal-100">
+                                <ArrowUpDown size={14} className="mr-2" />
+                                Changer le statut
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-48">
+                            {(['published', 'draft', 'archived'] as const).map((s) => (
+                                <DropdownMenuItem key={s} onClick={() => handleBulkStatus(s)} className="gap-2">
+                                    <div className={cn('w-2 h-2 rounded-full', s === 'published' ? 'bg-emerald-500' : s === 'draft' ? 'bg-amber-500' : 'bg-stone-400')} />
+                                    {statusConfig[s].label}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button variant="outline" size="sm" className="border-red-200 text-red-700 hover:bg-red-50" onClick={() => setDeleteConfirmBulkIds(Array.from(selectedIds))}>
+                        <Trash2 size={14} className="mr-2" />
+                        Supprimer
+                    </Button>
+                </div>
+            )}
+
             {/* Loading overlay */}
             {isPending && (
                 <div className="flex items-center gap-2 text-sm text-stone-500">
@@ -378,6 +487,8 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
                             <GridCard
                                 key={postcard.id}
                                 postcard={postcard}
+                                selected={selectedIds.has(postcard.id)}
+                                onToggleSelect={() => toggleSelect(postcard.id)}
                                 onSelect={() => setSelectedPostcard(postcard)}
                                 onEdit={() => setEditingPostcard(postcard)}
                                 onUpdateStatus={handleUpdateStatus}
@@ -391,6 +502,16 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
                             <Table>
                                 <TableHeader>
                                     <TableRow>
+                                        <TableHead className="w-10">
+                                            <input
+                                                type="checkbox"
+                                                checked={postcards.length > 0 && selectedIds.size === postcards.length}
+                                                ref={(el) => { if (el) el.indeterminate = selectedIds.size > 0 && selectedIds.size < postcards.length }}
+                                                onChange={toggleSelectAll}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="h-4 w-4 rounded border-border text-teal-600 focus:ring-teal-500 cursor-pointer"
+                                            />
+                                        </TableHead>
                                         <TableHead>Image</TableHead>
                                         <TableHead>Expéditeur</TableHead>
                                         <TableHead>Destinataire</TableHead>
@@ -408,6 +529,8 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
                                         <ListRow
                                             key={postcard.id}
                                             postcard={postcard}
+                                            selected={selectedIds.has(postcard.id)}
+                                            onToggleSelect={() => toggleSelect(postcard.id)}
                                             onSelect={() => setSelectedPostcard(postcard)}
                                             onEdit={() => setEditingPostcard(postcard)}
                                             onUpdateStatus={handleUpdateStatus}
@@ -432,6 +555,15 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
                 onUpdateStatus={handleUpdateStatus}
                 onDelete={(id) => setDeleteConfirm(id)}
                 formatDate={formatDate}
+                useEspaceClientActions={useEspaceClientActions}
+                trackingLinks={trackingLinks}
+                onRefreshTrackingLinks={() => {
+                    if (selectedPostcard && useEspaceClientActions) {
+                        getTrackingLinksForPostcard(selectedPostcard.id).then((res) => {
+                            setTrackingLinks(res.success && res.links ? res.links : [])
+                        })
+                    }
+                }}
             />
 
             {/* Edit Dialog */}
@@ -452,7 +584,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
                 allowChangeAuthor={!useEspaceClientActions}
             />
 
-            {/* Delete confirmation */}
+            {/* Delete confirmation (single) */}
             <Dialog open={deleteConfirm !== null} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
                 <DialogContent className="sm:max-w-sm" onClick={(e) => e.stopPropagation()}>
                     <DialogHeader>
@@ -472,6 +604,26 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
                             disabled={isPending}
                         >
                             {isPending ? 'Suppression…' : 'Supprimer'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Bulk delete confirmation */}
+            <Dialog open={deleteConfirmBulkIds !== null && deleteConfirmBulkIds.length > 0} onOpenChange={(open) => !open && setDeleteConfirmBulkIds(null)}>
+                <DialogContent className="sm:max-w-sm" onClick={(e) => e.stopPropagation()}>
+                    <DialogHeader>
+                        <DialogTitle>Supprimer les cartes sélectionnées</DialogTitle>
+                        <DialogDescription>
+                            {deleteConfirmBulkIds?.length ?? 0} carte{(deleteConfirmBulkIds?.length ?? 0) > 1 ? 's' : ''} seront définitivement supprimée{(deleteConfirmBulkIds?.length ?? 0) > 1 ? 's' : ''}. Cette action est irréversible.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" size="sm" onClick={() => setDeleteConfirmBulkIds(null)}>
+                            Annuler
+                        </Button>
+                        <Button variant="destructive" size="sm" onClick={handleBulkDeleteConfirm} disabled={isPending}>
+                            {isPending ? 'Suppression…' : `Supprimer (${deleteConfirmBulkIds?.length ?? 0})`}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -548,110 +700,163 @@ function StatusDropdown({ currentStatus, onUpdate, postcardId }: {
     )
 }
 
-function GridCard({ postcard, onSelect, onEdit, onUpdateStatus, onDelete }: {
+function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onUpdateStatus, onDelete }: {
     postcard: PayloadPostcard
+    selected: boolean
+    onToggleSelect: () => void
     onSelect: () => void
     onEdit: () => void
     onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
     onDelete: (id: number) => void
 }) {
     const imageUrl = getFrontImageUrl(postcard)
+    const [isFlipped, setIsFlipped] = useState(false)
+    const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const handleMouseEnter = () => {
+        hoverTimerRef.current = setTimeout(() => setIsFlipped(true), 1000)
+    }
+    const handleMouseLeave = () => {
+        if (hoverTimerRef.current) {
+            clearTimeout(hoverTimerRef.current)
+            hoverTimerRef.current = null
+        }
+        setIsFlipped(false)
+    }
 
     return (
-        <Card
-            className="overflow-hidden border-border/50 hover:shadow-xl hover:shadow-black/5 transition-all duration-300 cursor-pointer group bg-card/60 backdrop-blur-sm"
-            onClick={onSelect}
-        >
-            {/* Image */}
-            <div className="relative h-48 overflow-hidden">
-                <img
-                    src={imageUrl}
-                    alt={`Carte de ${postcard.senderName}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute top-3 left-3 flex gap-2">
-                    <StatusBadge status={postcard.status || 'draft'} />
+        <div className="[perspective:1000px] h-full" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+            <div
+                className="relative h-full transition-transform duration-500 ease-out [transform-style:preserve-3d]"
+                style={{ minHeight: '320px', transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
+            >
+                <div className="[backface-visibility:hidden] h-full" style={{ transform: 'rotateY(0deg)' }}>
+                    <Card
+                        className={cn(
+                            'overflow-hidden border-border/50 hover:shadow-xl hover:shadow-black/5 transition-shadow duration-300 cursor-pointer group bg-card/60 backdrop-blur-sm h-full flex flex-col',
+                            selected && 'ring-2 ring-teal-500 ring-offset-2'
+                        )}
+                        onClick={onSelect}
+                    >
+                        {/* Image */}
+                        <div className="relative h-48 overflow-hidden flex-shrink-0">
+                            <div className="absolute top-3 left-3 z-10" onClick={(e) => e.stopPropagation()}>
+                                <input
+                                    type="checkbox"
+                                    checked={selected}
+                                    onChange={onToggleSelect}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="h-4 w-4 rounded border-border text-teal-600 focus:ring-teal-500 cursor-pointer bg-white/90 shadow"
+                                />
+                            </div>
+                            <img
+                                src={imageUrl}
+                                alt={`Carte de ${postcard.senderName}`}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            />
+                            <div className="absolute top-3 left-10 flex gap-2">
+                                <StatusBadge status={postcard.status || 'draft'} />
+                            </div>
+                            {postcard.isPremium && (
+                                <div className="absolute top-3 right-3 bg-amber-400/90 backdrop-blur-sm text-amber-950 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30">
+                                    PREMIUM
+                                </div>
+                            )}
+                            <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <p className="text-white text-xs line-clamp-2 italic">&quot;{postcard.message}&quot;</p>
+                            </div>
+                        </div>
+
+                        {/* Info */}
+                        <div className="p-4 space-y-4 flex-1">
+                            <div className="flex items-start justify-between">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2 text-sm font-semibold text-stone-800">
+                                        <span className="bg-teal-100 text-teal-700 text-[10px] px-1.5 py-0.5 rounded leading-none">DE</span>
+                                        {postcard.senderName}
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs text-stone-500">
+                                        <span className="bg-stone-100 text-stone-600 text-[10px] px-1.5 py-0.5 rounded leading-none">À</span>
+                                        {postcard.recipientName}
+                                    </div>
+                                </div>
+                                <div className="text-[10px] font-medium text-stone-400 bg-stone-50 px-2 py-1 rounded-md border border-stone-100">
+                                    {new Date(postcard.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }).toUpperCase()}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 text-xs text-stone-500 py-1.5 px-2 bg-stone-50/50 rounded-lg border border-stone-100/50">
+                                <MapPin size={12} className="text-orange-400 shrink-0" />
+                                <span className="truncate">{postcard.location}</span>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-3 border-t border-border/10">
+                                <div className="flex items-center gap-3 text-xs text-stone-400">
+                                    <span className="flex items-center gap-1 hover:text-stone-600 transition-colors"><Eye size={12} /> {postcard.views || 0}</span>
+                                    <span className="flex items-center gap-1 hover:text-stone-600 transition-colors"><Share2 size={12} /> {postcard.shares || 0}</span>
+                                </div>
+                                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                    <Link href={`/carte/${postcard.publicId}`} target="_blank" onClick={(e) => e.stopPropagation()}>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 text-stone-400 hover:text-teal-600 transition-colors rounded-full border border-border/30"
+                                            title="Ouvrir dans un nouvel onglet"
+                                        >
+                                            <ExternalLink size={14} />
+                                        </Button>
+                                    </Link>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={(e) => { e.stopPropagation(); onEdit() }}
+                                        className="h-8 w-8 text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-all rounded-full border border-border/30"
+                                        title="Modifier"
+                                    >
+                                        <Pencil size={14} />
+                                    </Button>
+                                    <StatusDropdown
+                                        currentStatus={postcard.status || 'draft'}
+                                        onUpdate={onUpdateStatus}
+                                        postcardId={postcard.id}
+                                    />
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={(e) => { e.stopPropagation(); onDelete(postcard.id) }}
+                                        className="h-8 w-8 text-stone-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-full"
+                                    >
+                                        <Trash2 size={14} />
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
                 </div>
-                {postcard.isPremium && (
-                    <div className="absolute top-3 right-3 bg-amber-400/90 backdrop-blur-sm text-amber-950 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30">
-                        PREMIUM
+                {/* Face verso */}
+                <div
+                    className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-lg overflow-hidden border border-border/50 bg-gradient-to-br from-stone-100 to-stone-200/80 shadow-lg cursor-pointer"
+                    onClick={onSelect}
+                >
+                    <div className="h-full flex flex-col p-5 justify-center">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Message</p>
+                        <p className="text-sm text-stone-700 italic leading-relaxed line-clamp-6">
+                            {postcard.message ? `"${postcard.message}"` : '—'}
+                        </p>
+                        <div className="mt-4 pt-4 border-t border-stone-300/50 flex items-center gap-2 text-xs text-stone-500">
+                            <MapPin size={12} className="text-orange-500 shrink-0" />
+                            <span>{postcard.location || '—'}</span>
+                        </div>
                     </div>
-                )}
-                <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <p className="text-white text-xs line-clamp-2 italic">&quot;{postcard.message}&quot;</p>
                 </div>
             </div>
-
-            {/* Info */}
-            <div className="p-4 space-y-4">
-                <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-sm font-semibold text-stone-800">
-                            <span className="bg-teal-100 text-teal-700 text-[10px] px-1.5 py-0.5 rounded leading-none">DE</span>
-                            {postcard.senderName}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-stone-500">
-                            <span className="bg-stone-100 text-stone-600 text-[10px] px-1.5 py-0.5 rounded leading-none">À</span>
-                            {postcard.recipientName}
-                        </div>
-                    </div>
-                    <div className="text-[10px] font-medium text-stone-400 bg-stone-50 px-2 py-1 rounded-md border border-stone-100">
-                        {new Date(postcard.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }).toUpperCase()}
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-2 text-xs text-stone-500 py-1.5 px-2 bg-stone-50/50 rounded-lg border border-stone-100/50">
-                    <MapPin size={12} className="text-orange-400 shrink-0" />
-                    <span className="truncate">{postcard.location}</span>
-                </div>
-
-                <div className="flex items-center justify-between pt-3 border-t border-border/10">
-                    <div className="flex items-center gap-3 text-xs text-stone-400">
-                        <span className="flex items-center gap-1 hover:text-stone-600 transition-colors"><Eye size={12} /> {postcard.views || 0}</span>
-                        <span className="flex items-center gap-1 hover:text-stone-600 transition-colors"><Share2 size={12} /> {postcard.shares || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                        <Link href={`/carte/${postcard.publicId}`} target="_blank" onClick={(e) => e.stopPropagation()}>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-stone-400 hover:text-teal-600 transition-colors rounded-full border border-border/30"
-                                title="Ouvrir dans un nouvel onglet"
-                            >
-                                <ExternalLink size={14} />
-                            </Button>
-                        </Link>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={(e) => { e.stopPropagation(); onEdit() }}
-                            className="h-8 w-8 text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-all rounded-full border border-border/30"
-                            title="Modifier"
-                        >
-                            <Pencil size={14} />
-                        </Button>
-                        <StatusDropdown
-                            currentStatus={postcard.status || 'draft'}
-                            onUpdate={onUpdateStatus}
-                            postcardId={postcard.id}
-                        />
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={(e) => { e.stopPropagation(); onDelete(postcard.id) }}
-                            className="h-8 w-8 text-stone-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-full"
-                        >
-                            <Trash2 size={14} />
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        </Card>
+        </div>
     )
 }
 
-function ListRow({ postcard, onSelect, onEdit, onUpdateStatus, onDelete, formatDate }: {
+function ListRow({ postcard, selected, onToggleSelect, onSelect, onEdit, onUpdateStatus, onDelete, formatDate }: {
     postcard: PayloadPostcard
+    selected: boolean
+    onToggleSelect: () => void
     onSelect: () => void
     onEdit: () => void
     onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
@@ -661,7 +866,16 @@ function ListRow({ postcard, onSelect, onEdit, onUpdateStatus, onDelete, formatD
     const imageUrl = getFrontImageUrl(postcard)
 
     return (
-        <TableRow className="group cursor-pointer hover:bg-muted/30 transition-colors border-border/50" onClick={onSelect}>
+        <TableRow className={cn('group cursor-pointer hover:bg-muted/30 transition-colors border-border/50', selected && 'bg-teal-50/50')} onClick={onSelect}>
+            <TableCell onClick={(e) => e.stopPropagation()}>
+                <input
+                    type="checkbox"
+                    checked={selected}
+                    onChange={onToggleSelect}
+                    onClick={(e) => e.stopPropagation()}
+                    className="h-4 w-4 rounded border-border text-teal-600 focus:ring-teal-500 cursor-pointer"
+                />
+            </TableCell>
             <TableCell>
                 <div className="relative w-16 h-11 group-hover:scale-105 transition-transform duration-300">
                     <img src={imageUrl} alt="" className="w-full h-full object-cover rounded-md shadow-sm border border-border/30" />
@@ -715,7 +929,19 @@ function ListRow({ postcard, onSelect, onEdit, onUpdateStatus, onDelete, formatD
     )
 }
 
-function DetailsSheet({ postcard, viewStats, isOpen, onClose, onEdit, onUpdateStatus, onDelete, formatDate }: {
+function DetailsSheet({
+    postcard,
+    viewStats,
+    isOpen,
+    onClose,
+    onEdit,
+    onUpdateStatus,
+    onDelete,
+    formatDate,
+    useEspaceClientActions,
+    trackingLinks,
+    onRefreshTrackingLinks,
+}: {
     postcard: PayloadPostcard | null
     viewStats: PostcardViewStats | null
     isOpen: boolean
@@ -724,10 +950,26 @@ function DetailsSheet({ postcard, viewStats, isOpen, onClose, onEdit, onUpdateSt
     onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
     onDelete: (id: number) => void
     formatDate: (d: string) => string
+    useEspaceClientActions?: boolean
+    trackingLinks?: PostcardTrackingLink[]
+    onRefreshTrackingLinks?: () => void
 }) {
+    const [trackingDialogOpen, setTrackingDialogOpen] = useState(false)
+    const [emailDialogOpen, setEmailDialogOpen] = useState(false)
+    const [emailDialogTracking, setEmailDialogTracking] = useState<PostcardTrackingLink | null>(null)
+    const [emailInput, setEmailInput] = useState('')
+    const [emailSending, setEmailSending] = useState(false)
+    const [createTrackingPending, setCreateTrackingPending] = useState(false)
+    const [createForm, setCreateForm] = useState({
+        recipientFirstName: '',
+        recipientLastName: '',
+        description: '',
+    } as CreateTrackingLinkData)
+
     if (!postcard) return null
     const frontendPostcard = mapToFrontend(postcard)
     const publicUrl = `/carte/${postcard.publicId}`
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
 
     return (
         <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -869,6 +1111,92 @@ function DetailsSheet({ postcard, viewStats, isOpen, onClose, onEdit, onUpdateSt
                                 </div>
                             </div>
                         )}
+
+                        {/* Liens de tracking (espace client uniquement) */}
+                        {useEspaceClientActions && (
+                            <div className="space-y-3">
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">Suivi par destinataire</h4>
+                                <div className="p-4 bg-muted/30 rounded-xl border border-border/30 space-y-3">
+                                    {(trackingLinks?.length ?? 0) === 0 ? (
+                                        <p className="text-sm text-muted-foreground">Aucun lien de tracking. Créez-en un pour partager cette carte avec un suivi personnalisé.</p>
+                                    ) : (
+                                        <ul className="space-y-3">
+                                            {(trackingLinks ?? []).map((t) => {
+                                                const trackingUrl = `${baseUrl}/v/${t.token}`
+                                                const shareText = 'Une carte postale pour vous : '
+                                                return (
+                                                    <li key={t.id} className="p-3 rounded-lg border border-border/50 bg-background/50 space-y-2">
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <span className="font-medium text-sm text-foreground">
+                                                                {[t.recipientFirstName, t.recipientLastName].filter(Boolean).join(' ') || 'Sans nom'}
+                                                            </span>
+                                                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                                                <Eye size={12} /> {t.views ?? 0} vues
+                                                            </span>
+                                                        </div>
+                                                        {t.description && (
+                                                            <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>
+                                                        )}
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="h-8 gap-1.5 text-xs"
+                                                                onClick={() => {
+                                                                    const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/v/${t.token}`
+                                                                    void navigator.clipboard.writeText(url).then(() => alert('Lien copié !'))
+                                                                }}
+                                                            >
+                                                                <Copy size={12} /> Copier
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="h-8 gap-1.5 text-xs"
+                                                                onClick={() => {
+                                                                    setEmailDialogTracking(t)
+                                                                    setEmailInput('')
+                                                                    setEmailDialogOpen(true)
+                                                                }}
+                                                            >
+                                                                <Mail size={12} /> Email
+                                                            </Button>
+                                                            <a
+                                                                href={`https://wa.me/?text=${encodeURIComponent(shareText + (typeof window !== 'undefined' ? window.location.origin : '') + '/v/' + t.token)}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                            >
+                                                                <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+                                                                    <MessageCircle size={12} /> WhatsApp
+                                                                </Button>
+                                                            </a>
+                                                            <a
+                                                                href={`sms:?body=${encodeURIComponent(shareText + (typeof window !== 'undefined' ? window.location.origin : '') + '/v/' + t.token)}`}
+                                                            >
+                                                                <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+                                                                    <Send size={12} /> SMS
+                                                                </Button>
+                                                            </a>
+                                                        </div>
+                                                    </li>
+                                                )
+                                            })}
+                                        </ul>
+                                    )}
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full gap-2 border-dashed"
+                                        onClick={() => {
+                                            setCreateForm({ recipientFirstName: '', recipientLastName: '', description: '' })
+                                            setTrackingDialogOpen(true)
+                                        }}
+                                    >
+                                        <Link2 size={14} /> Créer un lien de tracking
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -925,6 +1253,109 @@ function DetailsSheet({ postcard, viewStats, isOpen, onClose, onEdit, onUpdateSt
                         </div>
                     </div>
                 </div>
+
+                {/* Dialog: Créer un lien de tracking */}
+                <Dialog open={trackingDialogOpen} onOpenChange={setTrackingDialogOpen}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Créer un lien de tracking</DialogTitle>
+                            <DialogDescription>Nom et prénom du destinataire pour identifier ce lien. Optionnel : une description.</DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Prénom</label>
+                                    <Input
+                                        value={createForm.recipientFirstName ?? ''}
+                                        onChange={(e) => setCreateForm((f) => ({ ...f, recipientFirstName: e.target.value }))}
+                                        placeholder="Prénom"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Nom</label>
+                                    <Input
+                                        value={createForm.recipientLastName ?? ''}
+                                        onChange={(e) => setCreateForm((f) => ({ ...f, recipientLastName: e.target.value }))}
+                                        placeholder="Nom"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Description (optionnel)</label>
+                                <Input
+                                    value={createForm.description ?? ''}
+                                    onChange={(e) => setCreateForm((f) => ({ ...f, description: e.target.value }))}
+                                    placeholder="Ex. Carte pour l’anniversaire de Marie"
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setTrackingDialogOpen(false)}>Annuler</Button>
+                            <Button
+                                disabled={createTrackingPending}
+                                onClick={async () => {
+                                    if (!postcard) return
+                                    setCreateTrackingPending(true)
+                                    const res = await createTrackingLink(postcard.id, {
+                                        recipientFirstName: createForm.recipientFirstName || undefined,
+                                        recipientLastName: createForm.recipientLastName || undefined,
+                                        description: createForm.description || undefined,
+                                    })
+                                    setCreateTrackingPending(false)
+                                    if (res.success) {
+                                        setTrackingDialogOpen(false)
+                                        onRefreshTrackingLinks?.()
+                                    } else {
+                                        alert(res.error ?? 'Erreur')
+                                    }
+                                }}
+                            >
+                                {createTrackingPending ? 'Création…' : 'Créer le lien'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Dialog: Envoyer le lien par email */}
+                <Dialog open={emailDialogOpen} onOpenChange={(open) => { setEmailDialogOpen(open); if (!open) setEmailDialogTracking(null) }}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Envoyer le lien par email</DialogTitle>
+                            <DialogDescription>Indiquez l’adresse email du destinataire. Il recevra un email avec le lien vers la carte.</DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <label className="text-sm font-medium mb-2 block">Email</label>
+                            <Input
+                                type="email"
+                                value={emailInput}
+                                onChange={(e) => setEmailInput(e.target.value)}
+                                placeholder="destinataire@exemple.fr"
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>Annuler</Button>
+                            <Button
+                                disabled={emailSending || !emailInput.trim()}
+                                onClick={async () => {
+                                    if (!emailDialogTracking) return
+                                    setEmailSending(true)
+                                    const res = await sendTrackingLinkByEmail(emailDialogTracking.id, emailInput.trim())
+                                    setEmailSending(false)
+                                    if (res.success) {
+                                        setEmailDialogOpen(false)
+                                        setEmailDialogTracking(null)
+                                        setEmailInput('')
+                                        onRefreshTrackingLinks?.()
+                                    } else {
+                                        alert(res.error ?? 'Erreur')
+                                    }
+                                }}
+                            >
+                                {emailSending ? 'Envoi…' : 'Envoyer'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </SheetContent>
         </Sheet>
     )

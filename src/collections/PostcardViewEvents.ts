@@ -107,5 +107,13 @@ export const PostcardViewEvents: CollectionConfig = {
                 description: 'ID de session visiteur (déduplication)',
             },
         },
+        {
+            name: 'trackingLink',
+            type: 'relationship',
+            relationTo: 'postcard-tracking-links',
+            admin: {
+                description: 'Lien de tracking si la vue provient de /v/[token]',
+            },
+        },
     ],
 }

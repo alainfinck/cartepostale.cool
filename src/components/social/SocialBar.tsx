@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Reply, MapPin } from 'lucide-react'
@@ -48,7 +49,9 @@ export default function SocialBar({
     initialShares,
     coords,
 }: SocialBarProps) {
+    const searchParams = useSearchParams()
     const sessionId = useSessionId()
+    const trackingToken = searchParams.get('t') ?? undefined
     const [counts, setCounts] = useState<Record<string, number>>({})
     const [userReactions, setUserReactions] = useState<Record<string, boolean>>({})
     const [comments, setComments] = useState<Comment[]>([])
@@ -90,6 +93,7 @@ export default function SocialBar({
                 userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
                 openedAt: new Date(openedAtRef.current).toISOString(),
                 referrer: typeof document !== 'undefined' ? document.referrer || undefined : undefined,
+                trackingToken,
             })
             if (result.success && result.eventId != null) {
                 eventIdRef.current = result.eventId
@@ -97,7 +101,7 @@ export default function SocialBar({
         }
 
         load()
-    }, [postcardId, sessionId])
+    }, [postcardId, sessionId, trackingToken])
 
     // Calculate distance if coords are available
     useEffect(() => {

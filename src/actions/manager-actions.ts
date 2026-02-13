@@ -121,6 +121,54 @@ export async function deletePostcard(
     }
 }
 
+/** Bulk update status for multiple postcards (admin only). */
+export async function updatePostcardStatusBulk(
+    ids: number[],
+    status: 'published' | 'draft' | 'archived'
+): Promise<{ success: boolean; updatedCount?: number; error?: string }> {
+    await requireAdmin()
+    if (!ids.length) return { success: true, updatedCount: 0 }
+    try {
+        const payload = await getPayload({ config })
+        let updatedCount = 0
+        for (const id of ids) {
+            await payload.update({
+                collection: 'postcards',
+                id,
+                data: { status },
+            })
+            updatedCount++
+        }
+        return { success: true, updatedCount }
+    } catch (error) {
+        console.error('Error bulk updating postcard status:', error)
+        return { success: false, error: 'Failed to update status' }
+    }
+}
+
+/** Bulk delete postcards (admin only). */
+export async function deletePostcardsBulk(
+    ids: number[]
+): Promise<{ success: boolean; deletedCount?: number; error?: string }> {
+    await requireAdmin()
+    if (!ids.length) return { success: true, deletedCount: 0 }
+    try {
+        const payload = await getPayload({ config })
+        let deletedCount = 0
+        for (const id of ids) {
+            await payload.delete({
+                collection: 'postcards',
+                id,
+            })
+            deletedCount++
+        }
+        return { success: true, deletedCount }
+    } catch (error) {
+        console.error('Error bulk deleting postcards:', error)
+        return { success: false, error: 'Failed to delete postcards' }
+    }
+}
+
 export async function updatePostcard(
     id: number,
     data: any

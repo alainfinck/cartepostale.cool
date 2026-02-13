@@ -2,8 +2,10 @@
 
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import type { Postcard } from '@/payload-types'
+import type { Postcard, PostcardTrackingLink } from '@/payload-types'
 import { getCurrentUser } from '@/lib/auth'
+import { sendEmail, generateTrackingLinkEmail } from '@/lib/email-service'
+import { headers } from 'next/headers'
 
 export interface PostcardFilters {
     status?: 'published' | 'draft' | 'archived'
@@ -218,4 +220,138 @@ export async function deleteMyPostcard(id: number): Promise<{ success: boolean; 
         console.error('Error deleting my postcard:', err)
         return { success: false, error: message }
     }
+}
+
+// --- Tracking links (liens de suivi par destinataire) ---
+
+export interface CreateTrackingLinkData {
+    recipientFirstName?: string
+    recipientLastName?: string
+    description?: string
+}
+
+export async function createTrackingLink(
+    postcardId: number,
+    data: CreateTrackingLinkData
+): Promise<{ success: boolean; tracking?: PostcardTrackingLink; error?: string }> {
+    const { allowed, error } = await ensureOwnership(postcardId)
+    if (!allowed) return { success: false, error }
+
+    const user = await getCurrentUser()
+    if (!user) return { success: false, error: 'Non connecté.' }
+
+    try {
+        const payload = await getPayload({ config })
+        const tracking = await payload.create({
+            collection: 'postcard-tracking-links',
+            data: {
+                postcard: postcardId,
+                recipientFirstName: data.recipientFirstName?.trim() || undefined,
+                recipientLastName: data.recipientLastName?.trim() || undefined,
+                description: data.description?.trim() || undefined,
+                author: user.id,
+            },
+            overrideAccess: true,
+        } as Parameters<typeof payload.create>[0])
+        return { success: true, tracking: tracking as PostcardTrackingLink }
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Erreur lors de la création du lien.'
+        console.error('Error creating tracking link:', err)
+        return { success: false, error: message }
+    }
+}
+
+export async function getTrackingLinksForPostcard(
+    postcardId: number
+): Promise<{ success: boolean; links?: PostcardTrackingLink[]; error?: string }> {
+    const { allowed, error } = await ensureOwnership(postcardId)
+    if (!allowed) return { success: false, error }
+
+    const user = await getCurrentUser()
+    if (!user) return { success: false, error: 'Non connecté.' }
+
+    try {
+        const payload = await getPayload({ config })
+        const result = await payload.find({
+            collection: 'postcard-tracking-links',
+            where: {
+                postcard: { equals: postcardId },
+                author: { equals: user.id },
+            },
+            sort: '-createdAt',
+            depth: 0,
+            overrideAccess: true,
+        })
+        return { success: true, links: result.docs as PostcardTrackingLink[] }
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Erreur lors du chargement des liens.'
+        console.error('Error fetching tracking links:', err)
+        return { success: false, error: message }
+    }
+}
+
+async function getBaseUrl(): Promise<string> {
+    try {
+        const headersList = await headers()
+        const host = headersList.get('host') || 'localhost:3000'
+        const protocol = host.includes('localhost') ? 'http' : 'https'
+        return `${protocol}://${host}`
+    } catch {
+        return process.env.VERCEL_URL
+            ? `https://${process.env.VERCEL_URL}`
+            : 'http://localhost:3000'
+    }
+}
+
+export async function sendTrackingLinkByEmail(
+    trackingId: number,
+    recipientEmail: string
+): Promise<{ success: boolean; error?: string }> {
+    const user = await getCurrentUser()
+    if (!user) return { success: false, error: 'Non connecté.' }
+
+    const payload = await getPayload({ config })
+    const tracking = await payload.findByID({
+        collection: 'postcard-tracking-links',
+        id: trackingId,
+        depth: 1,
+        overrideAccess: true,
+    })
+
+    const authorId = typeof tracking.author === 'object' ? tracking.author?.id : tracking.author
+    if (authorId !== user.id) {
+        return { success: false, error: 'Ce lien de tracking ne vous appartient pas.' }
+    }
+
+    const postcard = typeof tracking.postcard === 'object' ? tracking.postcard : null
+    const senderName = postcard && typeof postcard === 'object' && 'senderName' in postcard
+        ? (postcard as { senderName?: string }).senderName
+        : undefined
+
+    const baseUrl = await getBaseUrl()
+    const trackingUrl = `${baseUrl}/v/${tracking.token}`
+    const html = generateTrackingLinkEmail(
+        trackingUrl,
+        tracking.recipientFirstName,
+        senderName
+    )
+
+    const ok = await sendEmail({
+        to: recipientEmail.trim().toLowerCase(),
+        subject: 'Une carte postale pour vous',
+        html,
+    })
+    if (!ok) return { success: false, error: 'Échec de l\'envoi de l\'email.' }
+
+    await payload.update({
+        collection: 'postcard-tracking-links',
+        id: trackingId,
+        data: {
+            sentVia: 'email',
+            sentAt: new Date().toISOString(),
+        },
+        overrideAccess: true,
+    })
+
+    return { success: true }
 }

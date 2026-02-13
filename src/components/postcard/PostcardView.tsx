@@ -120,7 +120,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     const messageTextRef = useRef<HTMLParagraphElement>(null);
     const [autoFontSize, setAutoFontSize] = useState<number>(1);
 
-    // Ajustement automatique de la taille du texte pour qu'il tienne dans le conteneur
+    // Ajustement automatique de la taille du texte : tenir dans le conteneur, ou zoomer pour remplir si peu de lignes
     useLayoutEffect(() => {
         if (!isFlipped || !messageTextRef.current || !messageContainerRef.current) return;
 
@@ -135,11 +135,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         let high = 3.5; // Limite haute généreuse
         let best = 1.0;
 
-        // Recherche par dichotomie de la taille optimale
+        // Recherche par dichotomie de la taille max qui tient
         for (let i = 0; i < 8; i++) {
             const mid = (low + high) / 2;
             text.style.fontSize = `${mid}rem`;
-            // On vérifie si ça dépasse (avec une petite marge de 4px)
             if (text.scrollHeight <= targetHeight + 4 && text.scrollWidth <= targetWidth) {
                 best = mid;
                 low = mid;
@@ -148,10 +147,20 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             }
         }
 
-        setAutoFontSize(best);
-        // On nettoie le style inline forcé après mesure pour laisser le style React prendre le relais
+        // Si peu de texte (ex. 2 lignes) : zoomer pour remplir l'espace au lieu de laisser vide
+        text.style.fontSize = `${best}rem`;
+        const usedHeight = text.scrollHeight;
+        const fillRatio = 0.7; // seuil en dessous duquel on considère "peu de texte"
+        const targetFillRatio = 0.88; // on vise ~88% de la hauteur pour remplir
+        if (usedHeight > 0 && usedHeight < targetHeight * fillRatio) {
+            const scaleUp = Math.min((targetHeight * targetFillRatio) / usedHeight, 3.5 / best);
+            const filledSize = Math.min(best * scaleUp, 3.5);
+            setAutoFontSize(filledSize);
+        } else {
+            setAutoFontSize(best);
+        }
         text.style.fontSize = '';
-    }, [isFlipped, isLarge]); // Retrait de postcard.message pour éviter l'effet zoom/dezoom pendant la saisie
+    }, [isFlipped, isLarge, postcard.message]);
 
     const handleFlip = () => {
         if (isDragging) return;
@@ -408,7 +417,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             <div className="flex flex-col items-center gap-6 select-none">
                 <motion.div
                     className={cn(
-                        "perspective-1000 cursor-pointer active:cursor-grabbing group touch-none",
+                        "perspective-1000 cursor-pointer active:cursor-grabbing group touch-none transition-shadow duration-300",
                         !width && !height && (isLarge
                             ? "w-[95vw] h-[65vw] max-w-[500px] max-h-[333px] sm:w-[600px] sm:h-[400px] md:w-[800px] md:h-[533px] lg:w-[1000px] lg:h-[666px] sm:max-w-none sm:max-h-none portrait:max-h-none"
                             : "w-[340px] h-[240px] sm:w-[600px] sm:h-[400px]"),
@@ -421,8 +430,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     onDragStart={handleDragStart}
                     onDrag={handleDrag}
                     onDragEnd={handleDragEnd}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
                     style={{ perspective: 1000, width, height }}
                 >
                     <motion.div
@@ -577,10 +584,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 <span className="text-[9px] font-bold uppercase tracking-widest">Cliquer pour retourner</span>
                             </div>
 
-                            {/* Small branding bottom-left */}
-                            <div className="absolute bottom-3 left-6 text-stone-300 text-[8px] font-bold tracking-[0.2em] uppercase flex items-center gap-1.5 transition-opacity duration-300">
-                                <div className="w-1 h-1 bg-stone-200 rounded-full" />
-                                cartepostale.cool
+                            {/* Watermark bottom-left */}
+                            <div className="absolute bottom-3 left-6 text-stone-500 text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase flex items-center gap-1.5 transition-opacity duration-300">
+                                <div className="w-1.5 h-1.5 bg-stone-400 rounded-full shrink-0" />
+                                <span>cartepostale.cool</span>
                             </div>
                             <div className="absolute left-[62%] top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50 transition-opacity duration-300"></div>
 

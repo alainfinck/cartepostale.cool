@@ -201,7 +201,7 @@ export default async function PostcardPage({ params }: PageProps) {
                     postcard={frontendPostcard}
                     flipped={false}
                     isLarge={true}
-                    className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] md:shadow-[0_30px_70px_rgba(0,0,0,0.2)]"
+                    className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] md:shadow-[0_30px_70px_rgba(0,0,0,0.2)] hover:shadow-[0_28px_60px_rgba(0,0,0,0.2)] md:hover:shadow-[0_40px_90px_rgba(0,0,0,0.25)]"
                 />
 
                 {/* Distance Display */}

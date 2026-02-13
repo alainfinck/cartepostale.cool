@@ -1,5 +1,4 @@
 import * as nodemailer from 'nodemailer';
-import { Postcard } from '@/payload-types';
 
 // Create a transporter using SMTP
 const transporter = process.env.SMTP_HOST ? nodemailer.createTransport({
@@ -89,6 +88,54 @@ export function generateMagicLinkEmail(magicLink: string, postcardUrl: string, p
         </div>
         <div class="footer">
           <p>Ce lien de connexion est magique et temporaire (valide 1h).<br>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.</p>
+          <p>© ${new Date().getFullYear()} CartePostale.cool - Tous droits réservés</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+/** HTML body for "someone sent you a postcard" email with tracking link. */
+export function generateTrackingLinkEmail(
+  trackingUrl: string,
+  recipientFirstName?: string | null,
+  senderName?: string | null
+) {
+  const greeting = recipientFirstName?.trim()
+    ? `Bonjour ${recipientFirstName},`
+    : 'Bonjour,';
+  const sender = senderName?.trim() || 'Quelqu\'un';
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Une carte postale pour vous</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-top: 40px; margin-bottom: 40px; }
+        .header { background-color: #fdfbf7; padding: 40px 0; text-align: center; border-bottom: 1px solid #f3f4f6; }
+        .logo { font-family: 'Times New Roman', serif; font-size: 24px; font-weight: bold; color: #0f766e; text-decoration: none; }
+        .content { padding: 40px; }
+        .h1 { font-family: 'Georgia', serif; font-size: 28px; color: #111827; margin-bottom: 24px; text-align: center; }
+        .p { font-size: 16px; color: #4b5563; margin-bottom: 24px; text-align: center; }
+        .btn-primary { display: block; width: fit-content; margin: 0 auto; background-color: #0d9488; color: #ffffff !important; padding: 14px 28px; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 16px; text-align: center; transition: background-color 0.2s; box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.3); }
+        .footer { background-color: #f9fafb; padding: 32px; text-align: center; font-size: 12px; color: #9ca3af; border-top: 1px solid #f3f4f6; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <a href="${trackingUrl.split('/v/')[0]}" class="logo">CartePostale.cool</a>
+        </div>
+        <div class="content">
+          <h1 class="h1">${greeting} 💌</h1>
+          <p class="p">${sender} vous envoie une carte postale. Cliquez sur le lien ci-dessous pour la découvrir.</p>
+          <a href="${trackingUrl}" class="btn-primary">Voir ma carte postale</a>
+        </div>
+        <div class="footer">
           <p>© ${new Date().getFullYear()} CartePostale.cool - Tous droits réservés</p>
         </div>
       </div>
