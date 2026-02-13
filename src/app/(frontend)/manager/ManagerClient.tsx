@@ -43,13 +43,13 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog'
 import { Postcard as PayloadPostcard, Media } from '@/payload-types'
-import { getAllPostcards, updatePostcardStatus, deletePostcard, PostcardsResult } from '@/actions/manager-actions'
+import { getAllPostcards, updatePostcardStatus, deletePostcard, updatePostcard, PostcardsResult } from '@/actions/manager-actions'
 import { getPostcardViewStats, type PostcardViewStats } from '@/actions/postcard-view-stats'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import EditPostcardDialog from './EditPostcardDialog'
 
-type StatusFilter = 'all' | 'published' | 'draft' | 'archived'
+export type StatusFilter = 'all' | 'published' | 'draft' | 'archived'
 type ViewMode = 'grid' | 'list'
 
 function isMedia(media: any): media is Media {
@@ -105,11 +105,20 @@ const statusConfig = {
     archived: { label: 'Archivée', color: 'bg-stone-100/80 text-stone-500 border-stone-200/50 backdrop-blur-sm' },
 } as const
 
-interface Props {
-    initialData: PostcardsResult
+export interface ManagerClientActions {
+    fetchPostcards: (filters?: { status?: StatusFilter; search?: string }) => Promise<PostcardsResult>
+    updatePostcard: (id: number, data: Record<string, unknown>) => Promise<{ success: boolean; error?: string }>
+    updatePostcardStatus: (id: number, status: 'published' | 'draft' | 'archived') => Promise<{ success: boolean; error?: string }>
+    deletePostcard: (id: number) => Promise<{ success: boolean; error?: string }>
 }
 
-export default function ManagerClient({ initialData }: Props) {
+interface Props {
+    initialData: PostcardsResult
+    /** When provided (e.g. from espace-client), use these instead of admin actions. */
+    actions?: ManagerClientActions
+}
+
+export default function ManagerClient({ initialData, actions }: Props) {
     const [data, setData] = useState(initialData)
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -138,6 +147,11 @@ export default function ManagerClient({ initialData }: Props) {
     const totalViews = postcards.reduce((sum, p) => sum + (p.views || 0), 0)
     const totalShares = postcards.reduce((sum, p) => sum + (p.shares || 0), 0)
 
+    const fetchPostcards = actions?.fetchPostcards ?? (async (filters: any) => getAllPostcards(filters))
+    const updatePostcardFn = actions?.updatePostcard ?? updatePostcard
+    const updatePostcardStatusFn = actions?.updatePostcardStatus ?? updatePostcardStatus
+    const deletePostcardFn = actions?.deletePostcard ?? deletePostcard
+
     const refreshData = useCallback((statusF?: StatusFilter, searchQ?: string) => {
         startTransition(async () => {
             const filters: any = {}
@@ -145,10 +159,10 @@ export default function ManagerClient({ initialData }: Props) {
             const q = searchQ ?? search
             if (s !== 'all') filters.status = s
             if (q.trim()) filters.search = q.trim()
-            const result = await getAllPostcards(filters)
+            const result = await fetchPostcards(filters)
             setData(result)
         })
-    }, [statusFilter, search])
+    }, [statusFilter, search, fetchPostcards])
 
     const handleSearch = (value: string) => {
         setSearch(value)
@@ -162,20 +176,24 @@ export default function ManagerClient({ initialData }: Props) {
 
     const handleUpdateStatus = (id: number, newStatus: 'published' | 'draft' | 'archived') => {
         startTransition(async () => {
-            const result = await updatePostcardStatus(id, newStatus)
+            const result = await updatePostcardStatusFn(id, newStatus)
             if (result.success) {
                 refreshData()
+            } else if (result.error) {
+                alert(result.error)
             }
         })
     }
 
     const handleDelete = (id: number) => {
         startTransition(async () => {
-            const result = await deletePostcard(id)
+            const result = await deletePostcardFn(id)
             if (result.success) {
                 setDeleteConfirm(null)
                 if (selectedPostcard?.id === id) setSelectedPostcard(null)
                 refreshData()
+            } else if (result.error) {
+                alert(result.error)
             }
         })
     }
@@ -338,13 +356,13 @@ export default function ManagerClient({ initialData }: Props) {
                 onSuccess={() => {
                     refreshData()
                     if (selectedPostcard?.id === editingPostcard?.id) {
-                        // Update selected postcard data too
-                        getAllPostcards({ search: search, status: statusFilter !== 'all' ? statusFilter : undefined }).then(res => {
+                        fetchPostcards({ search: search, status: statusFilter !== 'all' ? statusFilter : undefined }).then(res => {
                             const updated = res.docs.find(p => p.id === editingPostcard?.id)
                             if (updated) setSelectedPostcard(updated)
                         })
                     }
                 }}
+                updatePostcardFn={updatePostcardFn}
             />
 
             {/* Delete confirmation */}

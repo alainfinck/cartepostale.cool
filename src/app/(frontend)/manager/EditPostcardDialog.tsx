@@ -17,11 +17,15 @@ import { updatePostcard } from '@/actions/manager-actions'
 import { Camera, Loader2, Save, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+export type UpdatePostcardFn = (id: number, data: Record<string, unknown>) => Promise<{ success: boolean; error?: string }>
+
 interface EditPostcardDialogProps {
     postcard: Postcard | null
     isOpen: boolean
     onClose: () => void
     onSuccess: () => void
+    /** When provided, used instead of the default admin updatePostcard (e.g. for espace client). */
+    updatePostcardFn?: UpdatePostcardFn
 }
 
 function isMedia(media: any): media is Media {
@@ -34,7 +38,7 @@ function getFrontImageUrl(postcard: Postcard): string {
     return 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80'
 }
 
-export default function EditPostcardDialog({ postcard, isOpen, onClose, onSuccess }: EditPostcardDialogProps) {
+export default function EditPostcardDialog({ postcard, isOpen, onClose, onSuccess, updatePostcardFn }: EditPostcardDialogProps) {
     const [isPending, startTransition] = useTransition()
     const [formData, setFormData] = useState({
         senderName: '',
@@ -93,7 +97,8 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
                 dataToUpdate.frontImage = formData.frontImage
             }
 
-            const result = await updatePostcard(postcard.id, dataToUpdate)
+            const updateFn = updatePostcardFn ?? updatePostcard
+            const result = await updateFn(postcard.id, dataToUpdate)
             if (result.success) {
                 onSuccess()
                 onClose()
