@@ -34,6 +34,9 @@ import {
   Mail,
   CreditCard,
   Crop,
+  Grid,
+  Minus,
+  Plus,
 } from 'lucide-react'
 import { Postcard, Template, TemplateCategory, FrontImageCrop } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -418,6 +421,54 @@ const SAMPLE_TEMPLATES: Template[] = [
 
 const EMOJI_SUGGESTIONS = ['✨', '📍', '🌅', '🌴', '💌', '🌊', '🗺️'] as const
 
+type EmojiCategoryKey = 'mood' | 'travel' | 'nature' | 'celebration' | 'love' | 'fun'
+
+interface EmojiCategory {
+  key: EmojiCategoryKey
+  label: string
+  icon: string
+  emojis: string[]
+}
+
+const EMOJI_CATEGORIES: EmojiCategory[] = [
+  {
+    key: 'mood',
+    label: 'Humeurs',
+    icon: '😊',
+    emojis: ['😊', '😄', '😌', '🤩', '😎', '😁', '🙂', '😇', '🤗', '😺'],
+  },
+  {
+    key: 'travel',
+    label: 'Voyage',
+    icon: '✈️',
+    emojis: ['✈️', '🌍', '🗺️', '🧳', '🚢', '🛳️', '⛰️', '🏖️', '🌇', '🌅'],
+  },
+  {
+    key: 'nature',
+    label: 'Nature',
+    icon: '🌿',
+    emojis: ['🌿', '🌸', '🌼', '🌲', '🌊', '🌞', '🌱', '🌺', '🍃', '🍂'],
+  },
+  {
+    key: 'celebration',
+    label: 'Fêtes',
+    icon: '🎉',
+    emojis: ['🎉', '🥂', '🎈', '🎂', '✨', '🎶', '🕯️', '🎁', '🍾', '🪅'],
+  },
+  {
+    key: 'love',
+    label: 'Amour',
+    icon: '💌',
+    emojis: ['💌', '❤️', '💘', '💞', '💑', '😘', '💍', '🌹', '💕', '😍'],
+  },
+  {
+    key: 'fun',
+    label: 'Fun',
+    icon: '😜',
+    emojis: ['😜', '🤪', '🕶️', '😺', '🤠', '🎭', '🪄', '🎮', '🛼', '🎢'],
+  },
+]
+
 /** Emojis rapides pour le message (carte postale). */
 const MESSAGE_EMOJIS = ['❤️', '😊', '🌅', '🌴', '🌊', '☀️', '💌', '✨', '📍', '🗺️', '😘', '👋', '💕', '🌸', '🏖️']
 
@@ -450,6 +501,7 @@ export default function EditorPage() {
   const [postmarkText, setPostmarkText] = useState('')
   const [uploadedFileName, setUploadedFileName] = useState('')
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+  const [isDropActive, setIsDropActive] = useState(false)
   /** À l'étape Rédaction : id du modèle utilisé pour l'aperçu du verso (null = ma rédaction). */
   const [versoPreviewTemplateId, setVersoPreviewTemplateId] = useState<string | null>(null)
   const [frontImageKey, setFrontImageKey] = useState<string | null>(null)
@@ -463,12 +515,14 @@ export default function EditorPage() {
   const cropAreaRef = useRef<HTMLDivElement>(null)
   const cropImgRef = useRef<HTMLImageElement>(null)
   const cropDragRef = useRef<{ clientX: number; clientY: number; cropX: number; cropY: number } | null>(null)
+  const dropDragCounterRef = useRef(0)
   const messageInputRef = useRef<HTMLTextAreaElement>(null)
 
   const [mediaItems, setMediaItems] = useState<Postcard['mediaItems']>([])
   const [isPremium, setIsPremium] = useState(false)
   const [showFullscreen, setShowFullscreen] = useState(false)
   const [showRecipientModal, setShowRecipientModal] = useState(false)
+  const [fullscreenScale, setFullscreenScale] = useState(1)
 
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal' | 'revolut' | null>(null)
 
@@ -482,6 +536,9 @@ export default function EditorPage() {
   const [hasConfettiFired, setHasConfettiFired] = useState(false)
   const [isSendingEmail, setIsSendingEmail] = useState(false)
   const [isEmailSent, setIsEmailSent] = useState(false)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [selectedEmojiCategory, setSelectedEmojiCategory] = useState<EmojiCategoryKey>(EMOJI_CATEGORIES[0].key)
+  const emojiPickerRef = useRef<HTMLDivElement>(null)
   const [currentUser, setCurrentUser] = useState<{ id: number; email?: string; name?: string | null } | null>(null)
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
@@ -544,6 +601,23 @@ export default function EditorPage() {
     return () => ro.disconnect()
   }, [showCropPanel])
 
+  useEffect(() => {
+    if (showFullscreen) {
+      setFullscreenScale(1)
+    }
+  }, [showFullscreen])
+
+  useEffect(() => {
+    if (!showEmojiPicker) return
+    const handleClickOutside = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showEmojiPicker])
+
   const canGoNext = () => {
     switch (currentStep) {
       case 'photo':
@@ -584,9 +658,7 @@ export default function EditorPage() {
     }
   }
 
-  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const processFrontImageFile = useCallback(async (file: File) => {
     setUploadedFileName(file.name)
 
     // Resize max 2k, JPEG 80%, puis upload du résultat (pas l’original)
@@ -637,6 +709,51 @@ export default function EditorPage() {
     setFrontImageCrop({ scale: 1, x: 50, y: 50 })
     setSelectedTemplateId(null)
   }, [])
+
+  const handleFileUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+      await processFrontImageFile(file)
+      e.target.value = ''
+    },
+    [processFrontImageFile]
+  )
+
+  const handleDropZoneDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dropDragCounterRef.current += 1
+    setIsDropActive(true)
+  }, [])
+
+  const handleDropZoneDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dropDragCounterRef.current = Math.max(0, dropDragCounterRef.current - 1)
+    if (dropDragCounterRef.current === 0) {
+      setIsDropActive(false)
+    }
+  }, [])
+
+  const handleDropZoneDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }, [])
+
+  const handleDropZoneDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault()
+      e.stopPropagation()
+      dropDragCounterRef.current = 0
+      setIsDropActive(false)
+      const file = e.dataTransfer.files?.[0]
+      if (file) {
+        void processFrontImageFile(file)
+      }
+    },
+    [processFrontImageFile]
+  )
 
   const handleSelectTemplate = useCallback(async (template: Template) => {
     setUploadedFileName('')
@@ -866,6 +983,14 @@ export default function EditorPage() {
     selectedCategory === 'all'
       ? SAMPLE_TEMPLATES
       : SAMPLE_TEMPLATES.filter((t) => t.category === selectedCategory)
+  const selectedTemplate = selectedTemplateId
+    ? SAMPLE_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? null
+    : null
+  const selectedTemplateCategory = selectedTemplate
+    ? TEMPLATE_CATEGORIES.find((cat) => cat.key === selectedTemplate.category) ?? null
+    : null
+  const currentEmojiCategory =
+    EMOJI_CATEGORIES.find((category) => category.key === selectedEmojiCategory) ?? EMOJI_CATEGORIES[0]
 
   const handlePublish = async () => {
     setIsPublishing(true)
@@ -1043,13 +1168,19 @@ export default function EditorPage() {
                 <div
                   className={cn(
                     'relative border-2 border-dashed rounded-2xl text-center cursor-pointer transition-all hover:border-teal-400 hover:bg-teal-50/50 mb-8 group',
-                    frontImage && !uploadedFileName
-                      ? 'border-stone-200 bg-stone-50 p-8'
+                    isDropActive
+                      ? 'border-teal-400 bg-teal-50/40 p-8'
                       : uploadedFileName
                         ? 'border-teal-400 bg-teal-50/30 p-4'
-                        : 'border-stone-300 p-8'
+                        : frontImage && !uploadedFileName
+                          ? 'border-stone-200 bg-stone-50 p-8'
+                          : 'border-stone-300 p-8'
                   )}
                   onClick={() => fileInputRef.current?.click()}
+                  onDragEnter={handleDropZoneDragEnter}
+                  onDragOver={handleDropZoneDragOver}
+                  onDragLeave={handleDropZoneDragLeave}
+                  onDrop={handleDropZoneDrop}
                 >
                   <input
                     ref={fileInputRef}
@@ -1086,9 +1217,9 @@ export default function EditorPage() {
                         />
                       </div>
                       <div>
-                        <p className="text-stone-700 font-semibold">Glissez votre photo ici</p>
+                        <p className="text-stone-700 font-semibold">Glissez ou déposez votre photo ici</p>
                         <p className="text-stone-400 text-sm mt-1">
-                          ou cliquez pour parcourir (JPG, PNG, WebP)
+                          {isDropActive ? 'Relâchez pour importer votre image' : 'ou cliquez pour parcourir (JPG, PNG, WebP)'}
                         </p>
                       </div>
                     </div>
@@ -1122,35 +1253,66 @@ export default function EditorPage() {
                   ))}
                 </div>
 
-                {/* Template Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  {filteredTemplates.map((template) => (
-                    <button
-                      key={template.id}
-                      onClick={() => handleSelectTemplate(template)}
-                      className={cn(
-                        'relative aspect-[3/2] rounded-xl overflow-hidden border-2 transition-all group/tpl hover:shadow-lg',
-                        selectedTemplateId === template.id && !uploadedFileName
-                          ? 'border-teal-500 ring-2 ring-teal-200 shadow-md'
-                          : 'border-transparent hover:border-teal-300'
-                      )}
+                {/* Template Dropdown */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-stone-700">Choisissez un modèle</p>
+                    <span className="text-xs uppercase tracking-wider text-stone-400">
+                      {filteredTemplates.length} {filteredTemplates.length === 1 ? 'modèle' : 'modèles'}
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <label htmlFor="template-select" className="sr-only">
+                      Modèle
+                    </label>
+                    <select
+                      id="template-select"
+                      value={selectedTemplateId ?? ''}
+                      onChange={(event) => {
+                        const template = filteredTemplates.find((tpl) => tpl.id === event.target.value)
+                        if (template) handleSelectTemplate(template)
+                      }}
+                      className="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 pr-10 text-sm font-medium text-stone-700 transition focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-100 appearance-none"
                     >
-                      <img
-                        src={template.imageUrl}
-                        alt={template.name}
-                        className="w-full h-full object-cover group-hover/tpl:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover/tpl:opacity-100 transition-opacity" />
-                      <span className="absolute bottom-2 left-2 text-white text-xs font-bold opacity-0 group-hover/tpl:opacity-100 transition-opacity drop-shadow-lg">
-                        {template.name}
-                      </span>
-                      {selectedTemplateId === template.id && !uploadedFileName && (
-                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-teal-500 flex items-center justify-center shadow-md">
-                          <Check size={14} className="text-white" />
-                        </div>
-                      )}
-                    </button>
-                  ))}
+                      <option value="">Choisir un modèle</option>
+                      {filteredTemplates.map((template) => (
+                        <option key={template.id} value={template.id}>
+                          {template.name}
+                          {template.description ? ` – ${template.description}` : ''}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs leading-none text-stone-400">
+                      ▼
+                    </span>
+                  </div>
+                  {filteredTemplates.length === 0 && (
+                    <p className="text-xs text-stone-500">
+                      Aucun modèle disponible dans cette catégorie pour le moment.
+                    </p>
+                  )}
+                  {selectedTemplate && (
+                    <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3">
+                    <div className="flex-shrink-0 h-16 w-24 overflow-hidden rounded-xl bg-stone-100">
+                        <img
+                          src={selectedTemplate.imageUrl}
+                          alt={selectedTemplate.name}
+                          className="h-16 w-24 object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-stone-900">{selectedTemplate.name}</p>
+                        {selectedTemplate.description && (
+                          <p className="text-xs text-stone-500">{selectedTemplate.description}</p>
+                        )}
+                        <p className="text-[0.65rem] uppercase tracking-[0.35em] text-stone-400">
+                          {selectedTemplateCategory?.icon
+                            ? `${selectedTemplateCategory.icon} ${selectedTemplateCategory.label}`
+                            : selectedTemplateCategory?.label ?? selectedTemplate.category}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Recadrer : icône cliquable → zone glisser + molette */}
@@ -1321,6 +1483,7 @@ export default function EditorPage() {
                       <label className="mb-2 block text-xs font-semibold text-stone-600 uppercase tracking-wider">
                         Emoji
                       </label>
+                    <div className="relative">
                       <div className="flex flex-wrap items-center gap-2">
                         {EMOJI_SUGGESTIONS.map((emoji) => (
                           <button
@@ -1345,7 +1508,56 @@ export default function EditorPage() {
                           maxLength={4}
                           className="h-10 w-16 rounded-xl border-stone-200 text-center text-lg tracking-widest"
                         />
+                        <button
+                          type="button"
+                          className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-stone-200 bg-white text-stone-400 transition-colors hover:border-teal-400 hover:text-teal-600"
+                          onClick={() => setShowEmojiPicker((value) => !value)}
+                          aria-label="Choisir un emoji par thème"
+                        >
+                          <Grid size={16} />
+                        </button>
                       </div>
+                      {showEmojiPicker && (
+                        <div
+                          ref={emojiPickerRef}
+                          className="absolute z-20 mt-2 w-full rounded-2xl border border-stone-200 bg-white p-3 shadow-xl shadow-stone-400/20"
+                        >
+                          <div className="flex flex-wrap gap-2 border-b border-stone-100 pb-3">
+                            {EMOJI_CATEGORIES.map((category) => (
+                              <button
+                                key={category.key}
+                                type="button"
+                                onClick={() => setSelectedEmojiCategory(category.key)}
+                                className={cn(
+                                  'flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold transition-all',
+                                  selectedEmojiCategory === category.key
+                                    ? 'border-teal-500 bg-teal-50 text-teal-700 shadow-sm'
+                                    : 'border-stone-200 bg-white text-stone-500 hover:border-teal-300'
+                                )}
+                              >
+                                <span>{category.icon}</span>
+                                {category.label}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="mt-3 grid grid-cols-6 gap-2 max-h-48 overflow-y-auto pb-1">
+                            {currentEmojiCategory.emojis.map((emoji) => (
+                              <button
+                                key={emoji}
+                                type="button"
+                                onClick={() => {
+                                  setFrontEmoji(emoji)
+                                  setShowEmojiPicker(false)
+                                }}
+                                className="flex h-10 w-10 items-center justify-center rounded-xl border border-stone-100 bg-stone-50 text-2xl transition hover:border-teal-300 hover:bg-teal-50"
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     </div>
                   </div>
                   {(frontCaption.trim() || frontEmoji.trim()) && (
@@ -2200,11 +2412,60 @@ export default function EditorPage() {
               >
                 <X size={48} strokeWidth={3} />
               </button>
-              <PostcardView
-                postcard={postcardForPreview}
-                flipped={showBack}
-                className="w-full max-w-[1700px] h-auto aspect-[3/2] shadow-2xl hover:scale-100 cursor-default"
-              />
+              <div className="flex items-center justify-center w-full h-full">
+                <div
+                  className="transition-transform duration-200"
+                  style={{ transform: `scale(${fullscreenScale})`, transformOrigin: 'center' }}
+                >
+                  <PostcardView
+                    postcard={postcardForPreview}
+                    flipped={showBack}
+                    className="w-full max-w-[1700px] h-auto aspect-[3/2] shadow-2xl cursor-default"
+                  />
+                </div>
+              </div>
+              <div className="absolute bottom-8 left-1/2 flex w-[min(90vw,640px)] -translate-x-1/2 flex-col items-center gap-2 rounded-2xl border border-white/30 bg-black/50 px-4 py-3 text-white backdrop-blur-lg shadow-2xl">
+                <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-white/80">
+                  <span>Zoom</span>
+                  <span className="text-sm text-white">{fullscreenScale.toFixed(2)}×</span>
+                </div>
+                <div className="flex items-center gap-2 w-full">
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      setFullscreenScale((value) => Math.max(0.8, Number((value - 0.05).toFixed(2))))
+                    }}
+                    className="rounded-full border border-white/60 p-2 text-white hover:border-teal-300 hover:text-teal-300"
+                    aria-label="Réduire"
+                  >
+                    <Minus size={14} />
+                  </button>
+                  <input
+                    type="range"
+                    min={0.8}
+                    max={1.4}
+                    step={0.02}
+                    value={fullscreenScale}
+                    onChange={(event) => {
+                      event.stopPropagation()
+                      setFullscreenScale(Number(event.target.value))
+                    }}
+                    className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/40 accent-teal-400 focus-visible:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      setFullscreenScale((value) => Math.min(1.4, Number((value + 0.05).toFixed(2))))
+                    }}
+                    className="rounded-full border border-white/60 p-2 text-white hover:border-teal-300 hover:text-teal-300"
+                    aria-label="Agrandir"
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )

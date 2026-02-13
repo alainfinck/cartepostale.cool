@@ -15,20 +15,22 @@ export const Footer = () => {
     // Minimalist footer for view page and carte page
     if (pathname?.startsWith('/view/') || pathname?.startsWith('/view-debug/') || pathname?.startsWith('/carte/')) {
         return (
-            <footer className="bg-[#fcfaf5] border-t border-stone-100 py-6 mt-12">
+            <footer className="bg-transparent py-8 mt-12 relative z-[60]">
                 <div className="max-w-7xl mx-auto px-4 text-center">
-                    <Link href="/" className="inline-flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
-                        <div className="bg-teal-500/10 p-1 rounded-md">
-                            <Mail className="text-teal-600 w-3 h-3" />
+                    <Link href="/" className="inline-flex items-center cursor-pointer group scale-90">
+                        <div className="relative bg-gradient-to-r from-pink-500 to-orange-400 group-hover:opacity-90 transition-all p-1.5 rounded-lg mr-2.5 flex items-center justify-center shadow-md shadow-pink-500/10">
+                            <Mail className="text-white" size={14} />
+                            <div className="absolute -top-1 -right-1 rounded-full bg-white p-[1px]">
+                                <Heart className="text-rose-500" size={10} />
+                            </div>
                         </div>
-                        <span className="font-serif font-bold text-sm text-stone-600">cartepostale.cool</span>
+                        <span className="font-bold text-stone-800 tracking-tight text-sm">
+                            cartepostale.cool
+                        </span>
                     </Link>
-                    <p className="text-stone-300 text-[10px] mt-2">
-                        © {new Date().getFullYear()}
-                    </p>
-                    <p className="text-stone-400 text-[10px] mt-2">
-                        Partagez vos albums photo (pro, perso) facilement :{' '}
-                        <a href="https://www.photopartage.com" target="_blank" rel="noopener noreferrer" className="text-teal-500 hover:underline">photopartage.com</a>
+                    <p className="text-stone-400 text-[10px] mt-3 font-medium opacity-60">
+                        Partagez vos albums photo facilement sur :{' '}
+                        <a href="https://www.photopartage.com" target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline">photopartage.com</a>
                     </p>
                 </div>
             </footer>

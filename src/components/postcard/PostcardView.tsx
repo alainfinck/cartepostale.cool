@@ -250,7 +250,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 <motion.div
                     initial={{ scale: 0.9, y: 20 }}
                     animate={{ scale: 1, y: 0 }}
-                    className="w-full max-w-[95vw] md:max-w-xl h-[90vh] md:max-h-[65vh] md:h-auto min-h-0 bg-[#fafaf9] rounded-3xl shadow-2xl p-6 md:p-8 relative overflow-hidden flex flex-col items-center text-center border-8 border-white/50"
+                    className="w-full max-w-[95vw] md:max-w-2xl h-[90vh] md:max-h-[75vh] md:h-auto min-h-0 bg-[#fafaf9] rounded-3xl shadow-2xl p-6 md:p-10 relative overflow-hidden flex flex-col items-center text-center border-8 border-white/50"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Background decorations */}
@@ -585,9 +585,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             </div>
 
                             {/* Watermark bottom-left */}
-                            <div className="absolute bottom-3 left-6 text-stone-500 text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase flex items-center gap-1.5 transition-opacity duration-300">
-                                <div className="w-1.5 h-1.5 bg-stone-400 rounded-full shrink-0" />
-                                <span>cartepostale.cool</span>
+                            <div className="absolute bottom-3 left-6 flex items-center gap-1 transition-opacity duration-300 opacity-60">
+                                <div className="w-1.5 h-1.5 bg-stone-300 rounded-full shrink-0" />
+                                <span className="text-stone-300 text-[8px] sm:text-[9px] font-medium tracking-[0.25em] uppercase">
+                                    cartepostale.cool
+                                </span>
                             </div>
                             <div className="absolute left-[62%] top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50 transition-opacity duration-300"></div>
 

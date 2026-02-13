@@ -13,6 +13,7 @@ import SocialBar from '@/components/social/SocialBar'
 import ViewPageTitle from '@/components/view/ViewPageTitle'
 import DistanceDisplay from '@/components/view/DistanceDisplay'
 import PhotoAlbum from '@/components/view/PhotoAlbum'
+import EnvelopeExperience from '@/components/view/EnvelopeExperience'
 
 interface PageProps {
     params: Promise<{
@@ -143,8 +144,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
 }
 
-export default async function PostcardPage({ params }: PageProps) {
+export default async function PostcardPage({
+    params,
+    searchParams
+}: PageProps & {
+    searchParams: Promise<{ enveloppe?: string }>
+}) {
     const { slug } = await params
+    const { enveloppe } = await searchParams
+    const isEnvelopeEnabled = enveloppe === '1'
+
     const payloadPostcard = await getPostcardByPublicId(slug)
 
     if (!payloadPostcard) {
@@ -159,83 +168,85 @@ export default async function PostcardPage({ params }: PageProps) {
     }
 
     return (
-        <div className="min-h-screen bg-[#fdfbf7] py-6 md:py-12 landscape:py-2 flex flex-col items-center justify-center overflow-x-hidden">
-            <RotateDevicePrompt />
+        <EnvelopeExperience enabled={isEnvelopeEnabled}>
+            <div className="min-h-screen bg-[#fdfbf7] py-6 md:py-12 landscape:py-2 flex flex-col items-center justify-center overflow-x-hidden">
+                <RotateDevicePrompt />
 
-            {/* Header / Titre avec effet d'apparition */}
-            <ViewPageTitle
-                title="Vous avez reçu une carte postale !"
-                senderName={frontendPostcard.senderName}
-            />
-
-            {/* Card View */}
-            <div className="w-full max-w-[100vw] md:max-w-4xl flex justify-center perspective-[1000px] mb-4 md:mb-6 px-2 md:px-0 landscape:mb-4 relative">
-                <div className="flex flex-col w-full items-center">
-                    <PostcardView
-                        postcard={frontendPostcard}
-                        flipped={false}
-                        isLarge={true}
-                        className="shadow-2xl z-10"
-                    />
-
-                    {/* Distance Display */}
-                    {frontendPostcard.coords && (
-                        <DistanceDisplay
-                            targetCoords={frontendPostcard.coords}
-                            senderName={frontendPostcard.senderName}
-                        />
-                    )}
-                </div>
-
-                {/* View Counter - Absolute bottom right of the container */}
-                <div className="absolute -bottom-10 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
-                    <Eye size={14} className="text-stone-300" />
-                    <NumberTicker value={payloadPostcard.views || 0} className="text-stone-400 font-bold" />
-                    <span>vues</span>
-                </div>
-            </div>
-
-            {/* Photo Album */}
-            {frontendPostcard.mediaItems && frontendPostcard.mediaItems.length > 0 && (
-                <PhotoAlbum
-                    mediaItems={frontendPostcard.mediaItems}
+                {/* Header / Titre avec effet d'apparition */}
+                <ViewPageTitle
+                    title="Vous avez reçu une carte postale !"
                     senderName={frontendPostcard.senderName}
                 />
-            )}
 
-            {/* Social Bar */}
-            <SocialBar
-                postcardId={payloadPostcard.id}
-                publicId={slug}
-                senderName={frontendPostcard.senderName}
-                initialViews={payloadPostcard.views || 0}
-                initialShares={payloadPostcard.shares || 0}
-            />
+                {/* Card View */}
+                <div className="w-full max-w-[100vw] md:max-w-4xl flex justify-center perspective-[1000px] mb-4 md:mb-6 px-2 md:px-0 landscape:mb-4 relative">
+                    <div className="flex flex-col w-full items-center">
+                        <PostcardView
+                            postcard={frontendPostcard}
+                            flipped={false}
+                            isLarge={true}
+                            className="z-10"
+                        />
 
-            {/* CTA Section */}
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 text-center max-w-md w-full">
-                <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Sparkles size={32} />
+                        {/* Distance Display */}
+                        {frontendPostcard.coords && (
+                            <DistanceDisplay
+                                targetCoords={frontendPostcard.coords}
+                                senderName={frontendPostcard.senderName}
+                            />
+                        )}
+                    </div>
+
+                    {/* View Counter - Absolute bottom right of the container */}
+                    <div className="absolute -bottom-10 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
+                        <Eye size={14} className="text-stone-300" />
+                        <NumberTicker value={payloadPostcard.views || 0} className="text-stone-400 font-bold" />
+                        <span>vues</span>
+                    </div>
                 </div>
-                <h3 className="font-serif font-bold text-xl text-stone-800 mb-2">
-                    À votre tour !
-                </h3>
-                <p className="text-stone-500 mb-6">
-                    Créez et envoyez votre propre carte postale numérique en quelques secondes. {"C'est"} gratuit.
-                </p>
-                <Link href="/editor">
-                    <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-6 text-lg rounded-xl shadow-lg shadow-teal-100 transition-transform hover:-translate-y-1">
-                        Créer ma carte postale <ArrowRight className="ml-2" />
-                    </Button>
-                </Link>
-            </div>
 
-            <div className="mt-8 text-center text-stone-400 text-sm">
-                <Link href="/" className="hover:text-stone-600 underline">
-                    {"Retour à l'accueil"}
-                </Link>
-            </div>
+                {/* Social Bar (Reactions + Sharing) */}
+                <SocialBar
+                    postcardId={payloadPostcard.id}
+                    publicId={slug}
+                    senderName={frontendPostcard.senderName}
+                    initialViews={payloadPostcard.views || 0}
+                    initialShares={payloadPostcard.shares || 0}
+                />
 
-        </div>
+                {/* Photo Album */}
+                {frontendPostcard.mediaItems && frontendPostcard.mediaItems.length > 0 && (
+                    <PhotoAlbum
+                        mediaItems={frontendPostcard.mediaItems}
+                        senderName={frontendPostcard.senderName}
+                    />
+                )}
+
+                {/* CTA Section */}
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 text-center max-w-md w-full">
+                    <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Sparkles size={32} />
+                    </div>
+                    <h3 className="font-serif font-bold text-xl text-stone-800 mb-2">
+                        À votre tour !
+                    </h3>
+                    <p className="text-stone-500 mb-6">
+                        Créez et envoyez votre propre carte postale numérique en quelques secondes. {"C'est"} gratuit.
+                    </p>
+                    <Link href="/editor">
+                        <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-6 text-lg rounded-xl shadow-lg shadow-teal-100 transition-transform hover:-translate-y-1">
+                            Créer ma carte postale <ArrowRight className="ml-2" />
+                        </Button>
+                    </Link>
+                </div>
+
+                <div className="mt-8 text-center text-stone-400 text-sm">
+                    <Link href="/" className="hover:text-stone-600 underline">
+                        {"Retour à l'accueil"}
+                    </Link>
+                </div>
+
+            </div>
+        </EnvelopeExperience>
     )
 }

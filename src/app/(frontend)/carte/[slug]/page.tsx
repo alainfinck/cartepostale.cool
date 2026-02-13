@@ -14,6 +14,7 @@ import ViewPageTitle from '@/components/view/ViewPageTitle'
 import DistanceDisplay from '@/components/view/DistanceDisplay'
 import PhotoAlbum from '@/components/view/PhotoAlbum'
 import EnvelopeWrapper from '@/components/view/EnvelopeWrapper'
+import EnvelopeExperience from '@/components/view/EnvelopeExperience'
 
 type SearchParams = {
     [key: string]: string | string[] | undefined
@@ -210,27 +211,26 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
         </>
     )
 
-    return (
+    const heroSection = (
+        <ViewPageTitle
+            title="Vous avez reçu une carte postale !"
+            senderName={frontendPostcard.senderName}
+        />
+    )
+
+    const pageContent = (
         <div className="min-h-screen bg-[#fdfbf7] flex flex-col items-center overflow-x-hidden">
             <RotateDevicePrompt />
 
-            {/* Header / Titre avec effet d'apparition */}
-            <ViewPageTitle
-                title="Vous avez reçu une carte postale !"
-                senderName={frontendPostcard.senderName}
-            />
-
-            {/* Card View — avec effet enveloppe si ?enveloppe=1 */}
             <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-4 md:mb-6 px-2 md:px-4 relative">
                 {showEnvelope ? (
+                    cardBlock
+                ) : (
                     <EnvelopeWrapper className="w-full max-w-[min(90vw,420px)] md:max-w-[420px]">
                         {cardBlock}
                     </EnvelopeWrapper>
-                ) : (
-                    cardBlock
                 )}
 
-                {/* View Counter */}
                 <div className="absolute -bottom-10 right-4 md:right-8 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
                     <Eye size={14} className="text-stone-300" />
                     <NumberTicker value={payloadPostcard.views || 0} className="text-stone-400 font-bold" />
@@ -238,16 +238,8 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
                 </div>
             </div>
 
-            {/* Photo Album */}
-            {frontendPostcard.mediaItems && frontendPostcard.mediaItems.length > 0 && (
-                <PhotoAlbum
-                    mediaItems={frontendPostcard.mediaItems}
-                    senderName={frontendPostcard.senderName}
-                />
-            )}
-
-            {/* Social Bar & Info */}
-            <div className="w-full max-w-4xl px-4 mb-20">
+            {/* Social Bar (Reactions + Sharing) */}
+            <div className="w-full max-w-4xl px-4">
                 <SocialBar
                     postcardId={payloadPostcard.id}
                     publicId={slug}
@@ -258,7 +250,14 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
                 />
             </div>
 
-            {/* CTA Section - Simplified & Refined */}
+            {/* Photo Album */}
+            {frontendPostcard.mediaItems && frontendPostcard.mediaItems.length > 0 && (
+                <PhotoAlbum
+                    mediaItems={frontendPostcard.mediaItems}
+                    senderName={frontendPostcard.senderName}
+                />
+            )}
+
             <div className="w-full bg-white/50 backdrop-blur-sm border-y border-stone-100 py-16 md:py-24 px-4">
                 <div className="max-w-md mx-auto text-center">
                     <div className="inline-flex items-center justify-center w-12 h-12 bg-orange-100 text-orange-600 rounded-full mb-6">
@@ -287,5 +286,11 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
                 </Link>
             </div>
         </div>
+    )
+
+    return (
+        <EnvelopeExperience enabled={showEnvelope} hero={heroSection}>
+            {pageContent}
+        </EnvelopeExperience>
     )
 }
