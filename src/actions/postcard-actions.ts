@@ -74,9 +74,9 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
                     },
                 })
                 frontImageId = media.id as number;
-                // Persist URL so view page has a stable value (Payload serves files at /api/:collection/file/:filename)
+                // Persist URL so view page has a stable value (Payload stores in public/media, Next.js serves at /media/)
                 const mediaDoc = media as { url?: string | null; filename?: string | null }
-                frontImageURL = mediaDoc.url ?? (mediaDoc.filename ? `/api/media/file/${encodeURIComponent(mediaDoc.filename)}` : undefined)
+                frontImageURL = mediaDoc.url ?? (mediaDoc.filename ? `/media/${encodeURIComponent(mediaDoc.filename)}` : undefined)
             } else if (data.frontImage.startsWith('http')) {
                 // External URL (template)
                 frontImageURL = data.frontImage;

@@ -25,12 +25,18 @@ function isMedia(media: any): media is Media {
     return media && typeof media === 'object' && ('url' in media || 'filename' in media)
 }
 
-// Build media URL (Payload serves at /api/media/file/:filename when url is not set)
+// Build media URL (Payload stores in public/media, Next.js serves at /media/)
 function mediaUrl(media: Media | null | undefined): string {
     if (!media || typeof media !== 'object') return ''
     if (media.url) return media.url
-    if (media.filename) return `/api/media/file/${encodeURIComponent(media.filename)}`
+    if (media.filename) return `/media/${encodeURIComponent(media.filename)}`
     return ''
+}
+
+// Normalize legacy API URLs to static /media/ URLs (fixes 400 on public page)
+function normalizeMediaUrl(url: string): string {
+    const match = url.match(/^\/api\/media\/file\/(.+)$/)
+    return match ? `/media/${match[1]}` : url
 }
 
 // Geocode location string via Nominatim (when postcard has location but no coords)
@@ -59,6 +65,7 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
     if (!frontImageUrl && isMedia(payloadPostcard.frontImage)) {
         frontImageUrl = mediaUrl(payloadPostcard.frontImage as Media)
     }
+    frontImageUrl = normalizeMediaUrl(frontImageUrl)
 
     // Fallback if no image found (shouldn't happen for valid cards)
     if (!frontImageUrl) {
@@ -67,7 +74,7 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
 
     const mediaItems: MediaItem[] = (payloadPostcard.mediaItems || []).map((item: any) => {
         if (isMedia(item.media)) {
-            const url = mediaUrl(item.media as Media)
+            const url = normalizeMediaUrl(mediaUrl(item.media as Media))
             if (!url) return null
             return {
                 id: item.id || Math.random().toString(36).substring(7),
