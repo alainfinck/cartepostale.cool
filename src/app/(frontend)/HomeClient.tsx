@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Postcard } from '@/types'
-import { Plus, Compass, ExternalLink, Heart, Library, Instagram, Mail, Sparkles, Zap, Wallet, Share2, Image, Camera, Repeat, MapPin, Check, Maximize2, X } from 'lucide-react'
+import { Plus, Compass, ExternalLink, Heart, Library, Instagram, Mail, Sparkles, Zap, Wallet, Share2, Image, Camera, Repeat, MapPin, Check, Maximize2, X, Building2, BarChart3, Palette, ArrowRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
@@ -392,99 +392,74 @@ export default function Home() {
         </div>
       </div>
 
-      <section className="bg-[#fefaf4] border-t border-stone-100 py-20">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <div className="inline-flex items-center justify-center gap-2 px-3 py-1.5 bg-pink-50 text-pink-600 text-xs font-bold uppercase tracking-[0.2em] rounded-full shadow-sm mb-4">
-            Nos Offres
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-4">
-            Simple et 100% Virtuel
-          </h2>
-          <p className="text-stone-500 text-lg">
-            Envoyez vos souvenirs instantanément, sans attendre le facteur.
-          </p>
-        </div>
+      {/* Business / Pro Section */}
+      <section className="py-24 bg-[#061e1e] relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/images/ui/grid.svg')] opacity-5"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="bg-white/5 backdrop-blur-2xl rounded-[48px] border border-white/10 p-8 md:p-16 flex flex-col lg:flex-row items-center gap-16 shadow-3xl">
+            <div className="flex-1 space-y-8 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 bg-teal-500/20 text-teal-300 px-4 py-2 rounded-full text-sm font-black uppercase tracking-widest border border-teal-500/30">
+                <Building2 size={16} /> Solutions pour Professionnels
+              </div>
+              <h2 className="text-4xl md:text-6xl font-serif font-bold text-white leading-tight">
+                Faites rayonner <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 via-amber-200 to-teal-200">votre marque.</span>
+              </h2>
+              <p className="text-xl text-teal-100/70 leading-relaxed max-w-2xl font-light">
+                Agences de tourisme, hôtels, restaurants ou entreprises : offrez une expérience mémorable à vos clients tout en boostant votre visibilité organique.
+              </p>
 
-        <div className="max-w-5xl mx-auto px-4 mt-12 grid md:grid-cols-2 gap-8 items-start">
-          {/* Carte Gratuite */}
-          <div className="relative bg-white border border-stone-100 rounded-[32px] shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
-            <div className="bg-stone-100 text-stone-600 text-center px-10 py-7">
-              <div className="text-sm uppercase tracking-[0.4em] font-semibold opacity-90">Offre Découverte</div>
-              <div className="mt-4 text-5xl font-bold leading-tight">Gratuit</div>
-              <p className="text-lg opacity-90 mt-2">la carte limitée</p>
-            </div>
-            <div className="px-10 py-8 space-y-4">
-              {[
-                "Carte 100% Virtuelle",
-                "Optimisation Mobile & Cloud",
-                "Images Auto-Optimisées (WebP)",
-                "Templates standard inclus",
-                "Texte personnalisable",
-                "Partage par lien unique",
-                "Filigrane CartePostale.cool",
-              ].map((item) => (
-                <div key={item} className="flex items-center gap-3 text-stone-500 text-base font-medium">
-                  <Check className="text-stone-400" size={18} />
-                  <span>{item}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 text-left">
+                <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                  <div className="p-2 bg-orange-500/20 rounded-lg text-orange-400">
+                    <Palette size={20} />
+                  </div>
+                  <div>
+                    <div className="text-white font-bold">Co-Branding</div>
+                    <div className="text-teal-100/50 text-xs">Votre logo sur chaque carte.</div>
+                  </div>
                 </div>
-              ))}
-            </div>
-            <div className="px-10 pb-10 pt-1">
-              <div className="max-w-xs mx-auto">
-                <Link href="/editor" className="w-full">
-                  <Button variant="outline" className="w-full border-2 border-stone-200 text-stone-600 rounded-full font-bold text-lg py-5 hover:bg-stone-50">
-                    Essayer maintenant
+                <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                  <div className="p-2 bg-teal-500/20 rounded-lg text-teal-400">
+                    <BarChart3 size={20} />
+                  </div>
+                  <div>
+                    <div className="text-white font-bold">Analytics</div>
+                    <div className="text-teal-100/50 text-xs">Mesurez votre impact réel.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-8">
+                <Link href="/business">
+                  <Button className="bg-white text-teal-950 hover:bg-teal-50 px-10 py-7 rounded-2xl font-bold text-lg shadow-xl shadow-teal-950/20 border-0 flex items-center gap-3 transition-all h-auto">
+                    Découvrir l&apos;Espace Business <ArrowRight size={20} className="text-teal-600" />
                   </Button>
                 </Link>
               </div>
             </div>
-          </div>
 
-          {/* Carte Occasionnel */}
-          <div className="relative bg-white border border-pink-100 rounded-[32px] shadow-[0_20px_60px_rgba(240,156,194,0.25)] overflow-hidden transform md:scale-105 z-10">
-            <div className="absolute top-0 right-0 bg-pink-500 text-white text-[10px] uppercase tracking-widest font-black px-4 py-1.5 rounded-bl-2xl">
-              Populaire
-            </div>
-            <div className="bg-gradient-to-r from-pink-500 to-orange-400 text-white text-center px-10 py-7">
-              <div className="text-sm uppercase tracking-[0.4em] font-semibold opacity-90">Plan Occasionnel</div>
-              <div className="mt-4 text-5xl font-bold leading-tight">1,99€</div>
-              <p className="text-lg opacity-90 mt-2">par carte premium</p>
-            </div>
-            <div className="px-10 py-8 space-y-4">
-              {[
-                "Vitesse Éclair (AVIF/WebP)",
-                "Zéro Publicité / Sans Filigrane",
-                "Upload de vos photos HD",
-                "Album photos complet & Vidéo",
-                "Musique d'ambiance au choix",
-                "Livre d'or interactif",
-                "Lien privé & protégé",
-              ].map((item) => (
-                <div key={item} className="flex items-center gap-3 text-stone-600 text-base font-semibold">
-                  <Check className="text-emerald-500" size={18} />
-                  <span>{item}</span>
+            <div className="flex-1 relative w-full lg:w-auto">
+              {/* Decorative element for the visual side */}
+              <div className="absolute -inset-4 bg-teal-500/20 rounded-[40px] rotate-2 -z-10 blur-3xl opacity-50"></div>
+              <div className="bg-stone-900 rounded-[40px] p-2 shadow-2xl overflow-hidden border border-white/10 group">
+                <img
+                  src="/images/demo/photo-1486406146926-c627a92ad1ab.jpg"
+                  alt="Business Dashboard Preview"
+                  className="rounded-[38px] w-full opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+                />
+                <div className="absolute inset-0 flex items-center justify-center p-12">
+                  <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-3xl text-center max-w-sm">
+                    <div className="w-16 h-16 bg-white rounded-2xl mb-4 mx-auto flex items-center justify-center">
+                      <span className="text-teal-900 font-serif font-black text-xl">PRO</span>
+                    </div>
+                    <h3 className="text-white text-xl font-bold mb-2">Signature Visuelle</h3>
+                    <p className="text-teal-100/60 text-sm">Intégrez votre identité sur chaque souvenir partagé.</p>
+                  </div>
                 </div>
-              ))}
-            </div>
-            <div className="px-10 pb-10 pt-1">
-              <div className="max-w-xs mx-auto">
-                <Link href="/editor" className="w-full">
-                  <Button className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full font-bold text-lg py-5 shadow-lg shadow-pink-500/30 border-0">
-                    Créer ma carte 🪄
-                  </Button>
-                </Link>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="mt-16 text-center">
-          <p className="text-stone-400 text-sm mb-6">Besoin de plus ? Packs Voyageurs, Offres Pro et plus encore.</p>
-          <Link href="/pricing">
-            <Button variant="ghost" className="text-stone-600 font-bold hover:text-pink-600 hover:bg-pink-50 rounded-full px-8 py-4 h-auto border border-stone-200">
-              Voir tous les tarifs et options →
-            </Button>
-          </Link>
         </div>
       </section>
 

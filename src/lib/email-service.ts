@@ -42,61 +42,80 @@ export async function sendEmail({ to, subject, html }: EmailParams): Promise<boo
   }
 }
 
+const EMAIL_BASE_STYLES = {
+  body: 'font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f0f4f3;',
+  container: 'max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(15, 118, 110, 0.08); margin-top: 32px; margin-bottom: 32px;',
+  header: 'background: linear-gradient(135deg, #fdfbf7 0%, #f0fdfa 100%); padding: 36px 24px; text-align: center; border-bottom: 1px solid #e5e7eb;',
+  logo: 'font-family: \'Times New Roman\', Georgia, serif; font-size: 22px; font-weight: bold; color: #0f766e; text-decoration: none;',
+  content: 'padding: 40px 32px;',
+  h1: 'font-family: Georgia, serif; font-size: 26px; color: #111827; margin: 0 0 20px 0; text-align: center; line-height: 1.3;',
+  p: 'font-size: 16px; color: #4b5563; margin: 0 0 20px 0; text-align: center; line-height: 1.6;',
+  cardPreview: 'background-color: #f8fafc; padding: 24px; border-radius: 12px; margin: 28px 0; text-align: center; border: 1px solid #e2e8f0;',
+  cardImage: 'max-width: 100%; height: auto; border-radius: 10px; display: block; margin: 0 auto;',
+  btnPrimary: 'display: inline-block; background-color: #0d9488; color: #ffffff !important; padding: 16px 32px; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 16px; text-align: center; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);',
+  btnSecondary: 'display: inline-block; color: #0d9488 !important; text-decoration: none; font-weight: 500; font-size: 14px; padding: 8px 0;',
+  footer: 'background-color: #f8fafc; padding: 28px 24px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0;',
+};
+
 export function generateMagicLinkEmail(magicLink: string, postcardUrl: string, publicId: string, postcardImageUrl?: string) {
-  const previewImage = postcardImageUrl || '/images/demo/photo-1507525428034-b723cf961d3e.jpg';
+  const baseUrl = postcardUrl.replace(/\/view\/.*$/, '');
+  const previewImage = postcardImageUrl?.startsWith('http') ? postcardImageUrl : (postcardImageUrl ? `${baseUrl}${postcardImageUrl}` : `${baseUrl}/images/demo/photo-1507525428034-b723cf961d3e.jpg`);
   
   return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Votre carte postale est prête !</title>
-      <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9fafb; }
-        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-top: 40px; margin-bottom: 40px; }
-        .header { background-color: #fdfbf7; padding: 40px 0; text-align: center; border-bottom: 1px solid #f3f4f6; }
-        .logo { font-family: 'Times New Roman', serif; font-size: 24px; font-weight: bold; color: #0f766e; text-decoration: none; }
-        .content { padding: 40px; }
-        .h1 { font-family: 'Georgia', serif; font-size: 28px; color: #111827; margin-bottom: 24px; text-align: center; }
-        .p { font-size: 16px; color: #4b5563; margin-bottom: 24px; text-align: center; }
-        .card-preview { background-color: #f3f4f6; padding: 20px; border-radius: 12px; margin-bottom: 32px; text-align: center; }
-        .card-image { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); transform: rotate(-1deg); }
-        .btn-primary { display: block; width: fit-content; margin: 0 auto; background-color: #0d9488; color: #ffffff !important; padding: 14px 28px; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 16px; text-align: center; transition: background-color 0.2s; box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.3); }
-        .btn-secondary { display: block; width: fit-content; margin: 20px auto 0; color: #0d9488 !important; text-decoration: none; font-weight: 500; font-size: 14px; }
-        .footer { background-color: #f9fafb; padding: 32px; text-align: center; font-size: 12px; color: #9ca3af; border-top: 1px solid #f3f4f6; }
-        .link-muted { color: #9ca3af; text-decoration: underline; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <a href="${postcardUrl.split('/view')[0]}" class="logo">CartePostale.cool</a>
-        </div>
-        <div class="content">
-          <h1 class="h1">Votre carte est prête ! 💌</h1>
-          <p class="p">Félicitations ! Votre carte postale a été créée avec succès et est prête à voyager.</p>
-          
-          <div class="card-preview">
-            <img src="${previewImage}" alt="Votre carte postale" class="card-image" />
-          </div>
-
-          <p class="p">Pour retrouver votre création, voir les statistiques de vue et gérer vos futures cartes, connectez-vous directement :</p>
-
-          <a href="${magicLink}" class="btn-primary">Accéder à mon espace</a>
-          <a href="${postcardUrl}" class="btn-secondary">Voir ma carte en ligne →</a>
-        </div>
-        <div class="footer">
-          <p>Ce lien de connexion est magique et temporaire (valide 1h).<br>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.</p>
-          <p>© ${new Date().getFullYear()} CartePostale.cool - Tous droits réservés</p>
-        </div>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Votre carte postale est prête !</title>
+  <style>
+    body { ${EMAIL_BASE_STYLES.body} }
+    .container { ${EMAIL_BASE_STYLES.container} }
+    .header { ${EMAIL_BASE_STYLES.header} }
+    .logo { ${EMAIL_BASE_STYLES.logo} }
+    .content { ${EMAIL_BASE_STYLES.content} }
+    .h1 { ${EMAIL_BASE_STYLES.h1} }
+    .p { ${EMAIL_BASE_STYLES.p} }
+    .card-preview { ${EMAIL_BASE_STYLES.cardPreview} }
+    .card-image { ${EMAIL_BASE_STYLES.cardImage} }
+    .btn-primary { ${EMAIL_BASE_STYLES.btnPrimary} }
+    .btn-secondary { ${EMAIL_BASE_STYLES.btnSecondary} }
+    .footer { ${EMAIL_BASE_STYLES.footer} }
+    .cta-block { text-align: center; margin: 28px 0; }
+    .cta-primary { margin-bottom: 16px; }
+  </style>
+</head>
+<body style="${EMAIL_BASE_STYLES.body}">
+  <div class="container" style="${EMAIL_BASE_STYLES.container}">
+    <div class="header" style="${EMAIL_BASE_STYLES.header}">
+      <a href="${baseUrl}" style="${EMAIL_BASE_STYLES.logo}">CartePostale.cool</a>
+    </div>
+    <div class="content" style="${EMAIL_BASE_STYLES.content}">
+      <h1 class="h1" style="${EMAIL_BASE_STYLES.h1}">Votre carte est prête ! 💌</h1>
+      <p class="p" style="${EMAIL_BASE_STYLES.p}">Votre carte postale a été créée avec succès. Cliquez ci-dessous pour la voir en ligne et la partager.</p>
+      
+      <div class="card-preview" style="${EMAIL_BASE_STYLES.cardPreview}">
+        <img src="${previewImage}" alt="Votre carte postale" class="card-image" style="${EMAIL_BASE_STYLES.cardImage}" width="280" />
       </div>
-    </body>
-    </html>
-  `;
+
+      <div class="cta-block">
+        <p class="p" style="${EMAIL_BASE_STYLES.p}; margin-bottom: 24px;">Voir votre carte postale en ligne :</p>
+        <p class="cta-primary"><a href="${postcardUrl}" class="btn-primary" style="${EMAIL_BASE_STYLES.btnPrimary}">Voir ma carte postale</a></p>
+        <p class="p" style="margin-top: 24px; font-size: 14px; color: #64748b;">Pour gérer vos cartes et voir les statistiques :</p>
+        <a href="${magicLink}" class="btn-secondary" style="${EMAIL_BASE_STYLES.btnSecondary}">Accéder à mon espace →</a>
+      </div>
+    </div>
+    <div class="footer" style="${EMAIL_BASE_STYLES.footer}">
+      <p style="margin: 0 0 8px 0;">Ce lien de connexion est valide 1 heure. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>
+      <p style="margin: 0;">© ${new Date().getFullYear()} CartePostale.cool</p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
 }
 
-/** HTML body for "someone sent you a postcard" email with tracking link. */
+/** HTML body for "someone sent you a postcard" email with tracking link (espace client / agence, avec ou sans DHL). */
 export function generateTrackingLinkEmail(
   trackingUrl: string,
   recipientFirstName?: string | null,
@@ -106,40 +125,44 @@ export function generateTrackingLinkEmail(
     ? `Bonjour ${recipientFirstName},`
     : 'Bonjour,';
   const sender = senderName?.trim() || 'Quelqu\'un';
+  const baseUrl = trackingUrl.replace(/\/v\/.*$/, '') || trackingUrl.split('/v/')[0];
   return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Une carte postale pour vous</title>
-      <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9fafb; }
-        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-top: 40px; margin-bottom: 40px; }
-        .header { background-color: #fdfbf7; padding: 40px 0; text-align: center; border-bottom: 1px solid #f3f4f6; }
-        .logo { font-family: 'Times New Roman', serif; font-size: 24px; font-weight: bold; color: #0f766e; text-decoration: none; }
-        .content { padding: 40px; }
-        .h1 { font-family: 'Georgia', serif; font-size: 28px; color: #111827; margin-bottom: 24px; text-align: center; }
-        .p { font-size: 16px; color: #4b5563; margin-bottom: 24px; text-align: center; }
-        .btn-primary { display: block; width: fit-content; margin: 0 auto; background-color: #0d9488; color: #ffffff !important; padding: 14px 28px; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 16px; text-align: center; transition: background-color 0.2s; box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.3); }
-        .footer { background-color: #f9fafb; padding: 32px; text-align: center; font-size: 12px; color: #9ca3af; border-top: 1px solid #f3f4f6; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <a href="${trackingUrl.split('/v/')[0]}" class="logo">CartePostale.cool</a>
-        </div>
-        <div class="content">
-          <h1 class="h1">${greeting} 💌</h1>
-          <p class="p">${sender} vous envoie une carte postale. Cliquez sur le lien ci-dessous pour la découvrir.</p>
-          <a href="${trackingUrl}" class="btn-primary">Voir ma carte postale</a>
-        </div>
-        <div class="footer">
-          <p>© ${new Date().getFullYear()} CartePostale.cool - Tous droits réservés</p>
-        </div>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Une carte postale pour vous</title>
+  <style>
+    body { ${EMAIL_BASE_STYLES.body} }
+    .container { ${EMAIL_BASE_STYLES.container} }
+    .header { ${EMAIL_BASE_STYLES.header} }
+    .logo { ${EMAIL_BASE_STYLES.logo} }
+    .content { ${EMAIL_BASE_STYLES.content} }
+    .h1 { ${EMAIL_BASE_STYLES.h1} }
+    .p { ${EMAIL_BASE_STYLES.p} }
+    .btn-primary { ${EMAIL_BASE_STYLES.btnPrimary} }
+    .footer { ${EMAIL_BASE_STYLES.footer} }
+    .cta-block { text-align: center; margin: 28px 0; }
+  </style>
+</head>
+<body style="${EMAIL_BASE_STYLES.body}">
+  <div class="container" style="${EMAIL_BASE_STYLES.container}">
+    <div class="header" style="${EMAIL_BASE_STYLES.header}">
+      <a href="${baseUrl}" style="${EMAIL_BASE_STYLES.logo}">CartePostale.cool</a>
+    </div>
+    <div class="content" style="${EMAIL_BASE_STYLES.content}">
+      <h1 class="h1" style="${EMAIL_BASE_STYLES.h1}">${greeting} 💌</h1>
+      <p class="p" style="${EMAIL_BASE_STYLES.p}">${sender} vous envoie une carte postale. Cliquez ci-dessous pour la voir en ligne.</p>
+      <div class="cta-block">
+        <a href="${trackingUrl}" class="btn-primary" style="${EMAIL_BASE_STYLES.btnPrimary}">Voir ma carte postale</a>
       </div>
-    </body>
-    </html>
-  `;
+    </div>
+    <div class="footer" style="${EMAIL_BASE_STYLES.footer}">
+      <p style="margin: 0;">© ${new Date().getFullYear()} CartePostale.cool</p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
 }

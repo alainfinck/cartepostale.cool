@@ -1,5 +1,5 @@
- 'use client'
- 
+'use client'
+
 import React from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -18,8 +18,13 @@ import {
     Eye,
     CheckCircle2,
     LayoutDashboard,
-    Compass
+    Compass,
+    QrCode,
+    TrendingUp,
+    ZapOff,
+    Rocket
 } from 'lucide-react'
+import WordRotate from '@/components/ui/word-rotate'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import { motion, easeOut } from 'framer-motion'
 
@@ -72,7 +77,11 @@ export default function BusinessClient() {
 
                         <motion.h1 variants={itemVariants} className="text-5xl md:text-8xl font-serif font-bold text-white mb-8 leading-[1.1] tracking-tight">
                             Faites rayonner <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 via-amber-200 to-teal-200">votre destination.</span>
+                            <WordRotate
+                                words={["votre destination.", "votre agence.", "votre entreprise.", "votre office de tourisme.", "votre commune.", "votre restaurant.", "votre hôtel."]}
+                                className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 via-amber-200 to-teal-200"
+                                duration={3000}
+                            />
                         </motion.h1>
 
                         <motion.p variants={itemVariants} className="text-teal-50/80 text-xl md:text-2xl mb-12 leading-relaxed max-w-2xl font-light">
@@ -294,6 +303,103 @@ export default function BusinessClient() {
                             </Button>
                         </div>
                     </motion.div>
+                </div>
+            </section>
+
+            {/* Powerful Marketing Tool Highlight */}
+            <section className="py-24 bg-gradient-to-br from-teal-900 via-[#061e1e] to-[#061e1e] text-white relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('/images/ui/grid.svg')] opacity-5"></div>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="flex flex-col md:flex-row items-center gap-16">
+                        <div className="flex-1 space-y-8">
+                            <div className="inline-flex items-center gap-2 bg-orange-500/20 text-orange-400 px-4 py-2 rounded-full text-sm font-black uppercase tracking-widest border border-orange-500/30">
+                                <TrendingUp size={16} /> ROI & Impact Marketing
+                            </div>
+                            <h2 className="text-4xl md:text-7xl font-serif font-bold leading-tight">
+                                Un outil marketing <br />
+                                <span className="text-orange-400">extrêmement puissant.</span>
+                            </h2>
+                            <p className="text-xl text-teal-100/70 leading-relaxed max-w-2xl font-light">
+                                Plus qu'une simple carte postale, c'est un levier de croissance exponentiel. Chaque envoi génère de l'attention authentique et du bouche-à-oreille qualifié pour votre établissement.
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-4">
+                                <div className="space-y-2">
+                                    <div className="text-3xl font-black text-white">100%</div>
+                                    <div className="text-teal-400 font-bold uppercase tracking-wider text-xs">Taux d'ouverture</div>
+                                    <p className="text-teal-100/50 text-sm">Contrairement aux emails, une carte postale est toujours lue avec attention.</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="text-3xl font-black text-white">x5.2</div>
+                                    <div className="text-teal-400 font-bold uppercase tracking-wider text-xs">Portée moyenne</div>
+                                    <p className="text-teal-100/50 text-sm">Chaque destinataire partage souvent le message avec son entourage.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex-1 relative">
+                            <div className="absolute -inset-10 bg-orange-500/20 rounded-full blur-[100px] opacity-30"></div>
+                            <div className="bg-white/5 backdrop-blur-2xl p-12 rounded-[48px] border border-white/10 shadow-3xl text-center relative z-10">
+                                <Rocket size={64} className="text-orange-400 mx-auto mb-8 animate-bounce" />
+                                <h3 className="text-3xl font-bold mb-4">Accélérez votre visibilité</h3>
+                                <p className="text-teal-100/70 mb-8">Passez du marketing digital froid à l'émotion physique et authentique.</p>
+                                <Button asChild className="bg-orange-500 hover:bg-orange-400 text-white px-8 py-6 rounded-2xl font-bold border-0">
+                                    <Link href="/contact">Activer le levier <ArrowRight className="ml-2" /></Link>
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* QR Code Access Section */}
+            <section className="py-32 bg-white">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                        <motion.div
+                            initial={{ opacity: 0, x: -30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            className="bg-stone-50 p-12 rounded-[48px] border border-stone-100 relative overflow-hidden flex items-center justify-center min-h-[400px]"
+                        >
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-teal-500/5 to-transparent"></div>
+                            <div className="relative z-10 flex flex-col items-center">
+                                <div className="bg-white p-6 rounded-[32px] shadow-2xl mb-8 border border-stone-100">
+                                    <QrCode size={180} className="text-stone-900" />
+                                </div>
+                                <div className="inline-flex items-center gap-2 bg-teal-500/10 text-teal-700 px-4 py-2 rounded-full text-sm font-bold">
+                                    Scannez. Créez. Envoyez.
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        <div className="space-y-8">
+                            <div className="inline-flex items-center gap-2 bg-teal-50 text-teal-600 px-4 py-2 rounded-full text-sm font-black uppercase tracking-widest">
+                                Déploiement Physique
+                            </div>
+                            <h2 className="text-4xl md:text-6xl font-serif font-bold text-stone-900 leading-tight">
+                                Accessible partout <br />en un instant.
+                            </h2>
+                            <p className="text-xl text-stone-600 leading-relaxed">
+                                Intégrez l'expérience directement dans votre parcours client physique. Le créateur de carte est accessible via un simple QR Code placé stratégiquement dans votre établissement.
+                            </p>
+                            <div className="space-y-6">
+                                {[
+                                    { title: "Comptoirs & Réceptions", desc: "Idéal pour l'accueil de vos clients." },
+                                    { title: "Chambres & Tables", desc: "Offrez un moment créatif lors de la détente." },
+                                    { title: "Brochures & Flyers", desc: "Prolongez l'expérience au-delà de la visite." }
+                                ].map((item, i) => (
+                                    <div key={i} className="flex gap-4 items-start">
+                                        <div className="w-10 h-10 bg-stone-900 rounded-xl flex items-center justify-center text-white shrink-0 mt-1">
+                                            {i + 1}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-stone-900 text-lg">{item.title}</h4>
+                                            <p className="text-stone-500">{item.desc}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 

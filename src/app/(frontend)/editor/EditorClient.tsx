@@ -47,6 +47,7 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { createPostcard } from '@/actions/postcard-actions'
 import { linkPostcardToUser } from '@/actions/auth-actions'
+import { sendPostcardToRecipientsFromEditor, type EditorRecipient } from '@/actions/editor-actions'
 
 import {
   fileToProcessedDataUrl as fileToDataUrl,
@@ -544,6 +545,11 @@ export default function EditorPage() {
   const [hasConfettiFired, setHasConfettiFired] = useState(false)
   const [isSendingEmail, setIsSendingEmail] = useState(false)
   const [isEmailSent, setIsEmailSent] = useState(false)
+  const [recipients, setRecipients] = useState<EditorRecipient[]>([
+    { firstName: '', lastName: '', email: '' },
+  ])
+  const [isSendingToRecipients, setIsSendingToRecipients] = useState(false)
+  const [recipientsSentCount, setRecipientsSentCount] = useState<number | null>(null)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [showUnsplashModal, setShowUnsplashModal] = useState(false)
   const [showStickerGallery, setShowStickerGallery] = useState(false)
@@ -2332,6 +2338,156 @@ export default function EditorPage() {
                             </>
                           )}
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Envoyer la carte par email (liens avec tracking) */}
+                    <div className="mt-12 pt-8 border-t border-stone-100">
+                      <div className="bg-amber-50/50 rounded-2xl p-6 border border-amber-100">
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className="bg-amber-500 text-white p-2.5 rounded-xl shrink-0">
+                            <Mail size={20} />
+                          </div>
+                          <div>
+                            <h3 className="font-serif font-bold text-lg text-stone-800">
+                              Envoyer la carte par e-mail
+                            </h3>
+                            <p className="text-stone-500 text-sm mt-1 leading-relaxed">
+                              Ajoutez des destinataires : chacun recevra un e-mail avec un lien unique pour voir la carte (avec suivi des vues).
+                            </p>
+                          </div>
+                        </div>
+                        {recipientsSentCount !== null ? (
+                          <div className="flex items-center gap-3 bg-teal-50 border border-teal-200 text-teal-800 px-4 py-3 rounded-xl">
+                            <Check size={20} className="text-teal-600 shrink-0" />
+                            <div>
+                              <p className="font-bold text-sm">E-mails envoyés !</p>
+                              <p className="text-xs text-teal-600">{recipientsSentCount} destinataire(s) ont reçu le lien vers votre carte.</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-stone-500 text-xs mb-3">
+                              {!currentUser && !senderEmail && !isEmailSent
+                                ? 'Indiquez d’abord votre e-mail expéditeur ci-dessus, puis ajoutez les destinataires.'
+                                : 'Prénom, nom et adresse e-mail de chaque destinataire.'}
+                            </p>
+                            <div className="space-y-3">
+                              {recipients.map((r, i) => (
+                                <div key={i} className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                  <Input
+                                    placeholder="Prénom"
+                                    value={r.firstName}
+                                    onChange={(e) => {
+                                      const next = [...recipients]
+                                      next[i] = { ...next[i], firstName: e.target.value }
+                                      setRecipients(next)
+                                    }}
+                                    className="w-24 sm:w-28 rounded-lg border-stone-200"
+                                  />
+                                  <Input
+                                    placeholder="Nom"
+                                    value={r.lastName}
+                                    onChange={(e) => {
+                                      const next = [...recipients]
+                                      next[i] = { ...next[i], lastName: e.target.value }
+                                      setRecipients(next)
+                                    }}
+                                    className="w-24 sm:w-28 rounded-lg border-stone-200"
+                                  />
+                                  <Input
+                                    type="email"
+                                    placeholder="email@exemple.com"
+                                    value={r.email}
+                                    onChange={(e) => {
+                                      const next = [...recipients]
+                                      next[i] = { ...next[i], email: e.target.value }
+                                      setRecipients(next)
+                                    }}
+                                    className="flex-1 min-w-[140px] rounded-lg border-stone-200"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="shrink-0 text-stone-400 hover:text-red-500"
+                                    onClick={() => {
+                                      if (recipients.length > 1) {
+                                        setRecipients(recipients.filter((_, j) => j !== i))
+                                      }
+                                    }}
+                                    disabled={recipients.length <= 1}
+                                    aria-label="Supprimer"
+                                  >
+                                    <X size={18} />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3 mt-4">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="rounded-lg border-stone-200"
+                                onClick={() => setRecipients([...recipients, { firstName: '', lastName: '', email: '' }])}
+                              >
+                                <Plus size={16} className="mr-1" />
+                                Ajouter un destinataire
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                className="rounded-xl h-auto px-6 bg-amber-500 hover:bg-amber-600 text-white border-0 font-bold transition-all shadow-md disabled:opacity-70"
+                                disabled={
+                                  isSendingToRecipients ||
+                                  !createdPostcardId ||
+                                  recipients.every((r) => !(r.email || '').trim()) ||
+                                  (!currentUser && !(senderEmail || '').trim() && !isEmailSent)
+                                }
+                                onClick={async () => {
+                                  if (!createdPostcardId) return
+                                  const needSender = !currentUser && !(senderEmail || '').trim() && !isEmailSent
+                                  if (needSender) {
+                                    alert('Indiquez votre e-mail expéditeur ci-dessus avant d’envoyer.')
+                                    return
+                                  }
+                                  const valid = recipients.filter((r) => (r.email || '').trim())
+                                  if (valid.length === 0) {
+                                    alert('Ajoutez au moins un destinataire avec une adresse e-mail.')
+                                    return
+                                  }
+                                  setIsSendingToRecipients(true)
+                                  try {
+                                    const result = await sendPostcardToRecipientsFromEditor(
+                                      createdPostcardId,
+                                      valid,
+                                      (currentUser?.email ?? senderEmail) || undefined
+                                    )
+                                    if (result.success && result.sentCount != null) {
+                                      setRecipientsSentCount(result.sentCount)
+                                    } else {
+                                      alert(result.error ?? 'Erreur lors de l’envoi.')
+                                    }
+                                  } catch (e) {
+                                    console.error(e)
+                                    alert('Une erreur est survenue.')
+                                  } finally {
+                                    setIsSendingToRecipients(false)
+                                  }
+                                }}
+                              >
+                                {isSendingToRecipients ? (
+                                  <RefreshCw size={18} className="animate-spin" />
+                                ) : (
+                                  <>
+                                    <Send size={18} className="mr-2" />
+                                    Envoyer la carte
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
