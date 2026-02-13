@@ -18,7 +18,7 @@ export default function Home() {
     setSavedPostcards([
       {
         id: 'demo-ski',
-        frontImage: 'https://images.unsplash.com/photo-1486074218988-66a98816c117?auto=format&fit=crop&w=1200&q=80',
+        frontImage: '/images/demo/photo-1486074218988-66a98816c117.jpg',
         location: 'Courchevel, France',
         message: "Les pistes sont incroyables cette année ! La poudreuse est au rendez-vous. On profite à fond de chaque descente. On se voit bientôt pour une fondue ?",
         recipientName: "La team Ski",
@@ -28,13 +28,13 @@ export default function Home() {
         isPremium: true,
         coords: { lat: 45.4147, lng: 6.6342 },
         mediaItems: [
-          { id: 's1', type: 'image', url: 'https://images.unsplash.com/photo-1520629411511-eb4407764282?auto=format&fit=crop&w=800&q=80' },
+          { id: 's1', type: 'image', url: '/images/demo/photo-1520629411511-eb4407764282.jpg' },
           { id: 's2', type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-skier-going-fast-down-a-snowy-mountain-42621-large.mp4' }
         ]
       },
       {
         id: 'demo-japan',
-        frontImage: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80',
+        frontImage: '/images/demo/photo-1493976040374-85c8e12f0c0e.jpg',
         location: 'Kyoto, Japon',
         message: "Le calme des temples de Kyoto me ressource tellement. Les cerisiers commencent tout juste à bourgeonner. C'est d'une beauté indescriptible.",
         recipientName: "Anna",
@@ -44,12 +44,12 @@ export default function Home() {
         isPremium: true,
         coords: { lat: 35.0116, lng: 135.7681 },
         mediaItems: [
-          { id: 'j1', type: 'image', url: 'https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=800&q=80' }
+          { id: 'j1', type: 'image', url: '/images/demo/photo-1528164344705-47542687000d.jpg' }
         ]
       },
       {
         id: 'demo-canada',
-        frontImage: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?auto=format&fit=crop&w=1200&q=80',
+        frontImage: '/images/demo/photo-1503614472-8c93d56e92ce.jpg',
         location: 'Banff, Canada',
         message: "On a vu des ours aujourd'hui ! (De loin, rassurez-vous). Les lacs sont d'un bleu turquoise qu'on ne voit nulle part ailleurs. On explore les Rocheuses en van.",
         recipientName: "Julie",
@@ -59,12 +59,12 @@ export default function Home() {
         isPremium: true,
         coords: { lat: 51.1784, lng: -115.5708 },
         mediaItems: [
-          { id: 'c1', type: 'image', url: 'https://images.unsplash.com/photo-1439396087961-99bc12bd8959?auto=format&fit=crop&w=800&q=80' }
+          { id: 'c1', type: 'image', url: '/images/demo/photo-1439396087961-99bc12bd8959.jpg' }
         ]
       },
       {
         id: 'demo-anniv',
-        frontImage: 'https://images.unsplash.com/photo-1530103043960-ef38714abb15?auto=format&fit=crop&w=1200&q=80',
+        frontImage: '/images/demo/photo-1530103043960-ef38714abb15.jpg',
         location: 'Votre Cœur, Partout',
         message: "Joyeux Anniversaire ! 🎂 Une petite carte pour marquer le coup et te souhaiter le meilleur pour cette nouvelle année. Profite bien de ta journée !",
         recipientName: "Manon",
@@ -76,7 +76,7 @@ export default function Home() {
       },
       {
         id: 'demo-safari',
-        frontImage: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1200&q=80',
+        frontImage: '/images/demo/photo-1516426122078-c23e76319801.jpg',
         location: 'Kruger Park, Afrique du Sud',
         message: "Réveil à 5h pour le game drive ce matin. On a croisé des éléphants et une lionne avec ses petits. L'aventure est exceptionnelle !",
         recipientName: "Les collègues",
@@ -86,7 +86,7 @@ export default function Home() {
         isPremium: true,
         coords: { lat: -23.9884, lng: 31.5594 },
         mediaItems: [
-          { id: 'sa1', type: 'image', url: 'https://images.unsplash.com/photo-1549366021-9f761d450615?auto=format&fit=crop&w=800&q=80' }
+          { id: 'sa1', type: 'image', url: '/images/demo/photo-1549366021-9f761d450615.jpg' }
         ]
       }
     ])
@@ -94,7 +94,7 @@ export default function Home() {
 
   const demoCard: Postcard = {
     id: 'demo-rv',
-    frontImage: 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+    frontImage: '/images/demo/photo-1596394516093-501ba68a0ba6.jpg',
     location: 'Bali, Indonésie',
     message: "Salut la famille !\n\nOn est bien arrivés à Bali. Les paysages sont à couper le souffle, surtout les rizières d'Ubud. Le temps est magnifique et les gens sont d'une gentillesse incroyable. On profite de chaque instant !\n\nGrosses bises à tous,\nJulie & Thomas 🌴☀️",
     recipientName: "Famille Martin",
@@ -107,7 +107,7 @@ export default function Home() {
 
   const heroPostcard: Postcard = {
     id: 'hero-card',
-    frontImage: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=85',
+    frontImage: '/images/demo/photo-1502602898657-3e91760cbb34.jpg',
     frontCaption: 'Bonjour de Paris ! 🗼',
     location: 'Paris, France',
     message: 'Salut tout le monde !\n\nUne petite pensée depuis la Ville Lumière. On s\'amuse beaucoup ici ! 🥐✨',
@@ -118,8 +118,8 @@ export default function Home() {
     isPremium: true,
     coords: { lat: 48.8566, lng: 2.3522 },
     mediaItems: [
-      { id: 'h1', type: 'image', url: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80' },
-      { id: 'h2', type: 'image', url: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=800&q=80' },
+      { id: 'h1', type: 'image', url: '/images/demo/photo-1502602898657-3e91760cbb34.jpg' },
+      { id: 'h2', type: 'image', url: '/images/demo/photo-1499856871958-5b9627545d1a.jpg' },
       { id: 'h3', type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-paris-eiffel-tower-tourist-view-4455-large.mp4' },
     ],
   }

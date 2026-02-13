@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     description: 'Personnalisez votre carte postale : ajoutez votre photo, rédigez votre message avec une écriture manuscrite et signez.',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+        url: '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
         width: 1200,
         height: 630,
         alt: 'Créer ma carte postale',

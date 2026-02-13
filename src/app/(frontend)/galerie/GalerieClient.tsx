@@ -34,7 +34,7 @@ const SHOWCASE_POSTCARDS: Postcard[] = [
   {
     id: 'show-1',
     frontImage:
-      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+      '/images/demo/photo-1501785888041-af3ef285b470.jpg',
     location: 'Grand Canyon, USA',
     message:
       "L'immensité de ce lieu est impossible à décrire. Les couleurs au coucher du soleil sont irréelles. Un souvenir gravé à jamais !",
@@ -48,7 +48,7 @@ const SHOWCASE_POSTCARDS: Postcard[] = [
       {
         id: 'm1',
         type: 'image',
-        url: 'https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?auto=format&fit=crop&w=800&q=80',
+        url: '/images/demo/photo-1474044159687-1ee9f3a51722.jpg',
       },
       {
         id: 'm2',
@@ -58,14 +58,14 @@ const SHOWCASE_POSTCARDS: Postcard[] = [
       {
         id: 'm3',
         type: 'image',
-        url: 'https://images.unsplash.com/photo-1527333656061-ca7adf608ae1?auto=format&fit=crop&w=800&q=80',
+        url: '/images/demo/photo-1527333656061-ca7adf608ae1.jpg',
       },
     ],
   },
   {
     id: 'show-2',
     frontImage:
-      'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+      '/images/demo/photo-1493976040374-85c8e12f0c0e.jpg',
     location: 'Kyoto, Japon',
     message:
       "J'ai trouvé le jardin zen le plus paisible au monde. Le matcha ici est une révélation. La bambouseraie d'Arashiyama est magique.",
@@ -79,7 +79,7 @@ const SHOWCASE_POSTCARDS: Postcard[] = [
       {
         id: 'k1',
         type: 'image',
-        url: 'https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=800&q=80',
+        url: '/images/demo/photo-1528164344705-47542687000d.jpg',
       },
       {
         id: 'k2',
@@ -91,7 +91,7 @@ const SHOWCASE_POSTCARDS: Postcard[] = [
   {
     id: 'show-3',
     frontImage:
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+      '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
     location: 'Côte Amalfitaine, Italie',
     message:
       "Ciao ! La dolce vita pure. Les citrons sont aussi gros que des ballons, la mer est d'un bleu électrique.",
@@ -105,7 +105,7 @@ const SHOWCASE_POSTCARDS: Postcard[] = [
   {
     id: 'show-4',
     frontImage:
-      'https://images.unsplash.com/photo-1506929562872-bb421503ef21?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+      '/images/demo/photo-1506929562872-bb421503ef21.jpg',
     location: 'Îles Phi Phi, Thaïlande',
     message:
       "Le paradis sur terre. L'eau est si chaude et transparente. On a exploré des lagons secrets ce matin !",
@@ -119,7 +119,7 @@ const SHOWCASE_POSTCARDS: Postcard[] = [
       {
         id: 'p1',
         type: 'image',
-        url: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=800&q=80',
+        url: '/images/demo/photo-1552465011-b4e21bf6e79a.jpg',
       },
       {
         id: 'p2',
@@ -131,7 +131,7 @@ const SHOWCASE_POSTCARDS: Postcard[] = [
   {
     id: 'show-5',
     frontImage:
-      'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+      '/images/demo/photo-1502602898657-3e91760cbb34.jpg',
     location: 'Paris, France',
     message:
       "La ville lumière porte bien son nom. Un croissant au beurre, un café crème et la Tour Eiffel qui scintille... Le bonheur à la française.",
@@ -145,7 +145,7 @@ const SHOWCASE_POSTCARDS: Postcard[] = [
   {
     id: 'show-6',
     frontImage:
-      'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+      '/images/demo/photo-1531366936337-7c912a4589a7.jpg',
     location: 'Tromsø, Norvège',
     message:
       "Les aurores boréales dansent au-dessus de nos têtes chaque soir. C'est le spectacle le plus incroyable que j'aie jamais vu.",
@@ -159,12 +159,12 @@ const SHOWCASE_POSTCARDS: Postcard[] = [
       {
         id: 'n1',
         type: 'image',
-        url: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=800&q=80',
+        url: '/images/demo/photo-1531366936337-7c912a4589a7.jpg',
       },
       {
         id: 'n2',
         type: 'image',
-        url: 'https://images.unsplash.com/photo-1483347756197-71ef80e95f73?auto=format&fit=crop&w=800&q=80',
+        url: '/images/demo/photo-1483347756197-71ef80e95f73.jpg',
       },
     ],
   },
@@ -285,7 +285,7 @@ export default function GalerieClient() {
       <div className="relative bg-stone-900 h-[420px] flex items-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+            src="/images/demo/photo-1488646953014-85cb44e25828.jpg"
             className="w-full h-full object-cover opacity-30"
             alt="Travel background"
           />
@@ -524,7 +524,7 @@ export default function GalerieClient() {
       <section className="relative bg-teal-900 py-20 sm:py-24 overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+            src="/images/demo/photo-1476514525535-07fb3b4ae5f1.jpg"
             className="w-full h-full object-cover opacity-20 mix-blend-overlay"
             alt=""
           />

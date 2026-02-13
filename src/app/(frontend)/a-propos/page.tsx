@@ -34,7 +34,7 @@ export default function AProposPage() {
                     <div className="relative">
                         <div className="absolute inset-0 bg-stone-900/5 rotate-3 rounded-2xl"></div>
                         <Image
-                            src="https://images.unsplash.com/photo-1527529482837-4698179dc6ce?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+                            src="/images/demo/photo-1527529482837-4698179dc6ce.jpg"
                             alt="Notre équipe en voyage"
                             width={600}
                             height={400}

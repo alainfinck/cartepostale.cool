@@ -19,7 +19,7 @@ export default function BusinessPage() {
             <section className="relative bg-teal-950 min-h-[600px] flex items-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <img
-                        src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+                        src="/images/demo/photo-1486406146926-c627a92ad1ab.jpg"
                         alt="Business Background"
                         className="w-full h-full object-cover opacity-20 mix-blend-overlay"
                     />
@@ -179,7 +179,7 @@ export default function BusinessPage() {
 
                         <div className="bg-white p-2 rounded-2xl shadow-2xl rotate-2 hover:rotate-0 transition-transform duration-500">
                             <img
-                                src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80"
+                                src="/images/demo/photo-1556761175-5973dc0f32e7.jpg"
                                 alt="Meeting"
                                 className="rounded-xl w-full"
                             />

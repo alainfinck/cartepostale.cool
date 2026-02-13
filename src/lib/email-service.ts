@@ -44,7 +44,7 @@ export async function sendEmail({ to, subject, html }: EmailParams): Promise<boo
 }
 
 export function generateMagicLinkEmail(magicLink: string, postcardUrl: string, publicId: string, postcardImageUrl?: string) {
-  const previewImage = postcardImageUrl || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80';
+  const previewImage = postcardImageUrl || '/images/demo/photo-1507525428034-b723cf961d3e.jpg';
   
   return `
     <!DOCTYPE html>

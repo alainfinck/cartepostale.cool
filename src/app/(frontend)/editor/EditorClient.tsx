@@ -118,56 +118,56 @@ const SAMPLE_TEMPLATES: Template[] = [
     id: 'tpl-1',
     name: 'Plage tropicale',
     imageUrl:
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+      '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
     category: 'Beach',
   },
   {
     id: 'tpl-2',
     name: 'Coucher de soleil',
     imageUrl:
-      'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=80',
+      '/images/demo/photo-1476514525535-07fb3b4ae5f1.jpg',
     category: 'Beach',
   },
   {
     id: 'tpl-3',
     name: 'Paris romantique',
     imageUrl:
-      'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
+      '/images/demo/photo-1502602898657-3e91760cbb34.jpg',
     category: 'City',
   },
   {
     id: 'tpl-4',
     name: 'Tokyo néons',
     imageUrl:
-      'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=800&q=80',
+      '/images/demo/photo-1540959733332-eab4deabeeaf.jpg',
     category: 'City',
   },
   {
     id: 'tpl-5',
     name: 'Alpes suisses',
     imageUrl:
-      'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=800&q=80',
+      '/images/demo/photo-1531366936337-7c912a4589a7.jpg',
     category: 'Mountain',
   },
   {
     id: 'tpl-6',
     name: 'Côte Amalfitaine',
     imageUrl:
-      'https://images.unsplash.com/photo-1534113414509-0eec2bfb493f?auto=format&fit=crop&w=800&q=80',
+      '/images/demo/photo-1534113414509-0eec2bfb493f.jpg',
     category: 'City',
   },
   {
     id: 'tpl-7',
     name: 'Forêt enchantée',
     imageUrl:
-      'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80',
+      '/images/demo/photo-1448375240586-882707db888b.jpg',
     category: 'Mountain',
   },
   {
     id: 'tpl-8',
     name: 'Désert doré',
     imageUrl:
-      'https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=800&q=80',
+      '/images/demo/photo-1509316785289-025f5b846b35.jpg',
     category: 'Abstract',
   },
 ]
@@ -386,7 +386,7 @@ export default function EditorPage() {
     id: 'editor-preview',
     frontImage:
       frontImage ||
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+      '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
     frontCaption: frontCaption.trim() || undefined,
     frontEmoji: frontEmoji.trim() || undefined,
     message: message || '',

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
         description: 'Découvrez comment nos utilisateurs partagent leurs souvenirs de voyage.',
         images: [
             {
-                url: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+                url: '/images/demo/photo-1488646953014-85cb44e25828.jpg',
                 width: 1200,
                 height: 630,
                 alt: 'Galerie CartePostale.cool',

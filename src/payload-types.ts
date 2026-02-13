@@ -75,6 +75,9 @@ export interface Config {
     reactions: Reaction;
     comments: Comment;
     'postcard-view-events': PostcardViewEvent;
+    'gallery-categories': GalleryCategory;
+    'gallery-tags': GalleryTag;
+    gallery: Gallery;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +93,9 @@ export interface Config {
     reactions: ReactionsSelect<false> | ReactionsSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
     'postcard-view-events': PostcardViewEventsSelect<false> | PostcardViewEventsSelect<true>;
+    'gallery-categories': GalleryCategoriesSelect<false> | GalleryCategoriesSelect<true>;
+    'gallery-tags': GalleryTagsSelect<false> | GalleryTagsSelect<true>;
+    gallery: GallerySelect<false> | GallerySelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -364,6 +370,61 @@ export interface PostcardViewEvent {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "gallery-categories".
+ */
+export interface GalleryCategory {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "gallery-tags".
+ */
+export interface GalleryTag {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "gallery".
+ */
+export interface Gallery {
+  id: number;
+  title: string;
+  image: number | Media;
+  caption?: string | null;
+  /**
+   * Catégorie de la photo
+   */
+  category?: (number | null) | GalleryCategory;
+  /**
+   * Tags pour filtrer et rechercher
+   */
+  tags?: (number | GalleryTag)[] | null;
+  /**
+   * Ordre d'affichage (plus petit = en premier)
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -417,6 +478,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'postcard-view-events';
         value: number | PostcardViewEvent;
+      } | null)
+    | ({
+        relationTo: 'gallery-categories';
+        value: number | GalleryCategory;
+      } | null)
+    | ({
+        relationTo: 'gallery-tags';
+        value: number | GalleryTag;
+      } | null)
+    | ({
+        relationTo: 'gallery';
+        value: number | Gallery;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -637,6 +710,43 @@ export interface PostcardViewEventsSelect<T extends boolean = true> {
   region?: T;
   city?: T;
   sessionId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "gallery-categories_select".
+ */
+export interface GalleryCategoriesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "gallery-tags_select".
+ */
+export interface GalleryTagsSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "gallery_select".
+ */
+export interface GallerySelect<T extends boolean = true> {
+  title?: T;
+  image?: T;
+  caption?: T;
+  category?: T;
+  tags?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }

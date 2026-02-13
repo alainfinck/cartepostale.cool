@@ -1,7 +1,8 @@
 /**
  * Initializes Postgres and creates all Payload tables (push schema).
- * Run with: DATABASE_URL="postgres://..." pnpm exec tsx scripts/create-postgres-tables.ts
+ * Loads .env from project root. Or: DATABASE_URL="postgres://..." pnpm exec tsx scripts/create-postgres-tables.ts
  */
+import 'dotenv/config'
 import { getPayload } from 'payload'
 import config from '../src/payload.config'
 

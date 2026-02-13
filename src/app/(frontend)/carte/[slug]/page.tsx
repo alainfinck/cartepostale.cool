@@ -69,7 +69,7 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
 
     // Fallback if no image found (shouldn't happen for valid cards)
     if (!frontImageUrl) {
-        frontImageUrl = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80'
+        frontImageUrl = '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
     }
 
     const mediaItems: MediaItem[] = (payloadPostcard.mediaItems || []).map((item: any) => {

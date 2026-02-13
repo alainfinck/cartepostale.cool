@@ -41,7 +41,7 @@ interface PostcardViewProps {
     height?: string;
 }
 
-const FALLBACK_FRONT_IMAGE = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80'
+const FALLBACK_FRONT_IMAGE = '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
 
 const PostcardView: React.FC<PostcardViewProps> = ({
     postcard,

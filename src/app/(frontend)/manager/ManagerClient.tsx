@@ -65,7 +65,7 @@ function isMedia(media: any): media is Media {
 function getFrontImageUrl(postcard: PayloadPostcard): string {
     if (postcard.frontImageURL) return postcard.frontImageURL
     if (isMedia(postcard.frontImage) && postcard.frontImage.url) return postcard.frontImage.url
-    return 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80'
+    return '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
 }
 
 function mapToFrontend(p: PayloadPostcard): FrontendPostcard {

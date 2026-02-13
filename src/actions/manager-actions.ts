@@ -1,8 +1,9 @@
 'use server'
 
 import { getPayload } from 'payload'
+import type { Where } from 'payload'
 import config from '@payload-config'
-import { Postcard, User, Agency } from '@/payload-types'
+import { Postcard, User, Agency, Gallery, GalleryCategory, GalleryTag } from '@/payload-types'
 import { getCurrentUser } from '@/lib/auth'
 
 async function requireAdmin(): Promise<void> {
@@ -387,5 +388,322 @@ export async function deleteAgency(id: number | string): Promise<{ success: bool
     } catch (error: any) {
         console.error('Error deleting agency:', error)
         return { success: false, error: error.message || 'Failed to delete agency' }
+    }
+}
+
+// --- Gallery Categories ---
+
+export interface GalleryCategoriesResult {
+    docs: GalleryCategory[]
+    totalDocs: number
+    totalPages: number
+    page: number
+}
+
+export async function getAllGalleryCategories(params?: { page?: number; limit?: number; search?: string }): Promise<GalleryCategoriesResult> {
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+        const where: Where = {}
+        if (params?.search?.trim()) {
+            where.name = { contains: params.search }
+        }
+        const result = await payload.find({
+            collection: 'gallery-categories',
+            where: Object.keys(where).length > 0 ? where : undefined,
+            page: params?.page ?? 1,
+            limit: params?.limit ?? 100,
+            sort: 'name',
+            depth: 0,
+        })
+        return {
+            docs: result.docs as GalleryCategory[],
+            totalDocs: result.totalDocs,
+            totalPages: result.totalPages,
+            page: result.page ?? 1,
+        }
+    } catch (error) {
+        console.error('Error fetching gallery categories:', error)
+        return { docs: [], totalDocs: 0, totalPages: 0, page: 1 }
+    }
+}
+
+export async function createGalleryCategory(data: { name: string; slug?: string; description?: string }): Promise<{ success: boolean; data?: GalleryCategory; error?: string }> {
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+        const result = await payload.create({
+            collection: 'gallery-categories',
+            data: data as never,
+        })
+        return { success: true, data: result as GalleryCategory }
+    } catch (error: unknown) {
+        console.error('Error creating gallery category:', error)
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to create category' }
+    }
+}
+
+export async function updateGalleryCategory(id: number | string, data: { name?: string; slug?: string; description?: string }): Promise<{ success: boolean; data?: GalleryCategory; error?: string }> {
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+        const result = await payload.update({
+            collection: 'gallery-categories',
+            id,
+            data,
+        })
+        return { success: true, data: result as GalleryCategory }
+    } catch (error: unknown) {
+        console.error('Error updating gallery category:', error)
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to update category' }
+    }
+}
+
+export async function deleteGalleryCategory(id: number | string): Promise<{ success: boolean; error?: string }> {
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+        await payload.delete({
+            collection: 'gallery-categories',
+            id,
+        })
+        return { success: true }
+    } catch (error: unknown) {
+        console.error('Error deleting gallery category:', error)
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to delete category' }
+    }
+}
+
+// --- Gallery Tags ---
+
+export interface GalleryTagsResult {
+    docs: GalleryTag[]
+    totalDocs: number
+    totalPages: number
+    page: number
+}
+
+export async function getAllGalleryTags(params?: { page?: number; limit?: number; search?: string }): Promise<GalleryTagsResult> {
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+        const where: Where = {}
+        if (params?.search?.trim()) {
+            where.name = { contains: params.search }
+        }
+        const result = await payload.find({
+            collection: 'gallery-tags',
+            where: Object.keys(where).length > 0 ? where : undefined,
+            page: params?.page ?? 1,
+            limit: params?.limit ?? 100,
+            sort: 'name',
+            depth: 0,
+        })
+        return {
+            docs: result.docs as GalleryTag[],
+            totalDocs: result.totalDocs,
+            totalPages: result.totalPages,
+            page: result.page ?? 1,
+        }
+    } catch (error) {
+        console.error('Error fetching gallery tags:', error)
+        return { docs: [], totalDocs: 0, totalPages: 0, page: 1 }
+    }
+}
+
+export async function createGalleryTag(data: { name: string; slug?: string }): Promise<{ success: boolean; data?: GalleryTag; error?: string }> {
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+        const result = await payload.create({
+            collection: 'gallery-tags',
+            data: data as never,
+        })
+        return { success: true, data: result as GalleryTag }
+    } catch (error: unknown) {
+        console.error('Error creating gallery tag:', error)
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to create tag' }
+    }
+}
+
+export async function updateGalleryTag(id: number | string, data: { name?: string; slug?: string }): Promise<{ success: boolean; data?: GalleryTag; error?: string }> {
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+        const result = await payload.update({
+            collection: 'gallery-tags',
+            id,
+            data,
+        })
+        return { success: true, data: result as GalleryTag }
+    } catch (error: unknown) {
+        console.error('Error updating gallery tag:', error)
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to update tag' }
+    }
+}
+
+export async function deleteGalleryTag(id: number | string): Promise<{ success: boolean; error?: string }> {
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+        await payload.delete({
+            collection: 'gallery-tags',
+            id,
+        })
+        return { success: true }
+    } catch (error: unknown) {
+        console.error('Error deleting gallery tag:', error)
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to delete tag' }
+    }
+}
+
+// --- Gallery (images) ---
+
+export interface GalleryFilters {
+    category?: number
+    tag?: number
+    search?: string
+    page?: number
+    limit?: number
+    sort?: string
+}
+
+export interface GalleryResult {
+    docs: Gallery[]
+    totalDocs: number
+    totalPages: number
+    page: number
+    hasNextPage: boolean
+    hasPrevPage: boolean
+}
+
+export async function getAllGalleryImages(filters?: GalleryFilters): Promise<GalleryResult> {
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+        const where: Where = {}
+
+        if (filters?.category) {
+            where.category = { equals: filters.category }
+        }
+        if (filters?.tag) {
+            where.tags = { in: [filters.tag] }
+        }
+        if (filters?.search?.trim()) {
+            where.or = [
+                { title: { contains: filters.search } },
+                { caption: { contains: filters.search } },
+            ]
+        }
+
+        const result = await payload.find({
+            collection: 'gallery',
+            where: Object.keys(where).length > 0 ? where : undefined,
+            page: filters?.page ?? 1,
+            limit: filters?.limit ?? 24,
+            sort: filters?.sort ?? 'order',
+            depth: 2,
+        })
+
+        return {
+            docs: result.docs as Gallery[],
+            totalDocs: result.totalDocs,
+            totalPages: result.totalPages,
+            page: result.page ?? 1,
+            hasNextPage: result.hasNextPage ?? false,
+            hasPrevPage: result.hasPrevPage ?? false,
+        }
+    } catch (error) {
+        console.error('Error fetching gallery images:', error)
+        return {
+            docs: [],
+            totalDocs: 0,
+            totalPages: 0,
+            page: 1,
+            hasNextPage: false,
+            hasPrevPage: false,
+        }
+    }
+}
+
+export async function createGalleryImage(data: Partial<Gallery> & { title: string; image: number }): Promise<{ success: boolean; data?: Gallery; error?: string }> {
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+        const result = await payload.create({
+            collection: 'gallery',
+            data: {
+                title: data.title,
+                image: data.image,
+                caption: data.caption ?? undefined,
+                category: data.category ?? undefined,
+                tags: data.tags ?? undefined,
+                order: data.order ?? 0,
+            },
+        })
+        return { success: true, data: result as Gallery }
+    } catch (error: unknown) {
+        console.error('Error creating gallery image:', error)
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to create image' }
+    }
+}
+
+export async function updateGalleryImage(id: number | string, data: Partial<Gallery>): Promise<{ success: boolean; data?: Gallery; error?: string }> {
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+        const result = await payload.update({
+            collection: 'gallery',
+            id,
+            data,
+        })
+        return { success: true, data: result as Gallery }
+    } catch (error: unknown) {
+        console.error('Error updating gallery image:', error)
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to update image' }
+    }
+}
+
+export async function deleteGalleryImage(id: number | string): Promise<{ success: boolean; error?: string }> {
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+        await payload.delete({
+            collection: 'gallery',
+            id,
+        })
+        return { success: true }
+    } catch (error: unknown) {
+        console.error('Error deleting gallery image:', error)
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to delete image' }
+    }
+}
+
+/** List media for gallery image picker (admin only). */
+export async function getMediaForGallery(params?: { limit?: number; search?: string }): Promise<{ docs: { id: number; alt: string; url?: string | null; filename?: string | null }[] }> {
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+        const where: Where = {}
+        if (params?.search?.trim()) {
+            where.alt = { contains: params.search }
+        }
+        const result = await payload.find({
+            collection: 'media',
+            where: Object.keys(where).length > 0 ? where : undefined,
+            limit: params?.limit ?? 50,
+            sort: '-createdAt',
+            depth: 0,
+        })
+        const docs = (result.docs as { id: number; alt?: string; url?: string | null; filename?: string | null }[]).map((d) => ({
+            id: d.id,
+            alt: d.alt ?? '',
+            url: d.url ?? null,
+            filename: d.filename ?? null,
+        }))
+        return { docs }
+    } catch (error) {
+        console.error('Error fetching media for gallery:', error)
+        return { docs: [] }
     }
 }

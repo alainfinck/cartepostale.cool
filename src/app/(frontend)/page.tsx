@@ -10,7 +10,7 @@ export const metadata: Metadata = {
         description: 'Transformez vos photos numériques en véritables cartes postales papier. Imprimées et expédiées en 24h partout dans le monde.',
         images: [
             {
-                url: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+                url: '/images/demo/photo-1476514525535-07fb3b4ae5f1.jpg',
                 width: 1200,
                 height: 630,
                 alt: 'CartePostale.cool - Envoyez un coin de paradis',

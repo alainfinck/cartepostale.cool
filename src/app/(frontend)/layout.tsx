@@ -19,7 +19,7 @@ export const metadata = {
     description: 'Transformez vos photos numériques en véritables cartes postales papier. Imprimées et expédiées en 24h partout dans le monde.',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=1200&auto=format&fit=crop', // Default beautiful travel photo
+        url: '/images/demo/photo-1520250497591-112f2f40a3f4.jpg', // Default beautiful travel photo
         width: 1200,
         height: 630,
         alt: 'cartepostale.cool - Vos souvenirs en vrai',
@@ -30,7 +30,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'cartepostale.cool - Envoyez de vraies cartes',
     description: 'Transformez vos photos numériques en véritables cartes postales papier.',
-    images: ['https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=1200&auto=format&fit=crop'],
+    images: ['/images/demo/photo-1520250497591-112f2f40a3f4.jpg'],
   },
 }
 

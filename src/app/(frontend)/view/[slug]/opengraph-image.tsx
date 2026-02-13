@@ -33,7 +33,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
 
     if (!imageUrl) {
         // Fallback beautiful travel image
-        imageUrl = 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=1200&auto=format&fit=crop'
+        imageUrl = '/images/demo/photo-1520250497591-112f2f40a3f4.jpg'
     } else if (imageUrl.startsWith('/')) {
         // Correct URL for OG Image generation which happens on server side
         imageUrl = `https://cartepostale.cool${imageUrl}`

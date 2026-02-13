@@ -176,7 +176,7 @@ async function main() {
       data: {
         publicId: 'seed-card-001',
         frontImageURL:
-          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80',
+          '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
       message:
         "Salut de la Cote d'Azur ! Voici un apercu du nouveau template et des possibilites de la plateforme.",
         recipients: [
