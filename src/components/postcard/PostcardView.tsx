@@ -56,12 +56,22 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     const [isDragging, setIsDragging] = useState(false);
     const [frontImageSrc, setFrontImageSrc] = useState(postcard.frontImage || FALLBACK_FRONT_IMAGE);
     const [isFrontImageLoading, setIsFrontImageLoading] = useState(!!postcard.frontImage);
+    const frontImageRef = useRef<HTMLImageElement>(null);
 
     useEffect(() => {
         const url = postcard.frontImage || FALLBACK_FRONT_IMAGE;
         setFrontImageSrc(url);
         setIsFrontImageLoading(!!postcard.frontImage);
     }, [postcard.frontImage, postcard.id]);
+
+    // Si l'image est déjà en cache, onLoad ne se déclenche pas — on vérifie img.complete
+    useLayoutEffect(() => {
+        const img = frontImageRef.current;
+        if (!img || !frontImageSrc) return;
+        if (img.complete && img.naturalWidth > 0) {
+            setIsFrontImageLoading(false);
+        }
+    }, [frontImageSrc]);
 
     // Motion values for rotation
     const rotateY = useMotionValue(flipped ? 180 : 0);
@@ -425,6 +435,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             }}
                         >
                             <img
+                                ref={frontImageRef}
                                 src={frontImageSrc}
                                 alt="Postcard Front"
                                 className={cn(

@@ -24,7 +24,8 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     }
 
     const sender = postcard.senderName || 'Un ami'
-    let imageUrl = postcard.frontImageURL || (typeof postcard.frontImage === 'object' && postcard.frontImage?.url) || ''
+    const frontMedia = typeof postcard.frontImage === 'object' ? postcard.frontImage : null
+    let imageUrl = postcard.frontImageURL || (frontMedia && (frontMedia.url || (frontMedia.filename ? `/api/media/file/${encodeURIComponent(frontMedia.filename)}` : ''))) || ''
 
     if (!imageUrl) {
         // Fallback beautiful travel image

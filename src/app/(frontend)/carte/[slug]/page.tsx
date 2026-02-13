@@ -12,6 +12,7 @@ import { RotateDevicePrompt } from "@/components/ui/rotate-device-prompt"
 import SocialBar from '@/components/social/SocialBar'
 import ViewPageTitle from '@/components/view/ViewPageTitle'
 import DistanceDisplay from '@/components/view/DistanceDisplay'
+import PhotoAlbum from '@/components/view/PhotoAlbum'
 
 interface PageProps {
     params: Promise<{
@@ -21,7 +22,15 @@ interface PageProps {
 
 // Helper to check if media is an object
 function isMedia(media: any): media is Media {
-    return media && typeof media === 'object' && 'url' in media
+    return media && typeof media === 'object' && ('url' in media || 'filename' in media)
+}
+
+// Build media URL (Payload serves at /api/media/file/:filename when url is not set)
+function mediaUrl(media: Media | null | undefined): string {
+    if (!media || typeof media !== 'object') return ''
+    if (media.url) return media.url
+    if (media.filename) return `/api/media/file/${encodeURIComponent(media.filename)}`
+    return ''
 }
 
 // Geocode location string via Nominatim (when postcard has location but no coords)
@@ -48,7 +57,7 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
     let frontImageUrl = payloadPostcard.frontImageURL || ''
 
     if (!frontImageUrl && isMedia(payloadPostcard.frontImage)) {
-        frontImageUrl = payloadPostcard.frontImage.url || ''
+        frontImageUrl = mediaUrl(payloadPostcard.frontImage as Media)
     }
 
     // Fallback if no image found (shouldn't happen for valid cards)
@@ -58,10 +67,12 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
 
     const mediaItems: MediaItem[] = (payloadPostcard.mediaItems || []).map((item: any) => {
         if (isMedia(item.media)) {
+            const url = mediaUrl(item.media as Media)
+            if (!url) return null
             return {
                 id: item.id || Math.random().toString(36).substring(7),
                 type: item.type === 'video' ? 'video' : 'image',
-                url: item.media.url || '',
+                url,
             }
         }
         return null
@@ -174,6 +185,14 @@ export default async function PostcardPage({ params }: PageProps) {
                     <span>vues</span>
                 </div>
             </div>
+
+            {/* Photo Album */}
+            {frontendPostcard.mediaItems && frontendPostcard.mediaItems.length > 0 && (
+                <PhotoAlbum
+                    mediaItems={frontendPostcard.mediaItems}
+                    senderName={frontendPostcard.senderName}
+                />
+            )}
 
             {/* Social Bar & Info */}
             <div className="w-full max-w-4xl px-4 mb-20">

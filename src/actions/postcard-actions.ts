@@ -74,9 +74,9 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
                     },
                 })
                 frontImageId = media.id as number;
-                // Persist URL so view page has a stable value (Payload may return url or we build from filename)
+                // Persist URL so view page has a stable value (Payload serves files at /api/:collection/file/:filename)
                 const mediaDoc = media as { url?: string | null; filename?: string | null }
-                frontImageURL = mediaDoc.url ?? (mediaDoc.filename ? `/media/${mediaDoc.filename}` : undefined)
+                frontImageURL = mediaDoc.url ?? (mediaDoc.filename ? `/api/media/file/${encodeURIComponent(mediaDoc.filename)}` : undefined)
             } else if (data.frontImage.startsWith('http')) {
                 // External URL (template)
                 frontImageURL = data.frontImage;
@@ -86,7 +86,8 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
         // Handle mediaItems (album)
         const processedMediaItems = [];
         if (data.mediaItems && Array.isArray(data.mediaItems)) {
-            for (const item of data.mediaItems) {
+            for (let i = 0; i < data.mediaItems.length; i++) {
+                const item = data.mediaItems[i];
                 if (item.url && item.url.startsWith('data:')) {
                     const [meta, base64Data] = item.url.split(',');
                     const mime = meta.match(/:(.*?);/)?.[1] || 'image/png';
@@ -101,7 +102,7 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
                         file: {
                             data: buffer,
                             mimetype: mime,
-                            name: `postcard-album-${Date.now()}.${extension}`,
+                            name: `postcard-album-${Date.now()}-${i}.${extension}`,
                             size: buffer.length,
                         },
                     })

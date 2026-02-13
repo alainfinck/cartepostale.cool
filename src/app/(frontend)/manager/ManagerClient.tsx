@@ -44,6 +44,12 @@ import {
 } from '@/components/ui/dialog'
 import { Postcard as PayloadPostcard, Media } from '@/payload-types'
 import { getAllPostcards, updatePostcardStatus, deletePostcard, updatePostcard, PostcardsResult } from '@/actions/manager-actions'
+import {
+    getMyPostcards,
+    updateMyPostcard,
+    updateMyPostcardStatus,
+    deleteMyPostcard,
+} from '@/actions/espace-client-actions'
 import { getPostcardViewStats, type PostcardViewStats } from '@/actions/postcard-view-stats'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
@@ -105,20 +111,13 @@ const statusConfig = {
     archived: { label: 'Archivée', color: 'bg-stone-100/80 text-stone-500 border-stone-200/50 backdrop-blur-sm' },
 } as const
 
-export interface ManagerClientActions {
-    fetchPostcards: (filters?: { status?: StatusFilter; search?: string }) => Promise<PostcardsResult>
-    updatePostcard: (id: number, data: Record<string, unknown>) => Promise<{ success: boolean; error?: string }>
-    updatePostcardStatus: (id: number, status: 'published' | 'draft' | 'archived') => Promise<{ success: boolean; error?: string }>
-    deletePostcard: (id: number) => Promise<{ success: boolean; error?: string }>
-}
-
 interface Props {
     initialData: PostcardsResult
-    /** When provided (e.g. from espace-client), use these instead of admin actions. */
-    actions?: ManagerClientActions
+    /** When true, use espace-client Server Actions (getMyPostcards, etc.) instead of manager actions. */
+    useEspaceClientActions?: boolean
 }
 
-export default function ManagerClient({ initialData, actions }: Props) {
+export default function ManagerClient({ initialData, useEspaceClientActions }: Props) {
     const [data, setData] = useState(initialData)
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -147,10 +146,16 @@ export default function ManagerClient({ initialData, actions }: Props) {
     const totalViews = postcards.reduce((sum, p) => sum + (p.views || 0), 0)
     const totalShares = postcards.reduce((sum, p) => sum + (p.shares || 0), 0)
 
-    const fetchPostcards = actions?.fetchPostcards ?? (async (filters: any) => getAllPostcards(filters))
-    const updatePostcardFn = actions?.updatePostcard ?? updatePostcard
-    const updatePostcardStatusFn = actions?.updatePostcardStatus ?? updatePostcardStatus
-    const deletePostcardFn = actions?.deletePostcard ?? deletePostcard
+    const fetchPostcards = useEspaceClientActions
+        ? (async (filters?: { status?: StatusFilter; search?: string }) =>
+              getMyPostcards({
+                  status: filters?.status !== 'all' ? filters?.status : undefined,
+                  search: filters?.search,
+              }))
+        : (async (filters: any) => getAllPostcards(filters))
+    const updatePostcardFn = useEspaceClientActions ? updateMyPostcard : updatePostcard
+    const updatePostcardStatusFn = useEspaceClientActions ? updateMyPostcardStatus : updatePostcardStatus
+    const deletePostcardFn = useEspaceClientActions ? deleteMyPostcard : deletePostcard
 
     const refreshData = useCallback((statusF?: StatusFilter, searchQ?: string) => {
         startTransition(async () => {

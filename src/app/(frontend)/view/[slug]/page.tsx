@@ -22,7 +22,7 @@ interface PageProps {
 
 // Helper to check if media is an object
 function isMedia(media: any): media is Media {
-    return media && typeof media === 'object' && 'url' in media
+    return media && typeof media === 'object' && ('url' in media || 'filename' in media)
 }
 
 // Geocode location string via Nominatim (when postcard has location but no coords)
@@ -44,12 +44,20 @@ async function geocodeLocation(location: string): Promise<{ lat: number; lng: nu
     return null
 }
 
+// Build media URL (Payload serves at /api/media/file/:filename when url is not set)
+function mediaUrl(media: Media | null | undefined): string {
+    if (!media || typeof media !== 'object') return ''
+    if (media.url) return media.url
+    if (media.filename) return `/api/media/file/${encodeURIComponent(media.filename)}`
+    return ''
+}
+
 // Mapper function
 function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
     let frontImageUrl = payloadPostcard.frontImageURL || ''
 
     if (!frontImageUrl && isMedia(payloadPostcard.frontImage)) {
-        frontImageUrl = payloadPostcard.frontImage.url || ''
+        frontImageUrl = mediaUrl(payloadPostcard.frontImage as Media)
     }
 
     // Fallback if no image found (shouldn't happen for valid cards)
@@ -59,10 +67,12 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
 
     const mediaItems: MediaItem[] = (payloadPostcard.mediaItems || []).map((item: any) => {
         if (isMedia(item.media)) {
+            const url = mediaUrl(item.media as Media)
+            if (!url) return null
             return {
                 id: item.id || Math.random().toString(36).substring(7),
                 type: item.type === 'video' ? 'video' : 'image',
-                url: item.media.url || '',
+                url,
             }
         }
         return null

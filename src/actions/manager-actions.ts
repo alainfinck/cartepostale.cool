@@ -151,7 +151,7 @@ export async function updatePostcard(
 
             updateData.frontImage = media.id
             const mediaDoc = media as { url?: string | null; filename?: string | null }
-            updateData.frontImageURL = mediaDoc.url ?? (mediaDoc.filename ? `/media/${mediaDoc.filename}` : undefined)
+            updateData.frontImageURL = mediaDoc.url ?? (mediaDoc.filename ? `/api/media/file/${encodeURIComponent(mediaDoc.filename)}` : undefined)
         }
 
         await payload.update({
