@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 
 const nav = [
   { href: '/manager/cartes', label: 'Cartes postales', icon: Mail },
-  { href: '/manager', label: 'Statistiques', icon: BarChart3 },
+  { href: '/manager/stats', label: 'Statistiques', icon: BarChart3 },
   { href: '/manager/galerie', label: 'Galerie', icon: ImageIcon },
   { href: '/manager/r2', label: 'Bucket R2', icon: Cloud },
   { href: '/manager/clients', label: 'Clients', icon: Users },

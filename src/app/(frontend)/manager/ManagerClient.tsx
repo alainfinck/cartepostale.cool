@@ -724,7 +724,7 @@ function DetailsSheet({ postcard, viewStats, isOpen, onClose, onEdit, onUpdateSt
                             <SheetDescription className="text-xs uppercase tracking-widest font-medium">#{postcard.publicId}</SheetDescription>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Link href="/manager">
+                            <Link href="/manager/stats">
                                 <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-[11px] text-muted-foreground hover:bg-muted/50 rounded-full border border-border/30">
                                     <BarChart3 size={12} />
                                     Stats détaillées
