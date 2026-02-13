@@ -10,8 +10,6 @@ import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import { RotateDevicePrompt } from "@/components/ui/rotate-device-prompt"
 import SocialBar from '@/components/social/SocialBar'
 import ViewPageTitle from '@/components/view/ViewPageTitle'
-import DistanceDisplay from '@/components/view/DistanceDisplay'
-import PhotoAlbum from '@/components/view/PhotoAlbum'
 
 interface PageProps {
     params: Promise<{
@@ -114,7 +112,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             title,
             description,
             type: 'article',
-            url: `https://cartepostale.cool/view/${slug}`,
+            url: `https://cartepostale.cool/carte/${slug}`,
             siteName: 'CartePostale.cool',
         },
         twitter: {
@@ -151,37 +149,14 @@ export default async function PostcardPage({ params }: PageProps) {
             />
 
             {/* Card View */}
-            <div className="w-full max-w-[100vw] md:max-w-4xl flex justify-center perspective-[1000px] mb-6 md:mb-8 px-2 md:px-0 landscape:mb-4 relative">
-                <div className="flex flex-col w-full items-center">
-                    <PostcardView
-                        postcard={frontendPostcard}
-                        flipped={false}
-                        isLarge={true}
-                        className="shadow-2xl z-10"
-                    />
-
-                    {/* Distance Display */}
-                    {frontendPostcard.coords && (
-                        <DistanceDisplay
-                            targetCoords={frontendPostcard.coords}
-                            senderName={frontendPostcard.senderName}
-                        />
-                    )}
-                </div>
-
-                {/* View Counter - Absolute bottom right of the container */}
-                <div className="absolute -bottom-12 right-0 md:right-4 flex items-center gap-2 text-stone-400 text-sm font-medium">
-                    <span>{payloadPostcard.views || 0} vues</span>
-                </div>
-            </div>
-
-            {/* Photo Album */}
-            {frontendPostcard.mediaItems && frontendPostcard.mediaItems.length > 0 && (
-                <PhotoAlbum
-                    mediaItems={frontendPostcard.mediaItems}
-                    senderName={frontendPostcard.senderName}
+            <div className="w-full max-w-[100vw] md:max-w-4xl flex justify-center perspective-[1000px] mb-6 md:mb-12 px-2 md:px-0 landscape:mb-4">
+                <PostcardView
+                    postcard={frontendPostcard}
+                    flipped={false}
+                    isLarge={true}
+                    className="shadow-2xl"
                 />
-            )}
+            </div>
 
             {/* Social Bar */}
             <SocialBar
@@ -190,6 +165,7 @@ export default async function PostcardPage({ params }: PageProps) {
                 senderName={frontendPostcard.senderName}
                 initialViews={payloadPostcard.views || 0}
                 initialShares={payloadPostcard.shares || 0}
+                coords={frontendPostcard.coords}
             />
 
             {/* CTA Section */}

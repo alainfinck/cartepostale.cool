@@ -32,6 +32,7 @@ import {
   Maximize2,
   MessageSquare,
   Mail,
+  CreditCard,
 } from 'lucide-react'
 import { Postcard, Template } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -104,6 +105,7 @@ async function fileToDataUrl(file: File): Promise<string> {
 const STEPS = [
   { id: 'photo', label: 'Photo', icon: Camera },
   { id: 'redaction', label: 'Rédaction', icon: PenTool },
+  { id: 'payment', label: 'Paiement', icon: CreditCard },
   { id: 'preview', label: 'Aperçu', icon: Eye },
 ] as const
 
@@ -170,6 +172,11 @@ const SAMPLE_TEMPLATES: Template[] = [
 
 const EMOJI_SUGGESTIONS = ['✨', '📍', '🌅', '🌴', '💌', '🌊', '🗺️'] as const
 
+const ALBUM_TIERS = {
+  tier1: { photos: 10, videos: 0, price: 1 },
+  tier2: { photos: 50, videos: 3, price: 2 }
+} as const
+
 export default function EditorPage() {
   const [currentStep, setCurrentStep] = useState<StepId>('photo')
   const [selectedCategory, setSelectedCategory] = useState<Template['category'] | 'all'>('all')
@@ -197,6 +204,8 @@ export default function EditorPage() {
   const [isPremium, setIsPremium] = useState(false)
   const [showFullscreen, setShowFullscreen] = useState(false)
   const [showRecipientModal, setShowRecipientModal] = useState(false)
+
+  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal' | 'revolut' | null>(null)
 
   // Sharing state
   const [isPublishing, setIsPublishing] = useState(false)
@@ -238,6 +247,8 @@ export default function EditorPage() {
       case 'redaction':
         // Un seul critère : au moins un message. Destinataire / expéditeur / lieu optionnels (valeurs par défaut à l’envoi).
         return message.trim().length > 0
+      case 'payment':
+        return paymentMethod !== null
       case 'preview':
         return true
       default:
@@ -247,13 +258,25 @@ export default function EditorPage() {
 
   const goNext = () => {
     if (currentStepIndex < STEPS.length - 1 && canGoNext()) {
-      setCurrentStep(STEPS[currentStepIndex + 1].id)
+      const nextStep = STEPS[currentStepIndex + 1].id
+      if (nextStep === 'payment' && getAlbumPrice() === 0) {
+        // Skip payment if free
+        setCurrentStep('preview')
+      } else {
+        setCurrentStep(nextStep)
+      }
     }
   }
 
   const goPrev = () => {
     if (currentStepIndex > 0) {
-      setCurrentStep(STEPS[currentStepIndex - 1].id)
+      const prevStep = STEPS[currentStepIndex - 1].id
+      if (prevStep === 'payment' && getAlbumPrice() === 0) {
+        // Skip payment if free
+        setCurrentStep('redaction')
+      } else {
+        setCurrentStep(prevStep)
+      }
     }
   }
 
@@ -293,30 +316,60 @@ export default function EditorPage() {
   const handleAlbumUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return
     const files = Array.from(e.target.files)
-    files.forEach(async (file) => {
-      try {
-        const url = file.type.startsWith('video/')
-          ? await new Promise<string>((resolve, reject) => {
-              const reader = new FileReader()
-              reader.onloadend = () => resolve(reader.result as string)
-              reader.onerror = reject
-              reader.readAsDataURL(file)
-            })
-          : await fileToDataUrl(file)
-        const newItem = {
-          id: Date.now() + Math.random().toString() + Math.random(),
-          type: file.type.startsWith('video') ? 'video' : 'image',
-          url,
-        } as any
-        setMediaItems((prev) => {
-          const updated = [...(prev || []), newItem]
-          setIsPremium(updated.length > 0)
-          return updated
+
+    setMediaItems((prev = []) => {
+      let updated = [...prev]
+      const currentPhotos = updated.filter(i => i.type === 'image').length
+      const currentVideos = updated.filter(i => i.type === 'video').length
+
+      for (const file of files) {
+        const isVideo = file.type.startsWith('video/')
+
+        // Enforce max limits (Tier 2)
+        const photoCount = updated.filter(i => i.type === 'image').length
+        const videoCount = updated.filter(i => i.type === 'video').length
+
+        if (isVideo) {
+          if (videoCount >= ALBUM_TIERS.tier2.videos) {
+            alert(`Limite de ${ALBUM_TIERS.tier2.videos} vidéos atteinte.`)
+            continue
+          }
+        } else {
+          if (photoCount >= ALBUM_TIERS.tier2.photos) {
+            alert(`Limite de ${ALBUM_TIERS.tier2.photos} photos atteinte.`)
+            continue
+          }
+        }
+
+        // Process file
+        fileToDataUrl(file).then(url => {
+          const newItem = {
+            id: Date.now() + Math.random().toString(),
+            type: isVideo ? 'video' : 'image',
+            url,
+          } as any
+          setMediaItems(current => {
+            const next = [...(current || []), newItem]
+            setIsPremium(next.length > 0)
+            return next
+          })
+        }).catch(() => {
+          alert('Impossible de charger une des images. Utilisez des photos en JPEG ou PNG.')
         })
-      } catch {
-        alert('Impossible de charger une des images. Utilisez des photos en JPEG ou PNG.')
       }
+      return updated
     })
+  }
+
+  const getAlbumPrice = () => {
+    if (!mediaItems || mediaItems.length === 0) return 0
+    const photos = mediaItems.filter(i => i.type === 'image').length
+    const videos = mediaItems.filter(i => i.type === 'video').length
+
+    if (photos <= ALBUM_TIERS.tier1.photos && videos === 0) {
+      return ALBUM_TIERS.tier1.price
+    }
+    return ALBUM_TIERS.tier2.price
   }
 
   const removeMediaItem = (id: string) => {
@@ -373,7 +426,7 @@ export default function EditorPage() {
 
       if (result.success && result.publicId) {
         setCreatedPostcardId(result.publicId)
-        setShareUrl(`${window.location.origin}/view/${result.publicId}`)
+        setShareUrl(`${window.location.origin}/carte/${result.publicId}`)
         // No longer switching step, sharing UI appears in 'preview' step
       } else {
         setShareError(result.error || 'Une erreur est survenue lors de la création de la carte.')
@@ -404,6 +457,11 @@ export default function EditorPage() {
               const Icon = step.icon
               const isActive = step.id === currentStep
               const isCompleted = index < currentStepIndex
+              const isPayment = step.id === 'payment'
+              const isSkipped = isPayment && getAlbumPrice() === 0
+
+              if (isSkipped) return null
+
               return (
                 <React.Fragment key={step.id}>
                   <button
@@ -424,7 +482,7 @@ export default function EditorPage() {
                     {isCompleted ? <Check size={16} /> : <Icon size={16} />}
                     <span className="hidden sm:inline">{step.label}</span>
                   </button>
-                  {index < STEPS.length - 1 && (
+                  {index < STEPS.length - 1 && !isSkipped && (
                     <div
                       className={cn(
                         'flex-1 h-0.5 mx-2 rounded-full transition-colors',
@@ -457,7 +515,7 @@ export default function EditorPage() {
               <PostcardView postcard={currentPostcard} flipped={showBack} className="w-full h-auto aspect-[3/2] shadow-xl rounded-xl border border-stone-100" />
               <div className="mt-4 flex flex-col gap-4">
                 <p className="text-stone-400 text-[10px] uppercase tracking-widest font-bold text-center">L&apos;aperçu se met à jour en temps réel</p>
-                
+
                 <div className="flex flex-col w-full gap-3">
                   <Button
                     onClick={() => setShowFullscreen(true)}
@@ -469,7 +527,7 @@ export default function EditorPage() {
                   </Button>
 
                   {/* Bouton Continuer à gauche sous la carte */}
-                  {currentStep === 'redaction' && (
+                  {(currentStep === 'photo' || currentStep === 'redaction') && (
                     <div className="flex justify-start">
                       <Button
                         onClick={goNext}
@@ -691,6 +749,117 @@ export default function EditorPage() {
               </div>
             )}
 
+            {/* ==================== STEP: PAIEMENT ==================== */}
+            {currentStep === 'payment' && (
+              <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
+                <h2 className="text-2xl font-serif font-bold text-stone-800 mb-2">
+                  Règlement
+                </h2>
+                <p className="text-stone-500 mb-8">
+                  Choisissez votre méthode de paiement sécurisée pour valider votre commande.
+                </p>
+
+                {/* Order Summary */}
+                <div className="bg-stone-50 rounded-xl p-4 mb-8 border border-stone-100">
+                  <div className="flex justify-between items-center mb-2 text-sm text-stone-600">
+                    <span>Carte postale virtuelle</span>
+                    <span className="text-teal-600 font-bold uppercase text-[10px]">Gratuit</span>
+                  </div>
+                  {getAlbumPrice() > 0 && (
+                    <div className="flex justify-between items-center mb-2 text-sm text-amber-600 font-medium">
+                      <span className="flex items-center gap-1">
+                        <Sparkles size={12} />
+                        {getAlbumPrice() === 1 ? 'Option Album (10 photos)' : 'Option Album Premium (50 photos + 3 vidéos)'}
+                      </span>
+                      <span>+{getAlbumPrice().toFixed(2)} €</span>
+                    </div>
+                  )}
+                  <div className="border-t border-stone-200 my-3" />
+                  <div className="flex justify-between items-center font-bold text-stone-800 text-lg">
+                    <span>Total</span>
+                    <span>{getAlbumPrice().toFixed(2)} €</span>
+                  </div>
+                </div>
+
+                {/* Payment Methods */}
+                <div className="space-y-3">
+                  <label className="text-sm font-bold text-stone-800 uppercase tracking-wider mb-2 block">
+                    Moyen de paiement
+                  </label>
+
+                  {/* Stripe */}
+                  <button
+                    onClick={() => setPaymentMethod('stripe')}
+                    className={cn(
+                      "w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left",
+                      paymentMethod === 'stripe'
+                        ? "border-teal-500 bg-teal-50/50 ring-1 ring-teal-500 shadow-sm"
+                        : "border-stone-200 hover:border-teal-200 hover:bg-stone-50"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-6 h-6 rounded-full border flex items-center justify-center transition-colors",
+                      paymentMethod === 'stripe' ? "border-teal-500 bg-teal-500" : "border-stone-300"
+                    )}>
+                      {paymentMethod === 'stripe' && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-stone-800">Carte Bancaire</span>
+                        <div className="flex gap-2">
+                          <CreditCard size={20} className="text-stone-400" />
+                        </div>
+                      </div>
+                      <p className="text-xs text-stone-500">Via Stripe (Sécurisé)</p>
+                    </div>
+                  </button>
+
+                  {/* PayPal */}
+                  <button
+                    onClick={() => setPaymentMethod('paypal')}
+                    className={cn(
+                      "w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left",
+                      paymentMethod === 'paypal'
+                        ? "border-teal-500 bg-teal-50/50 ring-1 ring-teal-500 shadow-sm"
+                        : "border-stone-200 hover:border-teal-200 hover:bg-stone-50"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-6 h-6 rounded-full border flex items-center justify-center transition-colors",
+                      paymentMethod === 'paypal' ? "border-teal-500 bg-teal-500" : "border-stone-300"
+                    )}>
+                      {paymentMethod === 'paypal' && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
+                    </div>
+                    <div className="flex-1">
+                      <span className="font-bold text-stone-800">PayPal</span>
+                      <p className="text-xs text-stone-500">Payer avec votre compte PayPal</p>
+                    </div>
+                  </button>
+
+                  {/* Revolut */}
+                  <button
+                    onClick={() => setPaymentMethod('revolut')}
+                    className={cn(
+                      "w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left",
+                      paymentMethod === 'revolut'
+                        ? "border-teal-500 bg-teal-50/50 ring-1 ring-teal-500 shadow-sm"
+                        : "border-stone-200 hover:border-teal-200 hover:bg-stone-50"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-6 h-6 rounded-full border flex items-center justify-center transition-colors",
+                      paymentMethod === 'revolut' ? "border-teal-500 bg-teal-500" : "border-stone-300"
+                    )}>
+                      {paymentMethod === 'revolut' && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
+                    </div>
+                    <div className="flex-1">
+                      <span className="font-bold text-stone-800">Revolut Pay</span>
+                      <p className="text-xs text-stone-500">Rapide et sans frais</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            )}
             {/* ==================== STEP: RÉDACTION (fusionné) ==================== */}
             {currentStep === 'redaction' && (
               <div className="bg-white rounded-[2rem] shadow-xl shadow-stone-200/40 border border-stone-100 overflow-hidden">
@@ -933,11 +1102,20 @@ export default function EditorPage() {
                       </label>
                       <div className="flex items-center gap-2 text-xs font-medium">
                         {isPremium ? (
-                          <span className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100">
-                            <Sparkles size={12} fill="currentColor" /> Premium activé
-                          </span>
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100">
+                              <Sparkles size={12} fill="currentColor" /> Album {getAlbumPrice() === 1 ? '10 photos' : 'Premium'} activé
+                            </span>
+                            <span className="text-[10px] text-stone-400">
+                              {mediaItems?.filter(i => i.type === 'image').length}/{getAlbumPrice() === 1 ? 10 : 50} photos
+                              {getAlbumPrice() === 2 && ` - ${mediaItems?.filter(i => i.type === 'video').length}/3 vidéos`}
+                            </span>
+                          </div>
                         ) : (
-                          <span className="text-stone-400">Option payante (+1€)</span>
+                          <div className="flex flex-col items-end">
+                            <span className="text-stone-400">Option payante (dès +1€)</span>
+                            <span className="text-[9px] text-stone-300 uppercase tracking-tighter font-bold">10 photos: 1€ | 50 photos + 3 vid: 2€</span>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -1051,7 +1229,7 @@ export default function EditorPage() {
                         </div>
                         <h3 className="text-xl font-serif font-bold text-stone-800 mb-2">Prête à être partagée !</h3>
                         <p className="text-stone-500 text-sm mb-6">Utilisez le lien ci-dessous ou les réseaux sociaux</p>
-                        
+
                         <div className="mb-8 max-w-lg mx-auto">
                           <div className="flex gap-2">
                             <input
@@ -1066,17 +1244,17 @@ export default function EditorPage() {
                           </div>
                         </div>
 
-                          <div className="flex flex-wrap justify-center gap-3">
+                        <div className="flex flex-wrap justify-center gap-3">
                           {/* E-mails share */}
-                          <a 
+                          <a
                             href={`mailto:?subject=Regarde ma carte postale !&body=J'ai créé une carte postale pour toi : ${shareUrl}`}
                             className="flex items-center gap-2 px-5 py-2.5 bg-white border border-stone-200 text-stone-700 rounded-full font-bold text-xs hover:bg-stone-50 transition-all shadow-sm"
                           >
                             <Mail size={16} className="text-stone-400" /> E-mails
                           </a>
-                          
+
                           {/* SMS share */}
-                          <a 
+                          <a
                             href={`sms:?body=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`}
                             className="flex items-center gap-2 px-5 py-2.5 bg-stone-800 text-white rounded-full font-bold text-xs hover:bg-stone-900 transition-all shadow-md"
                           >
@@ -1084,25 +1262,25 @@ export default function EditorPage() {
                           </a>
 
                           {/* WhatsApp share */}
-                          <a 
-                            href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
+                          <a
+                            href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="flex items-center gap-2 px-5 py-2.5 bg-[#25D366] text-white rounded-full font-bold text-xs hover:opacity-90 transition-all shadow-md"
                           >
                             <Share2 size={16} /> WhatsApp
                           </a>
 
                           {/* Facebook share */}
-                          <a 
-                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
+                          <a
+                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="flex items-center gap-2 px-5 py-2.5 bg-[#1877F2] text-white rounded-full font-bold text-xs hover:opacity-90 transition-all shadow-md"
                           >
                             <Facebook size={16} /> Facebook
                           </a>
-                          
+
                           <Button
                             type="button"
                             onClick={() => {
@@ -1155,7 +1333,7 @@ export default function EditorPage() {
                                 disabled={isSendingEmail}
                                 className="flex-1 rounded-xl border border-stone-200 px-4 py-3 text-base focus:border-teal-500 focus:ring-teal-500 bg-white shadow-sm transition-all disabled:opacity-50 disabled:bg-stone-50"
                               />
-                              <Button 
+                              <Button
                                 variant="secondary"
                                 className="rounded-xl h-auto px-6 bg-teal-500 hover:bg-teal-600 text-white border-0 font-bold transition-all shadow-md shadow-teal-100 disabled:opacity-70"
                                 disabled={isSendingEmail}
@@ -1165,7 +1343,7 @@ export default function EditorPage() {
                                     alert("Veuillez entrer une adresse email valide.")
                                     return
                                   }
-                                  
+
                                   setIsSendingEmail(true);
                                   try {
                                     const result = await linkPostcardToUser(createdPostcardId, senderEmail)
@@ -1257,7 +1435,9 @@ export default function EditorPage() {
                           : 'bg-stone-200 text-stone-400 cursor-not-allowed'
                       )}
                     >
-                      Continuer
+                      {currentStep === 'payment'
+                        ? `Payer ${getAlbumPrice().toFixed(2)} €`
+                        : 'Continuer'}
                       <ChevronRight size={18} />
                     </Button>
                   )}
@@ -1269,71 +1449,77 @@ export default function EditorPage() {
       </div>
 
       {/* Modal plein écran : voir comme le destinataire */}
-      {showFullscreen && (
-        <div
-          className="fixed inset-0 z-50 bg-stone-900/95 flex items-center justify-center p-2 sm:p-4 overflow-auto"
-          onClick={() => setShowFullscreen(false)}
-        >
-          <div onClick={(e) => e.stopPropagation()} className="relative flex items-center justify-center w-full h-full p-4 sm:p-12">
-            <button
-              onClick={() => setShowFullscreen(false)}
-              className="absolute top-2 right-2 sm:top-6 sm:right-6 p-4 text-white hover:text-red-400 transition-all z-50 bg-black/20 hover:bg-black/40 backdrop-blur-sm rounded-full active:scale-95"
-              aria-label="Fermer"
-            >
-              <X size={48} strokeWidth={3} />
-            </button>
-            <PostcardView
-              postcard={currentPostcard}
-              flipped={showBack}
-              className="w-full max-w-[1700px] h-auto aspect-[3/2] shadow-2xl hover:scale-100 cursor-default"
-            />
+      {
+        showFullscreen && (
+          <div
+            className="fixed inset-0 z-50 bg-stone-900/95 flex items-center justify-center p-2 sm:p-4 overflow-auto"
+            onClick={() => setShowFullscreen(false)}
+          >
+            <div onClick={(e) => e.stopPropagation()} className="relative flex items-center justify-center w-full h-full p-4 sm:p-12">
+              <button
+                onClick={() => setShowFullscreen(false)}
+                className="absolute top-2 right-2 sm:top-6 sm:right-6 p-4 text-white hover:text-red-400 transition-all z-50 bg-black/20 hover:bg-black/40 backdrop-blur-sm rounded-full active:scale-95"
+                aria-label="Fermer"
+              >
+                <X size={48} strokeWidth={3} />
+              </button>
+              <PostcardView
+                postcard={currentPostcard}
+                flipped={showBack}
+                className="w-full max-w-[1700px] h-auto aspect-[3/2] shadow-2xl hover:scale-100 cursor-default"
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Modal destinataire : iframe de la page réelle */}
-      {showRecipientModal && shareUrl && (
-        <div
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 sm:p-8 overflow-auto"
-          onClick={() => setShowRecipientModal(false)}
-        >
+      {
+        showRecipientModal && shareUrl && (
           <div
-            onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-[1400px] h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-stone-200"
+            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 sm:p-8 overflow-auto"
+            onClick={() => setShowRecipientModal(false)}
           >
-            <button
-              onClick={() => setShowRecipientModal(false)}
-              className="absolute top-3 right-3 z-50 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all"
-              aria-label="Fermer la vue destinataire"
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-[1400px] h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-stone-200"
             >
-              <X size={20} />
-            </button>
-            <div className="absolute inset-x-0 top-4 flex justify-center z-40">
-              <span className="bg-white/80 text-stone-600 text-xs font-semibold uppercase tracking-[0.2em] px-4 py-1 rounded-full shadow-sm">
-                Vue destinataire
-              </span>
+              <button
+                onClick={() => setShowRecipientModal(false)}
+                className="absolute top-3 right-3 z-50 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all"
+                aria-label="Fermer la vue destinataire"
+              >
+                <X size={20} />
+              </button>
+              <div className="absolute inset-x-0 top-4 flex justify-center z-40">
+                <span className="bg-white/80 text-stone-600 text-xs font-semibold uppercase tracking-[0.2em] px-4 py-1 rounded-full shadow-sm">
+                  Vue destinataire
+                </span>
+              </div>
+              <iframe
+                src={shareUrl}
+                title="Page destinataire"
+                className="w-full h-full border-0"
+                loading="lazy"
+                allowFullScreen
+              />
             </div>
-            <iframe
-              src={shareUrl}
-              title="Page destinataire"
-              className="w-full h-full border-0"
-              loading="lazy"
-              allowFullScreen
-            />
           </div>
-        </div>
-      )}
+        )
+      }
       {/* Copy notification toast */}
-      {showCopyToast && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-300">
-          <div className="bg-stone-900 border border-white/10 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md">
-            <div className="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center">
-              <Check size={14} className="text-white" />
+      {
+        showCopyToast && (
+          <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-300">
+            <div className="bg-stone-900 border border-white/10 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md">
+              <div className="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center">
+                <Check size={14} className="text-white" />
+              </div>
+              <span className="font-bold text-sm tracking-wide">Lien copié !</span>
             </div>
-            <span className="font-bold text-sm tracking-wide">Lien copié !</span>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   )
 }

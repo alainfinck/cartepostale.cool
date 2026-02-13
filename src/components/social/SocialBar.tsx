@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Reply } from 'lucide-react'
+import { Reply, MapPin } from 'lucide-react'
 import { useSessionId } from '@/hooks/useSessionId'
 import { getReactions, getUserReactions, getComments } from '@/actions/social-actions'
 import { recordPostcardView, recordPostcardViewClose } from '@/actions/analytics-actions'
@@ -24,6 +24,20 @@ interface SocialBarProps {
     senderName: string
     initialViews: number
     initialShares: number
+    coords?: { lat: number; lng: number }
+}
+
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+    const R = 6371; // Radius of the earth in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c; // Distance in km
+    return Math.round(d);
 }
 
 export default function SocialBar({
@@ -32,6 +46,7 @@ export default function SocialBar({
     senderName,
     initialViews,
     initialShares,
+    coords,
 }: SocialBarProps) {
     const sessionId = useSessionId()
     const [counts, setCounts] = useState<Record<string, number>>({})
@@ -39,6 +54,7 @@ export default function SocialBar({
     const [comments, setComments] = useState<Comment[]>([])
     const [views] = useState(initialViews + 1) // Optimistic +1
     const [loaded, setLoaded] = useState(false)
+    const [distance, setDistance] = useState<number | null>(null)
     const eventIdRef = useRef<number | null>(null)
     const openedAtRef = useRef<number>(0)
     const closeSentRef = useRef(false)
@@ -82,6 +98,26 @@ export default function SocialBar({
 
         load()
     }, [postcardId, sessionId])
+
+    // Calculate distance if coords are available
+    useEffect(() => {
+        if (coords && 'geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const dist = calculateDistance(
+                        position.coords.latitude,
+                        position.coords.longitude,
+                        coords.lat,
+                        coords.lng
+                    )
+                    setDistance(dist)
+                },
+                (error) => {
+                    console.log('Error getting location', error)
+                }
+            )
+        }
+    }, [coords])
 
     // On leave: visibility hidden, pagehide, beforeunload, and unmount
     useEffect(() => {
@@ -130,32 +166,42 @@ export default function SocialBar({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="w-full max-w-md mx-auto px-4 space-y-4 mb-8"
+            className="w-full max-w-4xl mx-auto px-4 space-y-8 mb-12"
         >
-            {/* Reactions + Views */}
-            <ReactionBar
-                postcardId={postcardId}
-                sessionId={sessionId}
-                counts={counts}
-                userReactions={userReactions}
-                views={views}
-                onReactionUpdate={handleReactionUpdate}
-            />
-
-            {/* Share + Reply */}
-            <div className="flex items-center gap-2 justify-end">
-                <Link
-                    href={`/editor?replyTo=${encodeURIComponent(senderName)}`}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full border border-stone-200 text-stone-600 text-sm font-medium hover:bg-stone-50 transition-colors"
-                >
-                    <Reply size={16} />
-                    Répondre avec une carte
-                </Link>
-                <ShareButton
+            <div className="max-w-4xl mx-auto space-y-6">
+                {/* Reactions + Views */}
+                <ReactionBar
                     postcardId={postcardId}
-                    publicId={publicId}
-                    senderName={senderName}
+                    sessionId={sessionId}
+                    counts={counts}
+                    userReactions={userReactions}
+                    views={views}
+                    onReactionUpdate={handleReactionUpdate}
                 />
+
+                {/* Distance display */}
+                {distance !== null && (
+                    <div className="flex items-center justify-center gap-2 text-stone-500 text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
+                        <MapPin size={16} className="text-teal-600" />
+                        <span>Vous êtes à <strong>{distance.toLocaleString('fr-FR')} km</strong> de cette carte</span>
+                    </div>
+                )}
+
+                {/* Share + Reply */}
+                <div className="flex items-center gap-2 justify-end">
+                    <Link
+                        href={`/editor?replyTo=${encodeURIComponent(senderName)}`}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-stone-200 text-stone-600 text-xs sm:text-sm font-medium hover:bg-stone-50 transition-colors"
+                    >
+                        <Reply size={16} />
+                        Répondre avec une carte
+                    </Link>
+                    <ShareButton
+                        postcardId={postcardId}
+                        publicId={publicId}
+                        senderName={senderName}
+                    />
+                </div>
             </div>
 
             {/* Guestbook */}

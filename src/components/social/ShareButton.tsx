@@ -24,8 +24,8 @@ export default function ShareButton({ postcardId, publicId, senderName }: ShareB
     const popupRef = useRef<HTMLDivElement>(null)
 
     const shareUrl = typeof window !== 'undefined'
-        ? `${window.location.origin}/view/${publicId}`
-        : `/view/${publicId}`
+        ? `${window.location.origin}/carte/${publicId}`
+        : `/carte/${publicId}`
     const shareText = `Regarde la carte postale de ${senderName} !`
 
     useEffect(() => {

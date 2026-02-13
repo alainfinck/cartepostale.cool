@@ -297,6 +297,10 @@ export interface Comment {
   authorName: string;
   content: string;
   sessionId: string;
+  /**
+   * If true, this comment will only be visible to the recipient.
+   */
+  isPrivate?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -611,6 +615,7 @@ export interface CommentsSelect<T extends boolean = true> {
   authorName?: T;
   content?: T;
   sessionId?: T;
+  isPrivate?: T;
   updatedAt?: T;
   createdAt?: T;
 }

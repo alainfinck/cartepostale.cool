@@ -5,7 +5,7 @@ import config from '@payload-config'
 import { Postcard } from '@/payload-types'
 
 // Simple ID generator for public URLs (shorter than UUID)
-function generatePublicId(length = 10) {
+function generatePublicId(length = 4) {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     let result = ''
     for (let i = 0; i < length; i++) {
@@ -60,7 +60,7 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
                 const mime = meta.match(/:(.*?);/)?.[1] || 'image/png';
                 const extension = mime.split('/')[1] || 'png';
                 const buffer = Buffer.from(base64Data, 'base64');
-                
+
                 const media = await payload.create({
                     collection: 'media',
                     data: {
@@ -92,7 +92,7 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
                     const mime = meta.match(/:(.*?);/)?.[1] || 'image/png';
                     const extension = mime.split('/')[1] || 'png';
                     const buffer = Buffer.from(base64Data, 'base64');
-                    
+
                     const media = await payload.create({
                         collection: 'media',
                         data: {

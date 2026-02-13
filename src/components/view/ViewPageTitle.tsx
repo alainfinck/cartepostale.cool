@@ -1,87 +1,47 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { Heart } from 'lucide-react'
+import { fireSideCannons } from '@/components/ui/confetti'
+import { TextAnimate } from '@/components/ui/text-animate'
 
 interface ViewPageTitleProps {
   title: string
   senderName: string
 }
 
-// Titre : apparaît en très gros (scale 2.8), puis réduit à taille normale après l’apparition des mots
-const INITIAL_SCALE = 2.8
-const STAGGER_DURATION = 0.08 + 8 * 0.06 + 0.4
-const SCALE_DOWN_DELAY = STAGGER_DURATION * 0.55
-
-const container = {
-  hidden: { scale: INITIAL_SCALE },
-  visible: {
-    scale: 1,
-    transition: {
-      staggerChildren: 0.06,
-      delayChildren: 0.08,
-      delay: SCALE_DOWN_DELAY,
-      duration: 0.7,
-      ease: [0.22, 0.61, 0.36, 1] as const,
-    },
-  },
-}
-
-const wordReveal = {
-  hidden: { opacity: 0, y: 14 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: [0.22, 0.61, 0.36, 1] as const },
-  },
-}
-
-const lineReveal = {
-  hidden: { opacity: 0, y: 12 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: [0.22, 0.61, 0.36, 1] as const },
-  },
-}
-
 export default function ViewPageTitle({ title, senderName }: ViewPageTitleProps) {
-  const words = title.split(' ')
+  useEffect(() => {
+    // Fire confetti on mount
+    const timer = setTimeout(() => {
+      fireSideCannons();
+    }, 800); // Slight delay to sync with text appearance
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div className="text-center mb-4 md:mb-8 px-4 landscape:mb-2 mt-6 md:mt-12 pt-4 md:pt-6">
-      <motion.h1
-        className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-800 mb-2 md:mb-3 landscape:text-xl max-w-4xl mx-auto leading-tight tracking-tight"
-        style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.25em' }}
+    <div className="text-center mb-12 md:mb-20 px-4 landscape:mb-4 mt-8 md:mt-16 pt-4 md:pt-6 relative z-10 flex flex-col items-center gap-6">
+      <TextAnimate
+        animation="blurInUp"
+        by="word"
+        className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-800 leading-tight tracking-tight max-w-5xl mx-auto [-webkit-font-smoothing:antialiased]"
       >
-        <motion.span
-          className="inline-flex flex-wrap justify-center gap-[0.25em] origin-center"
-          variants={container}
-          initial="hidden"
-          animate="visible"
-          style={{ transformOrigin: 'center center' }}
-        >
-          {words.map((word, i) => (
-            <motion.span
-              key={i}
-              variants={wordReveal}
-              className="inline-block"
-              style={{ whiteSpace: 'pre' }}
-            >
-              {word}
-            </motion.span>
-          ))}
-        </motion.span>
-      </motion.h1>
-      <motion.p
-        className="text-stone-500 text-sm md:text-lg landscape:text-xs"
-        variants={lineReveal}
-        initial="hidden"
-        animate="visible"
-        transition={{ delay: 0.35 + STAGGER_DURATION * 0.5, duration: 0.5, ease: [0.22, 0.61, 0.36, 1] as const }}
+        {title}
+      </TextAnimate>
+
+      <motion.div
+        className="flex items-baseline justify-center gap-2 text-stone-500 mt-2 md:mt-4"
+        initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        transition={{ delay: 1.0, duration: 0.8, ease: "easeOut" }}
       >
-        De la part de <span className="font-semibold text-teal-600">{senderName}</span>
-      </motion.p>
+        <span className="text-lg md:text-xl font-medium tracking-wide whitespace-nowrap">De la part de</span>
+        <span className="font-bold text-teal-600 flex items-center gap-2 text-2xl md:text-4xl lg:text-5xl font-serif whitespace-nowrap">
+          {senderName}
+          <Heart className="inline-block text-red-500 fill-red-500 animate-pulse shrink-0" size={32} strokeWidth={2.5} />
+        </span>
+      </motion.div>
     </div>
   )
 }

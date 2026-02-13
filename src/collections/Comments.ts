@@ -36,5 +36,13 @@ export const Comments: CollectionConfig = {
             type: 'text',
             required: true,
         },
+        {
+            name: 'isPrivate',
+            type: 'checkbox',
+            defaultValue: false,
+            admin: {
+                description: 'If true, this comment will only be visible to the recipient.',
+            },
+        },
     ],
 }

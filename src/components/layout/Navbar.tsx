@@ -54,14 +54,7 @@ const dropdownTarifs = [
     { href: '/pricing', icon: Zap, label: 'Pro & Agence', price: 'Sur devis', desc: '' },
 ]
 
-const dropdownPages = [
-    { href: '/a-propos', icon: Info, label: 'À propos' },
-    { href: '/galerie', icon: ImageIcon, label: 'Galerie' },
-    { href: '/legal/cgu', icon: FileText, label: 'CGU' },
-    { href: '/legal/cgv', icon: FileText, label: 'CGV' },
-    { href: '/legal/mentions-legales', icon: FileText, label: 'Mentions légales' },
-    { href: '/legal/confidentialite', icon: FileText, label: 'Confidentialité' },
-]
+
 
 export const Navbar = () => {
     const pathname = usePathname()
@@ -185,11 +178,14 @@ export const Navbar = () => {
                             </span>
                         </Link>
                         <Link href="/editor">
-                            <Button size="sm" className={cn(
-                                "bg-gradient-cta hover:opacity-95 text-white rounded-full font-bold shadow-lg shadow-pink-500/20 transition-all border-0",
-                                scrolled ? "text-[9px] px-2.5 h-7" : "text-[10px] md:text-xs px-3 h-8"
+                            <Button className={cn(
+                                "bg-gradient-cta hover:opacity-95 text-white rounded-full font-bold shadow-xl shadow-pink-500/30 transition-all border-0 flex items-center gap-2",
+                                scrolled
+                                    ? "text-xs px-4 h-9"
+                                    : "text-sm md:text-base px-6 h-11 md:h-12"
                             )}>
-                                <Plus size={scrolled ? 12 : 14} className="mr-1" /> Créer
+                                <Plus size={scrolled ? 16 : 20} strokeWidth={3} />
+                                <span>Créer ma carte postale</span>
                             </Button>
                         </Link>
                     </div>
@@ -245,29 +241,15 @@ export const Navbar = () => {
                             Fonctionnalités
                         </Link>
 
-                        <NavDropdown
-                            id="pages"
-                            label="Pages"
-                            active={pathname === '/a-propos' || pathname === '/galerie' || pathname?.startsWith('/legal')}
+                        <Link
+                            href="/galerie"
+                            className={cn(
+                                'font-semibold transition-all duration-200 rounded-xl px-4 py-3 text-stone-600 hover:text-stone-900 hover:bg-stone-100/80 text-[15px]',
+                                pathname === '/galerie' ? 'text-stone-900' : ''
+                            )}
                         >
-                            <div className="p-2">
-                                {dropdownPages.map((item) => (
-                                    <Link
-                                        key={item.href}
-                                        href={item.href}
-                                        className={cn(
-                                            'flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-medium transition-colors',
-                                            pathname === item.href || pathname?.startsWith(item.href + '/')
-                                                ? 'bg-pink-50 text-pink-700'
-                                                : 'text-stone-700 hover:bg-stone-50'
-                                        )}
-                                    >
-                                        <item.icon className="w-5 h-5 text-stone-400 shrink-0" />
-                                        {item.label}
-                                    </Link>
-                                ))}
-                            </div>
-                        </NavDropdown>
+                            Découvrir
+                        </Link>
 
                         <NavDropdown
                             id="tarifs"

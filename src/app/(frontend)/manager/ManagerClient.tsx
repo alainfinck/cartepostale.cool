@@ -527,7 +527,7 @@ function ListRow({ postcard, onSelect, onUpdateStatus, onDelete, formatDate }: {
             <TableCell className="text-right text-stone-500 font-medium">{postcard.shares || 0}</TableCell>
             <TableCell>
                 <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                    <Link href={`/view/${postcard.publicId}`} target="_blank">
+                    <Link href={`/carte/${postcard.publicId}`} target="_blank">
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-stone-400 hover:text-teal-600 transition-colors rounded-full" title="Voir la carte">
                             <ExternalLink size={14} />
                         </Button>
@@ -563,7 +563,7 @@ function DetailsSheet({ postcard, viewStats, isOpen, onClose, onUpdateStatus, on
 }) {
     if (!postcard) return null
     const frontendPostcard = mapToFrontend(postcard)
-    const publicUrl = `/view/${postcard.publicId}`
+    const publicUrl = `/carte/${postcard.publicId}`
 
     return (
         <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>

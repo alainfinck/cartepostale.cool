@@ -3,76 +3,90 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Postcard } from '@/types'
-import { Plus, Compass, ExternalLink, Heart, Library, Instagram, Mail, Sparkles, Zap, Wallet, Share2, Image, Camera, Repeat, MapPin, Check } from 'lucide-react'
+import { Plus, Compass, ExternalLink, Heart, Library, Instagram, Mail, Sparkles, Zap, Wallet, Share2, Image, Camera, Repeat, MapPin, Check, Maximize2, X } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import WordRotate from '@/components/ui/word-rotate'
+import ComparisonSection from '@/components/home/ComparisonSection'
 
 export default function Home() {
   const [savedPostcards, setSavedPostcards] = useState<Postcard[]>([])
+  const [fullScreenPostcard, setFullScreenPostcard] = useState<Postcard | null>(null)
 
   useEffect(() => {
     setSavedPostcards([
       {
-        id: 'demo-1',
-        frontImage: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-        location: 'Grand Canyon, USA',
-        message: "L'immensité de ce lieu est impossible à décrire. Nous avons marché sur le sentier Bright Angel aujourd'hui. Les couleurs au coucher du soleil sont irréelles. Un souvenir gravé à jamais !",
-        recipientName: "Papa & Maman",
-        senderName: "Sarah",
-        stampStyle: 'classic',
-        date: '12 Oct 2024',
+        id: 'demo-ski',
+        frontImage: 'https://images.unsplash.com/photo-1486074218988-66a98816c117?auto=format&fit=crop&w=1200&q=80',
+        location: 'Courchevel, France',
+        message: "Les pistes sont incroyables cette année ! La poudreuse est au rendez-vous. On profite à fond de chaque descente. On se voit bientôt pour une fondue ?",
+        recipientName: "La team Ski",
+        senderName: "Léo",
+        stampStyle: 'modern',
+        date: '15 Jan 2025',
         isPremium: true,
-        coords: { lat: 36.0544, lng: -112.1401 },
+        coords: { lat: 45.4147, lng: 6.6342 },
         mediaItems: [
-          { id: 'm1', type: 'image', url: 'https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?auto=format&fit=crop&w=800&q=80' },
-          { id: 'm2', type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-grand-canyon-scenery-view-4844-large.mp4' },
-          { id: 'm3', type: 'image', url: 'https://images.unsplash.com/photo-1527333656061-ca7adf608ae1?auto=format&fit=crop&w=800&q=80' }
+          { id: 's1', type: 'image', url: 'https://images.unsplash.com/photo-1520629411511-eb4407764282?auto=format&fit=crop&w=800&q=80' },
+          { id: 's2', type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-skier-going-fast-down-a-snowy-mountain-42621-large.mp4' }
         ]
       },
       {
-        id: 'demo-2',
-        frontImage: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+        id: 'demo-japan',
+        frontImage: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80',
         location: 'Kyoto, Japon',
-        message: "J'ai trouvé le jardin zen le plus paisible au monde. Le matcha ici est une révélation. J'ai pris quelques vidéos de la bambouseraie d'Arashiyama pour vous partager cette ambiance unique.",
-        recipientName: "Tom",
-        senderName: "Jen",
-        stampStyle: 'airmail',
-        date: '05 Nov 2024',
+        message: "Le calme des temples de Kyoto me ressource tellement. Les cerisiers commencent tout juste à bourgeonner. C'est d'une beauté indescriptible.",
+        recipientName: "Anna",
+        senderName: "Kévin",
+        stampStyle: 'classic',
+        date: '28 Mars 2024',
         isPremium: true,
         coords: { lat: 35.0116, lng: 135.7681 },
         mediaItems: [
-          { id: 'k1', type: 'image', url: 'https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=800&q=80' },
-          { id: 'k2', type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-small-waterfall-in-a-japanese-garden-4268-large.mp4' },
-          { id: 'k3', type: 'image', url: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80' }
+          { id: 'j1', type: 'image', url: 'https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=800&q=80' }
         ]
       },
       {
-        id: 'demo-3',
-        frontImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-        location: 'Côte Amalfitaine, Italie',
-        message: "Ciao ! La dolce vita pure. Les citrons sont aussi gros que des ballons, la mer est d'un bleu électrique, et je crois que j'ai mangé mon poids en pâtes aux vongole.",
-        recipientName: "Sophie",
-        senderName: "Marc",
-        stampStyle: 'classic',
-        date: '14 Juil 2024',
-        isPremium: false,
-        coords: { lat: 40.6333, lng: 14.6002 }
+        id: 'demo-canada',
+        frontImage: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?auto=format&fit=crop&w=1200&q=80',
+        location: 'Banff, Canada',
+        message: "On a vu des ours aujourd'hui ! (De loin, rassurez-vous). Les lacs sont d'un bleu turquoise qu'on ne voit nulle part ailleurs. On explore les Rocheuses en van.",
+        recipientName: "Julie",
+        senderName: "Thomas",
+        stampStyle: 'airmail',
+        date: '10 Août 2024',
+        isPremium: true,
+        coords: { lat: 51.1784, lng: -115.5708 },
+        mediaItems: [
+          { id: 'c1', type: 'image', url: 'https://images.unsplash.com/photo-1439396087961-99bc12bd8959?auto=format&fit=crop&w=800&q=80' }
+        ]
       },
       {
-        id: 'demo-4',
-        frontImage: 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-        location: 'Îles Phi Phi, Thaïlande',
-        message: "Le paradis sur terre. L'eau est si chaude et transparente. On a exploré des lagons secrets ce matin. C'est magique !",
-        recipientName: "La bande",
-        senderName: "Elena",
+        id: 'demo-anniv',
+        frontImage: 'https://images.unsplash.com/photo-1530103043960-ef38714abb15?auto=format&fit=crop&w=1200&q=80',
+        location: 'Votre Cœur, Partout',
+        message: "Joyeux Anniversaire ! 🎂 Une petite carte pour marquer le coup et te souhaiter le meilleur pour cette nouvelle année. Profite bien de ta journée !",
+        recipientName: "Manon",
+        senderName: "Maxime",
         stampStyle: 'modern',
-        date: '02 Dec 2024',
+        date: '20 Fév 2025',
+        isPremium: false,
+        coords: { lat: 48.8566, lng: 2.3522 }
+      },
+      {
+        id: 'demo-safari',
+        frontImage: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1200&q=80',
+        location: 'Kruger Park, Afrique du Sud',
+        message: "Réveil à 5h pour le game drive ce matin. On a croisé des éléphants et une lionne avec ses petits. L'aventure est exceptionnelle !",
+        recipientName: "Les collègues",
+        senderName: "Émilie",
+        stampStyle: 'classic',
+        date: '05 Nov 2024',
         isPremium: true,
-        coords: { lat: 7.7407, lng: 98.7784 },
+        coords: { lat: -23.9884, lng: 31.5594 },
         mediaItems: [
-          { id: 'p1', type: 'image', url: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=800&q=80' },
-          { id: 'p2', type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-tropical-beach-with-palm-trees-from-above-4122-large.mp4' }
+          { id: 'sa1', type: 'image', url: 'https://images.unsplash.com/photo-1549366021-9f761d450615?auto=format&fit=crop&w=800&q=80' }
         ]
       }
     ])
@@ -82,7 +96,7 @@ export default function Home() {
     id: 'demo-rv',
     frontImage: 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
     location: 'Bali, Indonésie',
-    message: "Salut à tous,\n\nOn est à Bali depuis une semaine. On a visité les rizières en terrasse et quelques temples. La nourriture est très bonne et les gens sont sympas. On rentre dans dix jours.\n\nÀ bientôt,\nJulie & Thomas",
+    message: "Salut la famille !\n\nOn est bien arrivés à Bali. Les paysages sont à couper le souffle, surtout les rizières d'Ubud. Le temps est magnifique et les gens sont d'une gentillesse incroyable. On profite de chaque instant !\n\nGrosses bises à tous,\nJulie & Thomas 🌴☀️",
     recipientName: "Famille Martin",
     senderName: "Julie & Thomas",
     stampStyle: 'classic',
@@ -93,20 +107,20 @@ export default function Home() {
 
   const heroPostcard: Postcard = {
     id: 'hero-card',
-    frontImage: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=85',
-    frontCaption: 'Bonjour ! Une carte pour vous.',
-    location: 'Quelque part dans le monde',
-    message: 'Bonjour !\n\nVotre message ici ✉️',
-    recipientName: 'À vous',
-    senderName: 'Vous',
+    frontImage: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=85',
+    frontCaption: 'Bonjour de Paris ! 🗼',
+    location: 'Paris, France',
+    message: 'Salut tout le monde !\n\nUne petite pensée depuis la Ville Lumière. On s\'amuse beaucoup ici ! 🥐✨',
+    recipientName: 'La famille',
+    senderName: 'Julie',
     stampStyle: 'modern',
     date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }),
     isPremium: true,
-    coords: { lat: 43.2965, lng: 5.3698 },
+    coords: { lat: 48.8566, lng: 2.3522 },
     mediaItems: [
-      { id: 'h1', type: 'image', url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=800&q=80' },
-      { id: 'h2', type: 'image', url: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80' },
-      { id: 'h3', type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-a-tropical-beach-4268-large.mp4' },
+      { id: 'h1', type: 'image', url: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80' },
+      { id: 'h2', type: 'image', url: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=800&q=80' },
+      { id: 'h3', type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-paris-eiffel-tower-tourist-view-4455-large.mp4' },
     ],
   }
 
@@ -117,7 +131,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Gauche : texte + CTA */}
-            <div className="text-center lg:text-left order-2 lg:order-1">
+            <div className="order-2 lg:order-1 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-pink-100 to-orange-100 text-pink-700 text-sm font-bold mb-6">
                 <Sparkles size={14} />
                 <span>Créez des souvenirs uniques</span>
@@ -160,8 +174,8 @@ export default function Home() {
                 <PostcardView
                   postcard={heroPostcard}
                   isPreview
-                  isLarge={true}
-                  className="rounded-3xl shadow-2xl shadow-stone-200/50"
+                  isLarge={false}
+                  className="rounded-3xl shadow-xl shadow-stone-200/40"
                 />
               </div>
             </div>
@@ -170,7 +184,7 @@ export default function Home() {
       </div>
 
       {/* Section Recto/Verso */}
-      <section className="py-16 border-b border-stone-100 overflow-hidden relative">
+      <section className="py-16 bg-white border-b border-stone-100 overflow-hidden relative">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
           <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-pink-100/30 rounded-full blur-3xl" />
           <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-purple-100/30 rounded-full blur-3xl" />
@@ -210,6 +224,18 @@ export default function Home() {
                   className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] group-hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] max-w-[95vw] md:max-w-5xl lg:max-w-7xl mx-auto"
                 />
               </div>
+
+              {/* Bouton Plein Écran sous la démo */}
+              <div className="mt-8">
+                <Button
+                  onClick={() => setFullScreenPostcard(demoCard)}
+                  variant="outline"
+                  className="bg-white/80 backdrop-blur-sm border-2 border-stone-200 text-stone-600 hover:text-pink-600 hover:border-pink-200 transition-all rounded-full px-6 py-2 h-auto flex items-center gap-2 font-bold uppercase tracking-wider text-[10px] sm:text-xs shadow-sm hover:shadow-md"
+                >
+                  <Maximize2 size={14} />
+                  <span>Voir en plein écran</span>
+                </Button>
+              </div>
             </div>
 
             <div className="mt-12 flex flex-col items-center gap-8 max-w-xl text-center">
@@ -226,6 +252,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Comparison Section */}
+      <ComparisonSection />
 
       {/* Arguments : carte virtuelle, innovant, pratique, pas cher, social, partage */}
       <section id="fonctionnalites" className="relative bg-[#faf8f5] border-b border-stone-100 overflow-hidden">
@@ -265,24 +294,24 @@ export default function Home() {
               <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-100 to-orange-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Zap className="w-8 h-8 text-pink-600" />
               </div>
-              <h3 className="text-xl font-bold text-stone-800 mb-3">Pratique</h3>
-              <p className="text-stone-600 text-base leading-relaxed">Envoyez depuis n&apos;importe où, à n&apos;importe quel moment. Idéal en voyage : une connexion suffit pour faire plaisir.</p>
+              <h3 className="text-xl font-bold text-stone-800 mb-3">Instantané</h3>
+              <p className="text-stone-600 text-base leading-relaxed">Fini les délais de la poste. Votre carte arrive tout de suite chez vos proches, où qu&apos;ils soient dans le monde.</p>
             </div>
 
             <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white border border-stone-100 shadow-lg shadow-stone-200/30 hover:shadow-xl hover:shadow-purple-200/20 hover:border-purple-200/60 transition-all duration-300 hover:-translate-y-1">
               <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Wallet className="w-8 h-8 text-purple-600" />
               </div>
-              <h3 className="text-xl font-bold text-stone-800 mb-3">Pas cher</h3>
-              <p className="text-stone-600 text-base leading-relaxed">Moins coûteux qu&apos;une carte classique + timbre + envoi. Tarifs clairs, sans mauvaise surprise.</p>
+              <h3 className="text-xl font-bold text-stone-800 mb-3">Prix imbattable</h3>
+              <p className="text-stone-600 text-base leading-relaxed">Payez 1 seule fois, envoyez à autant de personnes que vous voulez via un lien unique. Beaucoup moins cher que 10 timbres !</p>
             </div>
 
             <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white border border-stone-100 shadow-lg shadow-stone-200/30 hover:shadow-xl hover:shadow-pink-200/20 hover:border-pink-200/60 transition-all duration-300 hover:-translate-y-1">
               <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Share2 className="w-8 h-8 text-pink-600" />
               </div>
-              <h3 className="text-xl font-bold text-stone-800 mb-3">100 % social</h3>
-              <p className="text-stone-600 text-base leading-relaxed">Partagez avec vos proches, gardez le lien. Reliez la carte à vos réseaux ou envoyez un lien pour la consulter en ligne.</p>
+              <h3 className="text-xl font-bold text-stone-800 mb-3">Vos proches réagissent !</h3>
+              <p className="text-stone-600 text-base leading-relaxed">Plus qu'une simple lecture : ils peuvent liker, commenter et signer votre livre d'or. Interactivité garantie.</p>
             </div>
 
             <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white border border-stone-100 shadow-lg shadow-stone-200/30 hover:shadow-xl hover:shadow-purple-200/20 hover:border-purple-200/60 transition-all duration-300 hover:-translate-y-1">
@@ -296,7 +325,7 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-white">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between mb-16 text-center sm:text-left gap-4">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-stone-800">Inspirations Voyage</h2>
@@ -313,7 +342,18 @@ export default function Home() {
           {savedPostcards.map((card) => (
             <div key={card.id} className="flex flex-col items-center group">
               <PostcardView postcard={card} />
-              <div className="w-[340px] sm:w-[600px] mt-6 flex justify-between items-center px-4 py-3 bg-white border border-stone-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative">
+
+              <div className="w-[340px] sm:w-[600px] mt-4 flex justify-center">
+                <button
+                  onClick={() => setFullScreenPostcard(card)}
+                  className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-stone-50 border border-stone-200 text-stone-500 hover:text-teal-600 hover:border-teal-200 hover:bg-white transition-all text-[10px] font-bold uppercase tracking-widest shadow-sm"
+                >
+                  <Maximize2 size={12} />
+                  Plein écran
+                </button>
+              </div>
+
+              <div className="w-[340px] sm:w-[600px] mt-3 flex justify-between items-center px-4 py-3 bg-white border border-stone-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative">
                 <div className="flex items-center gap-4">
                   <button className="flex items-center gap-1.5 text-stone-400 hover:text-red-500 transition-colors group/btn">
                     <Heart size={18} className="group-hover/btn:fill-red-500 transition-colors" />
@@ -400,6 +440,41 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Modal Plein Écran */}
+      <AnimatePresence>
+        {fullScreenPostcard && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-stone-900/98 backdrop-blur-xl flex flex-col items-center justify-center p-4 md:p-12 overflow-hidden"
+          >
+            <button
+              onClick={() => setFullScreenPostcard(null)}
+              className="absolute top-6 right-6 z-[210] p-4 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all border border-white/10 hover:border-white/20"
+            >
+              <X size={32} />
+            </button>
+
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="w-fit h-fit max-w-full max-h-full flex flex-col items-center gap-8">
+                <PostcardView
+                  postcard={fullScreenPostcard}
+                  isLarge={true}
+                  className="max-w-[95vw] max-h-[85vh]"
+                />
+
+                <div className="bg-white/5 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 flex items-center gap-4 text-white/60">
+                  <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+                    Utilisez les contrôles sur la carte au verso pour ajuster la taille du texte
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }

@@ -28,6 +28,7 @@ export default function GuestbookSection({
     const [isOpen, setIsOpen] = useState(false)
     const [authorName, setAuthorName] = useState('')
     const [content, setContent] = useState('')
+    const [isPrivate, setIsPrivate] = useState(false)
     const [submitting, setSubmitting] = useState(false)
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -36,10 +37,16 @@ export default function GuestbookSection({
 
         setSubmitting(true)
         try {
-            const result = await addComment(postcardId, authorName.trim(), content.trim(), sessionId)
+            const result = await addComment(postcardId, authorName.trim(), content.trim(), sessionId, isPrivate)
             if (result.success && result.comment) {
-                onCommentAdded(result.comment)
+                if (!isPrivate) {
+                    onCommentAdded(result.comment as Comment)
+                } else {
+                    // Start simplified success notification (could be improved with a toast)
+                    alert("Message privé envoyé avec succès !")
+                }
                 setContent('')
+                setIsPrivate(false)
             }
         } finally {
             setSubmitting(false)
@@ -105,15 +112,26 @@ export default function GuestbookSection({
                                     className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                                 />
                                 <div className="flex items-center justify-between">
-                                    <span className="text-xs text-stone-400">{content.length}/500</span>
-                                    <button
-                                        type="submit"
-                                        disabled={!authorName.trim() || !content.trim() || submitting}
-                                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <Send size={14} />
-                                        {submitting ? 'Envoi...' : 'Envoyer'}
-                                    </button>
+                                    <label className="flex items-center gap-2 cursor-pointer text-sm text-stone-600 select-none">
+                                        <input
+                                            type="checkbox"
+                                            checked={isPrivate}
+                                            onChange={(e) => setIsPrivate(e.target.checked)}
+                                            className="rounded border-stone-300 text-teal-600 focus:ring-teal-500 w-4 h-4"
+                                        />
+                                        <span>Message privé (visible uniquement par le destinataire)</span>
+                                    </label>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-xs text-stone-400 hidden sm:inline">{content.length}/500</span>
+                                        <button
+                                            type="submit"
+                                            disabled={!authorName.trim() || !content.trim() || submitting}
+                                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <Send size={14} />
+                                            {submitting ? 'Envoi...' : 'Envoyer'}
+                                        </button>
+                                    </div>
                                 </div>
                             </form>
 

@@ -127,6 +127,7 @@ export async function getComments(postcardId: number) {
             collection: 'comments',
             where: {
                 postcard: { equals: postcardId },
+                isPrivate: { not_equals: true },
             },
             sort: '-createdAt',
             limit: 100,
@@ -148,8 +149,9 @@ export async function addComment(
     postcardId: number,
     authorName: string,
     content: string,
-    sessionId: string
-): Promise<{ success: boolean; comment?: { id: number; authorName: string; content: string; createdAt: string } }> {
+    sessionId: string,
+    isPrivate: boolean = false,
+): Promise<{ success: boolean; comment?: { id: number; authorName: string; content: string; createdAt: string; isPrivate: boolean } }> {
     try {
         const payload = await getPayload({ config })
 
@@ -160,6 +162,7 @@ export async function addComment(
                 authorName: authorName.trim().slice(0, 50),
                 content: content.trim().slice(0, 500),
                 sessionId,
+                isPrivate,
             },
         })
 
@@ -170,6 +173,7 @@ export async function addComment(
                 authorName: doc.authorName,
                 content: doc.content,
                 createdAt: doc.createdAt,
+                isPrivate: doc.isPrivate || false,
             },
         }
     } catch (error) {

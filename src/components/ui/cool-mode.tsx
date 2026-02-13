@@ -12,6 +12,7 @@ export interface BaseParticle {
 export interface BaseParticleOptions {
   particle?: string
   size?: number
+  effect?: "fountain" | "balloon"
 }
 
 export interface CoolParticle extends BaseParticle {
@@ -20,6 +21,8 @@ export interface CoolParticle extends BaseParticle {
   speedUp: number
   spinSpeed: number
   spinVal: number
+  alpha: number
+  scale: number
 }
 
 export interface CoolParticleOptions extends BaseParticleOptions {
@@ -60,6 +63,7 @@ const applyParticleEffect = (
   const particleType = options?.particle || defaultParticle
   const sizes = [15, 20, 25, 35, 45]
   const limit = 45
+  const effect = options?.effect || "fountain"
 
   let particles: CoolParticle[] = []
   let autoAddParticle = false
@@ -71,13 +75,21 @@ const applyParticleEffect = (
   function generateParticle() {
     const size =
       options?.size || sizes[Math.floor(Math.random() * sizes.length)]
-    const speedHorz = options?.speedHorz || Math.random() * 10
-    const speedUp = options?.speedUp || Math.random() * 25
+
+    // Default fountain values
+    let speedHorz = options?.speedHorz || Math.random() * 10
+    let speedUp = options?.speedUp || Math.random() * 25
     const spinVal = Math.random() * 360
     const spinSpeed = Math.random() * 35 * (Math.random() <= 0.5 ? -1 : 1)
     const top = mouseY - size / 2
     const left = mouseX - size / 2
     const direction = Math.random() <= 0.5 ? -1 : 1
+
+    // Balloon overrides
+    if (effect === "balloon") {
+      speedHorz = (Math.random() * 2) + 0.5 // Slower horizontal drift
+      speedUp = (Math.random() * 3) + 2     // Slow steady upward rise
+    }
 
     const particle = document.createElement("div")
 
@@ -107,13 +119,17 @@ const applyParticleEffect = (
       particle.innerHTML = `<img src="${particleType}" width="${size}" height="${size}" style="border-radius: 50%">`
     } else {
       // Handle emoji or text characters
-      const fontSizeMultiplier = 3 // Make emojis 3x bigger
+      const fontSizeMultiplier = effect === "balloon" ? 1.5 : 3
       const emojiSize = size * fontSizeMultiplier
       particle.innerHTML = `<div style="font-size: ${emojiSize}px; line-height: 1; text-align: center; width: ${size}px; height: ${size}px; display: flex; align-items: center; justify-content: center; transform: scale(${fontSizeMultiplier}); transform-origin: center;">${particleType}</div>`
     }
 
     particle.style.position = "absolute"
     particle.style.transform = `translate3d(${left}px, ${top}px, 0px) rotate(${spinVal}deg)`
+    if (effect === "balloon") {
+      particle.style.opacity = "1";
+      particle.style.transition = "transform 0.1s linear"; // Smooth movement
+    }
 
     container.appendChild(particle)
 
@@ -127,34 +143,65 @@ const applyParticleEffect = (
       spinSpeed,
       spinVal,
       top,
+      alpha: 1,
+      scale: 1,
     })
   }
 
   function refreshParticles() {
     particles.forEach((p) => {
-      p.left = p.left - p.speedHorz * p.direction
-      p.top = p.top - p.speedUp
-      p.speedUp = Math.min(p.size, p.speedUp - 1)
-      p.spinVal = p.spinVal + p.spinSpeed
+      if (effect === "balloon") {
+        // Balloon physics
+        p.left = p.left - p.speedHorz * p.direction + Math.sin(p.top / 50) * 1 // Add waviness
+        p.top = p.top - p.speedUp
+        p.spinVal = p.spinVal + p.spinSpeed * 0.1 // Slower spin
+        p.scale += 0.005 // Slowly grow
+        p.alpha -= 0.005 // Slowly fade
 
-      if (
-        p.top >=
-        Math.max(window.innerHeight, document.body.clientHeight) + p.size
-      ) {
-        particles = particles.filter((o) => o !== p)
-        p.element.remove()
+        if (p.alpha <= 0 || p.top < -p.size) {
+          particles = particles.filter((o) => o !== p)
+          p.element.remove()
+          return
+        }
+
+        p.element.setAttribute(
+          "style",
+          [
+            "position:absolute",
+            "will-change:transform, opacity",
+            `top:${p.top}px`,
+            `left:${p.left}px`,
+            `opacity:${p.alpha}`,
+            `transform:rotate(${p.spinVal}deg) scale(${p.scale})`,
+          ].join(";")
+        )
+
+      } else {
+        // Default Fountain physics
+        p.left = p.left - p.speedHorz * p.direction
+        p.top = p.top - p.speedUp
+        p.speedUp = Math.min(p.size, p.speedUp - 1)
+        p.spinVal = p.spinVal + p.spinSpeed
+
+        if (
+          p.top >=
+          Math.max(window.innerHeight, document.body.clientHeight) + p.size
+        ) {
+          particles = particles.filter((o) => o !== p)
+          p.element.remove()
+        }
+
+        p.element.setAttribute(
+          "style",
+          [
+            "position:absolute",
+            "will-change:transform",
+            `top:${p.top}px`,
+            `left:${p.left}px`,
+            `transform:rotate(${p.spinVal}deg)`,
+          ].join(";")
+        )
       }
-
-      p.element.setAttribute(
-        "style",
-        [
-          "position:absolute",
-          "will-change:transform",
-          `top:${p.top}px`,
-          `left:${p.left}px`,
-          `transform:rotate(${p.spinVal}deg)`,
-        ].join(";")
-      )
     })
   }
 
