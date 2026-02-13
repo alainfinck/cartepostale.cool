@@ -275,6 +275,13 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
 
                     <div className="space-y-2">
                         <Label htmlFor="message">Message</Label>
+                        <Textarea
+                            id="message"
+                            value={formData.message}
+                            onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+                            placeholder="Écrivez votre message ici..."
+                            className="min-h-[120px] resize-none"
+                            required
                         />
                     </div>
 

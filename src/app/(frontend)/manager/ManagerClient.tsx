@@ -6,6 +6,7 @@ import {
     Search, LayoutGrid, List, Eye, Share2, Mail, Trash2,
     ChevronDown, ExternalLink, MapPin, Calendar, User,
     Users, Archive, FileText, BarChart3, ArrowUpDown,
+    Building2, Image as ImageIcon, Cloud, LogOut, Menu, User as UserIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -715,6 +716,11 @@ function DetailsSheet({ postcard, viewStats, isOpen, onClose, onEdit, onUpdateSt
                             <InfoCard icon={<Users size={16} />} label="Destinataire" value={postcard.recipientName || ''} />
                             <InfoCard icon={<MapPin size={16} className="text-orange-400" />} label="Lieu" value={postcard.location || ''} />
                             <InfoCard icon={<Calendar size={16} />} label="Date de l'envoi" value={formatDate(postcard.date)} />
+                            <InfoCard
+                                icon={<UserIcon size={16} className="text-teal-500" />}
+                                label="Client (Compte)"
+                                value={typeof postcard.author === 'object' && postcard.author ? (postcard.author.name || postcard.author.email) : 'Aucun'}
+                            />
                         </div>
 
                         {/* Stats & Tech Section */}
