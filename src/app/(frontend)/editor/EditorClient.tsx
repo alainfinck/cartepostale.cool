@@ -43,96 +43,14 @@ import { cn } from '@/lib/utils'
 import { createPostcard } from '@/actions/postcard-actions'
 import { linkPostcardToUser } from '@/actions/auth-actions'
 
-const HEIC_TYPES = ['image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence']
-const MAX_IMAGE_PX = 2048 // 2K max côté le plus long
-
-/** Redimensionne une image (data URL) pour que le plus grand côté soit au max MAX_IMAGE_PX, en JPEG 80%. */
-function resizeImageToMax2K(dataUrl: string, maxPx: number = MAX_IMAGE_PX): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.crossOrigin = 'anonymous'
-    img.onload = () => {
-      let w = img.naturalWidth
-      let h = img.naturalHeight
-
-      // On recalcule les dimensions si besoin
-      if (w > maxPx || h > maxPx) {
-        if (w > h) {
-          h = Math.round((h * maxPx) / w)
-          w = maxPx
-        } else {
-          w = Math.round((w * maxPx) / h)
-          h = maxPx
-        }
-      }
-
-      const canvas = document.createElement('canvas')
-      canvas.width = w
-      canvas.height = h
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        resolve(dataUrl)
-        return
-      }
-      ctx.drawImage(img, 0, 0, w, h)
-      try {
-        // Toujours exporter en JPEG qualité 80% comme demandé
-        const resized = canvas.toDataURL('image/jpeg', 0.8)
-        resolve(resized)
-      } catch {
-        resolve(dataUrl)
-      }
-    }
-    img.onerror = () => reject(new Error('Image load failed'))
-    img.src = dataUrl
-  })
-}
-
-async function fileToDataUrl(file: File): Promise<string> {
-  const isHeic = HEIC_TYPES.includes(file.type) || /\.heic$/i.test(file.name) || /\.heif$/i.test(file.name)
-  let blob: Blob = file
-  if (isHeic) {
-    const heic2any = (await import('heic2any')).default
-    const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.8 })
-    blob = Array.isArray(converted) ? converted[0] : converted
-  }
-  const dataUrl = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onloadend = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(blob)
-  })
-  return resizeImageToMax2K(dataUrl)
-}
-
-/** Charge une image depuis une URL et la redimensionne côté client (max 2k, JPEG 80%). */
-async function urlToResizedDataUrl(url: string): Promise<string> {
-  const fullUrl = url.startsWith('http') ? url : (typeof window !== 'undefined' ? window.location.origin + url : url)
-  const res = await fetch(fullUrl)
-  const blob = await res.blob()
-  const dataUrl = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onloadend = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(blob)
-  })
-  return resizeImageToMax2K(dataUrl)
-}
-
-/** Convertit une data URL (ex. JPEG 80% après resize) en Blob pour l’upload R2. */
-function dataUrlToBlob(dataUrl: string): Promise<Blob> {
-  return fetch(dataUrl).then((r) => r.blob())
-}
-
-/** Lit un fichier en data URL sans resize (pour vidéos). */
-function readFileAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onloadend = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-}
+import {
+  fileToProcessedDataUrl as fileToDataUrl,
+  urlToResizedDataUrl,
+  dataUrlToBlob,
+  readFileAsDataUrl,
+  MAX_IMAGE_PX,
+  JPEG_QUALITY
+} from '@/lib/image-processing'
 
 const POSTCARD_ASPECT = 3 / 2
 
@@ -167,7 +85,7 @@ function bakeFrontImageCrop(dataUrl: string, crop: FrontImageCrop, outputPx = 12
       }
       ctx.drawImage(img, sx, sy, visibleW, visibleH, 0, 0, cw, ch)
       try {
-        resolve(canvas.toDataURL('image/jpeg', 0.88))
+        resolve(canvas.toDataURL('image/jpeg', JPEG_QUALITY))
       } catch {
         resolve(dataUrl)
       }
@@ -478,7 +396,7 @@ export default function EditorPage() {
     (e: React.PointerEvent) => {
       e.preventDefault()
       cropDragRef.current = { clientX: e.clientX, clientY: e.clientY, cropX: frontImageCrop.x, cropY: frontImageCrop.y }
-      ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
+        ; (e.target as HTMLElement).setPointerCapture?.(e.pointerId)
     },
     [frontImageCrop.x, frontImageCrop.y]
   )
@@ -504,7 +422,7 @@ export default function EditorPage() {
 
   const handleCropPointerUp = useCallback((e: React.PointerEvent) => {
     cropDragRef.current = null
-    ;(e.target as HTMLElement).releasePointerCapture?.(e.pointerId)
+      ; (e.target as HTMLElement).releasePointerCapture?.(e.pointerId)
   }, [])
 
   const handleGeolocation = () => {
@@ -531,82 +449,82 @@ export default function EditorPage() {
     for (const file of files) {
       const isVideo = file.type.startsWith('video/')
 
-      ;(async () => {
-        const type = isVideo ? ('video' as const) : ('image' as const)
-        const newId = Date.now() + Math.random().toString()
+        ; (async () => {
+          const type = isVideo ? ('video' as const) : ('image' as const)
+          const newId = Date.now() + Math.random().toString()
 
-        if (isVideo) {
-          const previewUrl = await readFileAsDataUrl(file).catch(() => null)
-          if (!previewUrl) {
-            alert('Impossible de charger la vidéo.')
+          if (isVideo) {
+            const previewUrl = await readFileAsDataUrl(file).catch(() => null)
+            if (!previewUrl) {
+              alert('Impossible de charger la vidéo.')
+              return
+            }
+            setMediaItems((prev) => {
+              const videos = (prev || []).filter((i) => i.type === 'video').length
+              if (videos >= ALBUM_TIERS.tier2.videos) {
+                alert(`Limite de ${ALBUM_TIERS.tier2.videos} vidéos atteinte.`)
+                return prev || []
+              }
+              return [...(prev || []), { id: newId, type: 'video', url: previewUrl } as any]
+            })
+            setIsPremium(true)
             return
           }
+
+          // Image: resize max 2k JPEG 80%, puis upload R2 (presigned), fallback base64
+          const previewUrl = await fileToDataUrl(file).catch(() => null)
+          if (!previewUrl) {
+            alert('Impossible de charger un fichier. Utilisez des photos en JPEG ou PNG.')
+            return
+          }
+          let key: string | undefined
+          let mimeType: string | undefined
+          let filesize: number | undefined
+          const blob = await dataUrlToBlob(previewUrl)
+          const safeName = `postcard-album-${Date.now()}-${Math.random().toString(36).slice(2, 9)}.jpg`
+          try {
+            const presignedRes = await fetch('/api/upload-presigned', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                filename: safeName,
+                mimeType: 'image/jpeg',
+                filesize: blob.size,
+              }),
+            })
+            if (presignedRes.ok) {
+              const { url, key: k } = await presignedRes.json()
+              const putRes = await fetch(url, {
+                method: 'PUT',
+                body: blob,
+                headers: { 'Content-Type': 'image/jpeg' },
+              })
+              if (putRes.ok) {
+                key = k
+                mimeType = 'image/jpeg'
+                filesize = blob.size
+              }
+            }
+          } catch (_) {
+            /* fallback to base64 */
+          }
+
           setMediaItems((prev) => {
-            const videos = (prev || []).filter((i) => i.type === 'video').length
-            if (videos >= ALBUM_TIERS.tier2.videos) {
-              alert(`Limite de ${ALBUM_TIERS.tier2.videos} vidéos atteinte.`)
+            const photos = (prev || []).filter((i) => i.type === 'image').length
+            if (photos >= ALBUM_TIERS.tier2.photos) {
+              alert(`Limite de ${ALBUM_TIERS.tier2.photos} photos atteinte.`)
               return prev || []
             }
-            return [...(prev || []), { id: newId, type: 'video', url: previewUrl } as any]
+            const newItem = {
+              id: newId,
+              type: 'image',
+              url: previewUrl,
+              ...(key && { key, mimeType, filesize }),
+            } as any
+            return [...(prev || []), newItem]
           })
           setIsPremium(true)
-          return
-        }
-
-        // Image: resize max 2k JPEG 80%, puis upload R2 (presigned), fallback base64
-        const previewUrl = await fileToDataUrl(file).catch(() => null)
-        if (!previewUrl) {
-          alert('Impossible de charger un fichier. Utilisez des photos en JPEG ou PNG.')
-          return
-        }
-        let key: string | undefined
-        let mimeType: string | undefined
-        let filesize: number | undefined
-        const blob = await dataUrlToBlob(previewUrl)
-        const safeName = `postcard-album-${Date.now()}-${Math.random().toString(36).slice(2, 9)}.jpg`
-        try {
-          const presignedRes = await fetch('/api/upload-presigned', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              filename: safeName,
-              mimeType: 'image/jpeg',
-              filesize: blob.size,
-            }),
-          })
-          if (presignedRes.ok) {
-            const { url, key: k } = await presignedRes.json()
-            const putRes = await fetch(url, {
-              method: 'PUT',
-              body: blob,
-              headers: { 'Content-Type': 'image/jpeg' },
-            })
-            if (putRes.ok) {
-              key = k
-              mimeType = 'image/jpeg'
-              filesize = blob.size
-            }
-          }
-        } catch (_) {
-          /* fallback to base64 */
-        }
-
-        setMediaItems((prev) => {
-          const photos = (prev || []).filter((i) => i.type === 'image').length
-          if (photos >= ALBUM_TIERS.tier2.photos) {
-            alert(`Limite de ${ALBUM_TIERS.tier2.photos} photos atteinte.`)
-            return prev || []
-          }
-          const newItem = {
-            id: newId,
-            type: 'image',
-            url: previewUrl,
-            ...(key && { key, mimeType, filesize }),
-          } as any
-          return [...(prev || []), newItem]
-        })
-        setIsPremium(true)
-      })()
+        })()
     }
   }
 
@@ -849,7 +767,7 @@ export default function EditorPage() {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.heic,.heif,.avif,.webp,.tiff,.bmp"
                     className="hidden"
                     onChange={handleFileUpload}
                   />
@@ -997,86 +915,86 @@ export default function EditorPage() {
 
                     {showCropPanel && (
                       <>
-                      <div
-                        ref={cropAreaRef}
-                        className="mt-4 relative w-full overflow-hidden rounded-xl border-2 border-stone-200 bg-stone-100 aspect-[3/2] select-none cursor-grab active:cursor-grabbing"
-                        onPointerDown={handleCropPointerDown}
-                        onPointerMove={handleCropPointerMove}
-                        onPointerUp={handleCropPointerUp}
-                        onPointerLeave={handleCropPointerUp}
-                        style={{ touchAction: 'none' }}
-                      >
-                        {imgNaturalSize && cropContainerSize ? (
-                          <div
-                            className="absolute pointer-events-none"
-                            style={(() => {
-                              const coverScale = Math.max(
-                                cropContainerSize.w / imgNaturalSize.w,
-                                cropContainerSize.h / imgNaturalSize.h
-                              )
-                              const displayScale = coverScale * frontImageCrop.scale
-                              const w = imgNaturalSize.w * displayScale
-                              const h = imgNaturalSize.h * displayScale
-                              const left =
-                                cropContainerSize.w / 2 -
-                                (frontImageCrop.x / 100) * imgNaturalSize.w * displayScale
-                              const top =
-                                cropContainerSize.h / 2 -
-                                (frontImageCrop.y / 100) * imgNaturalSize.h * displayScale
-                              return { width: w, height: h, left, top }
-                            })()}
-                          >
+                        <div
+                          ref={cropAreaRef}
+                          className="mt-4 relative w-full overflow-hidden rounded-xl border-2 border-stone-200 bg-stone-100 aspect-[3/2] select-none cursor-grab active:cursor-grabbing"
+                          onPointerDown={handleCropPointerDown}
+                          onPointerMove={handleCropPointerMove}
+                          onPointerUp={handleCropPointerUp}
+                          onPointerLeave={handleCropPointerUp}
+                          style={{ touchAction: 'none' }}
+                        >
+                          {imgNaturalSize && cropContainerSize ? (
+                            <div
+                              className="absolute pointer-events-none"
+                              style={(() => {
+                                const coverScale = Math.max(
+                                  cropContainerSize.w / imgNaturalSize.w,
+                                  cropContainerSize.h / imgNaturalSize.h
+                                )
+                                const displayScale = coverScale * frontImageCrop.scale
+                                const w = imgNaturalSize.w * displayScale
+                                const h = imgNaturalSize.h * displayScale
+                                const left =
+                                  cropContainerSize.w / 2 -
+                                  (frontImageCrop.x / 100) * imgNaturalSize.w * displayScale
+                                const top =
+                                  cropContainerSize.h / 2 -
+                                  (frontImageCrop.y / 100) * imgNaturalSize.h * displayScale
+                                return { width: w, height: h, left, top }
+                              })()}
+                            >
+                              <img
+                                ref={cropImgRef}
+                                src={frontImage}
+                                alt="Recadrage"
+                                className="block w-full h-full object-contain"
+                                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                onLoad={handleCropImgLoad}
+                                draggable={false}
+                              />
+                            </div>
+                          ) : (
                             <img
                               ref={cropImgRef}
                               src={frontImage}
                               alt="Recadrage"
-                              className="block w-full h-full object-contain"
-                              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                              className="absolute inset-0 w-full h-full pointer-events-none object-cover"
+                              style={{ objectPosition: `${frontImageCrop.x}% ${frontImageCrop.y}%` }}
                               onLoad={handleCropImgLoad}
                               draggable={false}
                             />
-                          </div>
-                        ) : (
-                          <img
-                            ref={cropImgRef}
-                            src={frontImage}
-                            alt="Recadrage"
-                            className="absolute inset-0 w-full h-full pointer-events-none object-cover"
-                            style={{ objectPosition: `${frontImageCrop.x}% ${frontImageCrop.y}%` }}
-                            onLoad={handleCropImgLoad}
-                            draggable={false}
-                          />
-                        )}
-                      </div>
-                      <div className="mt-4 space-y-3">
-                        <div>
-                          <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Zoom</span>
-                            <span className="text-xs font-medium text-stone-500 tabular-nums">
-                              {Math.round(frontImageCrop.scale * 100)}%
-                            </span>
-                          </div>
-                          <input
-                            type="range"
-                            min={1}
-                            max={4}
-                            step={0.05}
-                            value={frontImageCrop.scale}
-                            onChange={(e) =>
-                              setFrontImageCrop((c) => ({ ...c, scale: Number(e.target.value) }))
-                            }
-                            className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
-                          />
+                          )}
                         </div>
-                        <Button
-                          type="button"
-                          onClick={() => setShowCropPanel(false)}
-                          className="w-full rounded-xl bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 transition-colors"
-                        >
-                          <Check size={18} className="inline mr-2" />
-                          Valider le recadrage
-                        </Button>
-                      </div>
+                        <div className="mt-4 space-y-3">
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Zoom</span>
+                              <span className="text-xs font-medium text-stone-500 tabular-nums">
+                                {Math.round(frontImageCrop.scale * 100)}%
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min={1}
+                              max={4}
+                              step={0.05}
+                              value={frontImageCrop.scale}
+                              onChange={(e) =>
+                                setFrontImageCrop((c) => ({ ...c, scale: Number(e.target.value) }))
+                              }
+                              className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            onClick={() => setShowCropPanel(false)}
+                            className="w-full rounded-xl bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 transition-colors"
+                          >
+                            <Check size={18} className="inline mr-2" />
+                            Valider le recadrage
+                          </Button>
+                        </div>
                       </>
 
                     )}
@@ -1637,7 +1555,7 @@ export default function EditorPage() {
                           id="album-upload"
                           className="hidden"
                           multiple
-                          accept="image/*,video/*"
+                          accept="image/*,.heic,.heif,.avif,.webp,.tiff,.bmp,video/*"
                           onChange={handleAlbumUpload}
                         />
                         <label

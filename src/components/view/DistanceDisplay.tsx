@@ -60,7 +60,7 @@ export default function DistanceDisplay({ targetCoords, senderName }: DistanceDi
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.8 }}
+            transition={{ delay: 2.5, duration: 1.2 }}
             className="flex justify-center mt-2 mb-2"
         >
             <div className="bg-white/90 backdrop-blur-md border border-stone-200 text-stone-700 px-6 py-3 rounded-2xl shadow-lg flex items-center gap-3 text-lg font-medium transform hover:scale-105 transition-transform duration-300">

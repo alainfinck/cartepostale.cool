@@ -16,6 +16,7 @@ import { Postcard, Media, User } from '@/payload-types'
 import { updatePostcard, getAllUsers } from '@/actions/manager-actions'
 import { Camera, Loader2, Save, X, User as UserIcon, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { fileToProcessedDataUrl, dataUrlToBlob } from '@/lib/image-processing'
 
 export type UpdatePostcardFn = (id: number, data: Record<string, unknown>) => Promise<{ success: boolean; error?: string }>
 
@@ -99,8 +100,16 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
-        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-        const safeName = `postcard-front-${Date.now()}.${ext}`
+
+        // Resize max 2k, JPEG 80%, puis upload du résultat
+        const dataUrl = await fileToProcessedDataUrl(file).catch(() => null)
+        if (!dataUrl) {
+            alert('Impossible de charger cette image.')
+            return
+        }
+
+        const blob = await dataUrlToBlob(dataUrl)
+        const safeName = `postcard-front-${Date.now()}.jpg`
 
         try {
             const presignedRes = await fetch('/api/upload-presigned', {
@@ -108,26 +117,22 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     filename: safeName,
-                    mimeType: file.type || 'image/jpeg',
-                    filesize: file.size,
+                    mimeType: 'image/jpeg',
+                    filesize: blob.size,
                 }),
             })
             if (presignedRes.ok) {
                 const { url, key } = await presignedRes.json()
                 const putRes = await fetch(url, {
                     method: 'PUT',
-                    body: file,
-                    headers: { 'Content-Type': file.type || 'image/jpeg' },
+                    body: blob,
+                    headers: { 'Content-Type': 'image/jpeg' },
                 })
                 if (putRes.ok) {
                     setFrontImageKey(key)
-                    setFrontImageMimeType(file.type || 'image/jpeg')
-                    setFrontImageFilesize(file.size)
-                    const reader = new FileReader()
-                    reader.onloadend = () => {
-                        setImagePreview(reader.result as string)
-                    }
-                    reader.readAsDataURL(file)
+                    setFrontImageMimeType('image/jpeg')
+                    setFrontImageFilesize(blob.size)
+                    setImagePreview(dataUrl)
                     setFormData(prev => ({ ...prev, frontImage: '' }))
                     return
                 }
@@ -138,13 +143,8 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
         setFrontImageKey(null)
         setFrontImageMimeType(null)
         setFrontImageFilesize(null)
-        const reader = new FileReader()
-        reader.onloadend = () => {
-            const base64 = reader.result as string
-            setImagePreview(base64)
-            setFormData(prev => ({ ...prev, frontImage: base64 }))
-        }
-        reader.readAsDataURL(file)
+        setImagePreview(dataUrl)
+        setFormData(prev => ({ ...prev, frontImage: dataUrl }))
     }
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -205,7 +205,7 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
                                         <label className="cursor-pointer bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full border border-white/30 flex items-center gap-2 hover:bg-white/30 transition-colors">
                                             <Camera size={18} />
                                             Changer la photo
-                                            <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                                            <input type="file" accept="image/*,.heic,.heif,.avif,.webp,.tiff,.bmp" className="hidden" onChange={handleImageChange} />
                                         </label>
                                     </div>
                                 </>
@@ -213,7 +213,7 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
                                 <label className="absolute inset-0 cursor-pointer flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-teal-500 transition-colors">
                                     <Camera size={32} />
                                     <span>Ajouter une photo</span>
-                                    <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                                    <input type="file" accept="image/*,.heic,.heif,.avif,.webp,.tiff,.bmp" className="hidden" onChange={handleImageChange} />
                                 </label>
                             )}
                         </div>

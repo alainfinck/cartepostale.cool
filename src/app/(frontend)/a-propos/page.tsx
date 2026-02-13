@@ -38,6 +38,7 @@ export default function AProposPage() {
                             alt="Notre équipe en voyage"
                             width={600}
                             height={400}
+                            unoptimized
                             className="rounded-2xl shadow-xl relative z-10 rotate-[-2deg] hover:rotate-0 transition-transform duration-500"
                         />
                     </div>

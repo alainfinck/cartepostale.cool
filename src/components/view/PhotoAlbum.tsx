@@ -44,6 +44,7 @@ export default function PhotoAlbum({ mediaItems, senderName }: PhotoAlbumProps) 
                                 src={item.url}
                                 alt={`Photo ${index + 1} de ${senderName}`}
                                 fill
+                                unoptimized
                                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             />

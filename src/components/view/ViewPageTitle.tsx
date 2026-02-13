@@ -16,7 +16,7 @@ export default function ViewPageTitle({ title, senderName }: ViewPageTitleProps)
     // Fire confetti on mount
     const timer = setTimeout(() => {
       fireSideCannons();
-    }, 800); // Slight delay to sync with text appearance
+    }, 2000); // Slight delay to sync with text appearance
     return () => clearTimeout(timer);
   }, []);
 
@@ -25,6 +25,7 @@ export default function ViewPageTitle({ title, senderName }: ViewPageTitleProps)
       <TextAnimate
         animation="blurInUp"
         by="word"
+        duration={2}
         className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-800 leading-tight tracking-tight max-w-5xl mx-auto [-webkit-font-smoothing:antialiased]"
       >
         {title}
@@ -34,7 +35,7 @@ export default function ViewPageTitle({ title, senderName }: ViewPageTitleProps)
         className="flex items-baseline justify-center gap-2 text-stone-500 mt-2 md:mt-4"
         initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        transition={{ delay: 1.0, duration: 0.8, ease: "easeOut" }}
+        transition={{ delay: 1.8, duration: 1.2, ease: "easeOut" }}
       >
         <span className="text-lg md:text-xl font-medium tracking-wide whitespace-nowrap">De la part de</span>
         <span className="font-bold text-teal-600 flex items-center gap-2 text-2xl md:text-4xl lg:text-5xl font-serif whitespace-nowrap">

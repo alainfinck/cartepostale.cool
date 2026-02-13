@@ -130,6 +130,25 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
     const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
     const [editingPostcard, setEditingPostcard] = useState<PayloadPostcard | null>(null)
     const [columns, setColumns] = useState(3)
+    const [isAuto, setIsAuto] = useState(true)
+
+    useEffect(() => {
+        if (!isAuto) return
+
+        const updateCols = () => {
+            const w = window.innerWidth
+            if (w < 640) setColumns(1)
+            else if (w < 1024) setColumns(2)
+            else if (w < 1280) setColumns(3)
+            else if (w < 1536) setColumns(4)
+            else if (w < 1920) setColumns(5)
+            else setColumns(6)
+        }
+
+        updateCols()
+        window.addEventListener('resize', updateCols)
+        return () => window.removeEventListener('resize', updateCols)
+    }, [isAuto])
 
     useEffect(() => {
         if (!selectedPostcard) {
@@ -280,19 +299,35 @@ export default function ManagerClient({ initialData, useEspaceClientActions }: P
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-muted-foreground hover:bg-muted"
-                            onClick={() => setColumns(Math.max(1, columns - 1))}
+                            onClick={() => {
+                                setColumns(Math.max(1, columns - 1))
+                                setIsAuto(false)
+                            }}
                             disabled={columns <= 1}
                         >
                             <Minus size={14} />
                         </Button>
-                        <div className="flex items-center justify-center min-w-[32px] text-xs font-bold text-stone-600">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className={cn(
+                                "flex items-center justify-center min-w-[40px] px-2 text-xs font-bold transition-all",
+                                isAuto ? "text-teal-600 bg-teal-50/50 rounded-md ring-1 ring-teal-500/20 shadow-[0_0_10px_rgba(20,184,166,0.1)]" : "text-stone-600"
+                            )}
+                            onClick={() => setIsAuto(!isAuto)}
+                            title={isAuto ? "Passer en mode manuel" : "Passer en mode automatique"}
+                        >
                             {columns}
-                        </div>
+                            {isAuto && <span className="ml-1 text-[8px] font-black tracking-tighter opacity-70">AUTO</span>}
+                        </Button>
                         <Button
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-muted-foreground hover:bg-muted"
-                            onClick={() => setColumns(Math.min(6, columns + 1))}
+                            onClick={() => {
+                                setColumns(Math.min(6, columns + 1))
+                                setIsAuto(false)
+                            }}
                             disabled={columns >= 6}
                         >
                             <Plus size={14} />

@@ -19,6 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion, useSpring, useMotionValue, useTransform, PanInfo, useAnimation } from 'framer-motion';
 import dynamic from 'next/dynamic'
+import { getOptimizedImageUrl } from '@/lib/image-processing';
 
 // Dynamically import MapModal to avoid SSR issues with Leaflet
 const MapModal = dynamic(() => import('@/components/ui/MapModal'), {
@@ -336,7 +337,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             </video>
                         ) : (
                             <img
-                                src={postcard.mediaItems![currentMediaIndex].url}
+                                src={getOptimizedImageUrl(postcard.mediaItems![currentMediaIndex].url, { width: 1200 })}
                                 className="max-w-full max-h-[70vh] object-contain"
                                 alt="Album item"
                             />
@@ -374,7 +375,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                         <Play size={20} className="text-white" />
                                     </div>
                                 ) : (
-                                    <img src={item.url} className="w-full h-full object-cover" alt="thumbnail" />
+                                    <img src={getOptimizedImageUrl(item.url, { width: 400, height: 400, fit: 'cover' })} className="w-full h-full object-cover" alt="thumbnail" />
                                 )}
                             </button>
                         ))}
@@ -448,7 +449,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                         >
                             <img
                                 ref={frontImageRef}
-                                src={frontImageSrc}
+                                src={getOptimizedImageUrl(frontImageSrc, { width: 1600 })}
                                 alt="Postcard Front"
                                 className={cn(
                                     "w-full h-full object-cover pointer-events-none transition-opacity duration-700",
@@ -459,7 +460,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                         ? {
                                             objectPosition: `${postcard.frontImageCrop.x}% ${postcard.frontImageCrop.y}%`,
                                             transform: `scale(${postcard.frontImageCrop.scale})`,
-                                          }
+                                        }
                                         : undefined
                                 }
                                 onLoad={() => setIsFrontImageLoading(false)}

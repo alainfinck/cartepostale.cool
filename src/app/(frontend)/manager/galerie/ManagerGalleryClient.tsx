@@ -225,8 +225,8 @@ export function ManagerGalleryClient({
                                 : null
                         const tagList = Array.isArray(item.tags)
                             ? item.tags.map((t) =>
-                                  typeof t === 'object' && t ? (t as GalleryTag).name : null
-                              )
+                                typeof t === 'object' && t ? (t as GalleryTag).name : null
+                            )
                             : []
 
                         return (
@@ -243,6 +243,7 @@ export function ManagerGalleryClient({
                                             src={url}
                                             alt={item.title}
                                             fill
+                                            unoptimized
                                             className="object-cover"
                                             sizes="(max-width: 640px) 50vw, 20vw"
                                         />
@@ -400,8 +401,8 @@ function ImageSheet({
         typeof image?.category === 'object' && image?.category
             ? String((image.category as GalleryCategory).id)
             : image?.category
-              ? String(image.category)
-              : ''
+                ? String(image.category)
+                : ''
     )
     const [selectedTagIds, setSelectedTagIds] = useState<number[]>(() => {
         if (!Array.isArray(image?.tags)) return []
@@ -422,16 +423,16 @@ function ImageSheet({
                 typeof image?.category === 'object' && image?.category
                     ? String((image.category as GalleryCategory).id)
                     : image?.category
-                      ? String(image.category)
-                      : ''
+                        ? String(image.category)
+                        : ''
             )
             setSelectedTagIds(
                 Array.isArray(image?.tags)
                     ? image.tags
-                          .map((x) =>
-                              typeof x === 'object' && x ? (x as GalleryTag).id : x
-                          )
-                          .filter((id): id is number => typeof id === 'number')
+                        .map((x) =>
+                            typeof x === 'object' && x ? (x as GalleryTag).id : x
+                        )
+                        .filter((id): id is number => typeof id === 'number')
                     : []
             )
         } else {
@@ -467,21 +468,21 @@ function ImageSheet({
         startTransition(async () => {
             const result = image
                 ? await updateGalleryImage(image.id, {
-                      title,
-                      image: imageId ?? (image.image as number),
-                      caption: caption || null,
-                      category: categoryId,
-                      tags: selectedTagIds,
-                      order,
-                  })
+                    title,
+                    image: imageId ?? (image.image as number),
+                    caption: caption || null,
+                    category: categoryId,
+                    tags: selectedTagIds,
+                    order,
+                })
                 : await createGalleryImage({
-                      title,
-                      image: imageId!,
-                      caption: caption || undefined,
-                      category: categoryId ?? undefined,
-                      tags: selectedTagIds,
-                      order,
-                  })
+                    title,
+                    image: imageId!,
+                    caption: caption || undefined,
+                    category: categoryId ?? undefined,
+                    tags: selectedTagIds,
+                    order,
+                })
 
             if (result.success) {
                 onSuccess()
@@ -664,7 +665,7 @@ function CategoriesSheet({
             const result = await createGalleryCategory({ name })
             if (result.success) {
                 refresh()
-                ;(e.target as HTMLFormElement).reset()
+                    ; (e.target as HTMLFormElement).reset()
             } else setError(result.error ?? 'Erreur')
         })
     }
@@ -805,7 +806,7 @@ function TagsSheet({
             const result = await createGalleryTag({ name })
             if (result.success) {
                 refresh()
-                ;(e.target as HTMLFormElement).reset()
+                    ; (e.target as HTMLFormElement).reset()
             } else setError(result.error ?? 'Erreur')
         })
     }
