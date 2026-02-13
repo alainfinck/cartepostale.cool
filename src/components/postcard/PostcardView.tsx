@@ -433,7 +433,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 )}
                                 onLoad={() => setIsFrontImageLoading(false)}
                                 onError={() => {
-                                    setFrontImageSrc(FALLBACK_FRONT_IMAGE);
+                                    if (frontImageSrc !== FALLBACK_FRONT_IMAGE) {
+                                        setFrontImageSrc(FALLBACK_FRONT_IMAGE);
+                                    }
                                     setIsFrontImageLoading(false);
                                 }}
                             />
