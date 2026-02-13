@@ -182,7 +182,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
     const { slug } = await params
     const resolvedSearchParams = (await (searchParams ?? Promise.resolve({}))) as SearchParams
     const envelopeParam = resolvedSearchParams.enveloppe
-    const showEnvelope = envelopeParam === '1'
+    const showEnvelope = envelopeParam !== '0'
 
     const payloadPostcard = await getPostcardByPublicId(slug)
 
