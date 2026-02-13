@@ -12,8 +12,8 @@ export const Footer = () => {
     // Hide footer on editor page for more space
     if (pathname === '/editor') return null
 
-    // Minimalist footer for view page
-    if (pathname?.startsWith('/view/')) {
+    // Minimalist footer for view page and carte page
+    if (pathname?.startsWith('/view/') || pathname?.startsWith('/view-debug/') || pathname?.startsWith('/carte/')) {
         return (
             <footer className="bg-[#fcfaf5] border-t border-stone-100 py-6 mt-12">
                 <div className="max-w-7xl mx-auto px-4 text-center">

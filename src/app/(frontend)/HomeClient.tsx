@@ -152,7 +152,7 @@ export default function Home() {
                     Créer ma carte <span className="opacity-90">→</span>
                   </Button>
                 </Link>
-                <Link href="/galerie" className="inline-flex">
+                <Link href="#exemples" className="inline-flex">
                   <Button
                     variant="outline"
                     className="w-full sm:w-auto bg-white border-2 border-stone-300 text-stone-700 px-8 py-6 rounded-2xl font-bold text-lg hover:bg-stone-50 hover:border-stone-400 transition-all"
@@ -325,7 +325,7 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-white">
+      <div id="exemples" className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-white">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between mb-16 text-center sm:text-left gap-4">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-stone-800">Inspirations Voyage</h2>

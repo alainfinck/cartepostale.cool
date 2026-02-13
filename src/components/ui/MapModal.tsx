@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, useMap, LayersControl } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { X, Loader2 } from 'lucide-react'
+import { X, Loader2, Map as MapIcon, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // Fix for default marker icon in Next.js
@@ -30,10 +30,19 @@ interface MapModalProps {
   isLarge?: boolean
 }
 
-// Component to update map view when coordinates change
-function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }) {
+// Component to update map view when coordinates change and fix sizing issues
+function MapEffects({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap()
-  map.setView(center, zoom)
+
+  useEffect(() => {
+    map.setView(center, zoom)
+    // Small timeout to ensure container has finished animating/resizing
+    const timer = setTimeout(() => {
+      map.invalidateSize()
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [center, zoom, map])
+
   return null
 }
 
@@ -53,9 +62,8 @@ const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, location, coords, 
         // Geocode the location string if no coords provided
         setIsLoading(true)
         setError(null)
-        
+
         // Simple geocoding using Nominatim (OpenStreetMap)
-        // Note: In production, consider a more robust service or caching
         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`)
           .then(res => res.json())
           .then(data => {
@@ -77,66 +85,97 @@ const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, location, coords, 
   if (!isOpen) return null
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-[150] bg-stone-900/95 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
-      <div 
+      <div
         className={cn(
-          "bg-white rounded-xl overflow-hidden shadow-2xl relative flex flex-col transition-all duration-300",
-          isLarge 
-            ? "w-[90vw] h-[60vw] max-w-[450px] max-h-[300px] sm:w-[600px] sm:h-[400px] md:w-[800px] md:h-[533px] sm:max-w-none sm:max-h-none landscape:max-h-[85svh] landscape:w-[95vw] landscape:h-[85svh]" 
-            : "w-[340px] h-[240px] sm:w-[600px] sm:h-[400px]"
+          "bg-white rounded-3xl overflow-hidden shadow-2xl relative flex flex-col transition-all duration-300 border-4 border-white/50",
+          isLarge
+            ? "w-[95vw] h-[75vh] md:w-[85vw] md:h-[80vh] max-w-6xl"
+            : "w-[340px] h-[400px] sm:w-[600px] sm:h-[450px]"
         )}
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 bg-white/90 hover:bg-white text-stone-500 hover:text-red-500 p-2 rounded-full transition-all z-[1000] shadow-md border border-stone-100"
+          className="absolute top-4 right-4 bg-white/90 hover:bg-white text-stone-500 hover:text-red-500 p-3 rounded-full transition-all z-[1000] shadow-xl border-2 border-stone-100 group active:scale-95"
+          title="Fermer"
         >
-          <X size={24} />
+          <X size={28} className="group-hover:rotate-90 transition-transform duration-300" />
         </button>
 
         {isLoading ? (
           <div className="w-full h-full flex flex-col items-center justify-center text-stone-500 gap-3">
-            <Loader2 className="animate-spin" size={40} />
-            <p>Recherche de la localisation...</p>
+            <Loader2 className="animate-spin text-teal-500" size={48} />
+            <p className="font-medium">Localisation de votre souvenir...</p>
           </div>
         ) : error || !position ? (
           <div className="w-full h-full flex flex-col items-center justify-center text-stone-500 gap-3 bg-stone-50">
-            <p className="text-lg font-medium text-red-400">{error || "Localisation non trouvée"}</p>
-            <p className="text-sm text-stone-400">Essayez de préciser la ville ou le pays.</p>
+            <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-2">
+              <Globe size={40} />
+            </div>
+            <p className="text-xl font-bold text-stone-800">{error || "Localisation non trouvée"}</p>
+            <p className="text-sm text-stone-400">Nous n&apos;avons pas pu trouver &quot;{location}&quot; sur la carte.</p>
           </div>
         ) : (
-          <MapContainer 
-            center={position} 
-            zoom={13} 
+          <MapContainer
+            center={position}
+            zoom={13}
             style={{ width: '100%', height: '100%' }}
             className="z-0"
           >
-            <ChangeView center={position} zoom={13} />
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
+            <MapEffects center={position} zoom={13} />
+
+            <LayersControl position="topleft">
+              <LayersControl.BaseLayer checked name="Plan (OSM)">
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+              </LayersControl.BaseLayer>
+
+              <LayersControl.BaseLayer name="Satellite">
+                <TileLayer
+                  attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community'
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                />
+              </LayersControl.BaseLayer>
+
+              <LayersControl.BaseLayer name="Hybride (Satellite + Routes)">
+                <TileLayer
+                  attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community'
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                />
+                <TileLayer
+                  url="https://stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}{r}.png"
+                  opacity={0.7}
+                />
+              </LayersControl.BaseLayer>
+            </LayersControl>
+
             <Marker position={position}>
-              <Popup className="custom-popup" minWidth={200} maxWidth={300}>
-                <div className="flex flex-col gap-2">
-                  <div className="w-full aspect-video rounded-md overflow-hidden bg-stone-100 border border-stone-200">
-                    <img 
-                      src={image} 
-                      alt={location} 
+              <Popup className="custom-popup" minWidth={240} maxWidth={320}>
+                <div className="flex flex-col gap-3 p-1">
+                  <div className="w-full aspect-video rounded-xl overflow-hidden bg-stone-100 border-2 border-white shadow-md">
+                    <img
+                      src={image}
+                      alt={location}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="font-bold text-center text-stone-700 capitalize mt-1">
-                    {location}
+                  <div className="flex flex-col">
+                    <div className="font-bold text-lg text-stone-800 capitalize leading-tight flex items-center gap-2">
+                      <MapIcon size={16} className="text-teal-600" />
+                      {location}
+                    </div>
+                    {message && (
+                      <div className="text-xs text-stone-500 mt-2 line-clamp-3 italic bg-stone-50 p-2 rounded-lg border border-stone-100 font-handwriting text-base">
+                        &quot;{message}&quot;
+                      </div>
+                    )}
                   </div>
-                  {message && (
-                     <div className="text-xs text-stone-500 text-center line-clamp-2 italic">
-                       &quot;{message}&quot;
-                     </div>
-                  )}
                 </div>
               </Popup>
             </Marker>

@@ -759,6 +759,31 @@ export default function EditorPage() {
                   Choisissez votre méthode de paiement sécurisée pour valider votre commande.
                 </p>
 
+                {/* Promo de lancement */}
+                <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl p-6 sm:p-8 mb-8 text-white relative overflow-hidden shadow-lg shadow-teal-200">
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="bg-white/20 backdrop-blur-md p-2 rounded-xl">
+                        <Sparkles size={24} className="text-white" />
+                      </div>
+                      <span className="font-bold uppercase tracking-widest text-xs text-teal-100">Offre Exceptionnelle</span>
+                    </div>
+                    <h3 className="text-2xl font-serif font-bold mb-2">Lancement du produit !</h3>
+                    <p className="text-teal-50/90 leading-relaxed mb-6">
+                      C&apos;est le lancement officiel ! Profitez-en : <strong className="text-white">toutes les options premium sont gratuites</strong> aujourd&apos;hui.
+                    </p>
+                    <Button
+                      onClick={() => setCurrentStep('preview')}
+                      className="bg-white text-teal-600 hover:bg-white/90 font-bold px-8 py-6 h-auto rounded-xl shadow-xl shadow-teal-900/20 w-full sm:w-auto transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                    >
+                      Continuer Gratuitement
+                      <ChevronRight size={18} />
+                    </Button>
+                  </div>
+                  <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
+                  <div className="absolute -left-10 -top-10 w-40 h-40 bg-teal-400/20 rounded-full blur-3xl" />
+                </div>
+
                 {/* Order Summary */}
                 <div className="bg-stone-50 rounded-xl p-4 mb-8 border border-stone-100">
                   <div className="flex justify-between items-center mb-2 text-sm text-stone-600">
@@ -777,7 +802,13 @@ export default function EditorPage() {
                   <div className="border-t border-stone-200 my-3" />
                   <div className="flex justify-between items-center font-bold text-stone-800 text-lg">
                     <span>Total</span>
-                    <span>{getAlbumPrice().toFixed(2)} €</span>
+                    <div className="flex flex-col items-end">
+                      <span className="text-stone-300 line-through text-sm">{getAlbumPrice().toFixed(2)} €</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-teal-600">0.00 €</span>
+                        <span className="bg-teal-100 text-teal-600 text-[10px] px-2 py-0.5 rounded-full uppercase">Launch Offer</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

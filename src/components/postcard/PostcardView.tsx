@@ -124,7 +124,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         setAutoFontSize(best);
         // On nettoie le style inline forcé après mesure pour laisser le style React prendre le relais
         text.style.fontSize = '';
-    }, [isFlipped, postcard.message, isLarge]);
+    }, [isFlipped, isLarge]); // Retrait de postcard.message pour éviter l'effet zoom/dezoom pendant la saisie
 
     const handleFlip = () => {
         if (isDragging) return;

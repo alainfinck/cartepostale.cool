@@ -140,8 +140,8 @@ export const Navbar = () => {
         </div>
     )
 
-    // Minimalist Navbar for View Page
-    if (pathname?.startsWith('/view/')) {
+    // Minimalist Navbar for View Page and Carte Page
+    if (pathname?.startsWith('/view/') || pathname?.startsWith('/view-debug/') || pathname?.startsWith('/carte/')) {
         return (
             <nav className={cn(
                 "bg-[#faf8f5]/95 backdrop-blur-lg border-b border-stone-200/60 sticky top-0 z-50 transition-all duration-300",
