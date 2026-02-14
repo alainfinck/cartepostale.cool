@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Mail, Users, Building2, Image as ImageIcon, Cloud, LogOut, Menu, BarChart3, Sticker, Gift } from 'lucide-react'
+import { LayoutDashboard, Mail, Users, Building2, Image as ImageIcon, Cloud, LogOut, Menu, BarChart3, Sticker, Gift, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -17,6 +17,7 @@ const nav = [
   { href: '/manager/clients', label: 'Clients', icon: Users },
   { href: '/manager/leads', label: 'Leads', icon: Mail },
   { href: '/manager/agences', label: 'Agences', icon: Building2 },
+  { href: '/manager/landing-pages', label: 'Landing pages', icon: FileText },
 ]
 
 export function ManagerShell({ children }: { children: React.ReactNode }) {
