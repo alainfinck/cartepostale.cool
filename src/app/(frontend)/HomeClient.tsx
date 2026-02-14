@@ -9,6 +9,7 @@ import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import WordRotate from '@/components/ui/word-rotate'
 import ComparisonSection from '@/components/home/ComparisonSection'
+import ShareHomeButtons from '@/components/social/ShareHomeButtons'
 
 export default function Home() {
   const [savedPostcards, setSavedPostcards] = useState<Postcard[]>([])
@@ -391,6 +392,46 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {/* Section Partage social — accroche + image + partage */}
+      <section id="partage-social" className="relative py-20 md:py-28 overflow-hidden bg-gradient-to-b from-[#faf8f5] via-pink-50/40 to-purple-50/50 border-y border-stone-100">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-72 h-72 bg-pink-200/30 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-200/25 rounded-full blur-3xl" />
+        </div>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="text-center lg:text-left order-2 lg:order-1">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur border border-pink-200/60 text-pink-700 text-sm font-bold mb-6 shadow-sm">
+                <Share2 size={16} />
+                <span>Partagez l&apos;aventure</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-stone-800 mb-5 leading-tight">
+                Une carte, un sourire, un souvenir&nbsp;! ✨
+              </h2>
+              <p className="text-stone-600 text-lg md:text-xl leading-relaxed mb-6 max-w-xl mx-auto lg:mx-0">
+                Vous aimez CartePostale.cool ? Parlez-en autour de vous&nbsp;! 📮 Faites découvrir à vos proches la magie des cartes postales virtuelles — rapides, personnelles et pleines d&apos;émotions. 💌
+              </p>
+              <p className="text-stone-500 text-base mb-8 max-w-lg mx-auto lg:mx-0">
+                Un clic pour créer, un clic pour partager. C&apos;est ça, la vie cool. 🌍❤️
+              </p>
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
+                <ShareHomeButtons />
+              </div>
+            </div>
+            <div className="order-1 lg:order-2 flex justify-center">
+              <div className="relative group">
+                <div className="absolute -inset-2 bg-gradient-to-r from-pink-400/20 to-purple-400/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
+                <img
+                  src="/media/image1-cartepostale.cool.jpeg"
+                  alt="CartePostale.cool - Créez et partagez vos cartes postales virtuelles"
+                  className="relative w-full max-w-md rounded-2xl shadow-xl shadow-stone-300/40 border border-stone-200/80 object-cover aspect-[4/3] group-hover:scale-[1.02] transition-transform duration-500"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Business / Pro Section */}
       <section className="py-24 bg-[#061e1e] relative overflow-hidden">

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
         description: 'Créez des cartes postales virtuelles inoubliables avec vos propres photos et vidéos. Partage instantané, souvenirs éternels.',
         images: [
             {
-                url: '/media/enveloppe-social2.jpg',
+                url: '/media/image1-cartepostale.cool.jpeg',
                 width: 1200,
                 height: 630,
                 alt: 'CartePostale.cool - Vos plus beaux souvenirs en un clic',
