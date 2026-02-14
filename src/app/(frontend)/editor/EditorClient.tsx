@@ -62,6 +62,14 @@ import {
 import { UnsplashSearchModal } from '@/components/UnsplashSearchModal'
 import StickerGallery from '@/components/editor/StickerGallery'
 import StickerLayer from '@/components/editor/StickerLayer'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
 
 const POSTCARD_ASPECT = 3 / 2
 
@@ -542,6 +550,7 @@ export default function EditorPage() {
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [createdPostcardId, setCreatedPostcardId] = useState<string | null>(null)
   const [shareError, setShareError] = useState<string | null>(null)
+  const [showEmailPromptModal, setShowEmailPromptModal] = useState(false)
 
   const [showCopyToast, setShowCopyToast] = useState(false)
   const [hasConfettiFired, setHasConfettiFired] = useState(false)
@@ -597,6 +606,14 @@ export default function EditorPage() {
     }
   }, [shareUrl, hasConfettiFired])
 
+  // Handle payment success return
+  useEffect(() => {
+    const success = searchParams.get('payment_success')
+    if (success === 'true' && currentStep === 'payment') {
+      setCurrentStep('preview')
+    }
+  }, [searchParams, currentStep])
+
   useEffect(() => {
     fetch('/api/users/me', { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))
@@ -637,7 +654,26 @@ export default function EditorPage() {
 
   useEffect(() => {
     if (showFullscreen) {
-      setFullscreenScale(1)
+      // Auto-fit logic: calculate a scale to fit the card (aspect 3/2) comfortably
+      const padding = 80 // Total horizontal/vertical padding
+      const availableW = window.innerWidth - padding
+      const availableH = window.innerHeight - padding
+      
+      const cardW = 1000 // Sample base width for calculation
+      const cardH = cardW / POSTCARD_ASPECT
+      
+      const scaleW = availableW / cardW
+      const scaleH = availableH / cardH
+      const autoFitScale = Math.min(scaleW, scaleH, 1.2) // Cap auto-fit at 1.2x
+      
+      setFullscreenScale(Number(autoFitScale.toFixed(2)))
+
+      // Escape key listener
+      const handleEsc = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') setShowFullscreen(false)
+      }
+      window.addEventListener('keydown', handleEsc)
+      return () => window.removeEventListener('keydown', handleEsc)
     }
   }, [showFullscreen])
 
@@ -1115,7 +1151,11 @@ export default function EditorPage() {
       if (result.success && result.publicId) {
         setCreatedPostcardId(result.publicId)
         setShareUrl(`${window.location.origin}/carte/${result.publicId}`)
-        // No longer switching step, sharing UI appears in 'preview' step
+        
+        // Trigger email modal if user is not logged in and hasn't provided an email
+        if (!currentUser && !senderEmail) {
+          setShowEmailPromptModal(true)
+        }
       } else {
         setShareError(result.error || 'Une erreur est survenue lors de la création de la carte.')
       }
@@ -1137,10 +1177,49 @@ export default function EditorPage() {
 
   const handlePayWithRevolut = async () => {
     const amount = getAlbumPrice()
-    if (amount <= 0 || !createdPostcardId || !shareUrl) return
+    if (amount <= 0) return
     setRevolutError(null)
     setIsRevolutRedirecting(true)
+
     try {
+      // Ensure we have a createdPostcardId first
+      let pid = createdPostcardId
+      if (!pid) {
+        // We need to publish now to get an ID
+        // Strip large Base64 strings etc. exactly as handlePublish does
+        let finalFrontImage = currentPostcard.frontImage
+        const hasCrop = frontImageCrop.scale !== 1 || frontImageCrop.x !== 50 || frontImageCrop.y !== 50
+        const canBake = frontImage && (frontImage.startsWith('data:') || frontImage.startsWith('http') || frontImage.startsWith('/'))
+        if (canBake && hasCrop) {
+          try {
+            const imgUrl = frontImage.startsWith('data:') ? frontImage : (typeof window !== 'undefined' && frontImage.startsWith('/') ? window.location.origin + frontImage : frontImage)
+            const dataUrl = frontImage.startsWith('data:') ? frontImage : await fetch(imgUrl).then((r) => r.blob()).then((b) => new Promise<string>((res, rej) => { const reader = new FileReader(); reader.onloadend = () => res(reader.result as string); reader.onerror = rej; reader.readAsDataURL(b) }))
+            finalFrontImage = await bakeFrontImageCrop(dataUrl, frontImageCrop)
+          } catch (_) { /* ignore */ }
+        }
+
+        const result = await createPostcard({
+          ...currentPostcard,
+          frontImage: frontImageKey ? undefined : finalFrontImage,
+          mediaItems: currentPostcard.mediaItems?.map(item => ({ ...item, url: item.key ? undefined : item.url })),
+          recipients: [],
+          ...(frontImageKey && {
+            frontImageKey,
+            frontImageMimeType: frontImageMimeType ?? undefined,
+            frontImageFilesize: frontImageFilesize ?? undefined,
+          }),
+        })
+
+        if (result.success && result.publicId) {
+          pid = result.publicId
+          setCreatedPostcardId(pid)
+          setShareUrl(`${window.location.origin}/carte/${pid}`)
+        } else {
+          setRevolutError(result.error || 'Erreur lors de la préparation de la carte.')
+          return
+        }
+      }
+
       const res = await fetch('/api/revolut/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1158,6 +1237,9 @@ export default function EditorPage() {
         return
       }
       if (data.checkout_url) {
+        // Use current URL with success flag as return path
+        const returnUrl = `${window.location.origin}/editor?payment_success=true`
+        // We might need to encode this correctly for the API
         window.location.href = data.checkout_url
         return
       }
@@ -1240,7 +1322,7 @@ export default function EditorPage() {
                   stickers={stickers}
                   onUpdate={updateSticker}
                   onRemove={removeSticker}
-                  isActive={!showBack} // Only interactive on front
+                  isActive={!showBack && currentStep === 'photo'} // Only interactive on front in step 1
                 />
               </div>
               <div className="mt-4 flex flex-col gap-4">
@@ -1731,40 +1813,57 @@ export default function EditorPage() {
                 {/* Paiement Revolut uniquement (API Revolut) */}
                 <div className="rounded-2xl border-2 border-teal-500 bg-teal-50/50 p-6 mb-8 ring-1 ring-teal-500 shadow-sm">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-[#0070ba] flex items-center justify-center text-white font-bold text-lg">
-                      R
+                    <div className="w-12 h-12 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                      <CreditCard size={24} />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <p className="font-bold text-stone-800 text-lg">Revolut Pay</p>
-                      <p className="text-sm text-stone-500">Paiement par carte ou app Revolut — rapide et sécurisé</p>
+                      <p className="text-sm text-stone-500">Paiement par carte, Apple Pay ou app Revolut</p>
                     </div>
+                    {getAlbumPrice() > 0 && (
+                      <div className="text-right">
+                        <span className="text-2xl font-black text-teal-600">{getAlbumPrice()}€</span>
+                      </div>
+                    )}
                   </div>
-                  <p className="mt-3 text-xs text-stone-500">
-                    Le lien de paiement Revolut s&apos;affichera à l&apos;étape « Aperçu » si votre commande est payante.
+                  <p className="mt-4 text-xs text-stone-400 bg-white/50 p-2 rounded-lg border border-teal-100">
+                    Cliquez sur le bouton ci-dessous pour régler votre option et finaliser votre carte.
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col gap-3">
+                  {getAlbumPrice() > 0 ? (
+                    <Button
+                      onClick={handlePayWithRevolut}
+                      disabled={isRevolutRedirecting || isPublishing}
+                      className="w-full rounded-2xl font-bold py-6 h-auto bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-100 transition-all flex items-center justify-center gap-3 text-lg"
+                    >
+                      {isRevolutRedirecting || isPublishing ? (
+                        <RefreshCw size={24} className="animate-spin" />
+                      ) : (
+                        <>
+                          <span>Régler {getAlbumPrice()}€ avec Revolut</span>
+                          <ChevronRight size={20} />
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={goNext}
+                      className="w-full rounded-2xl font-bold py-6 h-auto bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-100 transition-all flex items-center justify-center gap-3 text-lg"
+                    >
+                      Continuer gratuitement
+                      <ChevronRight size={20} />
+                    </Button>
+                  )}
+
                   <Button
                     variant="ghost"
                     onClick={goPrev}
-                    className="rounded-full font-semibold flex items-center gap-2 px-5 py-5 h-auto text-stone-600 hover:text-stone-800 hover:bg-stone-100 transition-all"
+                    className="w-full rounded-xl font-semibold py-3 h-auto text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-all"
                   >
-                    <ChevronLeft size={18} />
-                    Retour
-                  </Button>
-                  <Button
-                    onClick={goNext}
-                    disabled={!canGoNext()}
-                    className={cn(
-                      'rounded-full font-bold flex items-center gap-2 px-6 py-5 h-auto transition-all',
-                      canGoNext()
-                        ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-md shadow-teal-200 hover:-translate-y-0.5'
-                        : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-                    )}
-                  >
-                    Continuer
-                    <ChevronRight size={18} />
+                    <ChevronLeft size={18} className="mr-2" />
+                    Modifier ma commande
                   </Button>
                 </div>
               </div>
@@ -2041,32 +2140,46 @@ export default function EditorPage() {
                       <div className="flex items-center gap-2 text-xs font-medium">
                         {isPremium ? (
                           <div className="flex flex-col items-end gap-1">
-                            <span className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100">
+                            <span className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100 font-bold">
                               <Sparkles size={12} fill="currentColor" /> Album {getAlbumPrice() === 1 ? '10 photos' : 'Premium'} activé
                             </span>
-                            <span className="text-[10px] text-stone-400">
-                              {mediaItems?.filter(i => i.type === 'image').length}/{getAlbumPrice() === 1 ? 10 : 50} photos
-                              {getAlbumPrice() === 2 && ` - ${mediaItems?.filter(i => i.type === 'video').length}/3 vidéos`}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              {getAlbumPrice() > 0 && (
+                                <span className="text-[11px] bg-teal-500 text-white px-2 py-0.5 rounded-full font-bold">
+                                  Prix : {getAlbumPrice()}€
+                                </span>
+                              )}
+                              <span className="text-[10px] text-stone-400 font-bold">
+                                {(mediaItems || []).filter(i => i.type === 'image').length}/{getAlbumPrice() === 1 ? 10 : 50} photos
+                                {getAlbumPrice() === 2 && ` - ${(mediaItems || []).filter(i => i.type === 'video').length}/3 vidéos`}
+                              </span>
+                            </div>
                           </div>
                         ) : (
                           <div className="flex flex-col items-end gap-1 text-right">
-                            <span className="text-stone-400 uppercase tracking-[0.2em] font-semibold text-[10px]">
+                            <span className="text-stone-400 uppercase tracking-[0.2em] font-bold text-[9px]">
                               Option payante (dès +1€)
                             </span>
-                            <div className="bg-gradient-to-r from-orange-50 via-orange-100 to-orange-50 border border-orange-200 text-stone-800 text-[11px] font-bold px-3 py-2 rounded-full shadow-sm uppercase tracking-[0.15em]">
-                              10 photos : 1€ &nbsp;|&nbsp; 50 photos + 3 vidéos : 2€
+                            <div className="flex flex-col gap-1 items-end">
+                              <div className="flex items-center gap-1.5">
+                                <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-bold border transition-colors", mediaItems.length === 0 ? "bg-teal-50 text-teal-700 border-teal-200" : "bg-stone-50 text-stone-400 border-stone-200")}>
+                                  Gratuit : 1 photo
+                                </span>
+                                <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-bold border transition-colors", getAlbumPrice() === 1 ? "bg-amber-50 text-amber-700 border-amber-200 shadow-sm" : "bg-stone-50 text-stone-400 border-stone-200")}>
+                                  1€ : 10 photos
+                                </span>
+                                <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-bold border transition-colors", getAlbumPrice() === 2 ? "bg-purple-50 text-purple-700 border-purple-200 shadow-sm" : "bg-stone-50 text-stone-400 border-stone-200")}>
+                                  2€ : 50 photos + 3 vidéos
+                                </span>
+                              </div>
                             </div>
-                            <span className="text-[9px] text-orange-500 uppercase tracking-[0.3em] font-semibold">
-                              Visible lors de la sélection
-                            </span>
                           </div>
                         )}
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-                      {mediaItems?.map((item) => (
+                      {(mediaItems || []).map((item) => (
                         <div
                           key={item.id}
                           className="relative aspect-square rounded-xl overflow-hidden shadow-sm group border border-stone-200"
@@ -2639,7 +2752,7 @@ export default function EditorPage() {
                     type="button"
                     onClick={(event) => {
                       event.stopPropagation()
-                      setFullscreenScale((value) => Math.max(0.8, Number((value - 0.05).toFixed(2))))
+                      setFullscreenScale((value) => Math.max(0.5, Number((value - 0.1).toFixed(2))))
                     }}
                     className="rounded-full border border-white/60 p-2 text-white hover:border-teal-300 hover:text-teal-300"
                     aria-label="Réduire"
@@ -2648,9 +2761,9 @@ export default function EditorPage() {
                   </button>
                   <input
                     type="range"
-                    min={0.8}
-                    max={1.4}
-                    step={0.02}
+                    min={0.5}
+                    max={3.0}
+                    step={0.05}
                     value={fullscreenScale}
                     onChange={(event) => {
                       event.stopPropagation()
@@ -2662,7 +2775,7 @@ export default function EditorPage() {
                     type="button"
                     onClick={(event) => {
                       event.stopPropagation()
-                      setFullscreenScale((value) => Math.min(1.4, Number((value + 0.05).toFixed(2))))
+                      setFullscreenScale((value) => Math.min(3.0, Number((value + 0.1).toFixed(2))))
                     }}
                     className="rounded-full border border-white/60 p-2 text-white hover:border-teal-300 hover:text-teal-300"
                     aria-label="Agrandir"
@@ -2676,6 +2789,57 @@ export default function EditorPage() {
         )
       }
 
+      {/* Modal d'invitation à laisser son email après création */}
+      <Dialog open={showEmailPromptModal} onOpenChange={setShowEmailPromptModal}>
+        <DialogContent className="max-w-md bg-white rounded-3xl p-8 border-none shadow-2xl overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 via-amber-400 to-teal-400" />
+          <DialogHeader className="pt-4">
+            <div className="mx-auto w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-4 animate-bounce-subtle">
+              <Mail size={32} />
+            </div>
+            <DialogTitle className="text-2xl font-serif font-bold text-center text-stone-800">
+              Presque terminé ! ✨
+            </DialogTitle>
+            <DialogDescription className="text-center text-stone-500 text-base leading-relaxed mt-4">
+              C&apos;est important car vous recevrez un lien pour <strong>gérer votre carte</strong> (la modifier, voir les stats) et vous serez <strong>prévenu</strong> quand elle sera consultée.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-8 space-y-4">
+            <div className="relative group">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-teal-500 transition-colors" size={20} />
+              <Input
+                type="email"
+                placeholder="votre@email.com"
+                value={senderEmail}
+                onChange={(e) => setSenderEmail(e.target.value)}
+                className="pl-12 h-14 rounded-2xl border-stone-200 focus:border-teal-400 focus:ring-teal-400 text-lg transition-all bg-stone-50"
+              />
+            </div>
+            <Button
+              onClick={async () => {
+                if (!senderEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) {
+                   alert("Veuillez entrer un email valide.");
+                   return;
+                }
+                if (createdPostcardId) {
+                  await linkPostcardToUser(createdPostcardId, senderEmail);
+                }
+                setShowEmailPromptModal(false);
+              }}
+              className="w-full h-14 rounded-2xl bg-teal-500 hover:bg-teal-600 text-white font-bold text-lg shadow-lg shadow-teal-100 transition-all active:scale-[0.98]"
+            >
+              Enregistrer mon email
+            </Button>
+            <button
+              onClick={() => setShowEmailPromptModal(false)}
+              className="w-full text-stone-400 text-sm font-semibold hover:text-stone-600 transition-colors py-2"
+            >
+              Je le ferai plus tard
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
       {/* Modal : tous les modèles avec catégories */}
       {showTemplateModal && (
         <div

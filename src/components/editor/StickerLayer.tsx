@@ -94,6 +94,7 @@ export default function StickerLayer({ stickers, onUpdate, onRemove, isActive }:
                         touchAction: 'none'
                     }}
                     onPointerDown={(e) => handlePointerDown(e, sticker.id, 'move')}
+                    onClick={(e) => e.stopPropagation()}
                 >
                     <img
                         src={getOptimizedImageUrl(sticker.imageUrl || '', { width: 200 })}
