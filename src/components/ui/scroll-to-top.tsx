@@ -29,7 +29,7 @@ export const ScrollToTopButton = () => {
             onClick={scrollToTop}
             aria-label="Revenir en haut de la page"
             className={cn(
-                'fixed z-50 transition-all duration-300',
+                'fixed z-[70] transition-all duration-300',
                 'bottom-4 right-4 sm:bottom-6 sm:right-6',
                 'h-10 w-10 sm:h-12 sm:w-12',
                 'rounded-full bg-white/80 hover:bg-white text-stone-400 hover:text-stone-600 border border-stone-200 shadow-sm backdrop-blur-md',

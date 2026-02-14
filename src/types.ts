@@ -17,11 +17,21 @@ export interface FrontImageCrop {
     y: number;
 }
 
+export interface FrontImageFilter {
+    brightness: number;
+    contrast: number;
+    saturation: number;
+    sepia: number;
+    grayscale: number;
+}
+
 export interface Postcard {
     id: string;
     frontImage: string;
     /** Recadrage / zoom de la face avant (éditeur uniquement, non persisté). */
     frontImageCrop?: FrontImageCrop;
+    /** Filtres visuels appliqués à la photo de face (éditeur/aperçu). */
+    frontImageFilter?: FrontImageFilter;
     frontCaption?: string;
     frontEmoji?: string;
     message: string;

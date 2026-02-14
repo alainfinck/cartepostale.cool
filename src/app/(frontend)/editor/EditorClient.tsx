@@ -44,8 +44,17 @@ import {
   XCircle,
   CheckCircle2,
   Info,
+  SlidersHorizontal,
 } from 'lucide-react'
-import { Postcard, Template, TemplateCategory, FrontImageCrop, StickerPlacement, Sticker } from '@/types'
+import {
+  Postcard,
+  Template,
+  TemplateCategory,
+  FrontImageCrop,
+  FrontImageFilter,
+  StickerPlacement,
+  Sticker,
+} from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -76,12 +85,42 @@ import {
 } from '@/components/ui/dialog'
 
 const POSTCARD_ASPECT = 3 / 2
+const DEFAULT_FRONT_FILTER: FrontImageFilter = {
+  brightness: 100,
+  contrast: 100,
+  saturation: 100,
+  sepia: 0,
+  grayscale: 0,
+}
+
+const FILTER_PRESETS: { id: string; label: string; values: FrontImageFilter }[] = [
+  { id: 'normal', label: 'Normal', values: DEFAULT_FRONT_FILTER },
+  { id: 'vivid', label: 'Vivid', values: { brightness: 105, contrast: 112, saturation: 132, sepia: 0, grayscale: 0 } },
+  { id: 'warm', label: 'Chaud', values: { brightness: 102, contrast: 106, saturation: 112, sepia: 20, grayscale: 0 } },
+  { id: 'vintage', label: 'Vintage', values: { brightness: 98, contrast: 92, saturation: 84, sepia: 35, grayscale: 0 } },
+  { id: 'noirblanc', label: 'Noir & blanc', values: { brightness: 102, contrast: 112, saturation: 0, sepia: 0, grayscale: 100 } },
+]
+
+function buildFrontImageFilterCss(filter: FrontImageFilter): string {
+  return [
+    `brightness(${filter.brightness}%)`,
+    `contrast(${filter.contrast}%)`,
+    `saturate(${filter.saturation}%)`,
+    `sepia(${filter.sepia}%)`,
+    `grayscale(${filter.grayscale}%)`,
+  ].join(' ')
+}
 
 /**
  * Génère une image recadrée 3:2 à partir d'une data URL et des paramètres de zoom/position.
  * Utilisé à l'enregistrement pour "figer" le cadrage choisi par l'utilisateur.
  */
-function bakeFrontImageCrop(dataUrl: string, crop: FrontImageCrop, outputPx = 1200): Promise<string> {
+function bakeFrontImageCrop(
+  dataUrl: string,
+  crop: FrontImageCrop,
+  filter: FrontImageFilter = DEFAULT_FRONT_FILTER,
+  outputPx = 1200
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
@@ -106,6 +145,7 @@ function bakeFrontImageCrop(dataUrl: string, crop: FrontImageCrop, outputPx = 12
         resolve(dataUrl)
         return
       }
+      ctx.filter = buildFrontImageFilterCss(filter)
       ctx.drawImage(img, sx, sy, visibleW, visibleH, 0, 0, cw, ch)
       try {
         resolve(canvas.toDataURL('image/jpeg', JPEG_QUALITY))
@@ -533,7 +573,9 @@ export default function EditorPage() {
   const [frontImageFilesize, setFrontImageFilesize] = useState<number | null>(null)
   /** Recadrage / zoom de la photo face avant (position en %, scale 1 = fit). */
   const [frontImageCrop, setFrontImageCrop] = useState<FrontImageCrop>({ scale: 1, x: 50, y: 50 })
+  const [frontImageFilter, setFrontImageFilter] = useState<FrontImageFilter>(DEFAULT_FRONT_FILTER)
   const [showCropPanel, setShowCropPanel] = useState(false)
+  const [showImageEditModal, setShowImageEditModal] = useState(false)
   const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null)
   const [cropContainerSize, setCropContainerSize] = useState<{ w: number; h: number } | null>(null)
   const cropAreaRef = useRef<HTMLDivElement>(null)
@@ -778,6 +820,7 @@ export default function EditorPage() {
           setFrontImageFilesize(blob.size)
           setFrontImage(dataUrl)
           setFrontImageCrop({ scale: 1, x: 50, y: 50 })
+          setFrontImageFilter(DEFAULT_FRONT_FILTER)
           setSelectedTemplateId(null)
           return
         }
@@ -790,6 +833,7 @@ export default function EditorPage() {
     setFrontImageFilesize(null)
     setFrontImage(dataUrl)
     setFrontImageCrop({ scale: 1, x: 50, y: 50 })
+    setFrontImageFilter(DEFAULT_FRONT_FILTER)
     setSelectedTemplateId(null)
   }, [])
 
@@ -845,6 +889,7 @@ export default function EditorPage() {
     setFrontImageMimeType(null)
     setFrontImageFilesize(null)
     setFrontImageCrop({ scale: 1, x: 50, y: 50 })
+    setFrontImageFilter(DEFAULT_FRONT_FILTER)
     // Pre-fill fields from template
     if (template.frontCaption) setFrontCaption(template.frontCaption)
     if (template.frontEmoji) setFrontEmoji(template.frontEmoji)
@@ -866,6 +911,7 @@ export default function EditorPage() {
     setFrontImageMimeType(null)
     setFrontImageFilesize(null)
     setFrontImageCrop({ scale: 1, x: 50, y: 50 })
+    setFrontImageFilter(DEFAULT_FRONT_FILTER)
 
     try {
       const resized = await urlToResizedDataUrl(imageUrl)
@@ -1066,12 +1112,21 @@ export default function EditorPage() {
     })
   }
 
+  const isFrontFilterEdited =
+    frontImageFilter.brightness !== DEFAULT_FRONT_FILTER.brightness ||
+    frontImageFilter.contrast !== DEFAULT_FRONT_FILTER.contrast ||
+    frontImageFilter.saturation !== DEFAULT_FRONT_FILTER.saturation ||
+    frontImageFilter.sepia !== DEFAULT_FRONT_FILTER.sepia ||
+    frontImageFilter.grayscale !== DEFAULT_FRONT_FILTER.grayscale
+  const frontImageFilterCss = buildFrontImageFilterCss(frontImageFilter)
+
   const currentPostcard: Postcard = {
     id: createdPostcardId || 'editor-preview',
     frontImage:
       frontImage ||
       '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
     frontImageCrop: frontImage ? frontImageCrop : undefined,
+    frontImageFilter: frontImage ? frontImageFilter : undefined,
     frontCaption: frontCaption.trim() || undefined,
     frontEmoji: frontEmoji.trim() || undefined,
     message: message || '',
@@ -1130,12 +1185,13 @@ export default function EditorPage() {
       let sendMime = frontImageMimeType
       let sendFilesize = frontImageFilesize
       const hasCrop = frontImageCrop.scale !== 1 || frontImageCrop.x !== 50 || frontImageCrop.y !== 50
+      const hasImageEdits = hasCrop || isFrontFilterEdited
       const canBake = frontImage && (frontImage.startsWith('data:') || frontImage.startsWith('http') || frontImage.startsWith('/'))
-      if (canBake && hasCrop) {
+      if (canBake && hasImageEdits) {
         try {
           const imgUrl = frontImage.startsWith('data:') ? frontImage : (typeof window !== 'undefined' && frontImage.startsWith('/') ? window.location.origin + frontImage : frontImage)
           const dataUrl = frontImage.startsWith('data:') ? frontImage : await fetch(imgUrl).then((r) => r.blob()).then((b) => new Promise<string>((res, rej) => { const reader = new FileReader(); reader.onloadend = () => res(reader.result as string); reader.onerror = rej; reader.readAsDataURL(b) }))
-          finalFrontImage = await bakeFrontImageCrop(dataUrl, frontImageCrop)
+          finalFrontImage = await bakeFrontImageCrop(dataUrl, frontImageCrop, frontImageFilter)
           sendKey = null
           sendMime = null
           sendFilesize = null
@@ -1205,12 +1261,13 @@ export default function EditorPage() {
         // Strip large Base64 strings etc. exactly as handlePublish does
         let finalFrontImage = currentPostcard.frontImage
         const hasCrop = frontImageCrop.scale !== 1 || frontImageCrop.x !== 50 || frontImageCrop.y !== 50
+        const hasImageEdits = hasCrop || isFrontFilterEdited
         const canBake = frontImage && (frontImage.startsWith('data:') || frontImage.startsWith('http') || frontImage.startsWith('/'))
-        if (canBake && hasCrop) {
+        if (canBake && hasImageEdits) {
           try {
             const imgUrl = frontImage.startsWith('data:') ? frontImage : (typeof window !== 'undefined' && frontImage.startsWith('/') ? window.location.origin + frontImage : frontImage)
             const dataUrl = frontImage.startsWith('data:') ? frontImage : await fetch(imgUrl).then((r) => r.blob()).then((b) => new Promise<string>((res, rej) => { const reader = new FileReader(); reader.onloadend = () => res(reader.result as string); reader.onerror = rej; reader.readAsDataURL(b) }))
-            finalFrontImage = await bakeFrontImageCrop(dataUrl, frontImageCrop)
+            finalFrontImage = await bakeFrontImageCrop(dataUrl, frontImageCrop, frontImageFilter)
           } catch (_) { /* ignore */ }
         }
 
@@ -1534,18 +1591,19 @@ export default function EditorPage() {
                   </Button>
                 </div>
 
-                {/* Recadrer : icône cliquable → zone glisser + molette */}
+                {/* Retouche photo : filtres + recadrage/zoom dans un modal */}
                 {frontImage && (
                   <section className="mt-8 pt-8 border-t border-stone-200">
                     <button
                       type="button"
                       onClick={() => {
-                        setShowCropPanel((v) => !v)
-                        if (!showCropPanel) setImgNaturalSize(null)
+                        setShowImageEditModal(true)
+                        setShowCropPanel(true)
+                        setImgNaturalSize(null)
                       }}
                       className={cn(
                         'flex items-center gap-3 w-full rounded-xl border-2 p-3 text-left transition-all',
-                        showCropPanel
+                        showImageEditModal || showCropPanel || isFrontFilterEdited
                           ? 'border-teal-500 bg-teal-50'
                           : 'border-stone-200 hover:border-teal-200 hover:bg-stone-50'
                       )}
@@ -1553,117 +1611,23 @@ export default function EditorPage() {
                       <span
                         className={cn(
                           'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
-                          showCropPanel ? 'bg-teal-500 text-white' : 'bg-teal-100 text-teal-600'
+                          showImageEditModal || showCropPanel || isFrontFilterEdited
+                            ? 'bg-teal-500 text-white'
+                            : 'bg-teal-100 text-teal-600'
                         )}
                       >
-                        <Crop size={20} />
+                        <SlidersHorizontal size={20} />
                       </span>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-bold text-stone-800 uppercase tracking-wider">
-                          Recadrer
+                          Retoucher la photo
                         </h3>
                         <p className="text-xs text-stone-500">
-                          {showCropPanel
-                            ? 'Déplacez l’image à la souris, zoomez avec le curseur'
-                            : 'Cliquez pour recadrer et zoomer sur la photo'}
+                          Filtres, recadrage et zoom dans un éditeur dédié
                         </p>
                       </div>
-                      <span className="text-stone-400 shrink-0">
-                        {showCropPanel ? '▼' : '▶'}
-                      </span>
+                      <span className="text-stone-400 shrink-0">▶</span>
                     </button>
-
-                    {showCropPanel && (
-                      <>
-                        <div
-                          ref={cropAreaRef}
-                          className="mt-4 relative w-full overflow-hidden rounded-xl border-2 border-stone-200 bg-stone-100 aspect-[3/2] select-none cursor-grab active:cursor-grabbing"
-                          onPointerDown={handleCropPointerDown}
-                          onPointerMove={handleCropPointerMove}
-                          onPointerUp={handleCropPointerUp}
-                          onPointerLeave={handleCropPointerUp}
-                          style={{ touchAction: 'none' }}
-                        >
-                          {imgNaturalSize && cropContainerSize ? (
-                            <div
-                              className="absolute pointer-events-none"
-                              style={(() => {
-                                const coverScale = Math.max(
-                                  cropContainerSize.w / imgNaturalSize.w,
-                                  cropContainerSize.h / imgNaturalSize.h
-                                )
-                                const displayScale = coverScale * frontImageCrop.scale
-                                const w = imgNaturalSize.w * displayScale
-                                const h = imgNaturalSize.h * displayScale
-                                const left =
-                                  cropContainerSize.w / 2 -
-                                  (frontImageCrop.x / 100) * imgNaturalSize.w * displayScale
-                                const top =
-                                  cropContainerSize.h / 2 -
-                                  (frontImageCrop.y / 100) * imgNaturalSize.h * displayScale
-                                return { width: w, height: h, left, top }
-                              })()}
-                            >
-                              <img
-                                ref={cropImgRef}
-                                src={frontImage}
-                                alt="Recadrage"
-                                className="block w-full h-full object-contain"
-                                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                onLoad={handleCropImgLoad}
-                                draggable={false}
-                              />
-                            </div>
-                          ) : (
-                            <img
-                              ref={cropImgRef}
-                              src={frontImage}
-                              alt="Recadrage"
-                              className="absolute inset-0 w-full h-full pointer-events-none object-cover"
-                              style={{ objectPosition: `${frontImageCrop.x}% ${frontImageCrop.y}%` }}
-                              onLoad={handleCropImgLoad}
-                              draggable={false}
-                            />
-                          )}
-                        </div>
-                        <div className="mt-4 space-y-3">
-                          <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                              <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Zoom</span>
-                              <span className="text-xs font-medium text-stone-500 tabular-nums">
-                                {Math.round(frontImageCrop.scale * 100)}%
-                              </span>
-                            </div>
-                            <input
-                              type="range"
-                              min={1}
-                              max={4}
-                              step={0.05}
-                              value={frontImageCrop.scale}
-                              onChange={(e) =>
-                                setFrontImageCrop((c) => ({ ...c, scale: Number(e.target.value) }))
-                              }
-                              className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
-                            />
-                          </div>
-                          <Button
-                            type="button"
-                            onClick={() => setShowCropPanel(false)}
-                            className="w-full rounded-xl bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 transition-colors"
-                          >
-                            <Check size={18} className="inline mr-2" />
-                            Valider le recadrage
-                          </Button>
-                        </div>
-                      </>
-
-                    )}
-
-                    {showCropPanel && (
-                      <p className="mt-2 text-[11px] text-stone-400">
-                        L’aperçu à gauche se met à jour en temps réel. Le cadrage sera enregistré sur la carte.
-                      </p>
-                    )}
                   </section>
                 )}
 
@@ -2819,6 +2783,235 @@ export default function EditorPage() {
           </div>
         )
       }
+
+      <Dialog
+        open={showImageEditModal}
+        onOpenChange={(open) => {
+          setShowImageEditModal(open)
+          setShowCropPanel(open)
+          if (!open) setImgNaturalSize(null)
+        }}
+      >
+        <DialogContent className="max-w-4xl bg-white rounded-3xl p-0 overflow-hidden border-none shadow-2xl">
+          <DialogHeader className="px-6 pt-6 pb-3 border-b border-stone-100">
+            <DialogTitle className="flex items-center gap-2 text-stone-800">
+              <SlidersHorizontal size={18} className="text-teal-600" />
+              Retouche photo
+            </DialogTitle>
+            <DialogDescription>
+              Ajustez les filtres, le recadrage et le zoom. L’aperçu à gauche est mis à jour en temps réel.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-5 p-6 lg:grid-cols-[1.25fr_1fr]">
+            <div
+              ref={cropAreaRef}
+              className="relative w-full overflow-hidden rounded-2xl border-2 border-stone-200 bg-stone-100 aspect-[3/2] select-none cursor-grab active:cursor-grabbing"
+              onPointerDown={handleCropPointerDown}
+              onPointerMove={handleCropPointerMove}
+              onPointerUp={handleCropPointerUp}
+              onPointerLeave={handleCropPointerUp}
+              style={{ touchAction: 'none' }}
+            >
+              {imgNaturalSize && cropContainerSize ? (
+                <div
+                  className="absolute pointer-events-none"
+                  style={(() => {
+                    const coverScale = Math.max(
+                      cropContainerSize.w / imgNaturalSize.w,
+                      cropContainerSize.h / imgNaturalSize.h
+                    )
+                    const displayScale = coverScale * frontImageCrop.scale
+                    const w = imgNaturalSize.w * displayScale
+                    const h = imgNaturalSize.h * displayScale
+                    const left =
+                      cropContainerSize.w / 2 -
+                      (frontImageCrop.x / 100) * imgNaturalSize.w * displayScale
+                    const top =
+                      cropContainerSize.h / 2 -
+                      (frontImageCrop.y / 100) * imgNaturalSize.h * displayScale
+                    return { width: w, height: h, left, top }
+                  })()}
+                >
+                  <img
+                    ref={cropImgRef}
+                    src={frontImage}
+                    alt="Retouche photo"
+                    className="block w-full h-full object-contain"
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', filter: frontImageFilterCss }}
+                    onLoad={handleCropImgLoad}
+                    draggable={false}
+                  />
+                </div>
+              ) : (
+                <img
+                  ref={cropImgRef}
+                  src={frontImage}
+                  alt="Retouche photo"
+                  className="absolute inset-0 w-full h-full pointer-events-none object-cover"
+                  style={{ objectPosition: `${frontImageCrop.x}% ${frontImageCrop.y}%`, filter: frontImageFilterCss }}
+                  onLoad={handleCropImgLoad}
+                  draggable={false}
+                />
+              )}
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <p className="mb-2 text-xs font-semibold text-stone-600 uppercase tracking-wider">Filtres</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {FILTER_PRESETS.map((preset) => {
+                    const isSelected =
+                      frontImageFilter.brightness === preset.values.brightness &&
+                      frontImageFilter.contrast === preset.values.contrast &&
+                      frontImageFilter.saturation === preset.values.saturation &&
+                      frontImageFilter.sepia === preset.values.sepia &&
+                      frontImageFilter.grayscale === preset.values.grayscale
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => setFrontImageFilter({ ...preset.values })}
+                        className={cn(
+                          'rounded-xl border px-3 py-2 text-xs font-semibold transition',
+                          isSelected
+                            ? 'border-teal-500 bg-teal-50 text-teal-700'
+                            : 'border-stone-200 bg-white text-stone-600 hover:border-teal-300 hover:text-teal-700'
+                        )}
+                      >
+                        {preset.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Zoom</span>
+                    <span className="text-xs font-medium text-stone-500 tabular-nums">
+                      {Math.round(frontImageCrop.scale * 100)}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={1}
+                    max={4}
+                    step={0.05}
+                    value={frontImageCrop.scale}
+                    onChange={(e) => setFrontImageCrop((c) => ({ ...c, scale: Number(e.target.value) }))}
+                    className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Luminosité</span>
+                    <span className="text-xs font-medium text-stone-500 tabular-nums">{frontImageFilter.brightness}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={60}
+                    max={150}
+                    step={1}
+                    value={frontImageFilter.brightness}
+                    onChange={(e) => setFrontImageFilter((v) => ({ ...v, brightness: Number(e.target.value) }))}
+                    className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Contraste</span>
+                    <span className="text-xs font-medium text-stone-500 tabular-nums">{frontImageFilter.contrast}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={60}
+                    max={150}
+                    step={1}
+                    value={frontImageFilter.contrast}
+                    onChange={(e) => setFrontImageFilter((v) => ({ ...v, contrast: Number(e.target.value) }))}
+                    className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Saturation</span>
+                    <span className="text-xs font-medium text-stone-500 tabular-nums">{frontImageFilter.saturation}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={170}
+                    step={1}
+                    value={frontImageFilter.saturation}
+                    onChange={(e) => setFrontImageFilter((v) => ({ ...v, saturation: Number(e.target.value) }))}
+                    className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Sépia</span>
+                    <span className="text-xs font-medium text-stone-500 tabular-nums">{frontImageFilter.sepia}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={frontImageFilter.sepia}
+                    onChange={(e) => setFrontImageFilter((v) => ({ ...v, sepia: Number(e.target.value) }))}
+                    className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Niveaux de gris</span>
+                    <span className="text-xs font-medium text-stone-500 tabular-nums">{frontImageFilter.grayscale}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={frontImageFilter.grayscale}
+                    onChange={(e) => setFrontImageFilter((v) => ({ ...v, grayscale: Number(e.target.value) }))}
+                    className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="px-6 pb-6 pt-2 border-t border-stone-100">
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-xl border-stone-200"
+              onClick={() => {
+                setFrontImageCrop({ scale: 1, x: 50, y: 50 })
+                setFrontImageFilter(DEFAULT_FRONT_FILTER)
+              }}
+            >
+              Réinitialiser
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                setShowImageEditModal(false)
+                setShowCropPanel(false)
+              }}
+              className="rounded-xl bg-teal-500 hover:bg-teal-600"
+            >
+              <Check size={16} className="mr-2" />
+              Valider la retouche
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal Tarifs (info options payantes) */}
       <Dialog open={showPricingModal} onOpenChange={setShowPricingModal}>

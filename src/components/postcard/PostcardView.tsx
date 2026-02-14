@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Postcard } from '@/types';
+import { FrontImageFilter, Postcard } from '@/types';
 import {
     RotateCw,
     MapPin,
@@ -48,6 +48,24 @@ interface PostcardViewProps {
 }
 
 const FALLBACK_FRONT_IMAGE = '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
+const DEFAULT_FRONT_FILTER: FrontImageFilter = {
+    brightness: 100,
+    contrast: 100,
+    saturation: 100,
+    sepia: 0,
+    grayscale: 0,
+}
+
+const buildFrontImageFilterCss = (filter?: FrontImageFilter): string => {
+    const f = filter ?? DEFAULT_FRONT_FILTER
+    return [
+        `brightness(${f.brightness}%)`,
+        `contrast(${f.contrast}%)`,
+        `saturate(${f.saturation}%)`,
+        `sepia(${f.sepia}%)`,
+        `grayscale(${f.grayscale}%)`,
+    ].join(' ')
+}
 
 const PostcardView: React.FC<PostcardViewProps> = ({
     postcard,
@@ -68,6 +86,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const frontImageFilterCss = buildFrontImageFilterCss(postcard.frontImageFilter);
 
     useEffect(() => {
         if (isFullscreen) {
@@ -593,6 +612,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                                 "block w-full h-full object-cover transition-opacity duration-700",
                                                 isFrontImageLoading ? "opacity-0" : "opacity-100"
                                             )}
+                                            style={{ filter: frontImageFilterCss }}
                                             onLoad={(e) => {
                                                 setImgNaturalSize({
                                                     w: e.currentTarget.naturalWidth,
@@ -622,8 +642,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                                 ? {
                                                     objectPosition: `${postcard.frontImageCrop.x}% ${postcard.frontImageCrop.y}%`,
                                                     transform: `scale(${postcard.frontImageCrop.scale})`,
+                                                    filter: frontImageFilterCss,
                                                 }
-                                                : undefined
+                                                : { filter: frontImageFilterCss }
                                         }
                                         onLoad={(e) => {
                                             setImgNaturalSize({
