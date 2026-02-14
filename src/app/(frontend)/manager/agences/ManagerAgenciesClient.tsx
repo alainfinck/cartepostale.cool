@@ -4,7 +4,7 @@ import { useState, useTransition, useCallback } from 'react'
 import {
     Search, Plus, Building2, MapPin, Phone,
     Mail, Calendar, Trash2, Edit2, Globe,
-    ExternalLink, ArrowUpDown, Shield
+    ExternalLink, ArrowUpDown, Shield, LogIn, Users
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
@@ -40,22 +40,59 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
-import { getAllAgencies, createAgency, updateAgency, deleteAgency } from '@/actions/manager-actions'
-import type { Agency } from '@/payload-types'
+import { getAllAgencies, createAgency, updateAgency, deleteAgency, getAgencyPanelLoginLink, getAgencyUsersMap } from '@/actions/manager-actions'
+import type { Agency, User } from '@/payload-types'
 
-export function ManagerAgenciesClient({ initialAgencies }: { initialAgencies: Agency[] }) {
+export type AgencyUsersMap = Record<number, User[]>
+
+function AgencyUsersCell({ users }: { users: User[] }) {
+    if (users.length === 0) {
+        return (
+            <div className="flex items-center gap-1.5 text-xs text-stone-400">
+                <Users size={12} className="text-stone-300" />
+                <span>Aucun utilisateur</span>
+            </div>
+        )
+    }
+    return (
+        <div className="flex flex-col gap-1 min-w-0 max-w-[200px]">
+            {users.map((u) => (
+                <div key={u.id} className="flex items-center gap-1.5 text-xs min-w-0">
+                    <span className="truncate text-stone-700 font-medium" title={u.email ?? undefined}>
+                        {u.name || u.email}
+                    </span>
+                    <Badge variant="outline" className={cn(
+                        'shrink-0 text-[10px] px-1.5 py-0 font-medium',
+                        u.role === 'agence' ? 'bg-teal-50 text-teal-700 border-teal-200' : 'bg-violet-50 text-violet-700 border-violet-200'
+                    )}>
+                        {u.role === 'agence' ? 'Agence' : 'Client'}
+                    </Badge>
+                </div>
+            ))}
+        </div>
+    )
+}
+
+export function ManagerAgenciesClient({ initialAgencies, initialAgencyUsers = {} }: { initialAgencies: Agency[]; initialAgencyUsers?: AgencyUsersMap }) {
     const [agencies, setAgencies] = useState(initialAgencies)
+    const [agencyUsersMap, setAgencyUsersMap] = useState<AgencyUsersMap>(initialAgencyUsers)
     const [search, setSearch] = useState('')
     const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null)
     const [isSheetOpen, setIsSheetOpen] = useState(false)
     const [isPending, startTransition] = useTransition()
     const [deleteConfirm, setDeleteConfirm] = useState<number | string | null>(null)
+    const [panelLinkAgencyId, setPanelLinkAgencyId] = useState<number | string | null>(null)
+    const [panelLinkError, setPanelLinkError] = useState<string | null>(null)
 
     const refreshData = useCallback((searchQ?: string) => {
         startTransition(async () => {
             const q = searchQ ?? search
-            const result = await getAllAgencies({ search: q.trim() || undefined })
-            setAgencies(result.docs as any)
+            const [agenciesResult, usersMap] = await Promise.all([
+                getAllAgencies({ search: q.trim() || undefined }),
+                getAgencyUsersMap(),
+            ])
+            setAgencies(agenciesResult.docs as any)
+            setAgencyUsersMap(usersMap)
         })
     }, [search])
 
@@ -88,6 +125,19 @@ export function ManagerAgenciesClient({ initialAgencies }: { initialAgencies: Ag
         })
     }
 
+    const handleOpenAgencyPanel = (agency: Agency) => {
+        setPanelLinkError(null)
+        setPanelLinkAgencyId(agency.id)
+        getAgencyPanelLoginLink(agency.id).then((result) => {
+            setPanelLinkAgencyId(null)
+            if (result.success && result.url) {
+                window.location.href = result.url
+            } else {
+                setPanelLinkError(result.error || 'Impossible d\'accéder au panel agence.')
+            }
+        })
+    }
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             {/* Header & Toolbar */}
@@ -115,6 +165,15 @@ export function ManagerAgenciesClient({ initialAgencies }: { initialAgencies: Ag
                 </div>
             </div>
 
+            {panelLinkError && (
+                <div className="flex items-center justify-between gap-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+                    <span>{panelLinkError}</span>
+                    <Button variant="ghost" size="sm" className="text-amber-700 hover:text-amber-900 shrink-0" onClick={() => setPanelLinkError(null)}>
+                        Fermer
+                    </Button>
+                </div>
+            )}
+
             {isPending && (
                 <div className="flex items-center gap-2 text-sm text-stone-500 animate-pulse px-2">
                     <div className="w-4 h-4 border-2 border-stone-300 border-t-teal-500 rounded-full animate-spin" />
@@ -128,6 +187,7 @@ export function ManagerAgenciesClient({ initialAgencies }: { initialAgencies: Ag
                         <TableHeader className="bg-muted/30">
                             <TableRow>
                                 <TableHead>Agence</TableHead>
+                                <TableHead>Utilisateurs</TableHead>
                                 <TableHead>Localisation</TableHead>
                                 <TableHead>Contact</TableHead>
                                 <TableHead>Statut</TableHead>
@@ -137,7 +197,7 @@ export function ManagerAgenciesClient({ initialAgencies }: { initialAgencies: Ag
                         <TableBody>
                             {agencies.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="h-64 text-center">
+                                    <TableCell colSpan={6} className="h-64 text-center">
                                         <div className="flex flex-col items-center justify-center space-y-3 opacity-50">
                                             <Building2 size={48} className="text-muted-foreground" />
                                             <p className="text-muted-foreground font-medium">Aucune agence trouvée.</p>
@@ -157,6 +217,9 @@ export function ManagerAgenciesClient({ initialAgencies }: { initialAgencies: Ag
                                                     <span className="text-[10px] text-stone-400 font-bold tracking-widest uppercase truncate">{agency.code || 'SANS CODE'}</span>
                                                 </div>
                                             </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <AgencyUsersCell users={agencyUsersMap[agency.id] ?? []} />
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex flex-col text-sm">
@@ -187,6 +250,20 @@ export function ManagerAgenciesClient({ initialAgencies }: { initialAgencies: Ag
                                         </TableCell>
                                         <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex items-center justify-end gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-stone-400 hover:text-teal-600 transition-colors rounded-full"
+                                                    title="Accéder au panel agence"
+                                                    onClick={() => handleOpenAgencyPanel(agency)}
+                                                    disabled={panelLinkAgencyId === agency.id}
+                                                >
+                                                    {panelLinkAgencyId === agency.id ? (
+                                                        <div className="w-3.5 h-3.5 border-2 border-stone-300 border-t-teal-500 rounded-full animate-spin" />
+                                                    ) : (
+                                                        <LogIn size={14} />
+                                                    )}
+                                                </Button>
                                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-stone-400 hover:text-teal-600 transition-colors rounded-full" onClick={() => handleEditAgency(agency)}>
                                                     <Edit2 size={14} />
                                                 </Button>
@@ -217,9 +294,12 @@ export function ManagerAgenciesClient({ initialAgencies }: { initialAgencies: Ag
             {/* Agency Sheet (Create/Edit) */}
             <AgencySheet
                 agency={selectedAgency}
+                agencyUsers={selectedAgency ? (agencyUsersMap[selectedAgency.id] ?? []) : []}
                 isOpen={isSheetOpen}
                 onClose={() => setIsSheetOpen(false)}
                 onRefresh={() => refreshData()}
+                onOpenAgencyPanel={handleOpenAgencyPanel}
+                panelLinkAgencyId={panelLinkAgencyId}
             />
 
             {/* Delete confirmation */}
@@ -250,11 +330,14 @@ export function ManagerAgenciesClient({ initialAgencies }: { initialAgencies: Ag
     )
 }
 
-function AgencySheet({ agency, isOpen, onClose, onRefresh }: {
+function AgencySheet({ agency, agencyUsers, isOpen, onClose, onRefresh, onOpenAgencyPanel, panelLinkAgencyId }: {
     agency: any | null
+    agencyUsers: User[]
     isOpen: boolean
     onClose: () => void
     onRefresh: () => void
+    onOpenAgencyPanel?: (agency: Agency) => void
+    panelLinkAgencyId?: number | string | null
 }) {
     const [isPending, startTransition] = useTransition()
     const [error, setError] = useState<string | null>(null)
@@ -293,8 +376,27 @@ function AgencySheet({ agency, isOpen, onClose, onRefresh }: {
                             </SheetDescription>
                         </div>
                         {agency && (
-                            <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center text-orange-700 font-bold text-sm">
-                                {agency.name.charAt(0).toUpperCase()}
+                            <div className="flex items-center gap-2">
+                                {onOpenAgencyPanel && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="gap-1.5 text-teal-700 border-teal-200 hover:bg-teal-50"
+                                        onClick={() => onOpenAgencyPanel(agency)}
+                                        disabled={panelLinkAgencyId === agency.id}
+                                    >
+                                        {panelLinkAgencyId === agency.id ? (
+                                            <div className="w-3.5 h-3.5 border-2 border-teal-300 border-t-teal-600 rounded-full animate-spin" />
+                                        ) : (
+                                            <LogIn size={14} />
+                                        )}
+                                        Accéder au panel agence
+                                    </Button>
+                                )}
+                                <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center text-orange-700 font-bold text-sm">
+                                    {agency.name.charAt(0).toUpperCase()}
+                                </div>
                             </div>
                         )}
                     </div>
@@ -373,6 +475,35 @@ function AgencySheet({ agency, isOpen, onClose, onRefresh }: {
                                 </div>
                             </div>
                         </div>
+
+                        {agency && (
+                            <div className="space-y-4 pt-4 border-t border-border/30">
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50 flex items-center gap-2">
+                                    <Users size={12} />
+                                    Utilisateurs associés
+                                </h4>
+                                {agencyUsers.length === 0 ? (
+                                    <p className="text-sm text-stone-500">Aucun utilisateur (Agence ou Client) lié à cette agence.</p>
+                                ) : (
+                                    <ul className="space-y-2">
+                                        {agencyUsers.map((u) => (
+                                            <li key={u.id} className="flex items-center justify-between gap-2 py-2 px-3 rounded-lg bg-muted/40 border border-border/50">
+                                                <div className="min-w-0">
+                                                    <span className="font-medium text-stone-800 block truncate">{u.name || u.email}</span>
+                                                    {u.email && <span className="text-xs text-stone-500 truncate block">{u.email}</span>}
+                                                </div>
+                                                <Badge variant="outline" className={cn(
+                                                    'shrink-0 text-[10px] px-2 py-0',
+                                                    u.role === 'agence' ? 'bg-teal-50 text-teal-700 border-teal-200' : 'bg-violet-50 text-violet-700 border-violet-200'
+                                                )}>
+                                                    {u.role === 'agence' ? 'Agence' : 'Client'}
+                                                </Badge>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="p-6 border-t border-border/30 bg-card/30 backdrop-blur-sm">

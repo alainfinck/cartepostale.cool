@@ -481,6 +481,83 @@ export async function deleteAgency(id: number | string): Promise<{ success: bool
     }
 }
 
+/** Returns users grouped by agency id (users with role agence or client and agency set). */
+export async function getAgencyUsersMap(): Promise<Record<number, User[]>> {
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+        const result = await payload.find({
+            collection: 'users',
+            where: {
+                agency: { exists: true },
+                role: { in: ['agence', 'client'] },
+            },
+            limit: 500,
+            depth: 0,
+        })
+        const map: Record<number, User[]> = {}
+        for (const user of result.docs as User[]) {
+            const agencyId = user.agency
+            if (agencyId != null) {
+                const id = typeof agencyId === 'number' ? agencyId : parseInt(String(agencyId), 10)
+                if (!Number.isNaN(id)) {
+                    if (!map[id]) map[id] = []
+                    map[id].push(user)
+                }
+            }
+        }
+        return map
+    } catch (error) {
+        console.error('Error fetching agency users map:', error)
+        return {}
+    }
+}
+
+/** Returns a one-time magic link for an agency user so the manager can open the agency panel as that agency. */
+export async function getAgencyPanelLoginLink(agencyId: number | string): Promise<{ success: boolean; url?: string; error?: string }> {
+    const { headers } = await import('next/headers')
+    const { randomBytes } = await import('crypto')
+    await requireAdmin()
+    try {
+        const payload = await getPayload({ config })
+        const agencyIdNum = typeof agencyId === 'string' ? parseInt(agencyId, 10) : agencyId
+        if (Number.isNaN(agencyIdNum)) {
+            return { success: false, error: 'ID agence invalide.' }
+        }
+        const usersResult = await payload.find({
+            collection: 'users',
+            where: {
+                role: { equals: 'agence' },
+                agency: { equals: agencyIdNum },
+            },
+            limit: 1,
+            depth: 0,
+        })
+        if (usersResult.totalDocs === 0) {
+            return { success: false, error: 'Aucun utilisateur agence associé à cette agence. Créez un utilisateur avec le rôle Agence lié à cette agence.' }
+        }
+        const user = usersResult.docs[0] as User
+        const token = randomBytes(32).toString('hex')
+        const expires = new Date(Date.now() + 15 * 60 * 1000) // 15 min
+        await payload.update({
+            collection: 'users',
+            id: user.id,
+            data: {
+                magicLinkToken: token,
+                magicLinkExpires: expires.toISOString(),
+            } as any,
+        })
+        const headersList = await headers()
+        const host = headersList.get('host') || 'localhost:3000'
+        const protocol = host.includes('localhost') ? 'http' : 'https'
+        const url = `${protocol}://${host}/api/magic-login?token=${token}&redirect=${encodeURIComponent('/espace-agence')}`
+        return { success: true, url }
+    } catch (error: any) {
+        console.error('Error generating agency panel link:', error)
+        return { success: false, error: error.message || 'Impossible de générer le lien.' }
+    }
+}
+
 // --- Gallery Categories ---
 
 export interface GalleryCategoriesResult {

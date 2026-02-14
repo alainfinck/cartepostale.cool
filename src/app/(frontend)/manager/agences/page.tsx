@@ -1,10 +1,18 @@
-import { getAllAgencies } from '@/actions/manager-actions'
+import { getAllAgencies, getAgencyUsersMap } from '@/actions/manager-actions'
 import { ManagerAgenciesClient } from './ManagerAgenciesClient'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ManagerAgencesPage() {
-  const result = await getAllAgencies()
+  const [agenciesResult, agencyUsersMap] = await Promise.all([
+    getAllAgencies(),
+    getAgencyUsersMap(),
+  ])
 
-  return <ManagerAgenciesClient initialAgencies={result.docs} />
+  return (
+    <ManagerAgenciesClient
+      initialAgencies={agenciesResult.docs}
+      initialAgencyUsers={agencyUsersMap}
+    />
+  )
 }

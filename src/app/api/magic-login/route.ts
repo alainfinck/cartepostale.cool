@@ -65,8 +65,13 @@ export async function GET(request: NextRequest) {
             expiresIn: '7d', // Session duration
         });
 
-        // Create response with redirect
-        const response = NextResponse.redirect(new URL('/espace-client', request.url));
+        // Redirect: allow ?redirect= path (same-origin path only)
+        const redirectParam = searchParams.get('redirect');
+        const defaultRedirect = '/espace-client';
+        const path = redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')
+            ? redirectParam
+            : defaultRedirect;
+        const response = NextResponse.redirect(new URL(path, request.url));
         
         // Set the cookie
         response.cookies.set('payload-token', jwtToken, {
