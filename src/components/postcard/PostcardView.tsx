@@ -636,12 +636,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
                             <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none z-0" />
 
-                            {/* Petite icone en haut à droite au survol (Front) */}
+                            {/* Message "Cliquer pour retourner" au survol (Front) — bien visible */}
                             <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
-                                <div className="bg-white/10 backdrop-blur-md px-2 py-1.5 rounded-lg border border-white/20 shadow-lg flex items-center gap-1.5 transform scale-90 group-hover:scale-100 transition-all duration-500">
-                                    <RotateCw size={12} className="text-white/90" strokeWidth={2} />
-                                    <span className="text-white/90 font-bold uppercase tracking-widest text-[7px]">
-                                        Retourner
+                                <div className="bg-stone-800/95 backdrop-blur-md px-3 py-2.5 rounded-xl border border-stone-600/50 shadow-xl flex items-center gap-2 transform scale-95 group-hover:scale-100 transition-all duration-300">
+                                    <RotateCw size={16} className="text-white shrink-0" strokeWidth={2} />
+                                    <span className="text-white font-bold uppercase tracking-wider text-[10px] sm:text-xs whitespace-nowrap">
+                                        Retourner la carte postale
                                     </span>
                                 </div>
                             </div>
