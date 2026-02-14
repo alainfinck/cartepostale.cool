@@ -1,0 +1,19 @@
+
+> cartepostale-v2@1.0.0 build
+> cross-env NODE_OPTIONS="--no-deprecation --max-old-space-size=8000" next build
+
+   ▲ Next.js 15.4.11
+   - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 38.0s
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/24) ...
+   Generating static pages (6/24) 
+   Generating static pages (12/24) 
+   Generating static pages (18/24) 
+ ✓ Generating static pages (24/24)
+   Finalizing page optimization ...
+   Collecting build traces ...
