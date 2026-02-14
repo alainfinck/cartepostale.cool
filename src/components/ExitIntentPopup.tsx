@@ -21,15 +21,30 @@ export function ExitIntentPopup() {
         const dismissed = sessionStorage.getItem('exit_intent_dismissed')
         if (dismissed) return
 
-        const handleMouseLeave = (e: MouseEvent) => {
-            if (e.clientY <= 0 && !hasTriggered) {
+        const triggerPopup = () => {
+            if (!hasTriggered) {
                 setIsVisible(true)
                 setHasTriggered(true)
             }
         }
 
+        // Mouseleave alone is flaky in some modal/drag contexts.
+        const handleMouseLeave = (e: MouseEvent) => {
+            if (e.clientY <= 20) triggerPopup()
+        }
+
+        const handleMouseOut = (e: MouseEvent) => {
+            const related = e.relatedTarget as Node | null
+            // relatedTarget null means leaving the browser viewport.
+            if (!related && e.clientY <= 20) triggerPopup()
+        }
+
         document.addEventListener('mouseleave', handleMouseLeave)
-        return () => document.removeEventListener('mouseleave', handleMouseLeave)
+        document.addEventListener('mouseout', handleMouseOut)
+        return () => {
+            document.removeEventListener('mouseleave', handleMouseLeave)
+            document.removeEventListener('mouseout', handleMouseOut)
+        }
     }, [hasTriggered])
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -58,7 +73,7 @@ export function ExitIntentPopup() {
     return (
         <AnimatePresence>
             {isVisible && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+                <div className="fixed inset-0 z-[260] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}

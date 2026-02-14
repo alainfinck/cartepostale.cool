@@ -101,6 +101,30 @@ const FILTER_PRESETS: { id: string; label: string; values: FrontImageFilter }[] 
   { id: 'noirblanc', label: 'Noir & blanc', values: { brightness: 102, contrast: 112, saturation: 0, sepia: 0, grayscale: 100 } },
 ]
 
+function getCropPreviewStyle(crop: FrontImageCrop, naturalSize: { w: number; h: number }): React.CSSProperties {
+  const imgAspect = naturalSize.w / naturalSize.h
+  let widthPercent = 100
+  let heightPercent = 100
+
+  if (imgAspect > POSTCARD_ASPECT) {
+    heightPercent = 100 * crop.scale
+    widthPercent = (heightPercent * imgAspect) / POSTCARD_ASPECT
+  } else {
+    widthPercent = 100 * crop.scale
+    heightPercent = (widthPercent / imgAspect) * POSTCARD_ASPECT
+  }
+
+  const leftPercent = 50 - (crop.x / 100) * widthPercent
+  const topPercent = 50 - (crop.y / 100) * heightPercent
+
+  return {
+    width: `${widthPercent}%`,
+    height: `${heightPercent}%`,
+    left: `${leftPercent}%`,
+    top: `${topPercent}%`,
+  }
+}
+
 function buildFrontImageFilterCss(filter: FrontImageFilter): string {
   return [
     `brightness(${filter.brightness}%)`,
@@ -577,7 +601,6 @@ export default function EditorPage() {
   const [showCropPanel, setShowCropPanel] = useState(false)
   const [showImageEditModal, setShowImageEditModal] = useState(false)
   const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null)
-  const [cropContainerSize, setCropContainerSize] = useState<{ w: number; h: number } | null>(null)
   const cropAreaRef = useRef<HTMLDivElement>(null)
   const cropImgRef = useRef<HTMLImageElement>(null)
   const cropDragRef = useRef<{ clientX: number; clientY: number; cropX: number; cropY: number } | null>(null)
@@ -686,26 +709,10 @@ export default function EditorPage() {
       (position) => {
         const { latitude, longitude } = position.coords
         setCoords({ lat: latitude, lng: longitude })
-        setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
       },
       () => { /* refus ou erreur : l’utilisateur peut cliquer sur « Ma position actuelle » */ }
     )
   }, [])
-
-  useEffect(() => {
-    if (!showCropPanel || !cropAreaRef.current) {
-      setCropContainerSize(null)
-      return
-    }
-    const el = cropAreaRef.current
-    const ro = new ResizeObserver((entries) => {
-      const { width, height } = entries[0]?.contentRect ?? { width: 0, height: 0 }
-      if (width && height) setCropContainerSize({ w: width, h: height })
-    })
-    ro.observe(el)
-    setCropContainerSize({ w: el.getBoundingClientRect().width, h: el.getBoundingClientRect().height })
-    return () => ro.disconnect()
-  }, [showCropPanel])
 
   useEffect(() => {
     if (showFullscreen) {
@@ -934,6 +941,14 @@ export default function EditorPage() {
     if (img?.naturalWidth && img.naturalHeight) setImgNaturalSize({ w: img.naturalWidth, h: img.naturalHeight })
   }, [])
 
+  useEffect(() => {
+    if (!showImageEditModal) return
+    const img = cropImgRef.current
+    if (img?.complete && img.naturalWidth > 0 && img.naturalHeight > 0) {
+      setImgNaturalSize({ w: img.naturalWidth, h: img.naturalHeight })
+    }
+  }, [showImageEditModal, frontImage])
+
   const handleStickerSelect = (sticker: Sticker) => {
     const newSticker: StickerPlacement = {
       id: Math.random().toString(36).substr(2, 9),
@@ -997,8 +1012,8 @@ export default function EditorPage() {
         setIsLocating(false)
         const { latitude, longitude } = position.coords
         setCoords({ lat: latitude, lng: longitude })
-        // Reverse geocoding could be added here to set the location string
-        setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
+        // Keep a human-readable label in the UI, coords stay in `coords`.
+        setLocation((prev) => (prev.trim() ? prev : 'Ma position actuelle'))
       },
       () => {
         setIsLocating(false)
@@ -2812,32 +2827,17 @@ export default function EditorPage() {
               onPointerLeave={handleCropPointerUp}
               style={{ touchAction: 'none' }}
             >
-              {imgNaturalSize && cropContainerSize ? (
+              {imgNaturalSize ? (
                 <div
                   className="absolute pointer-events-none"
-                  style={(() => {
-                    const coverScale = Math.max(
-                      cropContainerSize.w / imgNaturalSize.w,
-                      cropContainerSize.h / imgNaturalSize.h
-                    )
-                    const displayScale = coverScale * frontImageCrop.scale
-                    const w = imgNaturalSize.w * displayScale
-                    const h = imgNaturalSize.h * displayScale
-                    const left =
-                      cropContainerSize.w / 2 -
-                      (frontImageCrop.x / 100) * imgNaturalSize.w * displayScale
-                    const top =
-                      cropContainerSize.h / 2 -
-                      (frontImageCrop.y / 100) * imgNaturalSize.h * displayScale
-                    return { width: w, height: h, left, top }
-                  })()}
+                  style={getCropPreviewStyle(frontImageCrop, imgNaturalSize)}
                 >
                   <img
                     ref={cropImgRef}
                     src={frontImage}
                     alt="Retouche photo"
-                    className="block w-full h-full object-contain"
-                    style={{ width: '100%', height: '100%', objectFit: 'contain', filter: frontImageFilterCss }}
+                    className="block w-full h-full object-cover"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', filter: frontImageFilterCss }}
                     onLoad={handleCropImgLoad}
                     draggable={false}
                   />
@@ -2848,7 +2848,11 @@ export default function EditorPage() {
                   src={frontImage}
                   alt="Retouche photo"
                   className="absolute inset-0 w-full h-full pointer-events-none object-cover"
-                  style={{ objectPosition: `${frontImageCrop.x}% ${frontImageCrop.y}%`, filter: frontImageFilterCss }}
+                  style={{
+                    objectPosition: `${frontImageCrop.x}% ${frontImageCrop.y}%`,
+                    transform: `scale(${frontImageCrop.scale})`,
+                    filter: frontImageFilterCss,
+                  }}
                   onLoad={handleCropImgLoad}
                   draggable={false}
                 />
