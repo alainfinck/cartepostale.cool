@@ -734,7 +734,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                         <motion.div
                             className={cn(
                                 "absolute w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#fafaf9] border border-stone-200 flex overflow-hidden",
-                                isLarge ? "p-2 sm:p-8" : "p-3 sm:p-8",
+                                isLarge ? "p-3 sm:p-8 pl-5 sm:pl-10" : "p-3 sm:p-8 pl-4 sm:pl-8",
                                 !isFlipped ? "pointer-events-none" : ""
                             )}
                             style={{
@@ -744,8 +744,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 opacity: backOpacity
                             }}
                         >
-                            {/* Top bar: Retourner + Slider taille du texte */}
-                            <div className="absolute top-4 left-4 right-4 z-40 flex items-center justify-between gap-3 transition-opacity duration-300">
+                            {/* Top bar: Retourner + Slider taille du texte (marge gauche pour éviter troncature) */}
+                            <div className="absolute top-4 left-5 sm:left-8 right-4 z-40 flex items-center justify-between gap-3 transition-opacity duration-300">
                                 <div className="flex items-center gap-1.5 text-stone-400 pointer-events-none group-hover:text-stone-600 transition-all duration-300">
                                     <RotateCw size={isLarge ? 22 : 18} />
                                     <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Retourner</span>
@@ -781,8 +781,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 </div>
                             )}
 
-                            {/* Watermark bottom-left */}
-                            <div className="absolute bottom-3 left-6 flex items-center gap-1 transition-opacity duration-300 opacity-60">
+                            {/* Watermark bottom-left (marge pour ne pas être coupé) */}
+                            <div className="absolute bottom-3 left-7 sm:left-8 flex items-center gap-1 transition-opacity duration-300 opacity-60">
                                 <div className="w-1.5 h-1.5 bg-stone-300 rounded-full shrink-0" />
                                 <span className="text-stone-300 text-[8px] sm:text-[9px] font-medium tracking-[0.25em] uppercase">
                                     cartepostale.cool
@@ -791,17 +791,17 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             <div className={cn("absolute top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50 transition-opacity duration-300", isLarge ? "left-[66%]" : "left-[60%]")}></div>
 
                             <div className="flex w-full h-full gap-2 sm:gap-6 pt-10 sm:pt-14 transition-all duration-300">
-                                {/* Left Side: Message - 2/3 de l'espace avec grosses marges de sécurité */}
-                                <div className={cn("min-w-0 flex flex-col justify-start relative pt-3 sm:pt-4 pl-4 sm:pl-8 pr-2 sm:pr-4", isLarge ? "flex-[2]" : "flex-[1.5]")}>
+                                {/* Left Side: Message - marge gauche généreuse pour éviter troncature (police manuscrite) */}
+                                <div className={cn("min-w-0 flex flex-col justify-start relative pt-3 sm:pt-4 pl-6 sm:pl-10 pr-2 sm:pr-4", isLarge ? "flex-[2]" : "flex-[1.5]")}>
 
                                     <div
                                         ref={messageContainerRef}
-                                        className="flex-1 min-w-0 overflow-y-auto custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 flex flex-col justify-start"
+                                        className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 pl-1 sm:pl-2 flex flex-col justify-start"
                                         onClick={openMessage}
                                     >
                                         <p
                                             ref={messageTextRef}
-                                            className="font-handwriting text-stone-700 leading-[1.2] text-left whitespace-pre-wrap w-full max-w-full break-words"
+                                            className="font-handwriting text-stone-700 leading-[1.2] text-left whitespace-pre-wrap w-full max-w-full break-words pl-2 sm:pl-3"
                                             style={{
                                                 fontSize: `${autoFontSize * backTextScale}rem`
                                             }}
