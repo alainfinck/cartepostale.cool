@@ -146,6 +146,9 @@ export interface User {
   id: number;
   name?: string | null;
   role: 'admin' | 'agence' | 'client' | 'user';
+  /**
+   * Agence liée au compte (pour rôle Agence ou Client).
+   */
   agency?: (number | null) | Agency;
   company?: string | null;
   cardsCreated?: number | null;

@@ -41,7 +41,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { getAllUsers, createUser, updateUser, deleteUser, type UsersResult } from '@/actions/manager-actions'
-import type { User } from '@/payload-types'
+import type { User, Agency } from '@/payload-types'
 
 const roleConfig: Record<string, { label: string; className: string }> = {
   admin: { label: 'Admin', className: 'bg-amber-50 text-amber-700 border-amber-200' },
@@ -59,7 +59,7 @@ function RoleBadge({ role }: { role?: string | null }) {
   )
 }
 
-export function ManagerClientsClient({ initialData }: { initialData: UsersResult }) {
+export function ManagerClientsClient({ initialData, agencies }: { initialData: UsersResult; agencies: Agency[] }) {
   const [data, setData] = useState(initialData)
   const [search, setSearch] = useState('')
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
@@ -146,6 +146,7 @@ export function ManagerClientsClient({ initialData }: { initialData: UsersResult
                 <TableHead>Client</TableHead>
                 <TableHead>Société</TableHead>
                 <TableHead>Rôle</TableHead>
+                <TableHead>Agence</TableHead>
                 <TableHead>Plan</TableHead>
                 <TableHead className="text-right">Usage</TableHead>
                 <TableHead>Inscrit le</TableHead>
@@ -155,7 +156,7 @@ export function ManagerClientsClient({ initialData }: { initialData: UsersResult
             <TableBody>
               {data.docs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-64 text-center">
+                  <TableCell colSpan={8} className="h-64 text-center">
                     <div className="flex flex-col items-center justify-center space-y-3 opacity-50">
                       <UserIcon size={48} className="text-muted-foreground" />
                       <p className="text-muted-foreground font-medium">Aucun client trouvé.</p>
@@ -184,6 +185,11 @@ export function ManagerClientsClient({ initialData }: { initialData: UsersResult
                     </TableCell>
                     <TableCell>
                       <RoleBadge role={user.role} />
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-stone-600 truncate block max-w-[140px]">
+                        {typeof user.agency === 'object' && user.agency?.name ? user.agency.name : user.agency ? String(user.agency) : '—'}
+                      </span>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={cn(
@@ -235,6 +241,7 @@ export function ManagerClientsClient({ initialData }: { initialData: UsersResult
       {/* User Sheet (Create/Edit) */}
       <UserSheet
         user={selectedUser}
+        agencies={agencies}
         isOpen={isSheetOpen}
         onClose={() => setIsSheetOpen(false)}
         onRefresh={() => refreshData()}
@@ -268,14 +275,19 @@ export function ManagerClientsClient({ initialData }: { initialData: UsersResult
   )
 }
 
-function UserSheet({ user, isOpen, onClose, onRefresh }: {
+function UserSheet({ user, agencies, isOpen, onClose, onRefresh }: {
   user: User | null
+  agencies: Agency[]
   isOpen: boolean
   onClose: () => void
   onRefresh: () => void
 }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+
+  const agencyId = user?.agency
+    ? (typeof user.agency === 'object' ? (user.agency as Agency)?.id : user.agency)
+    : ''
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -383,6 +395,22 @@ function UserSheet({ user, isOpen, onClose, onRefresh }: {
                     <option value="free">Free</option>
                     <option value="starter">Starter</option>
                     <option value="pro">Pro</option>
+                  </select>
+                </div>
+                <div className="space-y-2 col-span-2">
+                  <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">Agence (pour rôle Client ou Agence)</label>
+                  <select
+                    name="agency"
+                    defaultValue={agencyId}
+                    className="flex h-11 w-full rounded-md border border-border/50 bg-background/50 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500/30 ring-offset-background"
+                  >
+                    <option value="">Aucune agence</option>
+                    {agencies.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.name}
+                        {a.code ? ` (${a.code})` : ''}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>

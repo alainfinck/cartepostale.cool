@@ -51,7 +51,8 @@ export const Users: CollectionConfig = {
       type: 'relationship',
       relationTo: 'agencies',
       admin: {
-        condition: (data) => data?.role === 'agence',
+        description: 'Agence liée au compte (pour rôle Agence ou Client).',
+        condition: (data) => data?.role === 'agence' || data?.role === 'client',
       },
     },
     {

@@ -1,6 +1,6 @@
 'use server'
 
-import { getPayload } from 'payload'
+import { getPayload, createLocalReq } from 'payload'
 import type { Where } from 'payload'
 import config from '@payload-config'
 import { Postcard, User, Agency, Gallery, GalleryCategory, GalleryTag } from '@/payload-types'
@@ -12,6 +12,15 @@ async function requireAdmin(): Promise<void> {
     if (!user || user.role !== 'admin') {
         throw new Error('Accès réservé aux administrateurs.')
     }
+}
+
+/** Returns current user if admin, otherwise throws. Used to pass user into Local API so hooks see req.user. */
+async function getAdminUser(): Promise<User> {
+    const user = await getCurrentUser()
+    if (!user || user.role !== 'admin') {
+        throw new Error('Accès réservé aux administrateurs.')
+    }
+    return user as User
 }
 
 export interface PostcardFilters {
@@ -313,7 +322,7 @@ export async function getAllUsers(params?: { page?: number; limit?: number; sear
             page: params?.page ?? 1,
             limit: params?.limit ?? 50,
             sort: '-createdAt',
-            depth: 0,
+            depth: 1, // populate agency for list display
         })
         return {
             docs: result.docs as User[],
@@ -327,13 +336,26 @@ export async function getAllUsers(params?: { page?: number; limit?: number; sear
     }
 }
 
+function sanitizeUserFormData(data: Record<string, unknown>): Record<string, unknown> {
+    const out = { ...data }
+    if (out.agency === '' || out.agency === undefined) {
+        out.agency = null
+    } else if (typeof out.agency === 'string') {
+        out.agency = parseInt(out.agency, 10) || null
+    }
+    return out
+}
+
 export async function createUser(data: any): Promise<{ success: boolean; data?: User; error?: string }> {
-    await requireAdmin()
+    const adminUser = await getAdminUser()
     try {
         const payload = await getPayload({ config })
+        const req = await createLocalReq({ user: adminUser }, payload)
+        const sanitized = sanitizeUserFormData(data) as any
         const result = await payload.create({
             collection: 'users',
-            data,
+            data: sanitized,
+            req,
         })
         return { success: true, data: result as User }
     } catch (error: any) {
@@ -343,13 +365,16 @@ export async function createUser(data: any): Promise<{ success: boolean; data?: 
 }
 
 export async function updateUser(id: number | string, data: any): Promise<{ success: boolean; data?: User; error?: string }> {
-    await requireAdmin()
+    const adminUser = await getAdminUser()
     try {
         const payload = await getPayload({ config })
+        const req = await createLocalReq({ user: adminUser }, payload)
+        const sanitized = sanitizeUserFormData(data) as any
         const result = await payload.update({
             collection: 'users',
             id,
-            data,
+            data: sanitized,
+            req,
         })
         return { success: true, data: result as User }
     } catch (error: any) {
