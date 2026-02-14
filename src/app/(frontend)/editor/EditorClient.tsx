@@ -571,8 +571,9 @@ export default function EditorPage() {
 
   // Postcard state
   const [frontImage, setFrontImage] = useState('')
-  const [frontCaption, setFrontCaption] = useState('Souvenirs magiques')
+  const [frontCaption, setFrontCaption] = useState('')
   const [frontEmoji, setFrontEmoji] = useState('✨')
+  const [frontTextBgOpacity, setFrontTextBgOpacity] = useState(90)
   const [message, setMessage] = useState('Un petit coucou de mes vacances ! Tout se passe merveilleusement bien, les paysages sont magnifiques. On pense bien à vous !')
   const [recipientName, setRecipientName] = useState('Maman & Papa')
   const [senderName, setSenderName] = useState('Sarah')
@@ -1414,7 +1415,12 @@ export default function EditorPage() {
                 </div>
               </div>
               <div className="relative">
-                <PostcardView postcard={postcardForPreview} flipped={showBack} className="w-full h-auto aspect-[3/2] shadow-xl rounded-xl border border-stone-100" />
+                <PostcardView
+                  postcard={postcardForPreview}
+                  flipped={showBack}
+                  frontTextBgOpacity={frontTextBgOpacity}
+                  className="w-full h-auto aspect-[3/2] shadow-xl rounded-xl border border-stone-100"
+                />
                 <StickerLayer
                   stickers={stickers}
                   onUpdate={updateSticker}
@@ -1663,9 +1669,20 @@ export default function EditorPage() {
                   </div>
                   <div className="space-y-4">
                     <div>
-                      <label className="mb-1.5 block text-xs font-semibold text-stone-600 uppercase tracking-wider">
-                        Texte accroche
-                      </label>
+                      <div className="mb-1.5 flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                          Texte accroche
+                        </label>
+                        {frontCaption.trim().length > 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => setFrontCaption('')}
+                            className="text-[11px] font-semibold text-stone-500 hover:text-teal-600 transition-colors"
+                          >
+                            Effacer
+                          </button>
+                        ) : null}
+                      </div>
                       <Input
                         placeholder="ex: Souvenirs magiques"
                         value={frontCaption}
@@ -1674,8 +1691,25 @@ export default function EditorPage() {
                         className="h-11 rounded-xl border-stone-200 bg-stone-50/80 text-stone-800 placeholder:text-stone-400 focus:border-teal-400 focus:ring-teal-400"
                       />
                       <p className="mt-1 text-[11px] text-stone-400">
-                        Affiché en bas de la photo (max. 40 caractères)
+                        Optionnel : laissez vide pour ne rien afficher sur la carte (max. 40 caractères)
                       </p>
+                    </div>
+                    <div>
+                      <div className="mb-1.5 flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                          Opacité du fond texte
+                        </label>
+                        <span className="text-xs font-medium text-stone-500 tabular-nums">{frontTextBgOpacity}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={frontTextBgOpacity}
+                        onChange={(e) => setFrontTextBgOpacity(Number(e.target.value))}
+                        className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                      />
                     </div>
                     <div>
                       <label className="mb-2 block text-xs font-semibold text-stone-600 uppercase tracking-wider">
@@ -2684,7 +2718,7 @@ export default function EditorPage() {
                   </div>
                   <div className="flex justify-center -mb-8 sm:mb-0">
                     <div className="transform scale-[0.8] sm:scale-[0.85] origin-top">
-                      <PostcardView postcard={postcardForPreview} flipped={showBack} />
+                      <PostcardView postcard={postcardForPreview} flipped={showBack} frontTextBgOpacity={frontTextBgOpacity} />
                     </div>
                   </div>
                 </div>
@@ -2748,6 +2782,7 @@ export default function EditorPage() {
                   <PostcardView
                     postcard={postcardForPreview}
                     flipped={showBack}
+                    frontTextBgOpacity={frontTextBgOpacity}
                     className="w-full max-w-[1700px] h-auto aspect-[3/2] shadow-2xl cursor-default"
                   />
                 </div>

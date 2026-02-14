@@ -39,6 +39,7 @@ interface PostcardViewProps {
     postcard: Postcard;
     isPreview?: boolean;
     flipped?: boolean;
+    frontTextBgOpacity?: number;
     className?: string;
     isLarge?: boolean;
     width?: string;
@@ -71,6 +72,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     postcard,
     isPreview = false,
     flipped,
+    frontTextBgOpacity = 90,
     className,
     isLarge = false,
     width,
@@ -87,6 +89,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const frontImageFilterCss = buildFrontImageFilterCss(postcard.frontImageFilter);
+    const clampedFrontTextBgOpacity = Math.max(0, Math.min(100, frontTextBgOpacity));
+    const frontTextBgColor = `rgba(255, 255, 255, ${clampedFrontTextBgOpacity / 100})`;
 
     useEffect(() => {
         if (isFullscreen) {
@@ -741,7 +745,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
                             {/* Bloc caption + emoji en bas (affiché seulement si frontEmoji) */}
                             {(postcard.frontCaption || postcard.frontEmoji) && postcard.frontEmoji && (
-                                <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 z-10 flex items-center gap-3 rounded-xl sm:rounded-2xl border border-white/50 bg-white/90 backdrop-blur-md px-4 py-3 sm:px-5 sm:py-3.5 shadow-xl transition-all duration-300">
+                                <div
+                                    className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 z-10 flex items-center gap-3 rounded-xl sm:rounded-2xl border border-white/50 backdrop-blur-md px-4 py-3 sm:px-5 sm:py-3.5 shadow-xl transition-all duration-300"
+                                    style={{ backgroundColor: frontTextBgColor }}
+                                >
                                     <span className="text-lg sm:text-4xl leading-none shrink-0" aria-hidden>{postcard.frontEmoji}</span>
                                     {postcard.frontCaption ? (
                                         <p className="m-0 text-sm sm:text-lg font-semibold leading-tight tracking-tight text-stone-800 break-words line-clamp-2">

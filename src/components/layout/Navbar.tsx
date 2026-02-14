@@ -48,8 +48,9 @@ const dropdownPro = [
 ]
 
 const dropdownTarifs = [
-    { href: '/pricing', icon: Gift, label: 'Gratuit', price: '0€', desc: 'Carte limitée' },
-    { href: '/pricing', icon: Globe, label: 'Occasionnel', price: '2,99€', desc: '/ carte' },
+    { href: '/pricing', icon: Gift, label: 'La "Découverte"', price: '0€', desc: 'Gratuit' },
+    { href: '/pricing', icon: Globe, label: 'La "Personnalisée"', price: '2,99€', desc: '/ carte' },
+    { href: '/pricing', icon: Star, label: 'L\'"Augmentée"', price: '4,99€', desc: '/ carte' },
     { href: '/pricing', icon: Star, label: 'Voyageur', price: '9,99€', desc: '/ mois' },
     { href: '/pricing', icon: Zap, label: 'Pro & Agence', price: 'Sur devis', desc: '' },
 ]

@@ -35,8 +35,8 @@ const pricingPlans: PricingPlan[] = [
         features: [
             '1 seule photo : mise en page classique "carte postale"',
             'Texte limité : nombre de caractères restreint (type tweet)',
-            'Filigrane « Créé avec ❤️ sur cartepostale.cool » au dos',
             'Partage direct : lien public (URL) ou bouton de partage social',
+            'Effets visuels : confettis ou neige à l\'ouverture',
             'Durée de vie : carte expirée après 7 jours'
         ],
         notIncluded: [
@@ -58,7 +58,6 @@ const pricingPlans: PricingPlan[] = [
         description: 'Offrir un souvenir propre, esthétique et durable pour un usage personnel.',
         features: [
             'Multi-photos (pêle-mêle) : jusqu\'à 4 ou 6 photos',
-            'Zéro publicité / pas de filigrane',
             'Personnalisation avancée : police, couleur du papier, stickers',
             'Téléchargement HD (recto/verso) pour impression',
             'Lien permanent (à vie ou au moins 1 an)'
@@ -86,7 +85,6 @@ const pricingPlans: PricingPlan[] = [
             'Le "Secret" : mot de passe ou question secrète',
             'Livre d\'or interactif (réponse du destinataire)',
             'Notification de lecture (email à l\'expéditeur)',
-            'Effets visuels : confettis ou neige à l\'ouverture'
         ],
         notIncluded: [
             'Volume illimité',
@@ -129,7 +127,7 @@ const enterprisePlan = {
     period: '',
     description: 'Solutions marketing et automation pour entreprises.',
     features: [
-        'Volume illimité',
+        'Gros volumes',
         'Tarifs dégressifs',
         'API d\'envoi automatisé',
         'White-label (Marque blanche)',

@@ -24,6 +24,29 @@ export interface PostcardsResult {
     hasPrevPage: boolean
 }
 
+function generatePublicId(length = 6): string {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    let result = ''
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return result
+}
+
+async function generateUniquePublicId(payload: Awaited<ReturnType<typeof getPayload>>): Promise<string> {
+    for (let i = 0; i < 10; i++) {
+        const candidate = generatePublicId()
+        const existing = await payload.find({
+            collection: 'postcards',
+            where: { publicId: { equals: candidate } },
+            limit: 1,
+            depth: 0,
+        })
+        if (existing.totalDocs === 0) return candidate
+    }
+    throw new Error('Impossible de générer un identifiant unique pour la copie.')
+}
+
 export async function getMyPostcards(filters?: PostcardFilters): Promise<PostcardsResult> {
     const user = await getCurrentUser()
     if (!user) {
@@ -218,6 +241,118 @@ export async function deleteMyPostcard(id: number): Promise<{ success: boolean; 
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Erreur lors de la suppression.'
         console.error('Error deleting my postcard:', err)
+        return { success: false, error: message }
+    }
+}
+
+export async function setMyPostcardPublicVisibility(
+    id: number,
+    isPublic: boolean
+): Promise<{ success: boolean; error?: string }> {
+    const { allowed, error } = await ensureOwnership(id)
+    if (!allowed) return { success: false, error }
+
+    try {
+        const payload = await getPayload({ config })
+        await payload.update({
+            collection: 'postcards',
+            id,
+            data: { isPublic },
+        })
+        return { success: true }
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Erreur lors du changement de visibilite.'
+        console.error('Error updating postcard public visibility:', err)
+        return { success: false, error: message }
+    }
+}
+
+export async function duplicateMyPostcard(
+    id: number
+): Promise<{ success: boolean; postcard?: Postcard; error?: string }> {
+    const { allowed, error } = await ensureOwnership(id)
+    if (!allowed) return { success: false, error }
+
+    const user = await getCurrentUser()
+    if (!user) return { success: false, error: 'Non connecté.' }
+
+    try {
+        const payload = await getPayload({ config })
+        const source = await payload.findByID({
+            collection: 'postcards',
+            id,
+            depth: 0,
+        })
+
+        const publicId = await generateUniquePublicId(payload)
+        const sourceFrontImage = typeof source.frontImage === 'object' && source.frontImage
+            ? source.frontImage.id
+            : source.frontImage
+        const sourceAgency = typeof source.agency === 'object' && source.agency
+            ? source.agency.id
+            : source.agency
+        const sourceBrandLogo = typeof source.brandLogo === 'object' && source.brandLogo
+            ? source.brandLogo.id
+            : source.brandLogo
+
+        const duplicated = await payload.create({
+            collection: 'postcards',
+            data: {
+                publicId,
+                frontImage: sourceFrontImage ?? undefined,
+                frontImageURL: source.frontImageURL ?? undefined,
+                frontCaption: source.frontCaption ?? undefined,
+                frontEmoji: source.frontEmoji ?? undefined,
+                message: source.message ?? '',
+                recipients: (source.recipients ?? []).map((recipient) => ({
+                    email: recipient?.email ?? undefined,
+                    phone: recipient?.phone ?? undefined,
+                    name: recipient?.name ?? undefined,
+                })),
+                recipientName: source.recipientName ?? undefined,
+                senderName: source.senderName ?? undefined,
+                senderEmail: source.senderEmail ?? undefined,
+                location: source.location ?? undefined,
+                coords: source.coords?.lat != null || source.coords?.lng != null
+                    ? {
+                        lat: source.coords?.lat ?? undefined,
+                        lng: source.coords?.lng ?? undefined,
+                    }
+                    : undefined,
+                stampStyle: source.stampStyle ?? 'classic',
+                stampLabel: source.stampLabel ?? undefined,
+                stampYear: source.stampYear ?? undefined,
+                postmarkText: source.postmarkText ?? undefined,
+                date: new Date().toISOString(),
+                status: 'draft',
+                views: 0,
+                shares: 0,
+                mediaItems: (source.mediaItems ?? [])
+                    .map((item) => {
+                        const mediaId = typeof item?.media === 'object' && item?.media
+                            ? item.media.id
+                            : item?.media
+                        if (!mediaId) return null
+                        return {
+                            media: mediaId,
+                            type: item?.type === 'video' ? 'video' : 'image',
+                        }
+                    })
+                    .filter((item): item is { media: number; type: 'image' | 'video' } => item !== null),
+                isPremium: Boolean(source.isPremium),
+                agency: sourceAgency ?? undefined,
+                brandLogo: sourceBrandLogo ?? undefined,
+                author: user.id,
+                stickers: source.stickers ?? undefined,
+                allowComments: source.allowComments ?? true,
+                isPublic: source.isPublic ?? true,
+            },
+        })
+
+        return { success: true, postcard: duplicated as Postcard }
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Erreur lors de la duplication.'
+        console.error('Error duplicating my postcard:', err)
         return { success: false, error: message }
     }
 }

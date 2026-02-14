@@ -53,6 +53,8 @@ import {
     updateMyPostcard,
     updateMyPostcardStatus,
     deleteMyPostcard,
+    duplicateMyPostcard,
+    setMyPostcardPublicVisibility,
     createTrackingLink,
     getTrackingLinksForPostcard,
     sendTrackingLinkByEmail,
@@ -159,24 +161,30 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
     const [trackingLinks, setTrackingLinks] = useState<PostcardTrackingLink[]>([])
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
     const [deleteConfirmBulkIds, setDeleteConfirmBulkIds] = useState<number[] | null>(null)
+    const maxAutoColumns = useEspaceClientActions ? 3 : 6
 
     useEffect(() => {
         if (!isAuto) return
 
         const updateCols = () => {
             const w = window.innerWidth
-            if (w < 640) setColumns(1)
-            else if (w < 1024) setColumns(2)
-            else if (w < 1280) setColumns(3)
-            else if (w < 1536) setColumns(4)
-            else if (w < 1920) setColumns(5)
-            else setColumns(6)
+            let nextColumns = 6
+            if (w < 640) nextColumns = 1
+            else if (w < 1024) nextColumns = 2
+            else if (w < 1280) nextColumns = 3
+            else if (w < 1536) nextColumns = 4
+            else if (w < 1920) nextColumns = 5
+            setColumns(Math.min(nextColumns, maxAutoColumns))
         }
 
         updateCols()
         window.addEventListener('resize', updateCols)
         return () => window.removeEventListener('resize', updateCols)
-    }, [isAuto])
+    }, [isAuto, maxAutoColumns])
+
+    useEffect(() => {
+        setColumns((prev) => Math.min(prev, maxAutoColumns))
+    }, [maxAutoColumns])
 
     const showTrackingLinks = useEspaceClientActions || useAgenceActions
 
@@ -228,6 +236,8 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
     const updatePostcardFn = useAgenceActions ? updateAgencyPostcard : useEspaceClientActions ? updateMyPostcard : updatePostcard
     const updatePostcardStatusFn = useAgenceActions ? updateAgencyPostcardStatus : useEspaceClientActions ? updateMyPostcardStatus : updatePostcardStatus
     const deletePostcardFn = useAgenceActions ? deleteAgencyPostcard : useEspaceClientActions ? deleteMyPostcard : deletePostcard
+    const canDuplicatePostcard = Boolean(useEspaceClientActions)
+    const canTogglePublicVisibility = Boolean(useEspaceClientActions)
 
     const refreshData = useCallback((statusF?: StatusFilter, searchQ?: string) => {
         startTransition(async () => {
@@ -269,6 +279,38 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
                 setDeleteConfirm(null)
                 if (selectedPostcard?.id === id) setSelectedPostcard(null)
                 refreshData()
+            } else if (result.error) {
+                alert(result.error)
+            }
+        })
+    }
+
+    const handleDuplicate = (id: number) => {
+        if (!canDuplicatePostcard) return
+
+        startTransition(async () => {
+            const result = await duplicateMyPostcard(id)
+            if (result.success) {
+                if (result.postcard) {
+                    setSelectedPostcard(result.postcard)
+                    setEditingPostcard(result.postcard)
+                }
+                refreshData()
+            } else if (result.error) {
+                alert(result.error)
+            }
+        })
+    }
+
+    const handleSetPublicVisibility = (id: number, isPublic: boolean) => {
+        if (!canTogglePublicVisibility) return
+        startTransition(async () => {
+            const result = await setMyPostcardPublicVisibility(id, isPublic)
+            if (result.success) {
+                refreshData()
+                if (selectedPostcard?.id === id) {
+                    setSelectedPostcard((prev) => (prev ? { ...prev, isPublic } : prev))
+                }
             } else if (result.error) {
                 alert(result.error)
             }
@@ -436,10 +478,10 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
                                     size="icon"
                                     className="h-8 w-8 text-muted-foreground hover:bg-muted"
                                     onClick={() => {
-                                        setColumns(Math.min(6, columns + 1))
+                                        setColumns(Math.min(maxAutoColumns, columns + 1))
                                         setIsAuto(false)
                                     }}
-                                    disabled={columns >= 6}
+                                    disabled={columns >= maxAutoColumns}
                                 >
                                     <Plus size={14} />
                                 </Button>
@@ -518,6 +560,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
                                         onToggleSelect={() => toggleSelect(postcard.id)}
                                         onSelect={() => setSelectedPostcard(postcard)}
                                         onEdit={() => setEditingPostcard(postcard)}
+                                        onDuplicate={canDuplicatePostcard ? () => handleDuplicate(postcard.id) : undefined}
                                         onUpdateStatus={handleUpdateStatus}
                                         onDelete={(id) => setDeleteConfirm(id)}
                                     />
@@ -560,6 +603,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
                                                     onToggleSelect={() => toggleSelect(postcard.id)}
                                                     onSelect={() => setSelectedPostcard(postcard)}
                                                     onEdit={() => setEditingPostcard(postcard)}
+                                                    onDuplicate={canDuplicatePostcard ? () => handleDuplicate(postcard.id) : undefined}
                                                     onUpdateStatus={handleUpdateStatus}
                                                     onDelete={(id) => setDeleteConfirm(id)}
                                                     formatDate={formatDate}
@@ -579,6 +623,8 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
                         isOpen={!!selectedPostcard}
                         onClose={() => setSelectedPostcard(null)}
                         onEdit={() => setEditingPostcard(selectedPostcard)}
+                        onDuplicate={canDuplicatePostcard ? handleDuplicate : undefined}
+                        onSetPublicVisibility={canTogglePublicVisibility ? handleSetPublicVisibility : undefined}
                         onUpdateStatus={handleUpdateStatus}
                         onDelete={(id) => setDeleteConfirm(id)}
                         formatDate={formatDate}
@@ -733,12 +779,13 @@ function StatusDropdown({ currentStatus, onUpdate, postcardId }: {
     )
 }
 
-function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onUpdateStatus, onDelete }: {
+function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onDuplicate, onUpdateStatus, onDelete }: {
     postcard: PayloadPostcard
     selected: boolean
     onToggleSelect: () => void
     onSelect: () => void
     onEdit: () => void
+    onDuplicate?: () => void
     onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
     onDelete: (id: number) => void
 }) {
@@ -850,6 +897,17 @@ function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onUpda
                                         >
                                             <Pencil size={14} />
                                         </Button>
+                                        {onDuplicate && (
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={(e) => { e.stopPropagation(); onDuplicate() }}
+                                                className="h-8 w-8 text-stone-400 hover:text-violet-600 hover:bg-violet-50 transition-all rounded-full border border-border/30"
+                                                title="Dupliquer"
+                                            >
+                                                <Copy size={14} />
+                                            </Button>
+                                        )}
                                         <StatusDropdown
                                             currentStatus={postcard.status || 'draft'}
                                             onUpdate={onUpdateStatus}
@@ -890,12 +948,13 @@ function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onUpda
     )
 }
 
-function ListRow({ postcard, selected, onToggleSelect, onSelect, onEdit, onUpdateStatus, onDelete, formatDate }: {
+function ListRow({ postcard, selected, onToggleSelect, onSelect, onEdit, onDuplicate, onUpdateStatus, onDelete, formatDate }: {
     postcard: PayloadPostcard
     selected: boolean
     onToggleSelect: () => void
     onSelect: () => void
     onEdit: () => void
+    onDuplicate?: () => void
     onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
     onDelete: (id: number) => void
     formatDate: (d: string) => string
@@ -946,6 +1005,17 @@ function ListRow({ postcard, selected, onToggleSelect, onSelect, onEdit, onUpdat
                     >
                         <Pencil size={14} />
                     </Button>
+                    {onDuplicate && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-stone-400 hover:text-violet-600 hover:bg-violet-50 transition-all rounded-full"
+                            onClick={() => onDuplicate()}
+                            title="Dupliquer"
+                        >
+                            <Copy size={14} />
+                        </Button>
+                    )}
                     <StatusDropdown
                         currentStatus={postcard.status || 'draft'}
                         onUpdate={onUpdateStatus}
@@ -972,6 +1042,8 @@ function DetailsSheet({
     isOpen,
     onClose,
     onEdit,
+    onDuplicate,
+    onSetPublicVisibility,
     onUpdateStatus,
     onDelete,
     formatDate,
@@ -985,6 +1057,8 @@ function DetailsSheet({
     isOpen: boolean
     onClose: () => void
     onEdit: () => void
+    onDuplicate?: (id: number) => void
+    onSetPublicVisibility?: (id: number, isPublic: boolean) => void
     onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
     onDelete: (id: number) => void
     formatDate: (d: string) => string
@@ -993,17 +1067,30 @@ function DetailsSheet({
     trackingLinks?: PostcardTrackingLink[]
     onRefreshTrackingLinks?: () => void
 }) {
+    const [activePanelTab, setActivePanelTab] = useState<'details' | 'stats'>('details')
     const [trackingDialogOpen, setTrackingDialogOpen] = useState(false)
     const [emailDialogOpen, setEmailDialogOpen] = useState(false)
     const [emailDialogTracking, setEmailDialogTracking] = useState<PostcardTrackingLink | null>(null)
     const [emailInput, setEmailInput] = useState('')
     const [emailSending, setEmailSending] = useState(false)
+    const [quickSendDialogOpen, setQuickSendDialogOpen] = useState(false)
+    const [quickSendPending, setQuickSendPending] = useState(false)
+    const [quickSendForm, setQuickSendForm] = useState({
+        recipientFirstName: '',
+        recipientLastName: '',
+        description: '',
+        recipientEmail: '',
+    })
     const [createTrackingPending, setCreateTrackingPending] = useState(false)
     const [createForm, setCreateForm] = useState({
         recipientFirstName: '',
         recipientLastName: '',
         description: '',
     } as CreateTrackingLinkData)
+
+    useEffect(() => {
+        setActivePanelTab('details')
+    }, [postcard?.id])
 
     if (!postcard) return null
     const frontendPostcard = mapToFrontend(postcard)
@@ -1029,211 +1116,262 @@ function DetailsSheet({
                             <StatusBadge status={postcard.status || 'draft'} />
                         </div>
                     </div>
+                    <div className="mt-4 inline-flex rounded-lg border border-border/40 bg-muted/20 p-1">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setActivePanelTab('details')}
+                            className={cn(
+                                'h-8 rounded-md px-3 text-xs',
+                                activePanelTab === 'details'
+                                    ? 'bg-background shadow-sm text-foreground'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            )}
+                        >
+                            Détails
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setActivePanelTab('stats')}
+                            className={cn(
+                                'h-8 rounded-md px-3 text-xs',
+                                activePanelTab === 'stats'
+                                    ? 'bg-background shadow-sm text-foreground'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            )}
+                        >
+                            Stats
+                        </Button>
+                    </div>
                 </SheetHeader>
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
                     <div className="p-6 space-y-8">
-                        {/* Preview Section */}
-                        <div className="bg-stone-50/50 rounded-2xl p-6 border border-stone-200/50 flex justify-center shadow-inner overflow-hidden relative group">
-                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,128,128,0.05),transparent)] pointer-events-none" />
-                            <div className="transform scale-[0.65] sm:scale-[0.85] origin-center transition-transform hover:scale-[0.88] duration-700">
-                                <PostcardView postcard={frontendPostcard} isPreview />
-                            </div>
-                        </div>
+                        {activePanelTab === 'details' ? (
+                            <>
+                                {/* Preview Section */}
+                                <div className="bg-stone-50/50 rounded-2xl p-6 border border-stone-200/50 flex justify-center shadow-inner overflow-hidden relative group">
+                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,128,128,0.05),transparent)] pointer-events-none" />
+                                    <div className="transform scale-[0.65] sm:scale-[0.85] origin-center transition-transform hover:scale-[0.88] duration-700">
+                                        <PostcardView postcard={frontendPostcard} isPreview />
+                                    </div>
+                                </div>
 
-                        {/* Metadatas Section */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <InfoCard icon={<User size={16} />} label="Expéditeur" value={postcard.senderName || ''} />
-                            <InfoCard icon={<Users size={16} />} label="Destinataire" value={postcard.recipientName || ''} />
-                            <InfoCard icon={<MapPin size={16} className="text-orange-400" />} label="Lieu" value={postcard.location || ''} />
-                            <InfoCard icon={<Calendar size={16} />} label="Date de l'envoi" value={formatDate(postcard.date)} />
-                            <InfoCard
-                                icon={<UserIcon size={16} className="text-teal-500" />}
-                                label="Client (Compte)"
-                                value={typeof postcard.author === 'object' && postcard.author ? (postcard.author.name || postcard.author.email) : 'Aucun'}
-                            />
-                        </div>
+                                {/* Metadatas Section */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <InfoCard icon={<User size={16} />} label="Expéditeur" value={postcard.senderName || ''} />
+                                    <InfoCard icon={<Users size={16} />} label="Destinataire" value={postcard.recipientName || ''} />
+                                    <InfoCard icon={<MapPin size={16} className="text-orange-400" />} label="Lieu" value={postcard.location || ''} />
+                                    <InfoCard icon={<Calendar size={16} />} label="Date de l'envoi" value={formatDate(postcard.date)} />
+                                    <InfoCard
+                                        icon={<UserIcon size={16} className="text-teal-500" />}
+                                        label="Client (Compte)"
+                                        value={typeof postcard.author === 'object' && postcard.author ? (postcard.author.name || postcard.author.email) : 'Aucun'}
+                                    />
+                                </div>
 
-                        {/* Stats & Tech Section */}
-                        <div className="p-4 bg-muted/30 rounded-xl border border-border/30 space-y-4">
-                            <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4 opacity-50">Audience & Technique</h4>
-                            <div className="grid grid-cols-3 gap-4">
-                                <div>
-                                    <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-tight">Vues</p>
-                                    <p className="text-2xl font-bold text-foreground">{postcard.views || 0}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-tight">Partages</p>
-                                    <p className="text-2xl font-bold text-foreground">{postcard.shares || 0}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-tight">Type</p>
-                                    <Badge variant={postcard.isPremium ? "secondary" : "outline"} className="mt-1 shadow-none">
-                                        {postcard.isPremium ? "Premium" : "Classique"}
-                                    </Badge>
-                                </div>
-                            </div>
-                            {viewStats && (
-                                <>
-                                    <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border/20">
-                                        <div>
-                                            <p className="text-[10px] text-muted-foreground mb-0.5 uppercase tracking-tight">Sessions uniques</p>
-                                            <p className="text-lg font-semibold text-foreground">{viewStats.uniqueSessions}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] text-muted-foreground mb-0.5 uppercase tracking-tight">Temps moyen (s)</p>
-                                            <p className="text-lg font-semibold text-foreground">
-                                                {viewStats.avgDurationSeconds != null ? Math.round(viewStats.avgDurationSeconds) : '—'}
-                                            </p>
+                                {/* Message Section */}
+                                {postcard.message && (
+                                    <div className="space-y-3">
+                                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">Message écrit</h4>
+                                        <div className="bg-card border border-border/50 rounded-xl p-5 shadow-sm italic text-stone-600 leading-relaxed relative bg-gradient-to-br from-white to-stone-50">
+                                            <div className="absolute top-0 right-0 p-2 opacity-5 pointer-events-none">
+                                                <FileText size={48} />
+                                            </div>
+                                            &quot;{postcard.message}&quot;
                                         </div>
                                     </div>
-                                    {(viewStats.byCountry.length > 0 || viewStats.byBrowser.length > 0) && (
-                                        <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/20">
-                                            {viewStats.byCountry.length > 0 && (
-                                                <div>
-                                                    <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight">Pays (top)</p>
-                                                    <ul className="space-y-1 text-xs text-foreground">
-                                                        {viewStats.byCountry.slice(0, 5).map(({ country, count }) => (
-                                                            <li key={country} className="flex justify-between gap-2">
-                                                                <span className="truncate">{country}</span>
-                                                                <span className="font-medium tabular-nums">{count}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
-                                            {viewStats.byBrowser.length > 0 && (
-                                                <div>
-                                                    <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight">Navigateurs (top)</p>
-                                                    <ul className="space-y-1 text-xs text-foreground">
-                                                        {viewStats.byBrowser.slice(0, 5).map(({ browser, count }) => (
-                                                            <li key={browser} className="flex justify-between gap-2">
-                                                                <span className="truncate">{browser}</span>
-                                                                <span className="font-medium tabular-nums">{count}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                    {viewStats.recentEvents.length > 0 && (
-                                        <div className="pt-2 border-t border-border/20">
-                                            <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight">Dernières ouvertures</p>
-                                            <ul className="space-y-1.5 text-xs text-foreground max-h-32 overflow-y-auto">
-                                                {viewStats.recentEvents.map((ev, i) => (
-                                                    <li key={i} className="flex justify-between gap-2 py-1 border-b border-border/10 last:border-0">
-                                                        <span className="text-muted-foreground truncate">
-                                                            {new Date(ev.openedAt).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                                                        </span>
-                                                        <span className="truncate">{ev.country ?? '—'}</span>
-                                                        <span className="truncate">{ev.browser ?? '—'}</span>
-                                                        <span className="tabular-nums">{ev.durationSeconds != null ? `${ev.durationSeconds}s` : '—'}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </div>
+                                )}
 
-                        {/* Message Section */}
-                        {postcard.message && (
-                            <div className="space-y-3">
-                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">Message écrit</h4>
-                                <div className="bg-card border border-border/50 rounded-xl p-5 shadow-sm italic text-stone-600 leading-relaxed relative bg-gradient-to-br from-white to-stone-50">
-                                    <div className="absolute top-0 right-0 p-2 opacity-5 pointer-events-none">
-                                        <FileText size={48} />
-                                    </div>
-                                    &quot;{postcard.message}&quot;
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Liens de tracking (espace client uniquement) */}
-                        {useEspaceClientActions && (
-                            <div className="space-y-3">
-                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">Suivi par destinataire</h4>
-                                <div className="p-4 bg-muted/30 rounded-xl border border-border/30 space-y-3">
-                                    {(trackingLinks?.length ?? 0) === 0 ? (
-                                        <p className="text-sm text-muted-foreground">Aucun lien de tracking. Créez-en un pour partager cette carte avec un suivi personnalisé.</p>
-                                    ) : (
-                                        <ul className="space-y-3">
-                                            {(trackingLinks ?? []).map((t) => {
-                                                const trackingUrl = `${baseUrl}/v/${t.token}`
-                                                const shareText = 'Une carte postale pour vous : '
-                                                return (
-                                                    <li key={t.id} className="p-3 rounded-lg border border-border/50 bg-background/50 space-y-2">
-                                                        <div className="flex items-center justify-between gap-2">
-                                                            <span className="font-medium text-sm text-foreground">
-                                                                {[t.recipientFirstName, t.recipientLastName].filter(Boolean).join(' ') || 'Sans nom'}
-                                                            </span>
-                                                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                                                <Eye size={12} /> {t.views ?? 0} vues
-                                                            </span>
-                                                        </div>
-                                                        {t.description && (
-                                                            <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>
-                                                        )}
-                                                        <div className="flex flex-wrap items-center gap-2">
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className="h-8 gap-1.5 text-xs"
-                                                                onClick={() => {
-                                                                    const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/v/${t.token}`
-                                                                    void navigator.clipboard.writeText(url).then(() => alert('Lien copié !'))
-                                                                }}
-                                                            >
-                                                                <Copy size={12} /> Copier
-                                                            </Button>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className="h-8 gap-1.5 text-xs"
-                                                                onClick={() => {
-                                                                    setEmailDialogTracking(t)
-                                                                    setEmailInput('')
-                                                                    setEmailDialogOpen(true)
-                                                                }}
-                                                            >
-                                                                <Mail size={12} /> Email
-                                                            </Button>
-                                                            <a
-                                                                href={`https://wa.me/?text=${encodeURIComponent(shareText + (typeof window !== 'undefined' ? window.location.origin : '') + '/v/' + t.token)}`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                            >
-                                                                <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
-                                                                    <MessageCircle size={12} /> WhatsApp
-                                                                </Button>
-                                                            </a>
-                                                            <a
-                                                                href={`sms:?body=${encodeURIComponent(shareText + (typeof window !== 'undefined' ? window.location.origin : '') + '/v/' + t.token)}`}
-                                                            >
-                                                                <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
-                                                                    <Send size={12} /> SMS
-                                                                </Button>
-                                                            </a>
-                                                        </div>
-                                                    </li>
-                                                )
-                                            })}
-                                        </ul>
-                                    )}
+                                {/* Liens de tracking (espace client uniquement) */}
+                                {useEspaceClientActions && (
+                                    <div className="space-y-3">
+                                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">Suivi par destinataire</h4>
+                                        <div className="p-4 bg-muted/30 rounded-xl border border-border/30 space-y-3">
+                                            {(trackingLinks?.length ?? 0) === 0 ? (
+                                                <p className="text-sm text-muted-foreground">Aucun lien de tracking. Créez-en un pour partager cette carte avec un suivi personnalisé.</p>
+                                            ) : (
+                                                <ul className="space-y-3">
+                                                    {(trackingLinks ?? []).map((t) => {
+                                                        const trackingUrl = `${baseUrl}/v/${t.token}`
+                                                        const shareText = 'Une carte postale pour vous : '
+                                                        return (
+                                                            <li key={t.id} className="p-3 rounded-lg border border-border/50 bg-background/50 space-y-2">
+                                                                <div className="flex items-center justify-between gap-2">
+                                                                    <span className="font-medium text-sm text-foreground">
+                                                                        {[t.recipientFirstName, t.recipientLastName].filter(Boolean).join(' ') || 'Sans nom'}
+                                                                    </span>
+                                                                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                                                        <Eye size={12} /> {t.views ?? 0} vues
+                                                                    </span>
+                                                                </div>
+                                                                {t.description && (
+                                                                    <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>
+                                                                )}
+                                                                <div className="flex flex-wrap items-center gap-2">
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="h-8 gap-1.5 text-xs"
+                                                                        onClick={() => {
+                                                                            const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/v/${t.token}`
+                                                                            void navigator.clipboard.writeText(url).then(() => alert('Lien copié !'))
+                                                                        }}
+                                                                    >
+                                                                        <Copy size={12} /> Copier
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="h-8 gap-1.5 text-xs"
+                                                                        onClick={() => {
+                                                                            setEmailDialogTracking(t)
+                                                                            setEmailInput('')
+                                                                            setEmailDialogOpen(true)
+                                                                        }}
+                                                                    >
+                                                                        <Mail size={12} /> Email
+                                                                    </Button>
+                                                                    <a
+                                                                        href={`https://wa.me/?text=${encodeURIComponent(shareText + (typeof window !== 'undefined' ? window.location.origin : '') + '/v/' + t.token)}`}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                    >
+                                                                        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+                                                                            <MessageCircle size={12} /> WhatsApp
+                                                                        </Button>
+                                                                    </a>
+                                                                    <a
+                                                                        href={`sms:?body=${encodeURIComponent(shareText + (typeof window !== 'undefined' ? window.location.origin : '') + '/v/' + t.token)}`}
+                                                                    >
+                                                                        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+                                                                            <Send size={12} /> SMS
+                                                                        </Button>
+                                                                    </a>
+                                                                </div>
+                                                            </li>
+                                                        )
+                                                    })}
+                                                </ul>
+                                            )}
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="w-full gap-2 border-dashed"
+                                                onClick={() => {
+                                                    setCreateForm({ recipientFirstName: '', recipientLastName: '', description: '' })
+                                                    setTrackingDialogOpen(true)
+                                                }}
+                                            >
+                                                <Link2 size={14} /> Créer un lien de tracking
+                                            </Button>
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="w-full gap-2 border-dashed"
+                                        className="w-full gap-2"
                                         onClick={() => {
-                                            setCreateForm({ recipientFirstName: '', recipientLastName: '', description: '' })
-                                            setTrackingDialogOpen(true)
+                                            setQuickSendForm({
+                                                recipientFirstName: '',
+                                                recipientLastName: '',
+                                                description: '',
+                                                recipientEmail: '',
+                                            })
+                                            setQuickSendDialogOpen(true)
                                         }}
                                     >
-                                        <Link2 size={14} /> Créer un lien de tracking
+                                        <Mail size={14} /> Envoyer a un destinataire (email)
                                     </Button>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="p-4 bg-muted/30 rounded-xl border border-border/30 space-y-4">
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4 opacity-50">Audience & Technique</h4>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-tight">Vues</p>
+                                        <p className="text-2xl font-bold text-foreground">{postcard.views || 0}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-tight">Partages</p>
+                                        <p className="text-2xl font-bold text-foreground">{postcard.shares || 0}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-tight">Type</p>
+                                        <Badge variant={postcard.isPremium ? "secondary" : "outline"} className="mt-1 shadow-none">
+                                            {postcard.isPremium ? "Premium" : "Classique"}
+                                        </Badge>
+                                    </div>
                                 </div>
+                                {viewStats ? (
+                                    <>
+                                        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border/20">
+                                            <div>
+                                                <p className="text-[10px] text-muted-foreground mb-0.5 uppercase tracking-tight">Sessions uniques</p>
+                                                <p className="text-lg font-semibold text-foreground">{viewStats.uniqueSessions}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-muted-foreground mb-0.5 uppercase tracking-tight">Temps moyen (s)</p>
+                                                <p className="text-lg font-semibold text-foreground">
+                                                    {viewStats.avgDurationSeconds != null ? Math.round(viewStats.avgDurationSeconds) : '—'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {(viewStats.byCountry.length > 0 || viewStats.byBrowser.length > 0) && (
+                                            <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/20">
+                                                {viewStats.byCountry.length > 0 && (
+                                                    <div>
+                                                        <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight">Pays (top)</p>
+                                                        <ul className="space-y-1 text-xs text-foreground">
+                                                            {viewStats.byCountry.slice(0, 5).map(({ country, count }) => (
+                                                                <li key={country} className="flex justify-between gap-2">
+                                                                    <span className="truncate">{country}</span>
+                                                                    <span className="font-medium tabular-nums">{count}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                                {viewStats.byBrowser.length > 0 && (
+                                                    <div>
+                                                        <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight">Navigateurs (top)</p>
+                                                        <ul className="space-y-1 text-xs text-foreground">
+                                                            {viewStats.byBrowser.slice(0, 5).map(({ browser, count }) => (
+                                                                <li key={browser} className="flex justify-between gap-2">
+                                                                    <span className="truncate">{browser}</span>
+                                                                    <span className="font-medium tabular-nums">{count}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                        {viewStats.recentEvents.length > 0 && (
+                                            <div className="pt-2 border-t border-border/20">
+                                                <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight">Dernières ouvertures</p>
+                                                <ul className="space-y-1.5 text-xs text-foreground max-h-64 overflow-y-auto">
+                                                    {viewStats.recentEvents.map((ev, i) => (
+                                                        <li key={i} className="flex justify-between gap-2 py-1 border-b border-border/10 last:border-0">
+                                                            <span className="text-muted-foreground truncate">
+                                                                {new Date(ev.openedAt).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                            </span>
+                                                            <span className="truncate">{ev.country ?? '—'}</span>
+                                                            <span className="truncate">{ev.browser ?? '—'}</span>
+                                                            <span className="tabular-nums">{ev.durationSeconds != null ? `${ev.durationSeconds}s` : '—'}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground border-t border-border/20 pt-3">
+                                        Les statistiques détaillées se chargent ou ne sont pas encore disponibles pour cette carte.
+                                    </p>
+                                )}
                             </div>
                         )}
                     </div>
@@ -1280,6 +1418,33 @@ function DetailsSheet({
                             >
                                 <Pencil size={18} />
                             </Button>
+                            {onDuplicate && (
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => onDuplicate(postcard.id)}
+                                    className="w-12 h-12 text-violet-600 border-border/50 hover:bg-violet-50 rounded-xl transition-colors"
+                                    title="Dupliquer la carte"
+                                >
+                                    <Copy size={18} />
+                                </Button>
+                            )}
+                            {onSetPublicVisibility && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => onSetPublicVisibility(postcard.id, !(postcard.isPublic ?? true))}
+                                    className={cn(
+                                        'h-12 px-4 rounded-xl border-border/50 transition-colors',
+                                        postcard.isPublic
+                                            ? 'text-emerald-700 hover:bg-emerald-50'
+                                            : 'text-stone-600 hover:bg-stone-50'
+                                    )}
+                                    title={postcard.isPublic ? 'Rendre la carte privee' : 'Rendre la carte publique'}
+                                >
+                                    {postcard.isPublic ? 'Publique' : 'Privee'}
+                                </Button>
+                            )}
 
                             <Button
                                 variant="outline"
@@ -1351,6 +1516,96 @@ function DetailsSheet({
                                 }}
                             >
                                 {createTrackingPending ? 'Création…' : 'Créer le lien'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Dialog: Envoi direct a un destinataire specifique */}
+                <Dialog open={quickSendDialogOpen} onOpenChange={setQuickSendDialogOpen}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Envoyer la carte par email</DialogTitle>
+                            <DialogDescription>
+                                Cree un lien de tracking personnalise puis envoie l'email au destinataire.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Prenom</label>
+                                    <Input
+                                        value={quickSendForm.recipientFirstName}
+                                        onChange={(e) => setQuickSendForm((f) => ({ ...f, recipientFirstName: e.target.value }))}
+                                        placeholder="Prenom"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Nom</label>
+                                    <Input
+                                        value={quickSendForm.recipientLastName}
+                                        onChange={(e) => setQuickSendForm((f) => ({ ...f, recipientLastName: e.target.value }))}
+                                        placeholder="Nom"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Email destinataire</label>
+                                <Input
+                                    type="email"
+                                    value={quickSendForm.recipientEmail}
+                                    onChange={(e) => setQuickSendForm((f) => ({ ...f, recipientEmail: e.target.value }))}
+                                    placeholder="destinataire@exemple.fr"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Description (optionnel)</label>
+                                <Input
+                                    value={quickSendForm.description}
+                                    onChange={(e) => setQuickSendForm((f) => ({ ...f, description: e.target.value }))}
+                                    placeholder="Ex. Carte anniversaire"
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setQuickSendDialogOpen(false)}>Annuler</Button>
+                            <Button
+                                disabled={quickSendPending || !quickSendForm.recipientEmail.trim()}
+                                onClick={async () => {
+                                    if (!postcard) return
+                                    const email = quickSendForm.recipientEmail.trim()
+                                    if (!email) {
+                                        alert('Veuillez renseigner un email.')
+                                        return
+                                    }
+
+                                    setQuickSendPending(true)
+                                    const createFn = useAgenceActions ? createAgencyTrackingLink : createTrackingLink
+                                    const sendFn = useAgenceActions ? sendAgencyTrackingLinkByEmail : sendTrackingLinkByEmail
+
+                                    const createRes = await createFn(postcard.id, {
+                                        recipientFirstName: quickSendForm.recipientFirstName || undefined,
+                                        recipientLastName: quickSendForm.recipientLastName || undefined,
+                                        description: quickSendForm.description || undefined,
+                                    })
+
+                                    if (!createRes.success || !createRes.tracking) {
+                                        setQuickSendPending(false)
+                                        alert(createRes.error ?? 'Erreur lors de la creation du lien.')
+                                        return
+                                    }
+
+                                    const sendRes = await sendFn(createRes.tracking.id, email)
+                                    setQuickSendPending(false)
+                                    if (sendRes.success) {
+                                        setQuickSendDialogOpen(false)
+                                        onRefreshTrackingLinks?.()
+                                    } else {
+                                        alert(sendRes.error ?? "Erreur lors de l'envoi de l'email.")
+                                    }
+                                }}
+                            >
+                                {quickSendPending ? 'Envoi…' : 'Creer et envoyer'}
                             </Button>
                         </DialogFooter>
                     </DialogContent>

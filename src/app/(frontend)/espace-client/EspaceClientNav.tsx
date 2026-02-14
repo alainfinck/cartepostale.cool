@@ -10,6 +10,7 @@ import {
   LogOut,
   ChevronRight,
   Plus,
+  Globe,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -22,6 +23,7 @@ interface Props {
 const navItems = [
   { href: '/espace-client', label: 'Tableau de bord', icon: LayoutDashboard },
   { href: '/espace-client/cartes', label: 'Mes cartes', icon: Mail },
+  { href: '/espace-client/carte-du-monde', label: 'Carte du monde', icon: Globe },
   { href: '/espace-client/compte', label: 'Mon compte', icon: User },
 ]
 

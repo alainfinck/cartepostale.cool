@@ -293,9 +293,18 @@ export async function getPostcardByPublicId(publicId: string): Promise<Postcard 
         const result = await payload.find({
             collection: 'postcards',
             where: {
-                publicId: {
-                    equals: publicId
-                }
+                and: [
+                    {
+                        publicId: {
+                            equals: publicId,
+                        },
+                    },
+                    {
+                        isPublic: {
+                            equals: true,
+                        },
+                    },
+                ],
             },
             depth: 2, // Ensure we get media details
         })
