@@ -80,6 +80,7 @@ export interface Config {
     'gallery-tags': GalleryTag;
     gallery: Gallery;
     stickers: Sticker;
+    leads: Lead;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -100,6 +101,7 @@ export interface Config {
     'gallery-tags': GalleryTagsSelect<false> | GalleryTagsSelect<true>;
     gallery: GallerySelect<false> | GallerySelect<true>;
     stickers: StickersSelect<false> | StickersSelect<true>;
+    leads: LeadsSelect<false> | LeadsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -490,6 +492,27 @@ export interface Sticker {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "leads".
+ */
+export interface Lead {
+  id: number;
+  email: string;
+  /**
+   * Code de remise unique généré pour ce lead
+   */
+  code: string;
+  isUsed?: boolean | null;
+  usedAt?: string | null;
+  source?: string | null;
+  /**
+   * La carte postale qui a utilisé ce code
+   */
+  usedByPostcard?: (number | null) | Postcard;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -563,6 +586,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'stickers';
         value: number | Sticker;
+      } | null)
+    | ({
+        relationTo: 'leads';
+        value: number | Lead;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -853,6 +880,20 @@ export interface StickersSelect<T extends boolean = true> {
   name?: T;
   image?: T;
   category?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "leads_select".
+ */
+export interface LeadsSelect<T extends boolean = true> {
+  email?: T;
+  code?: T;
+  isUsed?: T;
+  usedAt?: T;
+  source?: T;
+  usedByPostcard?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -40,6 +40,7 @@ import {
   Minus,
   Plus,
   MoreHorizontal,
+  Gift,
 } from 'lucide-react'
 import { Postcard, Template, TemplateCategory, FrontImageCrop, StickerPlacement, Sticker } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -573,6 +574,12 @@ export default function EditorPage() {
   const [isRevolutRedirecting, setIsRevolutRedirecting] = useState(false)
   const [revolutError, setRevolutError] = useState<string | null>(null)
 
+  // Promo code state
+  const [promoCode, setPromoCode] = useState('')
+  const [isActivatingCode, setIsActivatingCode] = useState(false)
+  const [codeError, setCodeError] = useState<string | null>(null)
+  const [codeSuccess, setCodeSuccess] = useState(false)
+
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
   const showBack = currentStep === 'redaction'
 
@@ -1036,6 +1043,7 @@ export default function EditorPage() {
   }
 
   const getAlbumPrice = () => {
+    if (codeSuccess) return 0
     if (!mediaItems || mediaItems.length === 0) return 0
     const photos = mediaItems.filter(i => i.type === 'image').length
     const videos = mediaItems.filter(i => i.type === 'video').length
@@ -1218,6 +1226,15 @@ export default function EditorPage() {
           pid = result.publicId
           setCreatedPostcardId(pid)
           setShareUrl(`${window.location.origin}/carte/${pid}`)
+
+          // If promo code was used, mark it as used in DB
+          if (codeSuccess && promoCode) {
+            const { usePromoCode } = await import('@/actions/leads-actions')
+            const numericId = typeof result.id === 'number' ? result.id : (typeof result.id === 'string' ? parseInt(result.id) : undefined);
+            if (numericId) {
+               await usePromoCode(promoCode, numericId)
+            }
+          }
         } else {
           setRevolutError(result.error || 'Erreur lors de la préparation de la carte.')
           return
@@ -2258,6 +2275,60 @@ export default function EditorPage() {
                         </label>
                       </div>
                     </div>
+                  </section>
+
+                  <div className="h-px bg-stone-100" />
+
+                  {/* Promo Code Section */}
+                  <section className="bg-teal-50/30 p-6 rounded-2xl border border-teal-100/50">
+                    <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-4 uppercase tracking-wider">
+                      <Gift size={16} className="text-teal-600" /> Code Promo / Carte Gratuite
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          placeholder="Entrez votre code ici..."
+                          value={promoCode}
+                          onChange={(e) => {
+                            setPromoCode(e.target.value.toUpperCase())
+                            setCodeError(null)
+                            setCodeSuccess(false)
+                          }}
+                          disabled={codeSuccess || isActivatingCode}
+                          className="h-12 border-stone-200 focus:border-teal-500 rounded-xl uppercase font-mono tracking-wider"
+                        />
+                        {codeSuccess && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500">
+                            <Check size={20} />
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        onClick={async () => {
+                          if (!promoCode || isActivatingCode) return
+                          setIsActivatingCode(true)
+                          setCodeError(null)
+                          const { validatePromoCode } = await import('@/actions/leads-actions')
+                          const res = await validatePromoCode(promoCode)
+                          setIsActivatingCode(false)
+                          if (res.success) {
+                            setCodeSuccess(true)
+                            setIsPremium(true)
+                          } else {
+                            setCodeError(res.error || 'Code invalide')
+                          }
+                        }}
+                        disabled={!promoCode || codeSuccess || isActivatingCode}
+                        className={cn(
+                          "h-12 px-6 rounded-xl font-bold transition-all",
+                          codeSuccess ? "bg-emerald-500 hover:bg-emerald-600 text-white" : "bg-stone-800 hover:bg-stone-900 text-white"
+                        )}
+                      >
+                        {isActivatingCode ? <RefreshCw size={18} className="animate-spin" /> : codeSuccess ? 'Activé !' : 'Appliquer'}
+                      </Button>
+                    </div>
+                    {codeError && <p className="text-xs text-red-500 mt-2 font-medium">{codeError}</p>}
+                    {codeSuccess && <p className="text-xs text-emerald-600 mt-2 font-bold flex items-center gap-1.5"><Sparkles size={12} /> Votre carte pro avec galerie est maintenant gratuite !</p>}
                   </section>
 
                   {/* Bouton Continuer en bas à droite (étape rédaction) */}

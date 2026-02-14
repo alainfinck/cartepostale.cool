@@ -28,7 +28,7 @@ function isHeifUploadError(err: unknown): boolean {
     return /heif|Bitstream not supported|decoder/i.test(msg)
 }
 
-export async function createPostcard(data: any): Promise<{ success: boolean; publicId?: string; error?: string }> {
+export async function createPostcard(data: any): Promise<{ success: boolean; id?: number | string; publicId?: string; error?: string }> {
     try {
         // Reject HEIC/HEIF upfront — Sharp/libvips often can't decode them
         if (data.frontImage && isHeicDataUrl(data.frontImage)) {
@@ -221,7 +221,7 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
                     ...authorPayload,
                 },
             })
-            return { success: true, publicId: data.id }
+            return { success: true, id: existingId, publicId: data.id }
         } else {
             // Generate a unique public ID
             let publicId = generatePublicId()
@@ -272,7 +272,7 @@ export async function createPostcard(data: any): Promise<{ success: boolean; pub
                 // In a real app, you would integrate Resend/Twilio here
             }
 
-            return { success: true, publicId }
+            return { success: true, id: newPostcard.id, publicId }
         }
     } catch (error) {
         console.error('Error creating/updating postcard:', error)

@@ -84,6 +84,8 @@ const plugins = [
     : []),
 ]
 
+import { Leads } from './collections/Leads'
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -91,7 +93,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Agencies, Postcards, Templates, Reactions, Comments, PostcardViewEvents, PostcardTrackingLinks, GalleryCategory, GalleryTag, Gallery, Stickers],
+  collections: [Users, Media, Agencies, Postcards, Templates, Reactions, Comments, PostcardViewEvents, PostcardTrackingLinks, GalleryCategory, GalleryTag, Gallery, Stickers, Leads],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

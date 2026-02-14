@@ -13,6 +13,7 @@ const nav = [
   { href: '/manager/galerie', label: 'Galerie', icon: ImageIcon },
   { href: '/manager/r2', label: 'Bucket R2', icon: Cloud },
   { href: '/manager/clients', label: 'Clients', icon: Users },
+  { href: '/manager/leads', label: 'Leads', icon: Mail },
   { href: '/manager/agences', label: 'Agences', icon: Building2 },
 ]
 
