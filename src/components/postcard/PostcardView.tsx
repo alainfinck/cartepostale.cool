@@ -177,13 +177,14 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         // En plein écran (isLarge) : viser un meilleur remplissage pour éviter texte tout petit
         const fillRatio = 0.7;
         const targetFillRatio = isLarge ? 0.92 : 0.88;
+        let finalSize = best;
         if (usedHeight > 0 && usedHeight < targetHeight * fillRatio) {
             const scaleUp = Math.min((targetHeight * targetFillRatio) / usedHeight, 3.5 / best);
-            const filledSize = Math.min(best * scaleUp, 3.5);
-            setAutoFontSize(filledSize);
-        } else {
-            setAutoFontSize(best);
+            finalSize = Math.min(best * scaleUp, 3.5);
         }
+        // En plein écran : minimum lisible pour éviter texte tout petit si le recalc est fait trop tôt
+        if (isLarge) finalSize = Math.max(finalSize, 1.15);
+        setAutoFontSize(finalSize);
         text.style.fontSize = '';
     }, [isLarge]);
 
@@ -191,7 +192,22 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     useLayoutEffect(() => {
         if (!isFlipped) return;
         computeAutoFontSize();
-    }, [isFlipped, postcard.message, computeAutoFontSize]);
+        // En plein écran : recalculer après layout (conteneur peut avoir 0 au premier paint)
+        if (isLarge) {
+            const t1 = requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    computeAutoFontSize();
+                });
+            });
+            const t2 = window.setTimeout(() => {
+                computeAutoFontSize();
+            }, 150);
+            return () => {
+                cancelAnimationFrame(t1);
+                window.clearTimeout(t2);
+            };
+        }
+    }, [isFlipped, postcard.message, computeAutoFontSize, isLarge]);
 
     // En plein écran / redimensionnement : recalculer quand le conteneur change de taille
     useEffect(() => {
@@ -748,11 +764,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                     cartepostale.cool
                                 </span>
                             </div>
-                            <div className="absolute left-[62%] top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50 transition-opacity duration-300"></div>
+                            <div className={cn("absolute top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50 transition-opacity duration-300", isLarge ? "left-[70%]" : "left-[62%]")}></div>
 
                             <div className="flex w-full h-full gap-2 sm:gap-6 pt-10 sm:pt-14 transition-all duration-300">
-                                {/* Left Side: Message - much wider */}
-                                <div className="flex-[1.6] min-w-0 flex flex-col justify-start relative pt-3 sm:pt-4 pr-1 sm:pr-2">
+                                {/* Left Side: Message - plus large en plein écran pour éviter texte tout petit à gauche */}
+                                <div className={cn("min-w-0 flex flex-col justify-start relative pt-3 sm:pt-4 pr-1 sm:pr-2", isLarge ? "flex-[2.2]" : "flex-[1.6]")}>
 
                                     <div
                                         ref={messageContainerRef}

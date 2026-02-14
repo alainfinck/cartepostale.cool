@@ -525,7 +525,9 @@ export default function Home() {
                 <PostcardView
                   postcard={fullScreenPostcard}
                   isLarge={true}
-                  className="max-w-[95vw] max-h-[85vh]"
+                  width="min(95vw, 1200px)"
+                  height="min(63.3vw, 800px)"
+                  className="shadow-[0_20px_60px_rgba(0,0,0,0.15)]"
                 />
 
                 <div className="bg-white/5 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 flex items-center gap-4 text-white/60">
