@@ -2,7 +2,8 @@
 
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { v4 as uuidv4 } from 'uuid'
+// crypto is available globally in Node.js 18+ and Next.js server actions
+
 
 export async function submitLead(email: string) {
     try {
@@ -25,7 +26,7 @@ export async function submitLead(email: string) {
         }
 
         // Generate a unique short code
-        const code = uuidv4().split('-')[0].toUpperCase()
+        const code = crypto.randomUUID().split('-')[0].toUpperCase()
 
         const lead = await payload.create({
             collection: 'leads',
