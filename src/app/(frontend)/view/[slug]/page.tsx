@@ -203,14 +203,6 @@ export default async function PostcardPage({
                             className="z-10"
                         />
 
-                        {/* Distance Display */}
-                        {frontendPostcard.coords && (
-                            <DistanceDisplay
-                                targetCoords={frontendPostcard.coords}
-                                senderName={frontendPostcard.senderName}
-                            />
-                        )}
-
                         {/* View Counter - juste sous la carte, en bas à droite */}
                         <div className="flex justify-end w-full mt-2 px-2 md:px-0">
                             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
@@ -230,6 +222,7 @@ export default async function PostcardPage({
                     initialViews={payloadPostcard.views || 0}
                     initialShares={payloadPostcard.shares || 0}
                     allowComments={frontendPostcard.allowComments}
+                    coords={frontendPostcard.coords}
                 />
 
                 {/* Photo Album */}

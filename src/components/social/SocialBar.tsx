@@ -11,6 +11,7 @@ import { recordPostcardView, recordPostcardViewClose } from '@/actions/analytics
 import ReactionBar from './ReactionBar'
 import ShareButton from './ShareButton'
 import GuestbookSection from './GuestbookSection'
+import DistanceDisplay from '../view/DistanceDisplay'
 
 interface Comment {
     id: number
@@ -29,18 +30,6 @@ interface SocialBarProps {
     allowComments?: boolean
 }
 
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
-    const R = 6371; // Radius of the earth in km
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const d = R * c; // Distance in km
-    return Math.round(d);
-}
 
 export default function SocialBar({
     postcardId,
@@ -59,7 +48,6 @@ export default function SocialBar({
     const [comments, setComments] = useState<Comment[]>([])
     const [views] = useState(initialViews + 1) // Optimistic +1
     const [loaded, setLoaded] = useState(false)
-    const [distance, setDistance] = useState<number | null>(null)
     const eventIdRef = useRef<number | null>(null)
     const openedAtRef = useRef<number>(0)
     const closeSentRef = useRef(false)
@@ -105,25 +93,6 @@ export default function SocialBar({
         load()
     }, [postcardId, sessionId, trackingToken])
 
-    // Calculate distance if coords are available
-    useEffect(() => {
-        if (coords && 'geolocation' in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const dist = calculateDistance(
-                        position.coords.latitude,
-                        position.coords.longitude,
-                        coords.lat,
-                        coords.lng
-                    )
-                    setDistance(dist)
-                },
-                (error) => {
-                    console.log('Error getting location', error)
-                }
-            )
-        }
-    }, [coords])
 
     // On leave: visibility hidden, pagehide, beforeunload, and unmount
     useEffect(() => {
@@ -185,13 +154,11 @@ export default function SocialBar({
                     onReactionUpdate={handleReactionUpdate}
                 />
 
-                {/* Distance display */}
-                {distance !== null && (
-                    <div className="flex items-center justify-center gap-2 text-stone-500 text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
-                        <MapPin size={16} className="text-teal-600" />
-                        <span>Vous êtes à <strong>{distance.toLocaleString('fr-FR')} km</strong> de cette carte</span>
-                    </div>
-                )}
+                {/* Distance calculation (Manual via button) */}
+                <DistanceDisplay
+                    targetCoords={coords}
+                    senderName={senderName}
+                />
 
                 {/* Share + Reply */}
                 <div className="flex items-center gap-2 justify-end">
