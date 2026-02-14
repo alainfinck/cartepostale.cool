@@ -43,6 +43,7 @@ import {
   Gift,
   XCircle,
   CheckCircle2,
+  Info,
 } from 'lucide-react'
 import { Postcard, Template, TemplateCategory, FrontImageCrop, StickerPlacement, Sticker } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -494,8 +495,8 @@ const EMOJI_CATEGORIES: EmojiCategory[] = [
 const MESSAGE_EMOJIS = ['❤️', '😊', '🌅', '🌴', '🌊', '☀️', '💌', '✨', '📍', '🗺️', '😘', '👋', '💕', '🌸', '🏖️']
 
 const ALBUM_TIERS = {
-  tier1: { photos: 10, videos: 0, price: 1 },
-  tier2: { photos: 50, videos: 3, price: 2 }
+  tier1: { photos: 6, videos: 0, price: 2.99 },
+  tier2: { photos: 50, videos: 3, price: 4.99 }
 } as const
 
 export default function EditorPage() {
@@ -546,6 +547,7 @@ export default function EditorPage() {
   const [showFullscreen, setShowFullscreen] = useState(false)
   const [showRecipientModal, setShowRecipientModal] = useState(false)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
+  const [showPricingModal, setShowPricingModal] = useState(false)
   const [fullscreenScale, setFullscreenScale] = useState(1)
 
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal' | 'revolut' | null>('revolut')
@@ -1324,7 +1326,7 @@ export default function EditorPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-4 py-8 w-full">
+      <div className="max-w-7xl xl:max-w-[88rem] mx-auto px-4 sm:px-4 py-8 w-full">
         <div className="flex flex-col lg:flex-row gap-8 w-full">
           {/* Left Panel: Carte (aperçu en direct) */}
           <div className="hidden lg:block w-[600px] flex-shrink-0">
@@ -1786,18 +1788,23 @@ export default function EditorPage() {
                       </div>
                     </div>
                   </div>
-                  {(frontCaption.trim() || frontEmoji.trim()) && (
-                    <div className="mt-4 flex items-center gap-2 rounded-xl border border-teal-100 bg-teal-50/50 px-4 py-3">
-                      <span className="text-lg leading-none">{frontEmoji.trim() || '✨'}</span>
-                      <span className="text-sm font-medium text-stone-700 truncate">
-                        {frontCaption.trim() || 'Votre accroche'}
-                      </span>
-                      <span className="ml-auto text-[10px] font-semibold uppercase tracking-wider text-teal-600">
-                        Aperçu
-                      </span>
-                    </div>
-                  )}
                 </section>
+
+                <div className="mt-8 pt-6 border-t border-stone-200 flex justify-end">
+                  <Button
+                    onClick={goNext}
+                    disabled={!canGoNext()}
+                    className={cn(
+                      'rounded-xl font-bold flex items-center justify-center gap-2 px-6 py-4 h-auto transition-all shadow-lg shadow-teal-100',
+                      canGoNext()
+                        ? 'bg-teal-500 hover:bg-teal-600 text-white'
+                        : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                    )}
+                  >
+                    Continuer
+                    <ChevronRight size={18} />
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -1821,7 +1828,9 @@ export default function EditorPage() {
                     <div className="flex justify-between items-center mb-2 text-sm text-amber-600 font-medium">
                       <span className="flex items-center gap-1">
                         <Sparkles size={12} />
-                        {getAlbumPrice() === 1 ? 'Option Album (10 photos)' : 'Option Album Premium (50 photos + 3 vidéos)'}
+                        {getAlbumPrice() === ALBUM_TIERS.tier1.price
+                          ? `Palier Personnalisée (jusqu'à ${ALBUM_TIERS.tier1.photos} photos)`
+                          : `Palier Augmentée (${ALBUM_TIERS.tier2.photos}+ photos + ${ALBUM_TIERS.tier2.videos} vidéos)`}
                       </span>
                       <span>+{getAlbumPrice().toFixed(2)} €</span>
                     </div>
@@ -1833,19 +1842,21 @@ export default function EditorPage() {
                   </div>
                 </div>
 
-                {/* Paiement Revolut uniquement (API Revolut) */}
+                {/* Paiement CB / virement / Revolut */}
                 <div className="rounded-2xl border-2 border-teal-500 bg-teal-50/50 p-6 mb-8 ring-1 ring-teal-500 shadow-sm">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
                       <CreditCard size={24} />
                     </div>
                     <div className="flex-1">
-                      <p className="font-bold text-stone-800 text-lg">Revolut Pay</p>
-                      <p className="text-sm text-stone-500">Paiement par carte, Apple Pay ou app Revolut</p>
+                      <p className="font-bold text-stone-800 text-lg">Paiement par CB / Apple Pay / Google Pay</p>
+                      <p className="text-sm text-stone-500">
+                        Carte bancaire, Apple Pay ou Google Pay
+                      </p>
                     </div>
                     {getAlbumPrice() > 0 && (
                       <div className="text-right">
-                        <span className="text-2xl font-black text-teal-600">{getAlbumPrice()}€</span>
+                        <span className="text-2xl font-black text-teal-600">{getAlbumPrice().toFixed(2)}€</span>
                       </div>
                     )}
                   </div>
@@ -1865,7 +1876,7 @@ export default function EditorPage() {
                         <RefreshCw size={24} className="animate-spin" />
                       ) : (
                         <>
-                          <span>Régler {getAlbumPrice()}€ avec Revolut</span>
+                          <span>Régler {getAlbumPrice().toFixed(2)}€</span>
                           <ChevronRight size={20} />
                         </>
                       )}
@@ -2185,53 +2196,65 @@ export default function EditorPage() {
                       <div className="sm:hidden p-3 mb-5 bg-amber-50/50 border border-amber-100 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
                         <Sparkles size={18} className="text-amber-500 shrink-0" />
                         <div className="flex-1">
-                          <p className="text-[10px] font-black text-amber-900 uppercase tracking-[0.15em]">Option payante (dès +1€)</p>
-                          <p className="text-[10px] text-amber-700/80 leading-tight mt-0.5">Débloquez jusqu'à 50 photos et des vidéos haute résolution.</p>
+                          <p className="text-[10px] font-black text-amber-900 uppercase tracking-[0.15em]">Option payante (dès +2,99€)</p>
+                          <p className="text-[10px] text-amber-700/80 leading-tight mt-0.5">Multi-photos, HD et options premium jusqu&apos;à la carte augmentée.</p>
                         </div>
                       </div>
                     )}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-4">
-                      <label className="flex items-center gap-2 text-sm font-bold text-stone-800 uppercase tracking-wider">
+                    <div className="mb-4 space-y-3">
+                      <div className="flex items-center gap-2 text-sm font-bold text-stone-800 uppercase tracking-wider">
                         <div className="relative">
                           <ImageIcon size={16} className="text-teal-500" />
                           <div className="absolute -right-1 -bottom-1 bg-teal-500 rounded-full p-[1px] border border-white">
                             <span className="block w-1.5 h-1.5 bg-white rounded-full"></span>
                           </div>
                         </div>
-                        Album Souvenir (Photos/Vidéos)
-                      </label>
+                        <span>Album Souvenir (Photos/Vidéos)</span>
+                        <div className="relative group/info">
+                          <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); setShowPricingModal(true); }}
+                            onKeyDown={(e) => e.key === 'Enter' && setShowPricingModal(true)}
+                            title="Cliquer pour voir les tarifs détaillés"
+                            className="inline-flex items-center justify-center w-7 h-7 rounded-full text-teal-700 bg-teal-50 border border-teal-200 shadow-sm hover:text-teal-800 hover:bg-teal-100 hover:border-teal-300 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500/40"
+                            aria-label="Voir les tarifs et options"
+                          >
+                            <Info size={15} />
+                          </button>
+                          <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-stone-900 px-2.5 py-1 text-[10px] font-semibold text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover/info:opacity-100">
+                            Cliquez pour plus d&apos;infos
+                          </span>
+                        </div>
+                      </div>
                       <div className="flex items-center gap-2 text-xs font-medium">
                         {isPremium ? (
                           <div className="flex flex-col items-end gap-1">
                             <span className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100 font-bold">
-                              <Sparkles size={12} fill="currentColor" /> Album {getAlbumPrice() === 1 ? '10 photos' : 'Premium'} activé
+                              <Sparkles size={12} fill="currentColor" /> {getAlbumPrice() === ALBUM_TIERS.tier1.price ? 'Palier Personnalisée activé' : 'Palier Augmentée activé'}
                             </span>
                             <div className="flex items-center gap-2">
                               {getAlbumPrice() > 0 && (
                                 <span className="text-[11px] bg-teal-500 text-white px-2 py-0.5 rounded-full font-bold">
-                                  Prix : {getAlbumPrice()}€
+                                  Prix : {getAlbumPrice().toFixed(2)}€
                                 </span>
                               )}
                               <span className="text-[10px] text-stone-400 font-bold">
-                                {(mediaItems || []).filter(i => i.type === 'image').length}/{getAlbumPrice() === 1 ? 10 : 50} photos
-                                {getAlbumPrice() === 2 && ` - ${(mediaItems || []).filter(i => i.type === 'video').length}/3 vidéos`}
+                                {(mediaItems || []).filter(i => i.type === 'image').length}/{getAlbumPrice() === ALBUM_TIERS.tier1.price ? ALBUM_TIERS.tier1.photos : ALBUM_TIERS.tier2.photos} photos
+                                {getAlbumPrice() === ALBUM_TIERS.tier2.price && ` - ${(mediaItems || []).filter(i => i.type === 'video').length}/${ALBUM_TIERS.tier2.videos} vidéos`}
                               </span>
                             </div>
                           </div>
                         ) : (
-                          <div className="flex flex-col items-end gap-1 text-right w-full sm:w-auto">
-                            <span className="hidden sm:block text-stone-400 uppercase tracking-[0.2em] font-bold text-[9px]">
-                              Option payante (dès +1€)
-                            </span>
-                            <div className="flex items-center gap-1.5 w-full sm:w-auto justify-between sm:justify-end">
-                              <span className={cn("text-[10px] px-2 py-1 rounded-full font-bold border transition-colors whitespace-nowrap", (mediaItems || []).length === 0 ? "bg-teal-50 text-teal-700 border-teal-200" : "bg-stone-50 text-stone-400 border-stone-200")}>
+                          <div className="w-full">
+                            <div className="flex flex-wrap items-center gap-2 w-full justify-start sm:justify-end">
+                              <span className={cn("text-[11px] sm:text-xs px-2.5 py-1.5 rounded-lg font-extrabold border-2 transition-colors whitespace-nowrap", (mediaItems || []).length === 0 ? "bg-teal-50 text-teal-800 border-teal-300 shadow-sm" : "bg-stone-50 text-stone-500 border-stone-200")}>
                                 Gratuit : 1 photo
                               </span>
-                              <span className={cn("text-[10px] px-2 py-1 rounded-full font-bold border transition-colors whitespace-nowrap", getAlbumPrice() === 1 ? "bg-amber-50 text-amber-700 border-amber-200 shadow-sm" : "bg-stone-50 text-stone-400 border-stone-200")}>
-                                1€ : 10 photos
+                              <span className={cn("text-[11px] sm:text-xs px-2.5 py-1.5 rounded-lg font-extrabold border-2 transition-colors whitespace-nowrap", getAlbumPrice() === ALBUM_TIERS.tier1.price ? "bg-amber-50 text-amber-800 border-amber-300 shadow-sm" : "bg-stone-50 text-stone-500 border-stone-200")}>
+                                2,99€ : jusqu&apos;à 6 photos
                               </span>
-                              <span className={cn("text-[10px] px-2 py-1 rounded-full font-bold border transition-colors whitespace-nowrap", getAlbumPrice() === 2 ? "bg-purple-50 text-purple-700 border-purple-200 shadow-sm" : "bg-stone-50 text-stone-400 border-stone-200")}>
-                                2€ : 50+ photos & vidéos
+                              <span className={cn("text-[11px] sm:text-xs px-2.5 py-1.5 rounded-lg font-extrabold border-2 transition-colors whitespace-nowrap", getAlbumPrice() === ALBUM_TIERS.tier2.price ? "bg-purple-50 text-purple-800 border-purple-300 shadow-sm" : "bg-stone-50 text-stone-500 border-stone-200")}>
+                                4,99€ : photos + vidéos
                               </span>
                             </div>
                           </div>
@@ -2703,22 +2726,6 @@ export default function EditorPage() {
                     <ChevronLeft size={18} />
                     Retour
                   </Button>
-
-                  {currentStep !== 'preview' && (
-                      <Button
-                        onClick={goNext}
-                        disabled={!canGoNext()}
-                        className={cn(
-                          'rounded-full font-bold flex items-center gap-2 px-5 py-4 sm:px-6 sm:py-5 h-auto transition-all',
-                          canGoNext()
-                            ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-md shadow-teal-200 hover:-translate-y-0.5'
-                            : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-                        )}
-                      >
-                        Continuer
-                        <ChevronRight size={18} />
-                      </Button>
-                  )}
                 </div>
               </div>
             )}
@@ -2812,6 +2819,78 @@ export default function EditorPage() {
           </div>
         )
       }
+
+      {/* Modal Tarifs (info options payantes) */}
+      <Dialog open={showPricingModal} onOpenChange={setShowPricingModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-3xl p-0 border-none shadow-2xl">
+          <DialogHeader className="p-6 pb-2 border-b border-stone-100">
+            <DialogTitle className="text-xl font-serif font-bold text-stone-800">
+              Tarifs et options
+            </DialogTitle>
+            <DialogDescription className="text-stone-500">
+              Choisissez le palier qui correspond à votre carte.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="p-6 space-y-6">
+            {/* Gratuit - Découverte */}
+            <div className="rounded-2xl border-2 border-green-200 bg-green-50/50 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-block w-3 h-3 rounded-full bg-green-500" />
+                <h4 className="font-bold text-stone-800">Gratuit — La &quot;Découverte&quot;</h4>
+              </div>
+              <p className="text-sm text-stone-600 mb-1">Objectif : faire connaître le site et tester sans friction.</p>
+              <ul className="text-xs text-stone-600 space-y-1 list-disc list-inside">
+                <li>1 seule photo, mise en page classique carte postale</li>
+                <li>Texte limité (comme un tweet)</li>
+                <li>Filigrane &quot;Créé avec ❤️ sur cartepostale.cool&quot; au dos</li>
+                <li>Partage direct via lien public ou bouton social</li>
+                <li>Carte expirée après 7 jours</li>
+              </ul>
+            </div>
+            {/* 2,99 € - Personnalisée */}
+            <div className="rounded-2xl border-2 border-teal-200 bg-teal-50/50 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-block w-3 h-3 rounded-full bg-teal-500" />
+                <h4 className="font-bold text-stone-800">2,99 € — La &quot;Personnalisée&quot;</h4>
+              </div>
+              <p className="text-sm text-stone-600 mb-1">Objectif : un souvenir propre, esthétique et durable.</p>
+              <ul className="text-xs text-stone-600 space-y-1 list-disc list-inside">
+                <li>Multi-photos (pêle-mêle) : jusqu&apos;à 4 ou 6 photos</li>
+                <li>Zéro publicité, pas de filigrane</li>
+                <li>Personnalisation avancée : police, couleur du papier, stickers</li>
+                <li>Téléchargement HD (recto/verso)</li>
+                <li>Lien permanent (à vie ou au moins 1 an)</li>
+              </ul>
+            </div>
+            {/* 4,99 € - Augmentée */}
+            <div className="rounded-2xl border-2 border-purple-200 bg-purple-50/50 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-block w-3 h-3 rounded-full bg-purple-500" />
+                <h4 className="font-bold text-stone-800">4,99 € — L&apos;&quot;Augmentée&quot;</h4>
+              </div>
+              <p className="text-sm text-stone-600 mb-1">Objectif : créer une vraie émotion (cadeau numérique).</p>
+              <ul className="text-xs text-stone-600 space-y-1 list-disc list-inside">
+                <li>Carte postale vidéo (30 s) qui se lance au retournement</li>
+                <li>Audio souvenir : message vocal ou musique d&apos;ambiance</li>
+                <li>Le &quot;Secret&quot; : mot de passe ou question secrète</li>
+                <li>Livre d&apos;or interactif (réponse du destinataire)</li>
+                <li>Notification de lecture par email</li>
+                <li>Effets visuels : confettis ou neige à l&apos;ouverture</li>
+              </ul>
+            </div>
+          </div>
+          <DialogFooter className="p-6 pt-0 border-t border-stone-100">
+            <Link href="/pricing" onClick={() => setShowPricingModal(false)}>
+              <Button variant="outline" className="rounded-xl border-stone-200">
+                Voir tous les tarifs et abonnements
+              </Button>
+            </Link>
+            <Button onClick={() => setShowPricingModal(false)} className="rounded-xl bg-teal-500 hover:bg-teal-600">
+              Fermer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal d'invitation à laisser son email après création */}
       <Dialog open={showEmailPromptModal} onOpenChange={setShowEmailPromptModal}>

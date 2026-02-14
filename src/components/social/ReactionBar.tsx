@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Eye } from 'lucide-react'
 import { CoolMode } from '@/components/ui/cool-mode'
@@ -27,9 +27,17 @@ export default function ReactionBar({
     onReactionUpdate,
 }: ReactionBarProps) {
     const [loading, setLoading] = useState<string | null>(null)
+    const lastToggleAtRef = useRef<Record<string, number>>({})
+    const TOGGLE_COOLDOWN_MS = 700
 
     const handleToggle = async (emoji: string) => {
         if (!sessionId || loading) return
+
+        const now = Date.now()
+        const lastToggleAt = lastToggleAtRef.current[emoji] ?? 0
+        if (now - lastToggleAt < TOGGLE_COOLDOWN_MS) return
+        lastToggleAtRef.current[emoji] = now
+
         setLoading(emoji)
 
         // Optimistic update

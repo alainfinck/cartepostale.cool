@@ -154,7 +154,7 @@ export default function GuestbookSection({
                                         onChange={(e) => setContent(e.target.value)}
                                         maxLength={500}
                                         rows={3}
-                                        className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 rounded-lg border border-stone-200 text-base resize-none focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                                     />
                                 </div>
                                 <div className="flex items-center justify-between">

@@ -166,12 +166,12 @@ export const Navbar = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className={cn(
                         "flex justify-between items-center transition-all duration-300",
-                        scrolled ? "h-10 md:h-12" : "h-12 md:h-16"
+                        scrolled ? "h-9 md:h-10" : "h-10 md:h-12"
                     )}>
                         <Link href="/" className="flex items-center cursor-pointer group">
                             <div
                                 className={cn(
-                                    "relative bg-gradient-cta group-hover:opacity-90 transition-all p-1.5 rounded-lg mr-2.5 flex items-center justify-center",
+                                    "relative bg-gradient-cta group-hover:opacity-90 transition-all p-1.5 rounded-lg mr-2 flex items-center justify-center",
                                     scrolled ? "scale-90" : ""
                                 )}
                             >
@@ -197,10 +197,10 @@ export const Navbar = () => {
                             <Button className={cn(
                                 "bg-gradient-cta hover:opacity-95 text-white rounded-full font-bold shadow-xl shadow-pink-500/30 transition-all border-0 flex items-center gap-2",
                                 scrolled
-                                    ? "text-xs px-4 h-9"
-                                    : "text-sm md:text-base px-5 md:px-6 h-10 md:h-12"
+                                    ? "text-xs px-3.5 h-8"
+                                    : "text-xs md:text-sm px-4 md:px-5 h-9 md:h-10"
                             )}>
-                                <Plus size={scrolled ? 16 : 18} strokeWidth={3} />
+                                <Plus size={scrolled ? 14 : 16} strokeWidth={3} />
                                 <span className="hidden sm:inline">Créer ma carte postale</span>
                                 <span className="sm:hidden">Créer</span>
                             </Button>

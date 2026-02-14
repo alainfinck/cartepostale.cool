@@ -21,7 +21,7 @@ export default function ViewPageTitle({ title, senderName }: ViewPageTitleProps)
   }, []);
 
   return (
-    <div className="text-center mb-6 md:mb-8 px-4 mt-8 md:mt-12 pt-8 landscape:mb-2 landscape:mt-0 landscape:pt-0 relative z-10 flex flex-col items-center gap-2">
+    <div className="text-center mb-6 md:mb-8 px-4 mt-8 md:mt-12 pt-8 landscape:mb-2 landscape:mt-2.5 landscape:pt-0 relative z-10 flex flex-col items-center gap-2">
       <TextAnimate
         animation="blurInUp"
         by="word"

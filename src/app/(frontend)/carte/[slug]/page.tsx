@@ -207,14 +207,23 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
     }
 
     const cardBlock = (
-        <>
+        <div className="inline-flex flex-col items-end">
             <PostcardView
                 postcard={frontendPostcard}
                 flipped={false}
                 isLarge={true}
                 className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] md:shadow-[0_30px_70px_rgba(0,0,0,0.2)] hover:shadow-[0_28px_60px_rgba(0,0,0,0.2)] md:hover:shadow-[0_40px_90px_rgba(0,0,0,0.25)]"
             />
-        </>
+
+            {/* Compteur de vues - sous la carte, aligné au bord droit de la carte */}
+            <div className="mt-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
+                    <Eye size={14} className="text-stone-300" />
+                    <NumberTicker value={payloadPostcard.views || 0} className="text-stone-400 font-bold" />
+                    <span>vues</span>
+                </div>
+            </div>
+        </div>
     )
 
     const heroSection = (
@@ -230,15 +239,6 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
 
             <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-4 md:mb-6 px-2 md:px-4">
                 {cardBlock}
-
-                {/* Compteur de vues - juste sous la carte, en bas à droite */}
-                <div className="flex justify-end w-full mt-2">
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
-                        <Eye size={14} className="text-stone-300" />
-                        <NumberTicker value={payloadPostcard.views || 0} className="text-stone-400 font-bold" />
-                        <span>vues</span>
-                    </div>
-                </div>
             </div>
 
             {/* Social Bar (Reactions + Sharing) */}

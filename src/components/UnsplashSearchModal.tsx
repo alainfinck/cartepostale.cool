@@ -70,7 +70,7 @@ export function UnsplashSearchModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white border-none shadow-2xl">
+            <DialogContent className="sm:max-w-[900px] max-w-[95vw] max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white border-none shadow-2xl">
                 <DialogHeader className="p-6 pb-0">
                     <DialogTitle className="text-2xl font-serif font-bold text-stone-800">
                         Rechercher sur Unsplash

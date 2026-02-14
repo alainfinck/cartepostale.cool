@@ -15,6 +15,7 @@ import {
     Info,
     Heart,
     Loader2,
+    Mail,
     Maximize2,
     Minimize2
 } from 'lucide-react';
@@ -769,34 +770,22 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 </div>
                             </div>
 
-                            {/* Petite icone en haut à gauche au survol (Back) — masqué en fullscreen ou via prop */}
-                            {!isFullscreen && !hideFlipHints && (
-                                <div className="absolute top-3 left-3 z-50 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
-                                    <div className="bg-teal-900/10 backdrop-blur-md px-2 py-1.5 rounded-lg border border-teal-900/10 shadow-lg flex items-center gap-1.5 transform scale-90 group-hover:scale-100 transition-all duration-500">
-                                        <RotateCw size={12} className="text-teal-800/80" strokeWidth={2} />
-                                        <span className="text-teal-900/70 font-bold uppercase tracking-widest text-[7px]">
-                                            Retourner
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
-
                             {/* Watermark bottom-left (marge pour ne pas être coupé) */}
-                            <div className="absolute bottom-3 left-7 sm:left-8 flex items-center gap-1 transition-opacity duration-300 opacity-60">
-                                <div className="w-1.5 h-1.5 bg-stone-300 rounded-full shrink-0" />
-                                <span className="text-stone-300 text-[8px] sm:text-[9px] font-medium tracking-[0.25em] uppercase">
+                            <div className="absolute bottom-3 left-7 sm:left-8 flex items-center gap-1.5 transition-opacity duration-300 opacity-95 bg-white/80 border border-stone-200 rounded-full px-2 py-1 shadow-sm">
+                                <Mail size={10} className="text-teal-600 shrink-0" />
+                                <span className="text-stone-600 text-[8px] sm:text-[9px] font-semibold tracking-[0.2em] uppercase">
                                     cartepostale.cool
                                 </span>
                             </div>
                             <div className={cn("absolute top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50 transition-opacity duration-300", isLarge ? "left-[66%]" : "left-[60%]")}></div>
 
-                            <div className="flex w-full h-full gap-2 sm:gap-6 pt-10 sm:pt-14 transition-all duration-300">
+                            <div className="flex w-full h-full min-h-0 gap-2 sm:gap-6 pt-0 transition-all duration-300">
                                 {/* Left Side: Message - marge gauche généreuse pour éviter troncature (police manuscrite) */}
-                                <div className={cn("min-w-0 flex flex-col justify-start relative pt-3 sm:pt-4 pl-6 sm:pl-10 pr-2 sm:pr-4", isLarge ? "flex-[2]" : "flex-[1.5]")}>
+                            <div className={cn("min-w-0 flex flex-col justify-start relative pt-3 sm:pt-4 pl-[2px] sm:pl-[2px] pr-2 sm:pr-4", isLarge ? "flex-[2]" : "flex-[1.5]")}>
 
                                     <div
                                         ref={messageContainerRef}
-                                        className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 pl-1 sm:pl-2 flex flex-col justify-start"
+                                        className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 pl-1 sm:pl-2 flex flex-col justify-center"
                                         onClick={openMessage}
                                     >
                                         <p
@@ -818,7 +807,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                         </div>
                                     </div>
                                     {postcard.senderName && (
-                                        <div className="mt-auto self-start transform -rotate-2 pt-2 pb-1 px-4 relative">
+                                        <div className="mt-auto -mt-2 self-start transform -rotate-2 pt-2 pb-1 px-4 relative">
                                              <div className="absolute inset-0 bg-teal-50/30 blur-md rounded-full -rotate-3"></div>
                                              <p className="font-handwriting text-teal-700 text-xl sm:text-3xl relative z-10 font-bold drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]">
                                                 - {postcard.senderName}
@@ -848,13 +837,13 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 </div>
 
                                 {/* Right Side: Address & Stamp */}
-                                <div className="flex-1 flex flex-col relative min-w-0 pt-0 sm:pt-1">
+                                <div className="flex-1 h-full min-h-0 flex flex-col relative min-w-0 pt-0 sm:pt-1">
                                     {/* Top Section: Recipient (left) + Stamp (right) */}
-                                    <div className="flex justify-between items-start mb-0.5 gap-2">
+                                    <div className="flex basis-1/3 justify-between items-start mb-0.5 gap-2 min-h-0">
                                         <div className="flex-1 pt-1 md:pt-3">
                                             {postcard.recipientName && (
                                                 <div className={cn(
-                                                    "border-b-2 border-stone-300 border-dotted pb-0.5 font-handwriting text-stone-600 pl-2",
+                                                    "border-b-2 border-stone-300 border-dotted pb-0.5 font-handwriting text-stone-600 pl-2 pr-2 min-h-[180px] whitespace-pre-wrap break-words leading-tight",
                                                     isLarge ? "text-base sm:text-xl" : "text-sm sm:text-base"
                                                 )}>
                                                     {postcard.recipientName}
@@ -988,8 +977,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                     {/* Mini carte au verso : tuiles OSM (évite iframe + 3D) ou bouton "Voir la carte" */}
                                     {(postcard.coords || postcard.location) && (
                                         <div className={cn(
-                                            "mt-1 flex-1 rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner min-h-0",
-                                            isLarge ? "min-h-[100px] sm:min-h-[200px] md:min-h-[280px]" : "min-h-[70px] sm:min-h-[100px]"
+                                            "basis-2/3 w-full rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner min-h-0",
+                                            isLarge ? "min-h-[100px] sm:min-h-[200px] md:min-h-[280px] max-h-[400px]" : "min-h-[90px] sm:min-h-[120px]"
                                         )}>
                                             {postcard.coords ? (
                                                 <div

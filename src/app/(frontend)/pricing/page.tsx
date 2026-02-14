@@ -10,71 +10,110 @@ export const metadata: Metadata = {
     description: 'Choisissez le plan qui vous correspond. Envoyez des cartes postales à l\'unité ou profitez de tarifs réduits avec nos abonnements.',
 }
 
-const pricingPlans = [
+type PricingPlan = {
+    name: string
+    subtitle?: string
+    price: string
+    period: string
+    description: string
+    features: string[]
+    notIncluded: string[]
+    buttonText: string
+    buttonVariant: 'outline' | 'default'
+    href: string
+    popular: boolean
+    icon: React.ReactNode
+}
+
+const pricingPlans: PricingPlan[] = [
     {
-        name: 'Gratuit',
+        name: 'La "Découverte"',
+        subtitle: 'Gratuit',
         price: '0€',
         period: '',
-        description: 'Carte 100% virtuelle pour découvrir le service.',
+        description: 'Faire connaître le site et tester l\'outil sans friction.',
         features: [
-            '1 carte offerte',
-            'Version numérique uniquement',
-            'Optimisation Mobile & Cloud',
-            'Images Auto-Optimisées (WebP)',
-            'Album photo (3 photos max)',
-            'Filigrane discret'
+            '1 seule photo : mise en page classique "carte postale"',
+            'Texte limité : nombre de caractères restreint (type tweet)',
+            'Filigrane « Créé avec ❤️ sur cartepostale.cool » au dos',
+            'Partage direct : lien public (URL) ou bouton de partage social',
+            'Durée de vie : carte expirée après 7 jours'
         ],
         notIncluded: [
+            'Multi-photos / collage',
             'Haute résolution (HD)',
-            'Vidéo dans l\'album',
-            'Zéro publicité',
+            'Carte vidéo ou audio'
         ],
         buttonText: 'Essayer gratuitement',
         buttonVariant: 'outline',
         href: '/editor',
         popular: false,
-        icon: <Gift className="w-6 h-6 text-teal-500" />
+        icon: <Gift className="w-6 h-6 text-green-500" />
     },
     {
-        name: 'Occasionnel',
-        price: '1.99€',
+        name: 'La "Personnalisée"',
+        subtitle: 'Par carte',
+        price: '2,99€',
         period: '/ carte',
-        description: 'Pour une carte premium sans publicité.',
+        description: 'Offrir un souvenir propre, esthétique et durable pour un usage personnel.',
         features: [
-            'Vitesse Éclair (AVIF/WebP)',
-            'Album photo (10 photos max + 1 vidéo)',
-            'Haute résolution (HD)',
-            'Expédition virtuelle instantanée',
-            'Personnalisation complète',
-            'Livre d\'or interactif',
-            'Zéro publicité'
+            'Multi-photos (pêle-mêle) : jusqu\'à 4 ou 6 photos',
+            'Zéro publicité / pas de filigrane',
+            'Personnalisation avancée : police, couleur du papier, stickers',
+            'Téléchargement HD (recto/verso) pour impression',
+            'Lien permanent (à vie ou au moins 1 an)'
         ],
         notIncluded: [
-            'Tarifs dégressifs',
-            'Envois groupés',
-            'Support prioritaire'
+            'Carte postale vidéo',
+            'Message vocal / audio',
+            'Protection par mot de passe'
         ],
-        buttonText: 'Envoyer une carte',
+        buttonText: 'Choisir cette option',
         buttonVariant: 'outline',
         href: '/editor',
         popular: true,
-        icon: <Globe className="w-6 h-6 text-stone-500" />
+        icon: <Globe className="w-6 h-6 text-teal-500" />
+    },
+    {
+        name: 'L\'"Augmentée"',
+        subtitle: 'Cadeau numérique',
+        price: '4,99€',
+        period: '/ carte',
+        description: 'Créer une véritable émotion : plus qu\'une image, un cadeau numérique.',
+        features: [
+            'Carte postale vidéo (30 s) au retournement (effet "Harry Potter")',
+            'Audio souvenir : message vocal ou musique d\'ambiance',
+            'Le "Secret" : mot de passe ou question secrète',
+            'Livre d\'or interactif (réponse du destinataire)',
+            'Notification de lecture (email à l\'expéditeur)',
+            'Effets visuels : confettis ou neige à l\'ouverture'
+        ],
+        notIncluded: [
+            'Volume illimité',
+            'API / Pro'
+        ],
+        buttonText: 'Choisir cette option',
+        buttonVariant: 'outline',
+        href: '/editor',
+        popular: false,
+        icon: <Star className="w-6 h-6 text-purple-500" />
     },
     {
         name: 'Voyageur',
-        price: '9.99€',
+        subtitle: 'Abonnement',
+        price: '9,99€',
         period: '/ mois',
-        description: 'Pour les amoureux du partage et des souvenirs.',
+        description: 'Pour les amoureux du partage et des souvenirs réguliers.',
         features: [
             '10 cartes incluses / mois',
-            'Carte suppl. à 0.99€',
-            'Tout ce qui est dans Occasionnel',
+            'Carte suppl. à 0,99€',
+            'Tout ce qui est dans La Personnalisée',
             'Musique d\'ambiance premium',
             'Historique illimité',
-            'Badge "Voyageur" sur votre profil'
+            'Badge « Voyageur » sur votre profil'
         ],
         notIncluded: [
-            'Envoi API / Pro',
+            'Envoi API / Pro'
         ],
         buttonText: 'Commencer l\'abonnement',
         buttonVariant: 'default',
@@ -116,44 +155,49 @@ export default function PricingPage() {
             </div>
 
             {/* Pricing Cards */}
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-6 items-stretch">
                     {pricingPlans.map((plan, index) => (
                         <div
                             key={index}
-                            className={`relative bg-white rounded-2xl shadow-xl border overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col ${plan.popular ? 'border-orange-500 ring-4 ring-orange-500/10 z-10 scale-105' : 'border-stone-100'
+                            className={`relative bg-white rounded-2xl shadow-xl border overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col ${plan.popular ? 'border-teal-500 ring-4 ring-teal-500/10 z-10 lg:scale-105' : 'border-stone-100'
                                 }`}
                         >
                             {plan.popular && (
-                                <div className="absolute top-0 right-0 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">
+                                <div className="absolute top-0 right-0 bg-teal-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">
                                     Recommandé
                                 </div>
                             )}
 
-                            <div className="p-8 flex flex-col h-full">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className={`p-2 rounded-lg ${plan.popular ? 'bg-orange-100' : 'bg-stone-100'}`}>
+                            <div className="p-6 flex flex-col h-full">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className={`p-2 rounded-lg shrink-0 ${plan.popular ? 'bg-teal-100' : 'bg-stone-100'}`}>
                                         {plan.icon}
                                     </div>
-                                    <h3 className="text-2xl font-bold text-stone-800">{plan.name}</h3>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-stone-800 leading-tight">{plan.name}</h3>
+                                        {plan.subtitle && (
+                                            <p className="text-xs text-stone-500 font-medium mt-0.5">{plan.subtitle}</p>
+                                        )}
+                                    </div>
                                 </div>
 
-                                <div className="flex items-baseline mb-6">
-                                    <span className="text-4xl font-extrabold text-stone-900">{plan.price}</span>
-                                    <span className="text-stone-500 ml-2 font-medium">{plan.period}</span>
+                                <div className="flex items-baseline mb-4">
+                                    <span className="text-3xl font-extrabold text-stone-900">{plan.price}</span>
+                                    <span className="text-stone-500 ml-2 font-medium text-sm">{plan.period}</span>
                                 </div>
 
-                                <p className="text-stone-600 mb-8 min-h-[50px]">{plan.description}</p>
+                                <p className="text-stone-600 mb-4 text-sm leading-snug">{plan.description}</p>
 
                                 <div className="flex-grow">
-                                    <div className="space-y-4 mb-8">
-                                        <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">Inclus</p>
+                                    <div className="space-y-3 mb-6">
+                                        <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Inclus</p>
                                         {plan.features.map((feature, i) => (
-                                            <div key={i} className="flex items-start gap-3">
-                                                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center mt-0.5">
-                                                    <Check className="w-3 h-3 text-teal-600" strokeWidth={3} />
+                                            <div key={i} className="flex items-start gap-2">
+                                                <div className="flex-shrink-0 w-4 h-4 rounded-full bg-teal-100 flex items-center justify-center mt-0.5">
+                                                    <Check className="w-2.5 h-2.5 text-teal-600" strokeWidth={3} />
                                                 </div>
-                                                <span className="text-stone-700 text-sm font-medium">{feature}</span>
+                                                <span className="text-stone-700 text-xs font-medium leading-snug">{feature}</span>
                                             </div>
                                         ))}
 
@@ -161,9 +205,9 @@ export default function PricingPage() {
                                             <>
                                                 <div className="h-px bg-stone-100 my-4"></div>
                                                 {plan.notIncluded.map((feature, i) => (
-                                                    <div key={i} className="flex items-start gap-3 opacity-50">
-                                                        <X className="w-5 h-5 text-stone-400" />
-                                                        <span className="text-stone-500 text-sm">{feature}</span>
+                                                    <div key={i} className="flex items-start gap-2 opacity-50">
+                                                        <X className="w-4 h-4 text-stone-400 shrink-0" />
+                                                        <span className="text-stone-500 text-xs">{feature}</span>
                                                     </div>
                                                 ))}
                                             </>
@@ -173,9 +217,11 @@ export default function PricingPage() {
 
                                 <Link href={plan.href} className="mt-auto">
                                     <Button
-                                        className={`w-full py-6 text-lg font-bold rounded-xl transition-all ${plan.popular
-                                            ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-orange-500/30'
-                                            : 'bg-white hover:bg-stone-50 text-stone-800 border-2 border-stone-200 hover:border-stone-300'
+                                        className={`w-full py-4 text-sm font-bold rounded-xl transition-all ${plan.popular
+                                            ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-lg hover:shadow-teal-500/30'
+                                            : plan.buttonVariant === 'default'
+                                                ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg'
+                                                : 'bg-white hover:bg-stone-50 text-stone-800 border-2 border-stone-200 hover:border-stone-300'
                                             }`}
                                     >
                                         {plan.buttonText}
