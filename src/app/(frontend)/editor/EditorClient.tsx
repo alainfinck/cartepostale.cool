@@ -1324,8 +1324,8 @@ export default function EditorPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-4 py-8 w-full">
+        <div className="flex flex-col lg:flex-row gap-8 w-full">
           {/* Left Panel: Carte (aperçu en direct) */}
           <div className="hidden lg:block w-[600px] flex-shrink-0">
             <div className="sticky top-44">
@@ -1385,10 +1385,10 @@ export default function EditorPage() {
           </div>
 
           {/* Right Panel: Editor Controls */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full max-w-full">
             {/* ==================== STEP: PHOTO ==================== */}
             {currentStep === 'photo' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
+              <div className="w-full max-w-full bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
                 <h2 className="text-2xl font-serif font-bold text-stone-800 mb-2">
                   Choisissez votre photo
                 </h2>
@@ -1803,7 +1803,7 @@ export default function EditorPage() {
 
             {/* ==================== STEP: PAIEMENT ==================== */}
             {currentStep === 'payment' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
+              <div className="w-full max-w-full bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
                 <h2 className="text-2xl font-serif font-bold text-stone-800 mb-2">
                   Règlement
                 </h2>
@@ -1893,7 +1893,7 @@ export default function EditorPage() {
             )}
             {/* ==================== STEP: RÉDACTION (fusionné) ==================== */}
             {currentStep === 'redaction' && (
-              <div className="bg-white rounded-[2rem] shadow-xl shadow-stone-200/40 border border-stone-100 overflow-hidden">
+              <div className="w-full max-w-full bg-white rounded-[2rem] shadow-xl shadow-stone-200/40 border border-stone-100 overflow-hidden">
                 {/* Header */}
                 <div className="p-6 sm:p-8 border-b border-stone-100 bg-gradient-to-r from-stone-50 via-white to-white">
                   <div className="flex items-center gap-3">
@@ -2362,7 +2362,7 @@ export default function EditorPage() {
 
             {/* ==================== STEP: APERÇU ==================== */}
             {currentStep === 'preview' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-5 sm:p-8">
+              <div className="w-full max-w-full bg-white rounded-2xl shadow-sm border border-stone-200 p-5 sm:p-8">
                 <div className="flex flex-col gap-10">
                   {/* Title & Introduction */}
                   <div className="text-center sm:text-left">
