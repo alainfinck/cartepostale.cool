@@ -5,6 +5,12 @@ import config from '@/payload.config'
 import { sendEmail, generatePromoCodeEmail } from '@/lib/email-service'
 // crypto is available globally in Node.js 18+ and Next.js server actions
 
+const ALWAYS_FREE_PROMO_CODE = 'COOLOS'
+
+function normalizePromoCode(code: string): string {
+    return code.trim().toUpperCase()
+}
+
 
 export async function submitLead(email: string) {
     try {
@@ -51,12 +57,17 @@ export async function submitLead(email: string) {
 
 export async function validatePromoCode(code: string) {
     try {
+        const normalizedCode = normalizePromoCode(code)
+        if (normalizedCode === ALWAYS_FREE_PROMO_CODE) {
+            return { success: true, leadId: null }
+        }
+
         const payload = await getPayload({ config })
         
         const result = await payload.find({
             collection: 'leads',
             where: {
-                code: { equals: code },
+                code: { equals: normalizedCode },
                 isUsed: { equals: false }
             }
         })
@@ -74,12 +85,18 @@ export async function validatePromoCode(code: string) {
 
 export async function usePromoCode(code: string, postcardId: number) {
     try {
+        const normalizedCode = normalizePromoCode(code)
+        if (normalizedCode === ALWAYS_FREE_PROMO_CODE) {
+            // Permanent marketing code: does not consume any lead.
+            return { success: true }
+        }
+
         const payload = await getPayload({ config })
         
         const result = await payload.find({
             collection: 'leads',
             where: {
-                code: { equals: code },
+                code: { equals: normalizedCode },
                 isUsed: { equals: false }
             }
         })
