@@ -17,3 +17,57 @@
  ✓ Generating static pages (24/24)
    Finalizing page optimization ...
    Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                    11.1 kB         182 kB
+├ ○ /_not-found                             1 kB         103 kB
+├ ○ /a-propos                              491 B         107 kB
+├ ƒ /admin/[[...segments]]                 405 B         558 kB
+├ ƒ /api/[...slug]                         177 B         102 kB
+├ ƒ /api/graphql                           177 B         102 kB
+├ ƒ /api/graphql-playground                177 B         102 kB
+├ ƒ /api/magic-login                       177 B         102 kB
+├ ƒ /api/revolut/create-order              177 B         102 kB
+├ ƒ /api/upload-presigned                  177 B         102 kB
+├ ○ /business                            10.2 kB         165 kB
+├ ƒ /carte/[slug]                          149 B         194 kB
+├ ○ /connexion                            4.8 kB         119 kB
+├ ○ /connexion/inscription                 177 B         102 kB
+├ ○ /connexion/mot-de-passe-oublié      3.65 kB         117 kB
+├ ○ /contact                               177 B         102 kB
+├ ○ /editor                              29.1 kB         214 kB
+├ ƒ /espace-agence                         177 B         102 kB
+├ ƒ /espace-agence/agence                4.89 kB         115 kB
+├ ƒ /espace-agence/cartes                  147 B         219 kB
+├ ƒ /espace-agence/compte                  181 B         105 kB
+├ ƒ /espace-client                         181 B         105 kB
+├ ƒ /espace-client/cartes                  147 B         219 kB
+├ ƒ /espace-client/compte                  181 B         105 kB
+├ ○ /galerie                             10.7 kB         182 kB
+├ ○ /legal/cgu                             177 B         102 kB
+├ ○ /legal/cgv                             177 B         102 kB
+├ ○ /legal/confidentialite                 177 B         102 kB
+├ ○ /legal/cookies                         177 B         102 kB
+├ ○ /legal/mentions-legales                177 B         102 kB
+├ ƒ /manager                               181 B         119 kB
+├ ƒ /manager/agences                      6.4 kB         129 kB
+├ ƒ /manager/cartes                        147 B         219 kB
+├ ƒ /manager/clients                     9.14 kB         132 kB
+├ ƒ /manager/galerie                     8.89 kB         137 kB
+├ ƒ /manager/leads                       4.51 kB         115 kB
+├ ƒ /manager/r2                          3.09 kB         114 kB
+├ ƒ /manager/stats                         168 B         115 kB
+├ ƒ /my-route                              177 B         102 kB
+├ ○ /pricing                               181 B         105 kB
+├ ƒ /v/[token]                             177 B         102 kB
+├ ƒ /view/[slug]                           149 B         194 kB
+└ ƒ /view/[slug]/opengraph-image-mxbp3l    177 B         102 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/3310-1cba20eb207c2f12.js      44.4 kB
+  ├ chunks/373b78b3-1e34f33d0b525730.js  54.1 kB
+  └ other shared chunks (total)          3.27 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

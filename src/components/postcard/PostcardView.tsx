@@ -601,10 +601,16 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
                             <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none z-0" />
 
-                            {/* Indication "Retourner la carte" au survol — en haut à droite */}
-                            <div className="absolute top-4 right-4 z-20 flex items-center gap-2 rounded-lg bg-white/90 backdrop-blur-md px-3 py-2 shadow-lg border border-white/50 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
-                                <RotateCw size={isLarge ? 20 : 16} className="text-stone-600 shrink-0" />
-                                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-stone-700">Retourner la carte</span>
+                            {/* Grosse icone au milieu au survol (Front) - Amélioré pour inviter au clic */}
+                            <div className="absolute inset-0 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
+                                <div className="bg-white/10 backdrop-blur-md p-8 md:p-14 rounded-full border border-white/20 shadow-2xl flex flex-col items-center gap-4 transform scale-90 group-hover:scale-100 transition-all duration-500">
+                                    <div className="p-4 rounded-full bg-white/20 border border-white/30">
+                                        <RotateCw size={isLarge ? 64 : 48} className="text-white drop-shadow-2xl" strokeWidth={1.5} />
+                                    </div>
+                                    <span className="text-white font-black uppercase tracking-[0.3em] text-[10px] md:text-xs drop-shadow-2xl text-center leading-tight">
+                                        Cliquer pour <br /> retourner
+                                    </span>
+                                </div>
                             </div>
 
                             {/* Message démo au-dessus de la localisation (frontCaption sans frontEmoji) */}
@@ -678,10 +684,16 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 </div>
                             </div>
 
-                            {/* Flip indicator — bottom-center (above branding) */}
-                            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 text-stone-300 pointer-events-none group-hover:text-stone-500 transition-all duration-300">
-                                <RotateCw size={16} />
-                                <span className="text-[9px] font-bold uppercase tracking-widest">Cliquer pour retourner</span>
+                            {/* Grosse icone au milieu au survol (Back) - Amélioré pour inviter au clic */}
+                            <div className="absolute inset-0 z-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
+                                <div className="bg-teal-900/5 backdrop-blur-sm p-8 md:p-14 rounded-full border border-teal-900/10 shadow-2xl flex flex-col items-center gap-4 transform scale-90 group-hover:scale-100 transition-all duration-500">
+                                    <div className="p-4 rounded-full bg-teal-600/10 border border-teal-600/20">
+                                        <RotateCw size={isLarge ? 64 : 48} className="text-teal-700/80 drop-shadow-xl" strokeWidth={1.5} />
+                                    </div>
+                                    <span className="text-teal-800/80 font-black uppercase tracking-[0.3em] text-[10px] md:text-xs text-center leading-tight">
+                                        Cliquer pour <br /> retourner
+                                    </span>
+                                </div>
                             </div>
 
                             {/* Watermark bottom-left */}
