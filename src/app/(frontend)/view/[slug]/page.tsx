@@ -105,6 +105,8 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
         }),
         mediaItems,
         isPremium: payloadPostcard.isPremium || false,
+        allowComments: (payloadPostcard as any).allowComments ?? true,
+        isPublic: (payloadPostcard as any).isPublic ?? true,
         // coordinates if available
         coords: payloadPostcard.coords?.lat && payloadPostcard.coords?.lng ? {
             lat: payloadPostcard.coords.lat,
@@ -225,6 +227,7 @@ export default async function PostcardPage({
                     senderName={frontendPostcard.senderName}
                     initialViews={payloadPostcard.views || 0}
                     initialShares={payloadPostcard.shares || 0}
+                    allowComments={frontendPostcard.allowComments}
                 />
 
                 {/* Photo Album */}

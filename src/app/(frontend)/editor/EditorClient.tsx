@@ -512,6 +512,8 @@ export default function EditorPage() {
   const [location, setLocation] = useState('Antibes, France')
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
+  const [allowComments, setAllowComments] = useState(true)
+  const [isPublic, setIsPublic] = useState(true)
 
   const [stampStyle, setStampStyle] = useState<Postcard['stampStyle']>('classic')
   const [stampLabel, setStampLabel] = useState('Digital Poste')
@@ -1141,6 +1143,8 @@ export default function EditorPage() {
           url: item.key ? undefined : item.url
         })),
         recipients: [],
+        allowComments,
+        isPublic,
         ...(sendKey && {
           frontImageKey: sendKey,
           frontImageMimeType: sendMime ?? undefined,
@@ -1917,6 +1921,37 @@ export default function EditorPage() {
                     </div>
                   </section>
 
+                  {/* Réglages de la carte (Commentaires & Visibilité) */}
+                  <section className="bg-stone-50/50 rounded-2xl p-5 border border-stone-100 flex flex-wrap gap-6 items-center">
+                    <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setAllowComments(!allowComments)}>
+                      <div className={cn(
+                        "w-5 h-5 rounded border transition-all flex items-center justify-center",
+                        allowComments ? "bg-teal-500 border-teal-500 text-white" : "border-stone-300 bg-white group-hover:border-teal-300"
+                      )}>
+                        {allowComments && <Check size={14} strokeWidth={3} />}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-stone-700">Autoriser les commentaires</span>
+                        <span className="text-[10px] text-stone-400 uppercase tracking-wider font-medium">Les gens pourront vous répondre</span>
+                      </div>
+                    </div>
+
+                    <div className="w-px h-8 bg-stone-200 hidden sm:block" />
+
+                    <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setIsPublic(!isPublic)}>
+                      <div className={cn(
+                        "w-5 h-5 rounded border transition-all flex items-center justify-center",
+                        isPublic ? "bg-amber-500 border-amber-500 text-white" : "border-stone-300 bg-white group-hover:border-amber-300"
+                      )}>
+                        {isPublic && <Check size={14} strokeWidth={3} />}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-stone-700">Carte Publique</span>
+                        <span className="text-[10px] text-stone-400 uppercase tracking-wider font-medium">{isPublic ? "Visible dans la galerie publique" : "Privée, accessible via le lien uniquement"}</span>
+                      </div>
+                    </div>
+                  </section>
+
                   {/* Lieu du souvenir */}
                   <section>
                     <label className="flex items-center justify-between text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
@@ -2162,7 +2197,7 @@ export default function EditorPage() {
                             </span>
                             <div className="flex flex-col gap-1 items-end">
                               <div className="flex items-center gap-1.5">
-                                <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-bold border transition-colors", mediaItems.length === 0 ? "bg-teal-50 text-teal-700 border-teal-200" : "bg-stone-50 text-stone-400 border-stone-200")}>
+                                <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-bold border transition-colors", (mediaItems || []).length === 0 ? "bg-teal-50 text-teal-700 border-teal-200" : "bg-stone-50 text-stone-400 border-stone-200")}>
                                   Gratuit : 1 photo
                                 </span>
                                 <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-bold border transition-colors", getAlbumPrice() === 1 ? "bg-amber-50 text-amber-700 border-amber-200 shadow-sm" : "bg-stone-50 text-stone-400 border-stone-200")}>

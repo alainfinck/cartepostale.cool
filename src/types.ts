@@ -51,6 +51,8 @@ export interface Postcard {
     agencyId?: string;
     brandLogo?: string;
     stickers?: StickerPlacement[];
+    allowComments?: boolean;
+    isPublic?: boolean;
 }
 
 export interface Sticker {

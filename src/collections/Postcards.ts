@@ -199,5 +199,21 @@ export const Postcards: CollectionConfig = {
                 description: 'Liste des autocollants placés sur la carte (ID, x, y, scale, rotation)',
             },
         },
+        {
+            name: 'allowComments',
+            type: 'checkbox',
+            defaultValue: true,
+            admin: {
+                description: 'Autoriser les commentaires sur cette carte',
+            },
+        },
+        {
+            name: 'isPublic',
+            type: 'checkbox',
+            defaultValue: true,
+            admin: {
+                description: 'Si décoché, la carte sera privée et non listée',
+            },
+        },
     ],
 }

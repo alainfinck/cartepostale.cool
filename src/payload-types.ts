@@ -283,6 +283,14 @@ export interface Postcard {
     | number
     | boolean
     | null;
+  /**
+   * Autoriser les commentaires sur cette carte
+   */
+  allowComments?: boolean | null;
+  /**
+   * Si décoché, la carte sera privée et non listée
+   */
+  isPublic?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -721,6 +729,8 @@ export interface PostcardsSelect<T extends boolean = true> {
   brandLogo?: T;
   author?: T;
   stickers?: T;
+  allowComments?: T;
+  isPublic?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -26,6 +26,7 @@ interface SocialBarProps {
     initialViews: number
     initialShares: number
     coords?: { lat: number; lng: number }
+    allowComments?: boolean
 }
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -48,6 +49,7 @@ export default function SocialBar({
     initialViews,
     initialShares,
     coords,
+    allowComments = true,
 }: SocialBarProps) {
     const searchParams = useSearchParams()
     const sessionId = useSessionId()
@@ -209,12 +211,14 @@ export default function SocialBar({
             </div>
 
             {/* Guestbook */}
-            <GuestbookSection
-                postcardId={postcardId}
-                sessionId={sessionId}
-                comments={comments}
-                onCommentAdded={handleCommentAdded}
-            />
+            {allowComments && (
+                <GuestbookSection
+                    postcardId={postcardId}
+                    sessionId={sessionId}
+                    comments={comments}
+                    onCommentAdded={handleCommentAdded}
+                />
+            )}
         </motion.div>
     )
 }
