@@ -33,26 +33,23 @@ export function RotateDevicePrompt() {
         <AnimatePresence>
             {isVisible && (
                 <motion.div
-                    initial={{ opacity: 0, y: 50 }}
+                    initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 50 }}
-                    className="fixed bottom-4 left-4 right-4 z-50 bg-stone-900/90 backdrop-blur text-white p-4 rounded-xl shadow-lg border border-white/10 flex items-center gap-4"
+                    exit={{ opacity: 0, y: -20 }}
+                    className="fixed top-0 left-0 right-0 z-[60] h-9 bg-teal-600/90 backdrop-blur-sm text-white flex items-center justify-center gap-2 border-b border-white/10"
                 >
-                    <div className="bg-white/10 p-3 rounded-full animate-pulse">
-                        <Smartphone className="w-6 h-6 rotate-90" />
-                    </div>
-                    <div className="flex-1">
-                        <p className="font-semibold text-sm">Meilleure expérience</p>
-                        <p className="text-xs text-stone-300">Tournez votre téléphone pour voir la carte en grand format.</p>
-                    </div>
-                    <button 
+                    <Smartphone className="w-3.5 h-3.5 rotate-90 shrink-0 opacity-90" />
+                    <p className="text-[10px] font-semibold uppercase tracking-wider">Paysage pour voir plus grand ✨</p>
+                    <button
+                        type="button"
                         onClick={() => {
                             setDismissed(true)
                             setIsVisible(false)
                         }}
-                        className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                        className="absolute right-2 p-1 hover:bg-white/10 rounded transition-colors"
+                        aria-label="Fermer"
                     >
-                        <X className="w-5 h-5" />
+                        <X className="w-4 h-4" />
                     </button>
                 </motion.div>
             )}

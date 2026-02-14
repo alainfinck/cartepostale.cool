@@ -29,13 +29,15 @@ export const ScrollToTopButton = () => {
             onClick={scrollToTop}
             aria-label="Revenir en haut de la page"
             className={cn(
-                'fixed z-50 bottom-6 right-6 h-12 w-12 rounded-full shadow-xl shadow-orange-500/40',
-                'bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-400 transition-transform duration-200',
-                visible ? 'opacity-100 translate-y-0' : 'opacity-0 pointer-events-none translate-y-6'
+                'fixed z-50 transition-all duration-300',
+                'bottom-4 right-4 sm:bottom-6 sm:right-6',
+                'h-10 w-10 sm:h-12 sm:w-12',
+                'rounded-full bg-white/80 hover:bg-white text-stone-400 hover:text-stone-600 border border-stone-200 shadow-sm backdrop-blur-md',
+                'flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-400',
+                visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 pointer-events-none translate-y-4 scale-90'
             )}
         >
-            <ArrowUp className="h-5 w-5" />
+            <ArrowUp className="h-4 w-4 sm:h-5 sm:w-5" />
         </button>
     )
 }

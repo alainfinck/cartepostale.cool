@@ -66,7 +66,7 @@ export default function DistanceDisplay({ targetCoords, senderName }: DistanceDi
             <div className="bg-white/90 backdrop-blur-md border border-stone-200 text-stone-700 px-6 py-3 rounded-2xl shadow-lg flex items-center gap-3 text-lg font-medium transform hover:scale-105 transition-transform duration-300">
                 <MapPin size={24} className="text-teal-600" />
                 <span>
-                    Vous êtes à <span className="text-teal-600 font-bold text-xl">{distance.toLocaleString()} km</span> de <span className="font-bold">{senderName}</span> ! 🌍
+                    Vous êtes à <span className="text-teal-600 font-bold text-lg sm:text-xl">{distance.toLocaleString()} km</span> de <span className="font-bold">{senderName}</span> ! <span className="text-sm sm:text-base leading-none shrink-0">🌍</span>
                 </span>
             </div>
         </motion.div>

@@ -50,7 +50,7 @@ export default function ReactionBar({
     }
 
     return (
-        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-4 custom-scrollbar justify-start sm:justify-center mx-auto max-w-full px-2">
+        <div className="flex flex-nowrap items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 sm:pb-4 custom-scrollbar justify-start sm:justify-center mx-auto max-w-full px-1 sm:px-2">
             {EMOJIS.map((emoji) => {
                 const isActive = userReactions[emoji]
                 const count = counts[emoji] || 0
@@ -62,7 +62,7 @@ export default function ReactionBar({
                             onClick={() => handleToggle(emoji)}
                             disabled={loading === emoji}
                             className={`
-                                flex items-center gap-1.5 px-3 py-2 rounded-full border text-sm
+                                flex items-center gap-1 sm:gap-1.5 px-2 py-1.5 sm:px-3 sm:py-2 rounded-full border text-xs sm:text-sm
                                 transition-all duration-300 cursor-pointer shadow-sm hover:scale-110 active:scale-95
                                 ${isActive
                                     ? 'bg-teal-50 border-teal-400 text-teal-700 shadow-teal-100/50'
@@ -71,11 +71,11 @@ export default function ReactionBar({
                                 ${loading === emoji ? 'opacity-50' : ''}
                             `}
                         >
-                            <span className="text-2xl sm:text-3xl filter drop-shadow-sm transform group-hover:scale-110 transition-transform">{emoji}</span>
+                            <span className="text-base sm:text-3xl filter drop-shadow-sm transform group-hover:scale-110 transition-transform">{emoji}</span>
                             {count > 0 && (
                                 <NumberTicker
                                     value={count}
-                                    className="text-sm font-bold text-inherit"
+                                    className="text-xs sm:text-sm font-bold text-inherit"
                                 />
                             )}
                         </motion.button>

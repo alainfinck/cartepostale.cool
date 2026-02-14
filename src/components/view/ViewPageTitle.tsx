@@ -40,7 +40,7 @@ export default function ViewPageTitle({ title, senderName }: ViewPageTitleProps)
         <span className="text-lg md:text-xl font-medium tracking-wide whitespace-nowrap">De la part de</span>
         <span className="font-bold text-teal-600 flex items-center gap-2 text-2xl md:text-4xl lg:text-5xl font-serif whitespace-nowrap">
           {senderName}
-          <Heart className="inline-block text-red-500 fill-red-500 animate-pulse shrink-0" size={32} strokeWidth={2.5} />
+          <Heart className="inline-block text-red-500 fill-red-500 animate-pulse shrink-0 w-6 h-6 md:w-8 md:h-8" strokeWidth={2.5} />
         </span>
       </motion.div>
     </div>

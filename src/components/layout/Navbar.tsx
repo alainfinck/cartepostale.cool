@@ -198,10 +198,11 @@ export const Navbar = () => {
                                 "bg-gradient-cta hover:opacity-95 text-white rounded-full font-bold shadow-xl shadow-pink-500/30 transition-all border-0 flex items-center gap-2",
                                 scrolled
                                     ? "text-xs px-4 h-9"
-                                    : "text-sm md:text-base px-6 h-11 md:h-12"
+                                    : "text-sm md:text-base px-5 md:px-6 h-10 md:h-12"
                             )}>
-                                <Plus size={scrolled ? 16 : 20} strokeWidth={3} />
-                                <span>Créer ma carte postale</span>
+                                <Plus size={scrolled ? 16 : 18} strokeWidth={3} />
+                                <span className="hidden sm:inline">Créer ma carte postale</span>
+                                <span className="sm:hidden">Créer</span>
                             </Button>
                         </Link>
                     </div>
@@ -397,15 +398,26 @@ export const Navbar = () => {
             {/* Mobile menu */}
             {isMobileMenuOpen && (
                 <div className="sm:hidden bg-white border-b border-stone-200 shadow-xl">
-                    <div className="px-4 pt-6 pb-8 space-y-6">
-                        <div className="text-xs font-bold text-stone-400 uppercase tracking-widest px-4 py-2">
+                    <div className="px-4 pt-4 pb-6 space-y-3">
+                        <div className="px-2">
+                            <Link
+                                href="/editor"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-extrabold text-base shadow-lg shadow-pink-500/30 active:scale-[0.98] transition-transform border-0"
+                            >
+                                <Plus size={20} strokeWidth={3} />
+                                Créer ma carte postale <span className="opacity-90">✨</span>
+                            </Link>
+                        </div>
+
+                        <div className="text-xs font-bold text-stone-400 uppercase tracking-widest px-4 py-1">
                             Découvrir
                         </div>
                         <div className="space-y-1">
                             <Link
                                 href="/#fonctionnalites"
                                 onClick={() => setIsMobileMenuOpen(false)}
-                                className="flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-pink-50/80 text-stone-700 font-semibold text-[15px] transition-colors"
+                                className="flex items-center gap-4 px-4 py-2.5 rounded-2xl hover:bg-pink-50/80 text-stone-700 font-semibold text-[15px] transition-colors"
                             >
                                 <Star className="w-6 h-6 text-pink-500 flex-shrink-0" />
                                 Fonctionnalités
@@ -414,7 +426,7 @@ export const Navbar = () => {
                                 href="/pricing"
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={cn(
-                                    "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
+                                    "flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-colors font-semibold text-[15px]",
                                     pathname === "/pricing" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
                                 )}
                             >
@@ -425,7 +437,7 @@ export const Navbar = () => {
                                 href="/galerie"
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={cn(
-                                    "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
+                                    "flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-colors font-semibold text-[15px]",
                                     pathname === "/galerie" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
                                 )}
                             >
@@ -436,7 +448,7 @@ export const Navbar = () => {
                                 href="/a-propos"
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={cn(
-                                    "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
+                                    "flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-colors font-semibold text-[15px]",
                                     pathname === "/a-propos" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
                                 )}
                             >
@@ -447,7 +459,7 @@ export const Navbar = () => {
                                 href="/legal/cgu"
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={cn(
-                                    "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
+                                    "flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-colors font-semibold text-[15px]",
                                     pathname === "/legal/cgu" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
                                 )}
                             >
@@ -458,7 +470,7 @@ export const Navbar = () => {
                                 href="/legal/cgv"
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={cn(
-                                    "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
+                                    "flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-colors font-semibold text-[15px]",
                                     pathname === "/legal/cgv" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
                                 )}
                             >
@@ -469,7 +481,7 @@ export const Navbar = () => {
                                 href="/legal/mentions-legales"
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={cn(
-                                    "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
+                                    "flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-colors font-semibold text-[15px]",
                                     pathname === "/legal/mentions-legales" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
                                 )}
                             >
@@ -480,7 +492,7 @@ export const Navbar = () => {
                                 href="/legal/confidentialite"
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={cn(
-                                    "flex items-center gap-4 px-4 py-4 rounded-2xl transition-colors font-semibold text-[15px]",
+                                    "flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-colors font-semibold text-[15px]",
                                     pathname === "/legal/confidentialite" ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50/80 text-stone-700"
                                 )}
                             >
@@ -488,7 +500,7 @@ export const Navbar = () => {
                                 Confidentialité
                             </Link>
                         </div>
-                        <div className="text-xs font-bold text-stone-400 uppercase tracking-widest px-4 py-2">
+                        <div className="text-xs font-bold text-stone-400 uppercase tracking-widest px-4 py-1">
                             Agences & Pro
                         </div>
                         <div className="space-y-1">
@@ -497,7 +509,7 @@ export const Navbar = () => {
                                     key={item.href + item.title}
                                     href={item.href}
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="flex gap-4 px-4 py-4 rounded-2xl hover:bg-orange-50/80 active:bg-orange-50 text-stone-700 transition-colors"
+                                    className="flex gap-4 px-4 py-2.5 rounded-2xl hover:bg-orange-50/80 active:bg-orange-50 text-stone-700 transition-colors"
                                 >
                                     <item.icon className="w-6 h-6 text-orange-500 flex-shrink-0 mt-0.5" />
                                     <div>
@@ -507,7 +519,7 @@ export const Navbar = () => {
                                 </Link>
                             ))}
                         </div>
-                        <div className="text-xs font-bold text-stone-400 uppercase tracking-widest px-4 py-2">
+                        <div className="text-xs font-bold text-stone-400 uppercase tracking-widest px-4 py-1">
                             Tarifs
                         </div>
                         <div className="space-y-1">
@@ -516,7 +528,7 @@ export const Navbar = () => {
                                     key={item.label}
                                     href={item.href}
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-stone-50 active:bg-stone-100 text-stone-700 transition-colors"
+                                    className="flex items-center gap-4 px-4 py-2.5 rounded-2xl hover:bg-stone-50 active:bg-stone-100 text-stone-700 transition-colors"
                                 >
                                     <item.icon className="w-6 h-6 text-pink-500 flex-shrink-0" />
                                     <span className="font-medium flex-1 text-[15px]">{item.label}</span>
@@ -530,7 +542,7 @@ export const Navbar = () => {
                                 <Link
                                     href={user.role === 'admin' ? '/manager' : user.role === 'agence' ? '/espace-agence' : '/espace-client'}
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="flex items-center gap-4 px-4 py-4 rounded-2xl bg-pink-50 text-pink-700 font-semibold text-[15px]"
+                                    className="flex items-center gap-4 px-4 py-2.5 rounded-2xl bg-pink-50 text-pink-700 font-semibold text-[15px]"
                                 >
                                     <LayoutDashboard size={22} />
                                     <span className="truncate">{user.name?.trim() || user.email}</span>
@@ -542,18 +554,12 @@ export const Navbar = () => {
                                 <Link
                                     href="/connexion"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-stone-50 text-stone-700 font-semibold text-[15px]"
+                                    className="flex items-center gap-4 px-4 py-2.5 rounded-2xl hover:bg-stone-50 text-stone-700 font-semibold text-[15px]"
                                 >
                                     <LogIn size={22} /> Connexion
                                 </Link>
                             )}
-                            <Link
-                                href="/editor"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold text-[15px] shadow-lg shadow-pink-500/25 active:scale-[0.98] transition-transform border-0"
-                            >
-                                Créer ma carte <span className="opacity-90">✨</span>
-                            </Link>
+
                         </div>
                     </div>
                 </div>

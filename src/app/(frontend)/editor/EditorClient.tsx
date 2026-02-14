@@ -41,6 +41,8 @@ import {
   Plus,
   MoreHorizontal,
   Gift,
+  XCircle,
+  CheckCircle2,
 } from 'lucide-react'
 import { Postcard, Template, TemplateCategory, FrontImageCrop, StickerPlacement, Sticker } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -2178,8 +2180,17 @@ export default function EditorPage() {
                   <div className="h-px bg-stone-100" />
 
                   {/* Album / Gallery Section */}
-                  <section>
-                    <div className="flex justify-between items-end mb-4">
+                  <section className="relative">
+                    {!isPremium && (
+                      <div className="sm:hidden p-3 mb-5 bg-amber-50/50 border border-amber-100 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
+                        <Sparkles size={18} className="text-amber-500 shrink-0" />
+                        <div className="flex-1">
+                          <p className="text-[10px] font-black text-amber-900 uppercase tracking-[0.15em]">Option payante (dès +1€)</p>
+                          <p className="text-[10px] text-amber-700/80 leading-tight mt-0.5">Débloquez jusqu'à 50 photos et des vidéos haute résolution.</p>
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-4">
                       <label className="flex items-center gap-2 text-sm font-bold text-stone-800 uppercase tracking-wider">
                         <div className="relative">
                           <ImageIcon size={16} className="text-teal-500" />
@@ -2208,22 +2219,20 @@ export default function EditorPage() {
                             </div>
                           </div>
                         ) : (
-                          <div className="flex flex-col items-end gap-1 text-right">
-                            <span className="text-stone-400 uppercase tracking-[0.2em] font-bold text-[9px]">
+                          <div className="flex flex-col items-end gap-1 text-right w-full sm:w-auto">
+                            <span className="hidden sm:block text-stone-400 uppercase tracking-[0.2em] font-bold text-[9px]">
                               Option payante (dès +1€)
                             </span>
-                            <div className="flex flex-col gap-1 items-end">
-                              <div className="flex items-center gap-1.5">
-                                <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-bold border transition-colors", (mediaItems || []).length === 0 ? "bg-teal-50 text-teal-700 border-teal-200" : "bg-stone-50 text-stone-400 border-stone-200")}>
-                                  Gratuit : 1 photo
-                                </span>
-                                <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-bold border transition-colors", getAlbumPrice() === 1 ? "bg-amber-50 text-amber-700 border-amber-200 shadow-sm" : "bg-stone-50 text-stone-400 border-stone-200")}>
-                                  1€ : 10 photos
-                                </span>
-                                <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-bold border transition-colors", getAlbumPrice() === 2 ? "bg-purple-50 text-purple-700 border-purple-200 shadow-sm" : "bg-stone-50 text-stone-400 border-stone-200")}>
-                                  2€ : 50 photos + 3 vidéos
-                                </span>
-                              </div>
+                            <div className="flex items-center gap-1.5 w-full sm:w-auto justify-between sm:justify-end">
+                              <span className={cn("text-[10px] px-2 py-1 rounded-full font-bold border transition-colors whitespace-nowrap", (mediaItems || []).length === 0 ? "bg-teal-50 text-teal-700 border-teal-200" : "bg-stone-50 text-stone-400 border-stone-200")}>
+                                Gratuit : 1 photo
+                              </span>
+                              <span className={cn("text-[10px] px-2 py-1 rounded-full font-bold border transition-colors whitespace-nowrap", getAlbumPrice() === 1 ? "bg-amber-50 text-amber-700 border-amber-200 shadow-sm" : "bg-stone-50 text-stone-400 border-stone-200")}>
+                                1€ : 10 photos
+                              </span>
+                              <span className={cn("text-[10px] px-2 py-1 rounded-full font-bold border transition-colors whitespace-nowrap", getAlbumPrice() === 2 ? "bg-purple-50 text-purple-700 border-purple-200 shadow-sm" : "bg-stone-50 text-stone-400 border-stone-200")}>
+                                2€ : 50+ photos & vidéos
+                              </span>
                             </div>
                           </div>
                         )}
@@ -2353,395 +2362,291 @@ export default function EditorPage() {
 
             {/* ==================== STEP: APERÇU ==================== */}
             {currentStep === 'preview' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-serif font-bold text-stone-800">
-                    Votre carte est prête !
-                  </h2>
-                </div>
-                <p className="text-stone-500 mb-8 text-sm">
-                  Partagez-la maintenant avec vos proches. Cliquez sur la carte pour la retourner.
-                </p>
-
-                {/* Bloc de partage */}
-                <div className="border-t border-stone-200 pt-8">
-                  <div className="max-w-2xl mx-auto">
-                    <p className="text-stone-600 text-sm mb-6 leading-relaxed">
-                      Une fois la carte créée, un lien à partager vous sera fourni. Vous pourrez l’envoyer à qui vous voulez.
+              <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-5 sm:p-8">
+                <div className="flex flex-col gap-10">
+                  {/* Title & Introduction */}
+                  <div className="text-center sm:text-left">
+                    <h2 className="text-2xl sm:text-3xl font-serif font-black text-stone-900 mb-3">
+                      Votre carte est prête ! 🎉
+                    </h2>
+                    <p className="text-stone-500 text-sm leading-relaxed max-w-xl">
+                      Partagez-la maintenant avec vos proches. Cliquez sur la carte en bas de page pour la retourner. Vous pouvez encore la modifier si besoin avant de quitter.
                     </p>
+                  </div>
 
+                  {/* Bloc de partage (Priorité haute) */}
+                  <div className="w-full">
                     {isPublishing ? (
                       <div className="bg-stone-50 rounded-2xl p-10 border border-stone-100 flex flex-col items-center justify-center text-center">
-                        <RefreshCw size={32} className="text-teal-500 animate-spin mb-4" />
-                        <p className="text-stone-500 font-medium font-serif">{createdPostcardId ? 'Mise à jour de votre carte...' : 'Création de votre lien de partage...'}</p>
+                        <RefreshCw size={40} className="text-teal-500 animate-spin mb-4" />
+                        <p className="text-stone-600 font-serif font-medium">Nous préparons votre lien...</p>
                       </div>
                     ) : shareError ? (
                       <div className="bg-red-50 rounded-2xl p-8 border border-red-100 flex flex-col items-center justify-center text-center">
-                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <X size={32} className="text-red-600" />
-                        </div>
-                        <h3 className="text-lg font-serif font-bold text-stone-800 mb-2">Impossible de créer le lien</h3>
-                        <p className="text-stone-600 text-sm mb-6 max-w-md">{shareError}</p>
-                        <p className="text-stone-500 text-xs mb-4 max-w-md">
-                          Si vous avez ajouté des photos, vérifiez que le stockage (CORS du bucket R2) est bien configuré pour votre domaine.
-                        </p>
-                        <div className="flex flex-wrap justify-center gap-3">
-                          <Button
-                            onClick={() => { setShareError(null); handlePublish(); }}
-                            className="rounded-xl bg-teal-500 hover:bg-teal-600 text-white"
-                          >
-                            <RefreshCw size={16} className="mr-2" /> Réessayer
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => { setShareError(null); setCurrentStep('photo'); }}
-                            className="rounded-xl border-stone-200"
-                          >
-                            Changer la photo
-                          </Button>
-                        </div>
+                        <XCircle size={40} className="text-red-500 mb-4" />
+                        <h3 className="text-lg font-bold text-stone-900 mb-2">Erreur de création</h3>
+                        <p className="text-stone-600 text-sm mb-6">{shareError}</p>
+                        <Button onClick={() => { setShareError(null); handlePublish(); }} className="bg-teal-500 hover:bg-teal-600 text-white rounded-xl">
+                          <RefreshCw size={16} className="mr-2" /> Réessayer
+                        </Button>
                       </div>
                     ) : !shareUrl ? (
                       <div className="bg-stone-50 rounded-2xl p-10 border border-stone-100 flex flex-col items-center justify-center text-center">
-                        <RefreshCw size={32} className="text-teal-500 animate-spin mb-4" />
-                        <p className="text-stone-500 font-medium font-serif">{createdPostcardId ? 'Mise à jour de votre carte...' : 'Création de votre lien de partage...'}</p>
+                        <RefreshCw size={40} className="text-teal-500 animate-spin mb-4" />
+                        <p className="text-stone-600 font-serif font-medium">Génération du lien en cours...</p>
                       </div>
                     ) : (
-                      <div className="bg-stone-50 rounded-2xl p-6 sm:p-8 border border-stone-200 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        {/* Paiement Revolut : si l'utilisateur a choisi Revolut et qu'il y a un montant à payer */}
+                      <div className="bg-teal-50/50 rounded-[2rem] p-6 sm:p-10 border border-teal-100 text-center animate-in fade-in slide-in-from-top-6 duration-700 shadow-sm relative overflow-hidden">
+                        {/* Decorative background element */}
+                        <div className="absolute -top-12 -right-12 w-32 h-32 bg-teal-200/20 rounded-full blur-3xl pointer-events-none" />
+                        
+                        {/* Paiement Revolut Section */}
                         {paymentMethod === 'revolut' && getAlbumPrice() > 0 && (
-                          <div className="mb-8 p-6 rounded-2xl bg-gradient-to-br from-[#0070ba] to-[#005ea6] text-white text-left">
+                          <div className="mb-10 p-6 rounded-2xl bg-stone-900 text-white text-left shadow-2xl relative z-10">
                             <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
-                              <CreditCard size={20} /> Finalisez le paiement avec Revolut
+                              <CreditCard size={20} className="text-teal-400" /> Finalisez le paiement
                             </h3>
-                            <p className="text-white/90 text-sm mb-4">
-                              Votre carte est créée. Cliquez ci-dessous pour payer {getAlbumPrice().toFixed(2)} € et la partager.
-                            </p>
-                            {revolutError && (
-                              <p className="text-red-200 text-sm mb-3">{revolutError}</p>
-                            )}
+                            <p className="text-stone-400 text-sm mb-4">Votre carte est prête, il ne manque que le règlement pour débloquer l'album complet.</p>
                             <Button
                               onClick={handlePayWithRevolut}
                               disabled={isRevolutRedirecting}
-                              className="w-full sm:w-auto bg-white text-[#0070ba] hover:bg-white/90 font-bold rounded-xl px-6 py-5 h-auto"
+                              className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl px-8 py-6 h-auto transition-all"
                             >
-                              {isRevolutRedirecting ? (
-                                <>
-                                  <RefreshCw size={18} className="mr-2 animate-spin" /> Redirection…
-                                </>
-                              ) : (
-                                <>Payer {getAlbumPrice().toFixed(2)} € avec Revolut</>
-                              )}
+                              {isRevolutRedirecting ? 'Redirection...' : `Payer ${getAlbumPrice().toFixed(2)}€ avec Revolut`}
                             </Button>
                           </div>
                         )}
 
-                        <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                          <Send size={32} className="text-teal-600" />
+                        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg border border-teal-50 transform hover:scale-105 transition-transform duration-300">
+                          <Send size={36} className="text-teal-600" />
                         </div>
-                        <h3 className="text-xl font-serif font-bold text-stone-800 mb-2">Prête à être partagée !</h3>
-                        <p className="text-stone-500 text-sm mb-6">Utilisez le lien ci-dessous ou les réseaux sociaux</p>
+                        <h3 className="text-2xl font-serif font-black text-stone-900 mb-2 italic">Lien prêt à être envoyé !</h3>
+                        <p className="text-stone-500 text-[10px] sm:text-xs mb-8 uppercase tracking-[0.2em] font-black">Copiez le lien ou partagez directement</p>
 
-                        <div className="mb-8 max-w-lg mx-auto">
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              readOnly
-                              value={shareUrl}
-                              className="flex-1 bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-600 focus:outline-none shadow-sm"
-                            />
-                            <Button onClick={copyToClipboard} variant="outline" className="rounded-xl bg-white hover:bg-teal-50 hover:text-teal-800 hover:border-teal-300 text-stone-600 border-stone-200 px-6 h-auto shadow-sm transition-all">
-                              <Copy size={16} className="mr-2" /> Copier
+                        <div className="mb-10 w-full max-w-xl mx-auto">
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <div className="relative flex-1 group">
+                              <input
+                                type="text"
+                                readOnly
+                                value={shareUrl}
+                                className="w-full bg-white border border-stone-200 rounded-2xl px-5 py-4.5 text-sm text-stone-700 focus:outline-none shadow-inner font-bold text-center sm:text-left group-hover:border-stone-400 transition-colors"
+                              />
+                            </div>
+                            <Button
+                              onClick={copyToClipboard}
+                              className="w-full sm:w-auto rounded-2xl bg-stone-900 hover:bg-black text-white px-8 py-4.5 h-auto shadow-xl flex items-center justify-center gap-3 font-black active:scale-95 transition-all"
+                            >
+                              <Copy size={20} />
+                              <span>COPIER LE LIEN</span>
                             </Button>
                           </div>
                         </div>
 
-                        <div className="flex flex-wrap justify-center gap-3">
-                          {/* E-mails share */}
-                          <a
-                            href={`mailto:?subject=Regarde ma carte postale !&body=J'ai créé une carte postale pour toi : ${shareUrl}`}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-stone-200 text-stone-700 rounded-full font-bold text-xs hover:bg-stone-50 transition-all shadow-sm"
+                        <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+                          <a 
+                            href={`mailto:?subject=Regarde ma carte postale !&body=J'ai créé une carte postale pour toi : ${shareUrl}`} 
+                            className="flex items-center gap-2 px-5 py-3 bg-white text-stone-700 border border-stone-200 rounded-xl font-bold text-xs hover:bg-stone-50 transition-all shadow-sm active:scale-95"
                           >
-                            <Mail size={16} className="text-stone-400" /> E-mails
+                            <Mail size={18} className="text-stone-400" /> <span>Emails</span>
                           </a>
-
-                          {/* SMS share */}
-                          <a
-                            href={`sms:?body=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-stone-800 text-white rounded-full font-bold text-xs hover:bg-stone-900 transition-all shadow-md"
+                          <a 
+                            href={`sms:?body=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} 
+                            className="flex items-center gap-2 px-5 py-3 bg-stone-800 text-white rounded-xl font-bold text-xs hover:bg-stone-900 transition-all shadow-md active:scale-95"
                           >
-                            <MessageSquare size={16} /> Numéros (SMS)
+                            <MessageSquare size={18} /> <span>SMS</span>
                           </a>
-
-                          {/* WhatsApp share */}
-                          <a
-                            href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-5 py-2.5 bg-[#25D366] text-white rounded-full font-bold text-xs hover:opacity-90 transition-all shadow-md"
+                          <a 
+                            href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="flex items-center gap-2 px-5 py-3 bg-[#25D366] text-white rounded-xl font-bold text-xs hover:opacity-90 transition-all shadow-md active:scale-95"
                           >
-                            <Share2 size={16} /> WhatsApp
+                            <Share2 size={18} /> <span>WhatsApp</span>
                           </a>
-
-                          {/* Facebook share */}
-                          <a
-                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-5 py-2.5 bg-[#1877F2] text-white rounded-full font-bold text-xs hover:opacity-90 transition-all shadow-md"
-                          >
-                            <Facebook size={16} /> Facebook
-                          </a>
-
-                          <Button
-                            type="button"
-                            onClick={() => {
-                              if (!shareUrl) return
-                              setShowRecipientModal(true)
-                            }}
-                            variant="outline"
-                            className="flex items-center gap-2 px-5 py-2.5 border border-stone-200 rounded-full text-stone-700 text-xs font-bold uppercase tracking-wider hover:border-stone-300 hover:bg-stone-50 transition-all shadow-sm"
-                            disabled={!shareUrl}
-                          >
-                            <Plane size={16} />
-                            Voir comme destinataire
-                          </Button>
                         </div>
+
+                        <Button
+                          type="button"
+                          onClick={() => setShowRecipientModal(true)}
+                          className="w-full max-w-sm mx-auto flex items-center justify-center gap-3 px-8 py-5 bg-gradient-to-br from-teal-400 via-teal-500 to-emerald-500 text-white rounded-2xl text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-teal-500/30 hover:shadow-teal-500/50 hover:scale-[1.02] active:scale-95 transition-all h-auto"
+                        >
+                          <Plane size={24} className="animate-bounce-subtle" />
+                          <span>VOIR COMME DESTINATAIRE</span>
+                        </Button>
                       </div>
                     )}
+                  </div>
 
-                    {/* Sender Email Section — masquée si connecté (carte déjà associée au compte) */}
-                    <div className="mt-12 pt-8 border-t border-stone-100">
-                      <div className="bg-teal-50/50 rounded-2xl p-6 border border-teal-100">
-                        <div className="flex items-start gap-4 mb-4">
-                          <div className="bg-teal-500 text-white p-2.5 rounded-xl shrink-0">
-                            <User size={20} />
-                          </div>
-                          <div>
-                            <h3 className="font-serif font-bold text-lg text-stone-800">
-                              {currentUser ? 'Connecté à votre compte' : 'Votre E-mail (Expéditeur)'}
-                            </h3>
-                            <p className="text-stone-500 text-sm mt-1 leading-relaxed">
-                              {currentUser
-                                ? 'Cette carte est automatiquement associée à votre compte. Vous la retrouverez dans Mon espace.'
-                                : 'Saisissez votre e-mail pour revoir votre carte, consulter les statistiques et suivre son envoi.'}
-                            </p>
-                          </div>
+                  {/* Account / Email Section */}
+                  <div className="pt-10 border-t border-stone-100">
+                    <div className="bg-stone-50 rounded-3xl p-6 sm:p-8 border border-stone-200 relative overflow-hidden">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8">
+                        <div className="bg-stone-900 text-white p-4 rounded-2xl shadow-lg shrink-0">
+                          <User size={24} />
                         </div>
-                        <div className="max-w-md flex gap-2">
-                          {currentUser ? (
-                            <div className="w-full flex items-center gap-3 bg-teal-50 border border-teal-200 text-teal-800 px-4 py-3 rounded-xl">
-                              <div className="bg-teal-100 p-1 rounded-full">
-                                <Check size={16} className="text-teal-600" />
-                              </div>
-                              <div className="flex-1">
-                                <p className="font-bold text-sm">Connecté en tant que {currentUser.name?.trim() || currentUser.email}</p>
-                                <p className="text-xs text-teal-600">Carte enregistrée dans votre espace.</p>
-                              </div>
-                            </div>
-                          ) : isEmailSent ? (
-                            <div className="w-full flex items-center gap-3 bg-teal-50 border border-teal-200 text-teal-800 px-4 py-3 rounded-xl animate-in fade-in slide-in-from-top-2">
-                              <div className="bg-teal-100 p-1 rounded-full">
-                                <Check size={16} className="text-teal-600" />
-                              </div>
-                              <div className="flex-1">
-                                <p className="font-bold text-sm">E-mail envoyé !</p>
-                                <p className="text-xs text-teal-600">Vérifiez votre boîte de réception (et vos spams).</p>
-                              </div>
-                            </div>
-                          ) : (
-                            <>
-                              <input
-                                type="email"
-                                value={senderEmail}
-                                onChange={(e) => setSenderEmail(e.target.value)}
-                                placeholder="votre@email.com"
-                                disabled={isSendingEmail}
-                                className="flex-1 rounded-xl border border-stone-200 px-4 py-3 text-base focus:border-teal-500 focus:ring-teal-500 bg-white shadow-sm transition-all disabled:opacity-50 disabled:bg-stone-50"
-                              />
-                              <Button
-                                variant="secondary"
-                                className="rounded-xl h-auto px-6 bg-teal-500 hover:bg-teal-600 text-white border-0 font-bold transition-all shadow-md shadow-teal-100 disabled:opacity-70"
-                                disabled={isSendingEmail}
-                                onClick={async () => {
-                                  if (!createdPostcardId) return
-                                  if (!senderEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) {
-                                    alert("Veuillez entrer une adresse email valide.")
-                                    return
-                                  }
-
-                                  setIsSendingEmail(true);
-                                  try {
-                                    const result = await linkPostcardToUser(createdPostcardId, senderEmail)
-                                    if (result.success) {
-                                      setIsEmailSent(true);
-                                    } else {
-                                      alert("Erreur: " + (result.error || "Impossible de lier le compte."))
-                                    }
-                                  } catch (e) {
-                                    console.error(e);
-                                    alert("Une erreur est survenue.");
-                                  } finally {
-                                    setIsSendingEmail(false);
-                                  }
-                                }}
-                              >
-                                {isSendingEmail ? <RefreshCw size={18} className="animate-spin" /> : 'Valider'}
-                              </Button>
-                            </>
-                          )}
+                        <div>
+                          <h3 className="font-serif font-black text-xl text-stone-900 leading-tight">
+                            {currentUser ? 'Compte associé avec succès' : 'Sauvegardez votre carte'}
+                          </h3>
+                          <p className="text-stone-500 text-sm mt-1 leading-relaxed max-w-md">
+                            {currentUser
+                              ? 'Retrouvez cette création à tout moment dans votre espace personnel.'
+                              : 'Indiquez votre e-mail pour accéder aux statistiques de votre carte ou la modifier plus tard.'}
+                          </p>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Envoyer la carte par email (liens avec tracking) */}
-                    <div className="mt-12 pt-8 border-t border-stone-100">
-                      <div className="bg-amber-50/50 rounded-2xl p-6 border border-amber-100">
-                        <div className="flex items-start gap-4 mb-4">
-                          <div className="bg-amber-500 text-white p-2.5 rounded-xl shrink-0">
-                            <Mail size={20} />
+                      <div className="w-full max-w-md">
+                        {currentUser ? (
+                          <div className="flex items-center gap-4 bg-white border-2 border-teal-100 text-teal-900 px-5 py-5 rounded-2xl shadow-sm">
+                            <div className="bg-teal-500 p-1.5 rounded-full text-white">
+                              <Check size={18} />
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                              <p className="font-black text-sm truncate">{currentUser.email}</p>
+                              <p className="text-xs text-teal-600 font-bold uppercase tracking-wider">Compte configuré</p>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="font-serif font-bold text-lg text-stone-800">
-                              Envoyer la carte par e-mail
-                            </h3>
-                            <p className="text-stone-500 text-sm mt-1 leading-relaxed">
-                              Ajoutez des destinataires : chacun recevra un e-mail avec un lien unique pour voir la carte (avec suivi des vues).
-                            </p>
-                          </div>
-                        </div>
-                        {recipientsSentCount !== null ? (
-                          <div className="flex items-center gap-3 bg-teal-50 border border-teal-200 text-teal-800 px-4 py-3 rounded-xl">
-                            <Check size={20} className="text-teal-600 shrink-0" />
+                        ) : isEmailSent ? (
+                          <div className="flex items-center gap-4 bg-teal-50 border-2 border-teal-200 text-teal-800 px-5 py-5 rounded-2xl animate-in fade-in slide-in-from-top-2 shadow-sm">
+                            <CheckCircle2 size={24} className="text-teal-600" />
                             <div>
-                              <p className="font-bold text-sm">E-mails envoyés !</p>
-                              <p className="text-xs text-teal-600">{recipientsSentCount} destinataire(s) ont reçu le lien vers votre carte.</p>
+                              <p className="font-black text-sm">C'est tout bon !</p>
+                              <p className="text-xs text-teal-600 font-bold uppercase tracking-wider italic">Vérifiez vos e-mails</p>
                             </div>
                           </div>
                         ) : (
-                          <>
-                            <p className="text-stone-500 text-xs mb-3">
-                              {!currentUser && !senderEmail && !isEmailSent
-                                ? 'Indiquez d’abord votre e-mail expéditeur ci-dessus, puis ajoutez les destinataires.'
-                                : 'Prénom, nom et adresse e-mail de chaque destinataire.'}
-                            </p>
-                            <div className="space-y-3">
-                              {recipients.map((r, i) => (
-                                <div key={i} className="flex flex-wrap items-center gap-2 sm:gap-3">
-                                  <Input
-                                    placeholder="Prénom"
-                                    value={r.firstName}
-                                    onChange={(e) => {
-                                      const next = [...recipients]
-                                      next[i] = { ...next[i], firstName: e.target.value }
-                                      setRecipients(next)
-                                    }}
-                                    className="w-24 sm:w-28 rounded-lg border-stone-200"
-                                  />
-                                  <Input
-                                    placeholder="Nom"
-                                    value={r.lastName}
-                                    onChange={(e) => {
-                                      const next = [...recipients]
-                                      next[i] = { ...next[i], lastName: e.target.value }
-                                      setRecipients(next)
-                                    }}
-                                    className="w-24 sm:w-28 rounded-lg border-stone-200"
-                                  />
-                                  <Input
-                                    type="email"
-                                    placeholder="email@exemple.com"
-                                    value={r.email}
-                                    onChange={(e) => {
-                                      const next = [...recipients]
-                                      next[i] = { ...next[i], email: e.target.value }
-                                      setRecipients(next)
-                                    }}
-                                    className="flex-1 min-w-[140px] rounded-lg border-stone-200"
-                                  />
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="shrink-0 text-stone-400 hover:text-red-500"
-                                    onClick={() => {
-                                      if (recipients.length > 1) {
-                                        setRecipients(recipients.filter((_, j) => j !== i))
-                                      }
-                                    }}
-                                    disabled={recipients.length <= 1}
-                                    aria-label="Supprimer"
-                                  >
-                                    <X size={18} />
-                                  </Button>
-                                </div>
-                              ))}
-                            </div>
-                            <div className="flex flex-wrap items-center gap-3 mt-4">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="rounded-lg border-stone-200"
-                                onClick={() => setRecipients([...recipients, { firstName: '', lastName: '', email: '' }])}
-                              >
-                                <Plus size={16} className="mr-1" />
-                                Ajouter un destinataire
-                              </Button>
-                              <Button
-                                variant="secondary"
-                                className="rounded-xl h-auto px-6 bg-amber-500 hover:bg-amber-600 text-white border-0 font-bold transition-all shadow-md disabled:opacity-70"
-                                disabled={
-                                  isSendingToRecipients ||
-                                  !createdPostcardId ||
-                                  recipients.every((r) => !(r.email || '').trim()) ||
-                                  (!currentUser && !(senderEmail || '').trim() && !isEmailSent)
+                          <div className="flex flex-col gap-3">
+                            <input
+                              type="email"
+                              value={senderEmail}
+                              onChange={(e) => setSenderEmail(e.target.value)}
+                              placeholder="votre@email.com"
+                              disabled={isSendingEmail}
+                              className="w-full bg-white border-2 border-stone-200 rounded-2xl px-6 py-4.5 text-base focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 shadow-sm transition-all font-medium disabled:opacity-50"
+                            />
+                            <Button
+                              onClick={async () => {
+                                if (!createdPostcardId) return
+                                if (!senderEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) {
+                                  alert("Veuillez entrer une adresse email valide.")
+                                  return
                                 }
-                                onClick={async () => {
-                                  if (!createdPostcardId) return
-                                  const needSender = !currentUser && !(senderEmail || '').trim() && !isEmailSent
-                                  if (needSender) {
-                                    alert('Indiquez votre e-mail expéditeur ci-dessus avant d’envoyer.')
-                                    return
-                                  }
-                                  const valid = recipients.filter((r) => (r.email || '').trim())
-                                  if (valid.length === 0) {
-                                    alert('Ajoutez au moins un destinataire avec une adresse e-mail.')
-                                    return
-                                  }
-                                  setIsSendingToRecipients(true)
-                                  try {
-                                    const result = await sendPostcardToRecipientsFromEditor(
-                                      createdPostcardId,
-                                      valid,
-                                      (currentUser?.email ?? senderEmail) || undefined
-                                    )
-                                    if (result.success && result.sentCount != null) {
-                                      setRecipientsSentCount(result.sentCount)
-                                    } else {
-                                      alert(result.error ?? 'Erreur lors de l’envoi.')
-                                    }
-                                  } catch (e) {
-                                    console.error(e)
-                                    alert('Une erreur est survenue.')
-                                  } finally {
-                                    setIsSendingToRecipients(false)
-                                  }
-                                }}
-                              >
-                                {isSendingToRecipients ? (
-                                  <RefreshCw size={18} className="animate-spin" />
-                                ) : (
-                                  <>
-                                    <Send size={18} className="mr-2" />
-                                    Envoyer la carte
-                                  </>
-                                )}
-                              </Button>
-                            </div>
-                          </>
+                                setIsSendingEmail(true);
+                                try {
+                                  const result = await linkPostcardToUser(createdPostcardId, senderEmail)
+                                  if (result.success) setIsEmailSent(true);
+                                  else alert("Erreur: " + (result.error || "Impossible de lier le compte."));
+                                } catch (e) {
+                                  alert("Une erreur est survenue.");
+                                } finally {
+                                  setIsSendingEmail(false);
+                                }
+                              }}
+                              disabled={isSendingEmail}
+                              className="w-full rounded-2xl bg-teal-500 hover:bg-teal-600 text-white py-5 h-auto font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-teal-500/30 transition-all active:scale-95 flex items-center justify-center gap-2"
+                            >
+                              {isSendingEmail ? <RefreshCw className="animate-spin" size={18} /> : <span>ENREGISTRER MA CARTE</span>}
+                            </Button>
+                          </div>
                         )}
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Send to Recipients Section (Email Tracking) */}
+                  <div className="pt-10 border-t border-stone-100">
+                    <div className="bg-amber-50/50 rounded-3xl p-6 sm:p-8 border border-amber-100">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8">
+                        <div className="bg-amber-500 text-white p-4 rounded-2xl shadow-lg shrink-0">
+                          <Send size={24} />
+                        </div>
+                        <div>
+                          <h3 className="font-serif font-black text-xl text-stone-900 leading-tight">Envoyer par e-mail (suivi)</h3>
+                          <p className="text-stone-500 text-sm mt-1 leading-relaxed">Chaque destinataire recevra un lien unique permettant de suivre l'ouverture de sa carte.</p>
+                        </div>
+                      </div>
+
+                      {recipientsSentCount !== null ? (
+                        <div className="flex items-center gap-4 bg-white border-2 border-teal-100 text-teal-900 px-6 py-6 rounded-2xl shadow-sm italic font-bold">
+                          <CheckCircle2 size={32} className="text-teal-600" />
+                          <p>{recipientsSentCount} invitation(s) envoyée(s) avec succès !</p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-6">
+                           <p className="text-stone-500 text-xs font-bold uppercase tracking-wider">Destinataires</p>
+                           <div className="space-y-4">
+                            {recipients.map((r, i) => (
+                              <div key={i} className="flex flex-col sm:flex-row gap-2">
+                                <Input
+                                  placeholder="Prénom"
+                                  value={r.firstName}
+                                  onChange={(e) => {
+                                    const next = [...recipients]
+                                    next[i] = { ...next[i], firstName: e.target.value }
+                                    setRecipients(next)
+                                  }}
+                                  className="flex-1 rounded-xl border-stone-200 bg-white"
+                                />
+                                <Input
+                                  type="email"
+                                  placeholder="email@exemple.com"
+                                  value={r.email}
+                                  onChange={(e) => {
+                                    const next = [...recipients]
+                                    next[i] = { ...next[i], email: e.target.value }
+                                    setRecipients(next)
+                                  }}
+                                  className="flex-[2] rounded-xl border-stone-200 bg-white"
+                                />
+                                <Button
+                                  variant="ghost"
+                                  className="h-12 px-4 text-stone-300 hover:text-red-500"
+                                  onClick={() => setRecipients(recipients.filter((_, j) => j !== i))}
+                                  disabled={recipients.length <= 1}
+                                >
+                                  <X size={20} />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                            <Button
+                              variant="outline"
+                              onClick={() => setRecipients([...recipients, { firstName: '', lastName: '', email: '' }])}
+                              className="rounded-xl border-stone-200 h-14 px-6 font-bold flex items-center justify-center gap-2 hover:bg-stone-50"
+                            >
+                              <Plus size={18} /> Ajouter un autre
+                            </Button>
+                            <Button
+                              onClick={async () => {
+                                if (!createdPostcardId) return;
+                                const needSender = !currentUser && !(senderEmail || '').trim() && !isEmailSent;
+                                if (needSender) return alert('Indiquez votre e-mail plus haut avant d’envoyer.');
+                                const valid = recipients.filter((r) => (r.email || '').trim());
+                                if (valid.length === 0) return alert('Ajoutez au moins un e-mail valide.');
+                                
+                                  setIsSendingToRecipients(true);
+                                try {
+                                  const result = await sendPostcardToRecipientsFromEditor(createdPostcardId, valid, (currentUser?.email ?? senderEmail) || undefined);
+                                  if (result.success && result.sentCount !== undefined) setRecipientsSentCount(result.sentCount);
+                                  else alert(result.error || 'Erreur lors de l’envoi.');
+                                } catch (e) {
+                                  alert('Une erreur est survenue.');
+                                } finally {
+                                  setIsSendingToRecipients(false);
+                                }
+                              }}
+                              disabled={isSendingToRecipients || !createdPostcardId}
+                              className="flex-1 rounded-xl bg-stone-900 hover:bg-black text-white h-14 font-black uppercase tracking-wider shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all"
+                            >
+                              {isSendingToRecipients ? <RefreshCw className="animate-spin" size={20} /> : <><Send size={20} /> ENVOYER MAINTENANT</>}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -2749,7 +2654,7 @@ export default function EditorPage() {
             )}
 
             {!shareUrl && (
-              <div className="mt-8">
+              <div className="mt-4 lg:mt-8">
                 {/* Mobile Card Preview — always visible below editor on small screens */}
                 <div className="lg:hidden">
                   <div className="flex items-center gap-2 mb-3">
@@ -2775,15 +2680,15 @@ export default function EditorPage() {
                       )}
                     </div>
                   </div>
-                  <div className="flex justify-center">
-                    <div className="transform scale-[0.85] origin-top">
+                  <div className="flex justify-center -mb-8 sm:mb-0">
+                    <div className="transform scale-[0.8] sm:scale-[0.85] origin-top">
                       <PostcardView postcard={postcardForPreview} flipped={showBack} />
                     </div>
                   </div>
                 </div>
 
                 {/* Navigation Buttons */}
-                <div className="flex items-center justify-between mt-6">
+                <div className="flex items-center justify-between mt-2 mb-6 sm:mb-0">
                   <Button
                     variant="ghost"
                     onClick={goPrev}
@@ -2800,25 +2705,38 @@ export default function EditorPage() {
                   </Button>
 
                   {currentStep !== 'preview' && (
-                    <Button
-                      onClick={goNext}
-                      disabled={!canGoNext()}
-                      className={cn(
-                        'rounded-full font-bold flex items-center gap-2 px-6 py-5 h-auto transition-all',
-                        canGoNext()
-                          ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-md shadow-teal-200 hover:-translate-y-0.5'
-                          : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-                      )}
-                    >
-                      Continuer
-                      <ChevronRight size={18} />
-                    </Button>
+                      <Button
+                        onClick={goNext}
+                        disabled={!canGoNext()}
+                        className={cn(
+                          'rounded-full font-bold flex items-center gap-2 px-5 py-4 sm:px-6 sm:py-5 h-auto transition-all',
+                          canGoNext()
+                            ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-md shadow-teal-200 hover:-translate-y-0.5'
+                            : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                        )}
+                      >
+                        Continuer
+                        <ChevronRight size={18} />
+                      </Button>
                   )}
                 </div>
               </div>
             )}
           </div>
         </div>
+      </div>
+      
+      {/* Floating Preview Button for Mobile */}
+      <div className="lg:hidden fixed bottom-4 left-4 z-[45] animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <Button
+          onClick={() => setShowFullscreen(true)}
+          className="h-12 w-12 rounded-full bg-stone-800/90 hover:bg-stone-900 border border-stone-700 shadow-2xl backdrop-blur-md text-white flex items-center justify-center p-0"
+          aria-label="Aperçu plein écran"
+        >
+          <Eye size={20} />
+          {/* Subtle pulse effect */}
+          <span className="absolute inset-0 rounded-full bg-teal-500/20 animate-ping -z-10" />
+        </Button>
       </div>
 
       {/* Modal plein écran : voir comme le destinataire */}

@@ -14,7 +14,9 @@ import {
     Search,
     Info,
     Heart,
-    Loader2
+    Loader2,
+    Maximize2,
+    Minimize2
 } from 'lucide-react';
 import { cn, isCoordinate } from '@/lib/utils';
 import { AnimatePresence, motion, useSpring, useMotionValue, useTransform, PanInfo, useAnimation } from 'framer-motion';
@@ -40,6 +42,7 @@ interface PostcardViewProps {
     isLarge?: boolean;
     width?: string;
     height?: string;
+    hideFullscreenButton?: boolean;
 }
 
 const FALLBACK_FRONT_IMAGE = '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
@@ -51,7 +54,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     className,
     isLarge = false,
     width,
-    height
+    height,
+    hideFullscreenButton = false
 }) => {
     const [isFlipped, setIsFlipped] = useState(flipped ?? false);
     const [isDragging, setIsDragging] = useState(false);
@@ -60,6 +64,26 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     const frontImageRef = useRef<HTMLImageElement>(null);
     const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    useEffect(() => {
+        if (isFullscreen) {
+            document.body.style.overflow = 'hidden';
+            const handleEsc = (e: KeyboardEvent) => {
+                if (e.key === 'Escape') setIsFullscreen(false);
+            };
+            window.addEventListener('keydown', handleEsc);
+            return () => {
+                document.body.style.overflow = '';
+                window.removeEventListener('keydown', handleEsc);
+            };
+        }
+    }, [isFullscreen]);
+
+    const toggleFullscreen = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsFullscreen(!isFullscreen);
+    };
 
     useEffect(() => {
         const url = postcard.frontImage || FALLBACK_FRONT_IMAGE;
@@ -438,6 +462,17 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     onDragEnd={handleDragEnd}
                     style={{ perspective: 1000, width, height }}
                 >
+                    {!isFullscreen && !hideFullscreenButton && (
+                        <div className="absolute top-2 left-2 md:top-4 md:left-4 z-[60] flex items-center gap-2">
+                            <button
+                                onClick={toggleFullscreen}
+                                className="bg-white/80 backdrop-blur-md p-2 rounded-full shadow-lg border border-stone-200 text-stone-600 hover:text-teal-600 transition-all active:scale-95"
+                                title="Plein écran"
+                            >
+                                <Maximize2 size={20} />
+                            </button>
+                        </div>
+                    )}
                     <motion.div
                         className={cn(
                             "relative w-full h-full transform-style-3d",
@@ -460,7 +495,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 opacity: frontOpacity
                             }}
                         >
-                            <div className="absolute inset-0 z-0">
+                            <div className="absolute inset-0 z-0 -translate-y-2">
                                 {postcard.frontImageCrop && imgNaturalSize ? (
                                     <div
                                         className="absolute pointer-events-none"
@@ -601,14 +636,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
                             <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none z-0" />
 
-                            {/* Grosse icone au milieu au survol (Front) - Amélioré pour inviter au clic */}
-                            <div className="absolute inset-0 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
-                                <div className="bg-white/10 backdrop-blur-md p-8 md:p-14 rounded-full border border-white/20 shadow-2xl flex flex-col items-center gap-4 transform scale-90 group-hover:scale-100 transition-all duration-500">
-                                    <div className="p-4 rounded-full bg-white/20 border border-white/30">
-                                        <RotateCw size={isLarge ? 64 : 48} className="text-white drop-shadow-2xl" strokeWidth={1.5} />
-                                    </div>
-                                    <span className="text-white font-black uppercase tracking-[0.3em] text-[10px] md:text-xs drop-shadow-2xl text-center leading-tight">
-                                        Cliquer pour <br /> retourner
+                            {/* Petite icone en haut à droite au survol (Front) */}
+                            <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
+                                <div className="bg-white/10 backdrop-blur-md px-2 py-1.5 rounded-lg border border-white/20 shadow-lg flex items-center gap-1.5 transform scale-90 group-hover:scale-100 transition-all duration-500">
+                                    <RotateCw size={12} className="text-white/90" strokeWidth={2} />
+                                    <span className="text-white/90 font-bold uppercase tracking-widest text-[7px]">
+                                        Retourner
                                     </span>
                                 </div>
                             </div>
@@ -635,7 +668,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             {/* Bloc caption + emoji en bas (affiché seulement si frontEmoji) */}
                             {(postcard.frontCaption || postcard.frontEmoji) && postcard.frontEmoji && (
                                 <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 z-10 flex items-center gap-3 rounded-xl sm:rounded-2xl border border-white/50 bg-white/90 backdrop-blur-md px-4 py-3 sm:px-5 sm:py-3.5 shadow-xl transition-all duration-300">
-                                    <span className="text-xl sm:text-4xl leading-none shrink-0" aria-hidden>{postcard.frontEmoji}</span>
+                                    <span className="text-lg sm:text-4xl leading-none shrink-0" aria-hidden>{postcard.frontEmoji}</span>
                                     {postcard.frontCaption ? (
                                         <p className="m-0 text-sm sm:text-lg font-semibold leading-tight tracking-tight text-stone-800 break-words line-clamp-2">
                                             {postcard.frontCaption}
@@ -649,7 +682,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                         <motion.div
                             className={cn(
                                 "absolute w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#fafaf9] border border-stone-200 flex overflow-hidden",
-                                isLarge ? "p-4 sm:p-8" : "p-5 sm:p-8",
+                                isLarge ? "p-2 sm:p-8" : "p-3 sm:p-8",
                                 !isFlipped ? "pointer-events-none" : ""
                             )}
                             style={{
@@ -684,14 +717,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 </div>
                             </div>
 
-                            {/* Grosse icone au milieu au survol (Back) - Amélioré pour inviter au clic */}
-                            <div className="absolute inset-0 z-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
-                                <div className="bg-teal-900/5 backdrop-blur-sm p-8 md:p-14 rounded-full border border-teal-900/10 shadow-2xl flex flex-col items-center gap-4 transform scale-90 group-hover:scale-100 transition-all duration-500">
-                                    <div className="p-4 rounded-full bg-teal-600/10 border border-teal-600/20">
-                                        <RotateCw size={isLarge ? 64 : 48} className="text-teal-700/80 drop-shadow-xl" strokeWidth={1.5} />
-                                    </div>
-                                    <span className="text-teal-800/80 font-black uppercase tracking-[0.3em] text-[10px] md:text-xs text-center leading-tight">
-                                        Cliquer pour <br /> retourner
+                            {/* Petite icone en haut à gauche au survol (Back) pour ne pas gêner le timbre */}
+                            <div className="absolute top-3 left-3 z-50 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
+                                <div className="bg-teal-900/10 backdrop-blur-md px-2 py-1.5 rounded-lg border border-teal-900/10 shadow-lg flex items-center gap-1.5 transform scale-90 group-hover:scale-100 transition-all duration-500">
+                                    <RotateCw size={12} className="text-teal-800/80" strokeWidth={2} />
+                                    <span className="text-teal-900/70 font-bold uppercase tracking-widest text-[7px]">
+                                        Retourner
                                     </span>
                                 </div>
                             </div>
@@ -705,7 +736,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             </div>
                             <div className="absolute left-[62%] top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50 transition-opacity duration-300"></div>
 
-                            <div className="flex w-full h-full gap-4 sm:gap-6 pt-10 sm:pt-12 transition-all duration-300">
+                            <div className="flex w-full h-full gap-2 sm:gap-6 pt-8 sm:pt-12 transition-all duration-300">
                                 {/* Left Side: Message - much wider */}
                                 <div className="flex-[1.6] min-w-0 flex flex-col justify-start relative pt-0 pr-1 sm:pr-2">
 
@@ -762,8 +793,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 {/* Right Side: Address & Stamp */}
                                 <div className="flex-1 flex flex-col relative min-w-0 pt-0 sm:pt-1">
                                     {/* Top Section: Recipient (left) + Stamp (right) */}
-                                    <div className="flex justify-between items-start mb-1 gap-2">
-                                        <div className="flex-1 pt-3">
+                                    <div className="flex justify-between items-start mb-0.5 gap-2">
+                                        <div className="flex-1 pt-1 md:pt-3">
                                             {postcard.recipientName && (
                                                 <div className={cn(
                                                     "border-b-2 border-stone-300 border-dotted pb-0.5 font-handwriting text-stone-600 pl-2",
@@ -788,7 +819,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                                     {/* The Stamp itself - Reduced size (w-20/h-24 on desktop) */}
                                                     <div className={cn(
                                                         "relative shadow-[2px_3px_5px_rgba(0,0,0,0.2)] transform rotate-1",
-                                                        isLarge ? "w-10 h-13 sm:w-20 sm:h-24" : "w-10 h-12 sm:w-16 sm:h-20"
+                                                        isLarge ? "w-10 h-13 sm:w-20 sm:h-24" : "w-8 h-10 sm:w-16 sm:h-20"
                                                     )}>
 
                                                         {/* Classic: perforated edges using radial-gradient mask/clip for realism */}
@@ -900,8 +931,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                     {/* Mini carte au verso : tuiles OSM (évite iframe + 3D) ou bouton "Voir la carte" */}
                                     {(postcard.coords || postcard.location) && (
                                         <div className={cn(
-                                            "mt-2 flex-1 rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner min-h-0",
-                                            isLarge ? "min-h-[140px] sm:min-h-[200px] md:min-h-[280px]" : "min-h-[80px] sm:min-h-[100px]"
+                                            "mt-1 flex-1 rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner min-h-0",
+                                            isLarge ? "min-h-[100px] sm:min-h-[200px] md:min-h-[280px]" : "min-h-[70px] sm:min-h-[100px]"
                                         )}>
                                             {postcard.coords ? (
                                                 <div
@@ -972,9 +1003,21 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     </motion.div>
                 </motion.div>
 
-                <div className="flex items-center gap-2 text-teal-600/60 text-xs font-bold tracking-widest uppercase animate-pulse">
-                    <RotateCw size={12} />
-                    <span>Faire glisser pour retourner</span>
+                <div className="flex flex-col sm:flex-row items-center gap-4 mt-4">
+                    <div className="flex items-center gap-2 text-teal-600/60 text-xs font-bold tracking-widest uppercase animate-pulse">
+                        <RotateCw size={12} />
+                        <span>Faire glisser pour retourner</span>
+                    </div>
+
+                    {!isFullscreen && !hideFullscreenButton && (
+                        <button
+                            onClick={toggleFullscreen}
+                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-stone-200 text-stone-600 hover:text-teal-600 hover:border-teal-200 shadow-sm transition-all text-xs font-bold uppercase tracking-wider active:scale-95 group"
+                        >
+                            <Maximize2 size={14} className="group-hover:scale-110 transition-transform" />
+                            <span>Plein écran</span>
+                        </button>
+                    )}
                 </div>
 
             </div>
@@ -994,6 +1037,41 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     message={postcard.message}
                     isLarge={isLarge}
                 />,
+                portalRoot
+            )}
+
+            {/* Modal de plein écran */}
+            {isFullscreen && portalRoot && createPortal(
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[200] bg-[#fdfbf7] flex items-center justify-center p-4 md:p-8 overflow-hidden"
+                >
+                    <button
+                        onClick={() => setIsFullscreen(false)}
+                        className="fixed top-6 right-6 z-[210] bg-white/90 p-4 rounded-full shadow-2xl border border-stone-200 text-stone-600 hover:text-stone-900 transition-all hover:rotate-90"
+                    >
+                        <X size={32} />
+                    </button>
+
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-12">
+                         <PostcardView
+                            postcard={postcard}
+                            flipped={isFlipped}
+                            isLarge={true}
+                            width="min(95vw, 1200px)"
+                            height="min(63.3vw, 800px)"
+                            className="shadow-[0_20px_60px_rgba(0,0,0,0.15)]"
+                            hideFullscreenButton={true}
+                         />
+                         
+                         <div className="flex items-center gap-3 text-stone-400 font-bold uppercase tracking-[0.3em] text-sm animate-pulse">
+                            <RotateCw size={16} />
+                            <span>Cliquer pour retourner</span>
+                         </div>
+                    </div>
+                </motion.div>,
                 portalRoot
             )}
         </>

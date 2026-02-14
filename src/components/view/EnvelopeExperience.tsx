@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { Heart } from 'lucide-react'
 
 interface EnvelopeExperienceProps {
@@ -33,6 +33,15 @@ export default function EnvelopeExperience({ enabled = false, hero, children }: 
     }
   }
 
+  useEffect(() => {
+    if (overlayActive) {
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = ''
+      }
+    }
+  }, [overlayActive])
+
   return (
     <div className="relative min-h-screen bg-[#fdfbf7] overflow-hidden">
       <AnimatePresence>
@@ -44,14 +53,14 @@ export default function EnvelopeExperience({ enabled = false, hero, children }: 
             exit={{ opacity: 0, transition: { duration: 0.6, ease: 'easeInOut' } }}
             className="fixed inset-0 z-50 flex items-start justify-center px-5 pt-[10vh] md:pt-[15vh] pb-32 bg-gradient-to-br from-[#fffdf7] via-[#f7f2ea] to-[#f1e8d6] backdrop-blur-3xl"
           >
-            <div className={`w-full max-w-3xl text-center flex flex-col items-center gap-8 translate-y-[-5%] sm:translate-y-[-10%] transition-opacity duration-500 ${isOpening ? 'opacity-0' : 'opacity-100'}`}>
+            <div className={`w-full max-w-3xl text-center flex flex-col items-center gap-8 translate-y-[-10%] sm:translate-y-[-15%] transition-opacity duration-500 ${isOpening ? 'opacity-0' : 'opacity-100'}`}>
               {hero && (
                 <motion.div
                   key="overlay-hero"
                   initial={{ opacity: 0, y: -12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
-                  className="px-4"
+                  className="px-4 -translate-y-3"
                 >
                   {hero}
                 </motion.div>
@@ -69,7 +78,7 @@ export default function EnvelopeExperience({ enabled = false, hero, children }: 
                   className="relative w-[min(480px,90vw)] aspect-[5/3] overflow-visible"
                   variants={{
                     rest: {
-                      y: 24,
+                      y: 8,
                       scale: 0.92,
                       transition: { duration: 1.5, ease: "easeOut" }
                     },
@@ -133,7 +142,6 @@ export default function EnvelopeExperience({ enabled = false, hero, children }: 
                 </motion.div>
 
                 <div className="flex flex-col items-center gap-2">
-                  <span className="text-xs uppercase tracking-[0.4em] text-stone-400 font-bold">Carte postale</span>
                   <motion.span
                     className="text-xl font-bold uppercase text-stone-800 tracking-[0.4em]"
                     initial={{ opacity: 0, y: 6 }}
@@ -145,6 +153,13 @@ export default function EnvelopeExperience({ enabled = false, hero, children }: 
                   </motion.span>
                 </div>
               </motion.button>
+            </div>
+
+            {/* Logo discret tout en bas, une ligne */}
+            <div className={`absolute bottom-1 left-0 right-0 flex flex-row items-center justify-center gap-1.5 transition-opacity duration-500 ${isOpening ? 'opacity-0' : 'opacity-100'}`}>
+                <span className="text-[11px] text-stone-400 font-medium tracking-tight opacity-60">cartepostale.cool</span>
+                <span className="text-stone-300 opacity-50" aria-hidden>·</span>
+                <span className="text-[10px] text-stone-400 font-normal uppercase tracking-widest opacity-50">Partagez vos moments</span>
             </div>
           </motion.div>
         ) : null}

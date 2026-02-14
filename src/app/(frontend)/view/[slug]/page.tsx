@@ -184,7 +184,7 @@ export default async function PostcardPage({
 
     return (
         <EnvelopeExperience enabled={isEnvelopeEnabled}>
-            <div className="min-h-screen bg-[#fdfbf7] py-6 md:py-12 landscape:py-2 flex flex-col items-center justify-center overflow-x-hidden">
+            <div className="min-h-screen bg-[#fdfbf7] pt-9 py-6 md:pt-0 md:py-12 landscape:py-2 flex flex-col items-center justify-center overflow-x-hidden">
                 <RotateDevicePrompt />
 
                 {/* Header / Titre avec effet d'apparition */}
@@ -210,13 +210,15 @@ export default async function PostcardPage({
                                 senderName={frontendPostcard.senderName}
                             />
                         )}
-                    </div>
 
-                    {/* View Counter - Absolute bottom right of the container */}
-                    <div className="absolute -bottom-10 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
-                        <Eye size={14} className="text-stone-300" />
-                        <NumberTicker value={payloadPostcard.views || 0} className="text-stone-400 font-bold" />
-                        <span>vues</span>
+                        {/* View Counter - juste sous la carte, en bas à droite */}
+                        <div className="flex justify-end w-full mt-2 px-2 md:px-0">
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
+                                <Eye size={14} className="text-stone-300" />
+                                <NumberTicker value={payloadPostcard.views || 0} className="text-stone-400 font-bold" />
+                                <span>vues</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
