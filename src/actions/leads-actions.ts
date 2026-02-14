@@ -2,6 +2,7 @@
 
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import { sendEmail, generatePromoCodeEmail } from '@/lib/email-service'
 // crypto is available globally in Node.js 18+ and Next.js server actions
 
 
@@ -128,5 +129,104 @@ export async function getAllLeads() {
     } catch (error: any) {
         console.error('Error getting leads:', error)
         return { success: false, error: 'Erreur lors de la récupération des leads' }
+    }
+}
+
+/** Generate a unique short code (not already in use). */
+async function generateUniqueCode(payload: Awaited<ReturnType<typeof getPayload>>): Promise<string> {
+    for (let i = 0; i < 20; i++) {
+        const code = crypto.randomUUID().split('-')[0].toUpperCase()
+        const existing = await payload.find({
+            collection: 'leads',
+            where: { code: { equals: code } },
+            limit: 1,
+        })
+        if (existing.docs.length === 0) return code
+    }
+    return crypto.randomUUID().split('-').slice(0, 2).join('').toUpperCase().slice(0, 8)
+}
+
+/** Create a promo code (lead) — admin only. Email required; code optional (auto-generated if not provided). */
+export async function createPromoCode(data: { email: string; code?: string }) {
+    try {
+        const payload = await getPayload({ config })
+        const { email, code: customCode } = data
+        const trimmedEmail = email.trim().toLowerCase()
+        if (!trimmedEmail) return { success: false, error: 'Email requis' }
+
+        const existing = await payload.find({
+            collection: 'leads',
+            where: { email: { equals: trimmedEmail } },
+            limit: 1,
+        })
+        if (existing.docs.length > 0) {
+            return { success: true, code: existing.docs[0].code, message: 'Un code existe déjà pour cet email.' }
+        }
+
+        let code = (customCode || '').trim().toUpperCase()
+        if (!code) code = await generateUniqueCode(payload)
+        else {
+            const codeExists = await payload.find({
+                collection: 'leads',
+                where: { code: { equals: code } },
+                limit: 1,
+            })
+            if (codeExists.docs.length > 0) return { success: false, error: 'Ce code est déjà utilisé.' }
+        }
+
+        await payload.create({
+            collection: 'leads',
+            data: {
+                email: trimmedEmail,
+                code,
+                source: 'admin',
+            },
+        })
+        return { success: true, code }
+    } catch (error: any) {
+        console.error('Error creating promo code:', error)
+        return { success: false, error: error?.message || 'Erreur lors de la création du code' }
+    }
+}
+
+/** Send a promo code to an email. Creates the lead if needed, then sends the email. */
+export async function sendPromoCodeToEmail(email: string) {
+    try {
+        const payload = await getPayload({ config })
+        const trimmedEmail = email.trim().toLowerCase()
+        if (!trimmedEmail) return { success: false, error: 'Email requis' }
+
+        let lead = await payload.find({
+            collection: 'leads',
+            where: { email: { equals: trimmedEmail } },
+            limit: 1,
+        })
+
+        let code: string
+        if (lead.docs.length > 0) {
+            code = lead.docs[0].code
+        } else {
+            code = await generateUniqueCode(payload)
+            await payload.create({
+                collection: 'leads',
+                data: {
+                    email: trimmedEmail,
+                    code,
+                    source: 'admin',
+                },
+            })
+        }
+
+        const html = generatePromoCodeEmail(code)
+        const sent = await sendEmail({
+            to: trimmedEmail,
+            subject: 'Votre code promo CartePostale.cool',
+            html,
+        })
+        if (!sent) return { success: false, error: 'Échec de l\'envoi de l\'email' }
+        return { success: true, code }
+    } catch (error: any) {
+        console.error('Error sending promo code email:', error)
+        return { success: false, error: error?.message || 'Erreur lors de l\'envoi' }
     }
 }

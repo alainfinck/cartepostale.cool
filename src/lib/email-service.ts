@@ -115,6 +115,56 @@ export function generateMagicLinkEmail(magicLink: string, postcardUrl: string, p
   `.trim();
 }
 
+/** HTML body for "your promo code" email (admin sends code to an email). */
+export function generatePromoCodeEmail(code: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.cartepostale.cool'
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Votre code promo CartePostale</title>
+  <style>
+    body { ${EMAIL_BASE_STYLES.body} }
+    .container { ${EMAIL_BASE_STYLES.container} }
+    .header { ${EMAIL_BASE_STYLES.header} }
+    .logo { ${EMAIL_BASE_STYLES.logo} }
+    .content { ${EMAIL_BASE_STYLES.content} }
+    .h1 { ${EMAIL_BASE_STYLES.h1} }
+    .p { ${EMAIL_BASE_STYLES.p} }
+    .code-block { background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); padding: 24px; border-radius: 12px; margin: 24px 0; text-align: center; border: 2px dashed #0d9488; }
+    .code-value { font-family: monospace; font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #0f766e; }
+    .btn-primary { ${EMAIL_BASE_STYLES.btnPrimary} }
+    .footer { ${EMAIL_BASE_STYLES.footer} }
+    .cta-block { text-align: center; margin: 28px 0; }
+  </style>
+</head>
+<body style="${EMAIL_BASE_STYLES.body}">
+  <div class="container" style="${EMAIL_BASE_STYLES.container}">
+    <div class="header" style="${EMAIL_BASE_STYLES.header}">
+      <a href="${baseUrl}" style="${EMAIL_BASE_STYLES.logo}">CartePostale.cool</a>
+    </div>
+    <div class="content" style="${EMAIL_BASE_STYLES.content}">
+      <h1 class="h1" style="${EMAIL_BASE_STYLES.h1}">Votre code promo 💌</h1>
+      <p class="p" style="${EMAIL_BASE_STYLES.p}">Utilisez le code ci-dessous pour débloquer une carte pro gratuite (galerie photo illimitée) sur CartePostale.cool.</p>
+      <div class="code-block">
+        <p class="code-value">${code}</p>
+      </div>
+      <div class="cta-block">
+        <a href="${baseUrl}/editor" class="btn-primary" style="${EMAIL_BASE_STYLES.btnPrimary}">Créer ma carte</a>
+      </div>
+      <p class="p" style="${EMAIL_BASE_STYLES.p}; font-size: 14px; color: #64748b;">Entrez ce code dans la section « Code Promo / Carte Gratuite » lors de la création de votre carte.</p>
+    </div>
+    <div class="footer" style="${EMAIL_BASE_STYLES.footer}">
+      <p style="margin: 0;">© ${new Date().getFullYear()} CartePostale.cool</p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+}
+
 /** HTML body for "someone sent you a postcard" email with tracking link (espace client / agence, avec ou sans DHL). */
 export function generateTrackingLinkEmail(
   trackingUrl: string,
