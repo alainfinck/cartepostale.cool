@@ -43,6 +43,7 @@ interface PostcardViewProps {
     width?: string;
     height?: string;
     hideFullscreenButton?: boolean;
+    hideFlipHints?: boolean;
 }
 
 const FALLBACK_FRONT_IMAGE = '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
@@ -55,7 +56,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     isLarge = false,
     width,
     height,
-    hideFullscreenButton = false
+    hideFullscreenButton = false,
+    hideFlipHints = false
 }) => {
     const [isFlipped, setIsFlipped] = useState(flipped ?? false);
     const [isDragging, setIsDragging] = useState(false);
@@ -150,46 +152,63 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     const messageTextRef = useRef<HTMLParagraphElement>(null);
     const [autoFontSize, setAutoFontSize] = useState<number>(1);
 
-    // Calcule la taille de police pour remplir le conteneur (tenir dans la zone ou zoomer si peu de texte)
+    // Nouvel algorithme "Automatic Text Filler" : maximise la taille pour remplir l'espace disponible
     const computeAutoFontSize = React.useCallback(() => {
         if (!messageTextRef.current || !messageContainerRef.current) return;
+        
         const container = messageContainerRef.current;
         const text = messageTextRef.current;
-        const targetHeight = container.clientHeight;
-        const targetWidth = container.clientWidth;
+
+        // Mesurer l'espace disponible réel dans le conteneur avec une marge de sécurité (80% pour plus d'air)
+        const targetHeight = container.offsetHeight * 0.8;
+        const targetWidth = container.offsetWidth * 0.8;
+
         if (targetHeight === 0 || targetWidth === 0) return;
 
-        let low = 0.4;
-        let high = 3.5;
-        let best = 1.0;
-        for (let i = 0; i < 8; i++) {
+        // Sauvegarde des styles pour la mesure
+        const savedFontSize = text.style.fontSize;
+        const savedWidth = text.style.width;
+        const savedDisplay = text.style.display;
+
+        // On force le mode mesure : largeur fixe pour simuler le wrapping
+        text.style.width = `${targetWidth}px`;
+        text.style.display = 'block';
+
+        let low = 8;
+        let high = isLarge ? 80 : 60; // Réduit encore pour laisser de la place aux autres éléments (signature, etc)
+        let best = 16;
+
+        const currentScale = backTextScale || 1;
+
+        // Recherche binaire précise en pixels
+        for (let i = 0; i < 12; i++) {
             const mid = (low + high) / 2;
-            text.style.fontSize = `${mid}rem`;
-            if (text.scrollHeight <= targetHeight + 4 && text.scrollWidth <= targetWidth) {
+            const scaledMid = mid * currentScale; // On mesure avec l'échelle appliquée
+            text.style.fontSize = `${scaledMid}px`;
+            
+            if (text.scrollHeight <= targetHeight && text.scrollWidth <= targetWidth) {
                 best = mid;
                 low = mid;
             } else {
                 high = mid;
             }
         }
-        text.style.fontSize = `${best}rem`;
-        const usedHeight = text.scrollHeight;
-        // En plein écran (isLarge) : remplir l'espace pour éviter trop de vide
-        const fillRatio = isLarge ? 0.92 : 0.7;
-        const targetFillRatio = isLarge ? 0.96 : 0.88;
-        const maxFontRem = isLarge ? 4.2 : 3.5;
-        let finalSize = best;
-        if (usedHeight > 0 && usedHeight < targetHeight * fillRatio) {
-            const scaleUp = Math.min((targetHeight * targetFillRatio) / usedHeight, maxFontRem / best);
-            finalSize = Math.min(best * scaleUp, maxFontRem);
-        }
-        // En plein écran : minimum bien lisible pour ne pas laisser tout le vide
-        if (isLarge) finalSize = Math.max(finalSize, 1.55);
-        setAutoFontSize(finalSize);
-        text.style.fontSize = '';
-    }, [isLarge]);
 
-    // Ajustement automatique : au flip et au changement de message
+        // Restauration des styles
+        text.style.fontSize = savedFontSize;
+        text.style.width = savedWidth;
+        text.style.display = savedDisplay;
+
+        // Conversion en rem (base 16px)
+        // On divise par currentScale car on veut la base qui, multipliée par l'échelle, remplira l'espace
+        const finalSizeRem = best / 16;
+        
+        // Sécurité
+        const minSize = isLarge ? 1.5 : 0.8;
+        setAutoFontSize(Math.max(finalSizeRem, minSize));
+    }, [isLarge, backTextScale]); // backTextScale ajouté en dépendance pour recalculer si l'utilisateur bouge le slider
+
+    // Ajustement automatique : au flip et au changement de message/échelle
     useLayoutEffect(() => {
         if (!isFlipped) return;
         computeAutoFontSize();
@@ -208,7 +227,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 window.clearTimeout(t2);
             };
         }
-    }, [isFlipped, postcard.message, computeAutoFontSize, isLarge]);
+    }, [isFlipped, postcard.message, computeAutoFontSize, isLarge, backTextScale]);
 
     // En plein écran / redimensionnement : recalculer quand le conteneur change de taille
     useEffect(() => {
@@ -480,8 +499,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     className={cn(
                         "perspective-1000 cursor-pointer active:cursor-grabbing group touch-none transition-shadow duration-300",
                         !width && !height && (isLarge
-                            ? "w-[95vw] h-[65vw] max-w-[500px] max-h-[333px] sm:w-[600px] sm:h-[400px] md:w-[800px] md:h-[533px] lg:w-[1000px] lg:h-[666px] sm:max-w-none sm:max-h-none portrait:max-h-none"
-                            : "w-[340px] h-[240px] sm:w-[600px] sm:h-[400px]"),
+                            ? "w-[95vw] h-[65vw] max-w-[460px] max-h-[306px] sm:w-[552px] sm:h-[368px] md:w-[736px] md:h-[490px] lg:w-[920px] lg:h-[612px] sm:max-w-none sm:max-h-none portrait:max-h-none"
+                            : "w-[312px] h-[220px] sm:w-[552px] sm:h-[368px]"),
                         className
                     )}
                     onClick={handleFlip}
@@ -667,15 +686,17 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
                             <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none z-0" />
 
-                            {/* Message "Cliquer pour retourner" au survol (Front) — bien visible */}
-                            <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
-                                <div className="bg-stone-800/95 backdrop-blur-md px-3 py-2.5 rounded-xl border border-stone-600/50 shadow-xl flex items-center gap-2 transform scale-95 group-hover:scale-100 transition-all duration-300">
-                                    <RotateCw size={16} className="text-white shrink-0" strokeWidth={2} />
-                                    <span className="text-white font-bold uppercase tracking-wider text-[10px] sm:text-xs whitespace-nowrap">
-                                        Retourner la carte postale
-                                    </span>
+                            {/* Message "Cliquer pour retourner" au survol (Front) — masqué en fullscreen ou via prop */}
+                            {!isFullscreen && !hideFlipHints && (
+                                <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
+                                    <div className="bg-stone-800/95 backdrop-blur-md px-3 py-2.5 rounded-xl border border-stone-600/50 shadow-xl flex items-center gap-2 transform scale-95 group-hover:scale-100 transition-all duration-300">
+                                        <RotateCw size={16} className="text-white shrink-0" strokeWidth={2} />
+                                        <span className="text-white font-bold uppercase tracking-wider text-[10px] sm:text-xs whitespace-nowrap">
+                                            Retourner la carte postale
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Message démo au-dessus de la localisation (frontCaption sans frontEmoji) */}
                             {postcard.frontCaption && !postcard.frontEmoji && (
@@ -748,15 +769,17 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 </div>
                             </div>
 
-                            {/* Petite icone en haut à gauche au survol (Back) pour ne pas gêner le timbre */}
-                            <div className="absolute top-3 left-3 z-50 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
-                                <div className="bg-teal-900/10 backdrop-blur-md px-2 py-1.5 rounded-lg border border-teal-900/10 shadow-lg flex items-center gap-1.5 transform scale-90 group-hover:scale-100 transition-all duration-500">
-                                    <RotateCw size={12} className="text-teal-800/80" strokeWidth={2} />
-                                    <span className="text-teal-900/70 font-bold uppercase tracking-widest text-[7px]">
-                                        Retourner
-                                    </span>
+                            {/* Petite icone en haut à gauche au survol (Back) — masqué en fullscreen ou via prop */}
+                            {!isFullscreen && !hideFlipHints && (
+                                <div className="absolute top-3 left-3 z-50 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
+                                    <div className="bg-teal-900/10 backdrop-blur-md px-2 py-1.5 rounded-lg border border-teal-900/10 shadow-lg flex items-center gap-1.5 transform scale-90 group-hover:scale-100 transition-all duration-500">
+                                        <RotateCw size={12} className="text-teal-800/80" strokeWidth={2} />
+                                        <span className="text-teal-900/70 font-bold uppercase tracking-widest text-[7px]">
+                                            Retourner
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Watermark bottom-left */}
                             <div className="absolute bottom-3 left-6 flex items-center gap-1 transition-opacity duration-300 opacity-60">
@@ -765,20 +788,20 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                     cartepostale.cool
                                 </span>
                             </div>
-                            <div className={cn("absolute top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50 transition-opacity duration-300", isLarge ? "left-[70%]" : "left-[62%]")}></div>
+                            <div className={cn("absolute top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50 transition-opacity duration-300", isLarge ? "left-[66%]" : "left-[60%]")}></div>
 
                             <div className="flex w-full h-full gap-2 sm:gap-6 pt-10 sm:pt-14 transition-all duration-300">
-                                {/* Left Side: Message - plus large en plein écran pour éviter texte tout petit à gauche */}
-                                <div className={cn("min-w-0 flex flex-col justify-start relative pt-3 sm:pt-4 pr-1 sm:pr-2", isLarge ? "flex-[2.2]" : "flex-[1.6]")}>
+                                {/* Left Side: Message - 2/3 de l'espace avec grosses marges de sécurité */}
+                                <div className={cn("min-w-0 flex flex-col justify-start relative pt-3 sm:pt-4 pl-4 sm:pl-8 pr-2 sm:pr-4", isLarge ? "flex-[2]" : "flex-[1.5]")}>
 
                                     <div
                                         ref={messageContainerRef}
-                                        className="flex-1 min-w-0 overflow-y-auto custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2"
+                                        className="flex-1 min-w-0 overflow-y-auto custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 flex flex-col justify-start"
                                         onClick={openMessage}
                                     >
                                         <p
                                             ref={messageTextRef}
-                                            className="font-handwriting text-stone-700 leading-loose sm:leading-loose text-left whitespace-pre-wrap w-full max-w-full break-words"
+                                            className="font-handwriting text-stone-700 leading-[1.2] text-left whitespace-pre-wrap w-full max-w-full break-words"
                                             style={{
                                                 fontSize: `${autoFontSize * backTextScale}rem`
                                             }}
@@ -795,9 +818,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                         </div>
                                     </div>
                                     {postcard.senderName && (
-                                        <p className="font-handwriting text-teal-700 text-base sm:text-xl mt-auto self-start transform -rotate-2 pt-1">
-                                            - {postcard.senderName}
-                                        </p>
+                                        <div className="mt-auto self-start transform -rotate-2 pt-2 pb-1 px-4 relative">
+                                             <div className="absolute inset-0 bg-teal-50/30 blur-md rounded-full -rotate-3"></div>
+                                             <p className="font-handwriting text-teal-700 text-xl sm:text-3xl relative z-10 font-bold drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]">
+                                                - {postcard.senderName}
+                                            </p>
+                                        </div>
                                     )}
                                     {hasMedia && (
                                         <div
@@ -1086,21 +1112,17 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                         <X size={32} />
                     </button>
 
-                    <div className="w-full h-full flex flex-col items-center justify-center gap-12">
+                    <div className="w-full h-full flex flex-col items-center justify-center">
                          <PostcardView
                             postcard={postcard}
                             flipped={isFlipped}
                             isLarge={true}
-                            width="min(95vw, 1200px)"
-                            height="min(63.3vw, 800px)"
-                            className="shadow-[0_20px_60px_rgba(0,0,0,0.15)]"
+                            width="min(95vw, 1100px)"
+                            height="min(63.3vw, 733px)"
+                            className="shadow-[0_40px_100px_rgba(0,0,0,0.3)]"
                             hideFullscreenButton={true}
+                            hideFlipHints={true}
                          />
-                         
-                         <div className="flex items-center gap-3 text-stone-400 font-bold uppercase tracking-[0.3em] text-sm animate-pulse">
-                            <RotateCw size={16} />
-                            <span>Cliquer pour retourner</span>
-                         </div>
                     </div>
                 </motion.div>,
                 portalRoot
