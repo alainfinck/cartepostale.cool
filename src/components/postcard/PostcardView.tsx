@@ -750,13 +750,13 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             </div>
                             <div className="absolute left-[62%] top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50 transition-opacity duration-300"></div>
 
-                            <div className="flex w-full h-full gap-2 sm:gap-6 pt-8 sm:pt-12 transition-all duration-300">
+                            <div className="flex w-full h-full gap-2 sm:gap-6 pt-10 sm:pt-14 transition-all duration-300">
                                 {/* Left Side: Message - much wider */}
-                                <div className="flex-[1.6] min-w-0 flex flex-col justify-start relative pt-0 pr-1 sm:pr-2">
+                                <div className="flex-[1.6] min-w-0 flex flex-col justify-start relative pt-3 sm:pt-4 pr-1 sm:pr-2">
 
                                     <div
                                         ref={messageContainerRef}
-                                        className="flex-1 min-w-0 overflow-y-auto custom-scrollbar my-1 cursor-pointer group/msg relative pr-2"
+                                        className="flex-1 min-w-0 overflow-y-auto custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2"
                                         onClick={openMessage}
                                     >
                                         <p
