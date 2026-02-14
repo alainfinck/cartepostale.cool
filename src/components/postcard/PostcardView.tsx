@@ -150,22 +150,18 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     const messageTextRef = useRef<HTMLParagraphElement>(null);
     const [autoFontSize, setAutoFontSize] = useState<number>(1);
 
-    // Ajustement automatique de la taille du texte : tenir dans le conteneur, ou zoomer pour remplir si peu de lignes
-    useLayoutEffect(() => {
-        if (!isFlipped || !messageTextRef.current || !messageContainerRef.current) return;
-
+    // Calcule la taille de police pour remplir le conteneur (tenir dans la zone ou zoomer si peu de texte)
+    const computeAutoFontSize = React.useCallback(() => {
+        if (!messageTextRef.current || !messageContainerRef.current) return;
         const container = messageContainerRef.current;
         const text = messageTextRef.current;
         const targetHeight = container.clientHeight;
         const targetWidth = container.clientWidth;
-
         if (targetHeight === 0 || targetWidth === 0) return;
 
         let low = 0.4;
-        let high = 3.5; // Limite haute généreuse
+        let high = 3.5;
         let best = 1.0;
-
-        // Recherche par dichotomie de la taille max qui tient
         for (let i = 0; i < 8; i++) {
             const mid = (low + high) / 2;
             text.style.fontSize = `${mid}rem`;
@@ -176,12 +172,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 high = mid;
             }
         }
-
-        // Si peu de texte (ex. 2 lignes) : zoomer pour remplir l'espace au lieu de laisser vide
         text.style.fontSize = `${best}rem`;
         const usedHeight = text.scrollHeight;
-        const fillRatio = 0.7; // seuil en dessous duquel on considère "peu de texte"
-        const targetFillRatio = 0.88; // on vise ~88% de la hauteur pour remplir
+        // En plein écran (isLarge) : viser un meilleur remplissage pour éviter texte tout petit
+        const fillRatio = 0.7;
+        const targetFillRatio = isLarge ? 0.92 : 0.88;
         if (usedHeight > 0 && usedHeight < targetHeight * fillRatio) {
             const scaleUp = Math.min((targetHeight * targetFillRatio) / usedHeight, 3.5 / best);
             const filledSize = Math.min(best * scaleUp, 3.5);
@@ -190,7 +185,26 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             setAutoFontSize(best);
         }
         text.style.fontSize = '';
-    }, [isFlipped, isLarge, postcard.message]);
+    }, [isLarge]);
+
+    // Ajustement automatique : au flip et au changement de message
+    useLayoutEffect(() => {
+        if (!isFlipped) return;
+        computeAutoFontSize();
+    }, [isFlipped, postcard.message, computeAutoFontSize]);
+
+    // En plein écran / redimensionnement : recalculer quand le conteneur change de taille
+    useEffect(() => {
+        if (!isFlipped || !messageContainerRef.current) return;
+        const container = messageContainerRef.current;
+        const ro = new ResizeObserver(() => {
+            if (messageContainerRef.current?.clientHeight && messageTextRef.current) {
+                computeAutoFontSize();
+            }
+        });
+        ro.observe(container);
+        return () => ro.disconnect();
+    }, [isFlipped, computeAutoFontSize]);
 
     const handleFlip = () => {
         if (isDragging) return;
