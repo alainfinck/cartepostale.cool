@@ -2,8 +2,10 @@ import React from 'react'
 import './styles.css'
 import { FrontendLayoutWrapper } from '@/components/layout/FrontendLayoutWrapper'
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.cartepostale.cool'
+
 export const metadata = {
-  metadataBase: new URL('https://cartepostale.cool'),
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'cartepostale.cool - Partagez vos souvenirs en cartes postales virtuelles',
     template: '%s | cartepostale.cool'
@@ -13,7 +15,7 @@ export const metadata = {
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
-    url: 'https://cartepostale.cool',
+    url: siteUrl,
     siteName: 'cartepostale.cool',
     title: 'cartepostale.cool - Partagez vos souvenirs en cartes postales virtuelles',
     description: 'Transformez vos plus belles photos en cartes postales virtuelles. Partagez vos souvenirs instantanément avec vos proches.',
