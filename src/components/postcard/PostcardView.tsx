@@ -142,7 +142,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [messageModalFontSize, setMessageModalFontSize] = useState(2);
     // Slider de taille du texte au verso (0.7 = petit, 2.2 = grand)
-    const [backTextScale, setBackTextScale] = useState(isLarge ? 1.0 : 1);
+    const [backTextScale, setBackTextScale] = useState(isLarge ? 1.2 : 1);
     // Zoom de la mini-carte au verso (pour que + / - fonctionnent sans déclencher le flip)
     const [backMapZoom, setBackMapZoom] = useState(6);
 
@@ -174,16 +174,17 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         }
         text.style.fontSize = `${best}rem`;
         const usedHeight = text.scrollHeight;
-        // En plein écran (isLarge) : viser un meilleur remplissage pour éviter texte tout petit
-        const fillRatio = 0.7;
-        const targetFillRatio = isLarge ? 0.92 : 0.88;
+        // En plein écran (isLarge) : remplir l'espace pour éviter trop de vide
+        const fillRatio = isLarge ? 0.92 : 0.7;
+        const targetFillRatio = isLarge ? 0.96 : 0.88;
+        const maxFontRem = isLarge ? 4.2 : 3.5;
         let finalSize = best;
         if (usedHeight > 0 && usedHeight < targetHeight * fillRatio) {
-            const scaleUp = Math.min((targetHeight * targetFillRatio) / usedHeight, 3.5 / best);
-            finalSize = Math.min(best * scaleUp, 3.5);
+            const scaleUp = Math.min((targetHeight * targetFillRatio) / usedHeight, maxFontRem / best);
+            finalSize = Math.min(best * scaleUp, maxFontRem);
         }
-        // En plein écran : minimum lisible pour éviter texte tout petit si le recalc est fait trop tôt
-        if (isLarge) finalSize = Math.max(finalSize, 1.15);
+        // En plein écran : minimum bien lisible pour ne pas laisser tout le vide
+        if (isLarge) finalSize = Math.max(finalSize, 1.55);
         setAutoFontSize(finalSize);
         text.style.fontSize = '';
     }, [isLarge]);
