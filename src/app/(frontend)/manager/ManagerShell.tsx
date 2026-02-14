@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Mail, Users, Building2, Image as ImageIcon, Cloud, LogOut, Menu, BarChart3 } from 'lucide-react'
+import { LayoutDashboard, Mail, Users, Building2, Image as ImageIcon, Cloud, LogOut, Menu, BarChart3, Sticker } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -11,6 +11,7 @@ const nav = [
   { href: '/manager/cartes', label: 'Cartes postales', icon: Mail },
   { href: '/manager/stats', label: 'Statistiques', icon: BarChart3 },
   { href: '/manager/galerie', label: 'Galerie', icon: ImageIcon },
+  { href: '/manager/stickers', label: 'Stickers', icon: Sticker },
   { href: '/manager/r2', label: 'Bucket R2', icon: Cloud },
   { href: '/manager/clients', label: 'Clients', icon: Users },
   { href: '/manager/leads', label: 'Leads', icon: Mail },
