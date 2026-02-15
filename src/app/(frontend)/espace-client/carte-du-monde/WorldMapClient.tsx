@@ -67,6 +67,12 @@ export default function WorldMapClient({ initialData }: { initialData: Postcards
     [filteredPostcards, focusedPostcardId]
   )
 
+  const focusedCoords = useMemo<{ lat: number; lng: number } | undefined>(() => {
+    const coords = focusedPostcard?.coords
+    if (coords?.lat == null || coords?.lng == null) return undefined
+    return { lat: coords.lat, lng: coords.lng }
+  }, [focusedPostcard])
+
   const mapCenter = useMemo<[number, number]>(() => {
     if (filteredPostcards.length === 0) return [20, 0]
     const sum = filteredPostcards.reduce(
@@ -134,7 +140,7 @@ export default function WorldMapClient({ initialData }: { initialData: Postcards
       <div className="rounded-2xl overflow-hidden border border-border/40 bg-card/40">
         <div className="h-[58vh] min-h-[420px]">
           <MapContainer center={mapCenter} zoom={2} style={{ width: '100%', height: '100%' }}>
-            <MapFocusController focusedCoords={focusedPostcard?.coords ?? undefined} />
+            <MapFocusController focusedCoords={focusedCoords} />
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
