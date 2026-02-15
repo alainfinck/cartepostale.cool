@@ -29,7 +29,6 @@ import {
   Copy,
   Facebook,
   Linkedin,
-
   Share2,
   Maximize2,
   MessageSquare,
@@ -70,7 +69,7 @@ import {
   readFileAsDataUrl,
   MAX_IMAGE_PX,
   getOptimizedImageUrl,
-  JPEG_QUALITY
+  JPEG_QUALITY,
 } from '@/lib/image-processing'
 import { UnsplashSearchModal } from '@/components/UnsplashSearchModal'
 import StickerGallery from '@/components/editor/StickerGallery'
@@ -95,13 +94,32 @@ const DEFAULT_FRONT_FILTER: FrontImageFilter = {
 
 const FILTER_PRESETS: { id: string; label: string; values: FrontImageFilter }[] = [
   { id: 'normal', label: 'Normal', values: DEFAULT_FRONT_FILTER },
-  { id: 'vivid', label: 'Vivid', values: { brightness: 105, contrast: 112, saturation: 132, sepia: 0, grayscale: 0 } },
-  { id: 'warm', label: 'Chaud', values: { brightness: 102, contrast: 106, saturation: 112, sepia: 20, grayscale: 0 } },
-  { id: 'vintage', label: 'Vintage', values: { brightness: 98, contrast: 92, saturation: 84, sepia: 35, grayscale: 0 } },
-  { id: 'noirblanc', label: 'Noir & blanc', values: { brightness: 102, contrast: 112, saturation: 0, sepia: 0, grayscale: 100 } },
+  {
+    id: 'vivid',
+    label: 'Vivid',
+    values: { brightness: 105, contrast: 112, saturation: 132, sepia: 0, grayscale: 0 },
+  },
+  {
+    id: 'warm',
+    label: 'Chaud',
+    values: { brightness: 102, contrast: 106, saturation: 112, sepia: 20, grayscale: 0 },
+  },
+  {
+    id: 'vintage',
+    label: 'Vintage',
+    values: { brightness: 98, contrast: 92, saturation: 84, sepia: 35, grayscale: 0 },
+  },
+  {
+    id: 'noirblanc',
+    label: 'Noir & blanc',
+    values: { brightness: 102, contrast: 112, saturation: 0, sepia: 0, grayscale: 100 },
+  },
 ]
 
-function getCropPreviewStyle(crop: FrontImageCrop, naturalSize: { w: number; h: number }): React.CSSProperties {
+function getCropPreviewStyle(
+  crop: FrontImageCrop,
+  naturalSize: { w: number; h: number },
+): React.CSSProperties {
   const imgAspect = naturalSize.w / naturalSize.h
   let widthPercent = 100
   let heightPercent = 100
@@ -143,7 +161,7 @@ function bakeFrontImageCrop(
   dataUrl: string,
   crop: FrontImageCrop,
   filter: FrontImageFilter = DEFAULT_FRONT_FILTER,
-  outputPx = 1200
+  outputPx = 1200,
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -216,7 +234,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'beach',
     frontCaption: 'Paradis tropical',
     frontEmoji: '\u{1F334}',
-    message: 'Les pieds dans le sable, le soleil sur la peau... Le paradis existe et j\u2019y suis ! Bisous sal\u00E9s depuis cette plage de r\u00EAve.',
+    message:
+      'Les pieds dans le sable, le soleil sur la peau... Le paradis existe et j\u2019y suis ! Bisous sal\u00E9s depuis cette plage de r\u00EAve.',
     location: '\u00CEles Maldives',
     stampStyle: 'airmail',
   },
@@ -228,7 +247,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'beach',
     frontCaption: 'Golden hour',
     frontEmoji: '\u{1F305}',
-    message: 'Le ciel s\u2019embrase chaque soir ici... Un spectacle magique qu\u2019aucune photo ne peut vraiment capturer. Vous me manquez !',
+    message:
+      'Le ciel s\u2019embrase chaque soir ici... Un spectacle magique qu\u2019aucune photo ne peut vraiment capturer. Vous me manquez !',
     location: 'Bali, Indon\u00E9sie',
     stampStyle: 'classic',
   },
@@ -240,7 +260,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'beach',
     frontCaption: 'Eaux turquoise',
     frontEmoji: '\u{1F30A}',
-    message: 'L\u2019eau est tellement claire qu\u2019on voit les poissons depuis la surface ! Un vrai aquarium naturel. On ne veut plus rentrer !',
+    message:
+      'L\u2019eau est tellement claire qu\u2019on voit les poissons depuis la surface ! Un vrai aquarium naturel. On ne veut plus rentrer !',
     location: 'Bora Bora, Polyn\u00E9sie',
     stampStyle: 'airmail',
   },
@@ -253,7 +274,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'city',
     frontCaption: 'Paris, je t\u2019aime',
     frontEmoji: '\u2764\u{FE0F}',
-    message: 'Paris brille de mille feux ce soir. On a flan\u00E9 le long de la Seine, crois\u00E9 et macaron au Jardin du Luxembourg. La vie est belle !',
+    message:
+      'Paris brille de mille feux ce soir. On a flan\u00E9 le long de la Seine, crois\u00E9 et macaron au Jardin du Luxembourg. La vie est belle !',
     location: 'Paris, France',
     stampStyle: 'classic',
   },
@@ -265,7 +287,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'city',
     frontCaption: 'N\u00E9ons de Tokyo',
     frontEmoji: '\u{1F3EE}',
-    message: 'Tokyo est une explosion de couleurs et de saveurs ! Les ramen sont incroyables et les temples magnifiques. Quelle \u00E9nergie !',
+    message:
+      'Tokyo est une explosion de couleurs et de saveurs ! Les ramen sont incroyables et les temples magnifiques. Quelle \u00E9nergie !',
     location: 'Tokyo, Japon',
     stampStyle: 'modern',
   },
@@ -277,7 +300,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'city',
     frontCaption: 'Skyline vertigineux',
     frontEmoji: '\u{1F3D9}\u{FE0F}',
-    message: 'Vue imprenable depuis le rooftop ! La ville s\u2019\u00E9tend \u00E0 perte de vue, c\u2019est vertigineux. On se sent tout petit face \u00E0 ces g\u00E9ants de verre.',
+    message:
+      'Vue imprenable depuis le rooftop ! La ville s\u2019\u00E9tend \u00E0 perte de vue, c\u2019est vertigineux. On se sent tout petit face \u00E0 ces g\u00E9ants de verre.',
     location: 'Dubai, \u00C9mirats arabes unis',
     stampStyle: 'modern',
   },
@@ -289,7 +313,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'city',
     frontCaption: 'City lights',
     frontEmoji: '\u{1F303}',
-    message: 'La ville ne dort jamais ! Petite balade nocturne entre les buildings illumin\u00E9s. L\u2019ambiance est \u00E9lectrique, on adore.',
+    message:
+      'La ville ne dort jamais ! Petite balade nocturne entre les buildings illumin\u00E9s. L\u2019ambiance est \u00E9lectrique, on adore.',
     location: 'New York, USA',
     stampStyle: 'modern',
   },
@@ -302,7 +327,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'nature',
     frontCaption: 'Sommets majestueux',
     frontEmoji: '\u{1F3D4}\u{FE0F}',
-    message: 'L\u2019air pur des montagnes, le silence des sommets... On a fait une randonn\u00E9e sublime avec vue sur le glacier. Inoubliable !',
+    message:
+      'L\u2019air pur des montagnes, le silence des sommets... On a fait une randonn\u00E9e sublime avec vue sur le glacier. Inoubliable !',
     location: 'Zermatt, Suisse',
     stampStyle: 'classic',
   },
@@ -314,7 +340,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'nature',
     frontCaption: 'For\u00EAt magique',
     frontEmoji: '\u{1F332}',
-    message: 'Promenade f\u00E9\u00E9rique en for\u00EAt ce matin. La lumi\u00E8re filtrait entre les arbres comme dans un conte. Le calme absolu, quel bonheur.',
+    message:
+      'Promenade f\u00E9\u00E9rique en for\u00EAt ce matin. La lumi\u00E8re filtrait entre les arbres comme dans un conte. Le calme absolu, quel bonheur.',
     location: 'For\u00EAt-Noire, Allemagne',
     stampStyle: 'classic',
   },
@@ -326,7 +353,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'nature',
     frontCaption: 'Mer de lavande',
     frontEmoji: '\u{1F33B}',
-    message: 'Un oc\u00E9an violet \u00E0 perte de vue, le parfum enivrant de la lavande... La Provence est un enchantement pour tous les sens !',
+    message:
+      'Un oc\u00E9an violet \u00E0 perte de vue, le parfum enivrant de la lavande... La Provence est un enchantement pour tous les sens !',
     location: 'Valensole, Provence',
     stampStyle: 'classic',
   },
@@ -338,7 +366,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'nature',
     frontCaption: 'Jungle sauvage',
     frontEmoji: '\u{1F33F}',
-    message: 'Au c\u0153ur de la jungle, entour\u00E9s de verdure et de chants d\u2019oiseaux exotiques. Une aventure extraordinaire !',
+    message:
+      'Au c\u0153ur de la jungle, entour\u00E9s de verdure et de chants d\u2019oiseaux exotiques. Une aventure extraordinaire !',
     location: 'Costa Rica',
     stampStyle: 'airmail',
   },
@@ -350,7 +379,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'nature',
     frontCaption: 'S\u00E9r\u00E9nit\u00E9',
     frontEmoji: '\u{1F4A7}',
-    message: 'Le lac est un miroir parfait ce matin. Pas un bruit, juste le vent dans les arbres. Un moment de paix absolue.',
+    message:
+      'Le lac est un miroir parfait ce matin. Pas un bruit, juste le vent dans les arbres. Un moment de paix absolue.',
     location: 'Lac de C\u00F4me, Italie',
     stampStyle: 'classic',
   },
@@ -363,7 +393,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'travel',
     frontCaption: 'Dolce Vita',
     frontEmoji: '\u{1F1EE}\u{1F1F9}',
-    message: 'Les villages color\u00E9s accroch\u00E9s aux falaises, la mer turquoise en contrebas... La c\u00F4te Amalfitaine est un r\u00EAve \u00E9veill\u00E9 !',
+    message:
+      'Les villages color\u00E9s accroch\u00E9s aux falaises, la mer turquoise en contrebas... La c\u00F4te Amalfitaine est un r\u00EAve \u00E9veill\u00E9 !',
     location: 'Amalfi, Italie',
     stampStyle: 'airmail',
   },
@@ -375,7 +406,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'travel',
     frontCaption: 'Bleu \u00E9g\u00E9en',
     frontEmoji: '\u{1F1EC}\u{1F1F7}',
-    message: 'Le blanc immacul\u00E9 des maisons, le bleu profond de la mer \u00C9g\u00E9e... Santorini est encore plus belle en vrai. On est sous le charme !',
+    message:
+      'Le blanc immacul\u00E9 des maisons, le bleu profond de la mer \u00C9g\u00E9e... Santorini est encore plus belle en vrai. On est sous le charme !',
     location: 'Santorini, Gr\u00E8ce',
     stampStyle: 'airmail',
   },
@@ -387,7 +419,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'travel',
     frontCaption: 'Escapade de r\u00EAve',
     frontEmoji: '\u{1F334}',
-    message: 'Piscine \u00E0 d\u00E9bordement, cocktails frais et farniente... Le resort est un petit coin de paradis. On recharge les batteries !',
+    message:
+      'Piscine \u00E0 d\u00E9bordement, cocktails frais et farniente... Le resort est un petit coin de paradis. On recharge les batteries !',
     location: 'Phuket, Tha\u00EFlande',
     stampStyle: 'modern',
   },
@@ -399,7 +432,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'travel',
     frontCaption: 'L\u2019aventure nous appelle',
     frontEmoji: '\u{1F30D}',
-    message: 'On explore des terres inconnues, chaque virage r\u00E9v\u00E8le un panorama plus beau que le pr\u00E9c\u00E9dent. Le monde est immense et magnifique !',
+    message:
+      'On explore des terres inconnues, chaque virage r\u00E9v\u00E8le un panorama plus beau que le pr\u00E9c\u00E9dent. Le monde est immense et magnifique !',
     location: 'Nouvelle-Z\u00E9lande',
     stampStyle: 'airmail',
   },
@@ -412,7 +446,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'romantic',
     frontCaption: 'Avec tout mon amour',
     frontEmoji: '\u{1F495}',
-    message: 'Chaque coucher de soleil me rappelle combien je suis chanceux(se) de partager ces moments avec toi. Je t\u2019aime, tout simplement.',
+    message:
+      'Chaque coucher de soleil me rappelle combien je suis chanceux(se) de partager ces moments avec toi. Je t\u2019aime, tout simplement.',
     location: 'Venise, Italie',
     stampStyle: 'classic',
   },
@@ -424,7 +459,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'romantic',
     frontCaption: 'Pause bien-\u00EAtre',
     frontEmoji: '\u{1F9D6}',
-    message: 'Massage, jacuzzi et th\u00E9 \u00E0 la menthe... On se fait chouchouter comme des rois. Un week-end ressour\u00E7ant dont on avait bien besoin !',
+    message:
+      'Massage, jacuzzi et th\u00E9 \u00E0 la menthe... On se fait chouchouter comme des rois. Un week-end ressour\u00E7ant dont on avait bien besoin !',
     location: 'Marrakech, Maroc',
     stampStyle: 'modern',
   },
@@ -437,7 +473,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'festive',
     frontCaption: 'F\u00EAte et lumi\u00E8res',
     frontEmoji: '\u{1F386}',
-    message: 'Quel spectacle ! Le ciel s\u2019est illumin\u00E9 de mille couleurs. On a f\u00EAt\u00E9 \u00E7a en grand, des souvenirs plein la t\u00EAte !',
+    message:
+      'Quel spectacle ! Le ciel s\u2019est illumin\u00E9 de mille couleurs. On a f\u00EAt\u00E9 \u00E7a en grand, des souvenirs plein la t\u00EAte !',
     location: 'Sydney, Australie',
     stampStyle: 'modern',
   },
@@ -449,7 +486,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'festive',
     frontCaption: 'Vive la f\u00EAte !',
     frontEmoji: '\u{1F389}',
-    message: 'Musique, danse et rires \u00E0 gogo ! L\u2019ambiance est incroyable, tout le monde est dans la joie. On f\u00EAte la vie !',
+    message:
+      'Musique, danse et rires \u00E0 gogo ! L\u2019ambiance est incroyable, tout le monde est dans la joie. On f\u00EAte la vie !',
     location: 'Rio de Janeiro, Br\u00E9sil',
     stampStyle: 'modern',
   },
@@ -462,7 +500,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'food',
     frontCaption: 'Coffee time',
     frontEmoji: '\u2615',
-    message: 'Un petit caf\u00E9 en terrasse, un croissant dor\u00E9 et le journal du matin... Les petits plaisirs simples qui font le bonheur du voyageur.',
+    message:
+      'Un petit caf\u00E9 en terrasse, un croissant dor\u00E9 et le journal du matin... Les petits plaisirs simples qui font le bonheur du voyageur.',
     location: 'Lisbonne, Portugal',
     stampStyle: 'classic',
   },
@@ -474,7 +513,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'food',
     frontCaption: 'Douceurs gourmandes',
     frontEmoji: '\u{1F36B}',
-    message: 'On a d\u00E9couvert un chocolatier artisanal exceptionnel ! Chaque bouche est une explosion de saveurs. On vous ram\u00E8ne des \u00E9chantillons !',
+    message:
+      'On a d\u00E9couvert un chocolatier artisanal exceptionnel ! Chaque bouche est une explosion de saveurs. On vous ram\u00E8ne des \u00E9chantillons !',
     location: 'Bruxelles, Belgique',
     stampStyle: 'classic',
   },
@@ -487,7 +527,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'abstract',
     frontCaption: 'Oc\u00E9an de sable',
     frontEmoji: '\u{1F3DC}\u{FE0F}',
-    message: 'Le silence du d\u00E9sert est assourdissant. Les dunes s\u2019\u00E9tendent \u00E0 perte de vue, sculpt\u00E9es par le vent. Un paysage hypnotique.',
+    message:
+      'Le silence du d\u00E9sert est assourdissant. Les dunes s\u2019\u00E9tendent \u00E0 perte de vue, sculpt\u00E9es par le vent. Un paysage hypnotique.',
     location: 'Sahara, Maroc',
     stampStyle: 'airmail',
   },
@@ -499,7 +540,8 @@ const SAMPLE_TEMPLATES: Template[] = [
     category: 'abstract',
     frontCaption: 'R\u00EAve \u00E9veill\u00E9',
     frontEmoji: '\u{1F3A8}',
-    message: 'La nature est la plus grande artiste. Ces couleurs, ces formes... On croirait un tableau vivant. Magnifique.',
+    message:
+      'La nature est la plus grande artiste. Ces couleurs, ces formes... On croirait un tableau vivant. Magnifique.',
     location: 'Islande',
     stampStyle: 'modern',
   },
@@ -556,11 +598,27 @@ const EMOJI_CATEGORIES: EmojiCategory[] = [
 ]
 
 /** Emojis rapides pour le message (carte postale). */
-const MESSAGE_EMOJIS = ['❤️', '😊', '🌅', '🌴', '🌊', '☀️', '💌', '✨', '📍', '🗺️', '😘', '👋', '💕', '🌸', '🏖️']
+const MESSAGE_EMOJIS = [
+  '❤️',
+  '😊',
+  '🌅',
+  '🌴',
+  '🌊',
+  '☀️',
+  '💌',
+  '✨',
+  '📍',
+  '🗺️',
+  '😘',
+  '👋',
+  '💕',
+  '🌸',
+  '🏖️',
+]
 
 const ALBUM_TIERS = {
   tier1: { photos: 6, videos: 0, price: 2.99 },
-  tier2: { photos: 50, videos: 3, price: 4.99 }
+  tier2: { photos: 50, videos: 3, price: 4.99 },
 } as const
 
 export default function EditorPage() {
@@ -574,7 +632,9 @@ export default function EditorPage() {
   const [frontCaption, setFrontCaption] = useState('')
   const [frontEmoji, setFrontEmoji] = useState('✨')
   const [frontTextBgOpacity, setFrontTextBgOpacity] = useState(90)
-  const [message, setMessage] = useState('Un petit coucou de mes vacances ! Tout se passe merveilleusement bien, les paysages sont magnifiques. On pense bien à vous !')
+  const [message, setMessage] = useState(
+    'Un petit coucou de mes vacances ! Tout se passe merveilleusement bien, les paysages sont magnifiques. On pense bien à vous !',
+  )
   const [recipientName, setRecipientName] = useState('Maman & Papa')
   const [senderName, setSenderName] = useState('Sarah')
   const [senderEmail, setSenderEmail] = useState('')
@@ -604,7 +664,12 @@ export default function EditorPage() {
   const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null)
   const cropAreaRef = useRef<HTMLDivElement>(null)
   const cropImgRef = useRef<HTMLImageElement>(null)
-  const cropDragRef = useRef<{ clientX: number; clientY: number; cropX: number; cropY: number } | null>(null)
+  const cropDragRef = useRef<{
+    clientX: number
+    clientY: number
+    cropX: number
+    cropY: number
+  } | null>(null)
   const dropDragCounterRef = useRef(0)
   const messageInputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -614,9 +679,12 @@ export default function EditorPage() {
   const [showRecipientModal, setShowRecipientModal] = useState(false)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [showPricingModal, setShowPricingModal] = useState(false)
+  const [showTemplateSection, setShowTemplateSection] = useState(false) // Mobile-friendly: hide templates by default
   const [fullscreenScale, setFullscreenScale] = useState(1)
 
-  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal' | 'revolut' | null>('revolut')
+  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal' | 'revolut' | null>(
+    'revolut',
+  )
 
   // Sharing state
   const [isPublishing, setIsPublishing] = useState(false)
@@ -638,9 +706,15 @@ export default function EditorPage() {
   const [showUnsplashModal, setShowUnsplashModal] = useState(false)
   const [showStickerGallery, setShowStickerGallery] = useState(false)
   const [stickers, setStickers] = useState<StickerPlacement[]>([])
-  const [selectedEmojiCategory, setSelectedEmojiCategory] = useState<EmojiCategoryKey>(EMOJI_CATEGORIES[0].key)
+  const [selectedEmojiCategory, setSelectedEmojiCategory] = useState<EmojiCategoryKey>(
+    EMOJI_CATEGORIES[0].key,
+  )
   const emojiPickerRef = useRef<HTMLDivElement>(null)
-  const [currentUser, setCurrentUser] = useState<{ id: number; email?: string; name?: string | null } | null>(null)
+  const [currentUser, setCurrentUser] = useState<{
+    id: number
+    email?: string
+    name?: string | null
+  } | null>(null)
   const [isRevolutRedirecting, setIsRevolutRedirecting] = useState(false)
   const [revolutError, setRevolutError] = useState<string | null>(null)
 
@@ -679,7 +753,7 @@ export default function EditorPage() {
         particleCount: 150,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#14b8a6', '#f59e0b', '#3b82f6', '#ec4899']
+        colors: ['#14b8a6', '#f59e0b', '#3b82f6', '#ec4899'],
       })
       setHasConfettiFired(true)
     }
@@ -697,7 +771,8 @@ export default function EditorPage() {
     fetch('/api/users/me', { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data?.user) setCurrentUser({ id: data.user.id, email: data.user.email, name: data.user.name ?? null })
+        if (data?.user)
+          setCurrentUser({ id: data.user.id, email: data.user.email, name: data.user.name ?? null })
         else setCurrentUser(null)
       })
       .catch(() => setCurrentUser(null))
@@ -711,7 +786,9 @@ export default function EditorPage() {
         const { latitude, longitude } = position.coords
         setCoords({ lat: latitude, lng: longitude })
       },
-      () => { /* refus ou erreur : l’utilisateur peut cliquer sur « Ma position actuelle » */ }
+      () => {
+        /* refus ou erreur : l’utilisateur peut cliquer sur « Ma position actuelle » */
+      },
     )
   }, [])
 
@@ -721,14 +798,14 @@ export default function EditorPage() {
       const padding = 80 // Total horizontal/vertical padding
       const availableW = window.innerWidth - padding
       const availableH = window.innerHeight - padding
-      
+
       const cardW = 1000 // Sample base width for calculation
       const cardH = cardW / POSTCARD_ASPECT
-      
+
       const scaleW = availableW / cardW
       const scaleH = availableH / cardH
       const autoFitScale = Math.min(scaleW, scaleH, 1.2) // Cap auto-fit at 1.2x
-      
+
       setFullscreenScale(Number(autoFitScale.toFixed(2)))
 
       // Escape key listener
@@ -852,7 +929,7 @@ export default function EditorPage() {
       await processFrontImageFile(file)
       e.target.value = ''
     },
-    [processFrontImageFile]
+    [processFrontImageFile],
   )
 
   const handleDropZoneDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -887,7 +964,7 @@ export default function EditorPage() {
         void processFrontImageFile(file)
       }
     },
-    [processFrontImageFile]
+    [processFrontImageFile],
   )
 
   const handleSelectTemplate = useCallback(async (template: Template) => {
@@ -912,34 +989,38 @@ export default function EditorPage() {
     }
   }, [])
 
-  const handleSelectUnsplashImage = useCallback(async (imageUrl: string) => {
-    setShowUnsplashModal(false)
-    setUploadedFileName('Photo Unsplash')
-    setFrontImageKey(null)
-    setFrontImageMimeType(null)
-    setFrontImageFilesize(null)
-    setFrontImageCrop({ scale: 1, x: 50, y: 50 })
-    setFrontImageFilter(DEFAULT_FRONT_FILTER)
+  const handleSelectUnsplashImage = useCallback(
+    async (imageUrl: string) => {
+      setShowUnsplashModal(false)
+      setUploadedFileName('Photo Unsplash')
+      setFrontImageKey(null)
+      setFrontImageMimeType(null)
+      setFrontImageFilesize(null)
+      setFrontImageCrop({ scale: 1, x: 50, y: 50 })
+      setFrontImageFilter(DEFAULT_FRONT_FILTER)
 
-    try {
-      const resized = await urlToResizedDataUrl(imageUrl)
-      setFrontImage(resized)
-    } catch (err) {
-      console.error('Error processing Unsplash image:', err)
-      setFrontImage(imageUrl)
-    }
+      try {
+        const resized = await urlToResizedDataUrl(imageUrl)
+        setFrontImage(resized)
+      } catch (err) {
+        console.error('Error processing Unsplash image:', err)
+        setFrontImage(imageUrl)
+      }
 
-    void confetti({
-      particleCount: 40,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#14b8a6', '#f59e0b', '#ef4444'],
-    })
-  }, [urlToResizedDataUrl])
+      void confetti({
+        particleCount: 40,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#14b8a6', '#f59e0b', '#ef4444'],
+      })
+    },
+    [urlToResizedDataUrl],
+  )
 
   const handleCropImgLoad = useCallback(() => {
     const img = cropImgRef.current
-    if (img?.naturalWidth && img.naturalHeight) setImgNaturalSize({ w: img.naturalWidth, h: img.naturalHeight })
+    if (img?.naturalWidth && img.naturalHeight)
+      setImgNaturalSize({ w: img.naturalWidth, h: img.naturalHeight })
   }, [])
 
   useEffect(() => {
@@ -958,27 +1039,32 @@ export default function EditorPage() {
       x: 50,
       y: 50,
       scale: 1,
-      rotation: 0
+      rotation: 0,
     }
     setStickers([...stickers, newSticker])
     setShowStickerGallery(false)
   }
 
   const updateSticker = (id: string, updates: Partial<StickerPlacement>) => {
-    setStickers(stickers.map(s => s.id === id ? { ...s, ...updates } : s))
+    setStickers(stickers.map((s) => (s.id === id ? { ...s, ...updates } : s)))
   }
 
   const removeSticker = (id: string) => {
-    setStickers(stickers.filter(s => s.id !== id))
+    setStickers(stickers.filter((s) => s.id !== id))
   }
 
   const handleCropPointerDown = useCallback(
     (e: React.PointerEvent) => {
       e.preventDefault()
-      cropDragRef.current = { clientX: e.clientX, clientY: e.clientY, cropX: frontImageCrop.x, cropY: frontImageCrop.y }
-        ; (e.target as HTMLElement).setPointerCapture?.(e.pointerId)
+      cropDragRef.current = {
+        clientX: e.clientX,
+        clientY: e.clientY,
+        cropX: frontImageCrop.x,
+        cropY: frontImageCrop.y,
+      }
+      ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
     },
-    [frontImageCrop.x, frontImageCrop.y]
+    [frontImageCrop.x, frontImageCrop.y],
   )
 
   const handleCropPointerMove = useCallback(
@@ -997,12 +1083,12 @@ export default function EditorPage() {
       setFrontImageCrop((c) => ({ ...c, x: newX, y: newY }))
       cropDragRef.current = { clientX: e.clientX, clientY: e.clientY, cropX: newX, cropY: newY }
     },
-    [frontImageCrop.scale, imgNaturalSize]
+    [frontImageCrop.scale, imgNaturalSize],
   )
 
   const handleCropPointerUp = useCallback((e: React.PointerEvent) => {
     cropDragRef.current = null
-      ; (e.target as HTMLElement).releasePointerCapture?.(e.pointerId)
+    ;(e.target as HTMLElement).releasePointerCapture?.(e.pointerId)
   }, [])
 
   const handleGeolocation = () => {
@@ -1018,7 +1104,7 @@ export default function EditorPage() {
       },
       () => {
         setIsLocating(false)
-      }
+      },
     )
   }
 
@@ -1029,90 +1115,90 @@ export default function EditorPage() {
     for (const file of files) {
       const isVideo = file.type.startsWith('video/')
 
-        ; (async () => {
-          const type = isVideo ? ('video' as const) : ('image' as const)
-          const newId = Date.now() + Math.random().toString()
+      ;(async () => {
+        const type = isVideo ? ('video' as const) : ('image' as const)
+        const newId = Date.now() + Math.random().toString()
 
-          if (isVideo) {
-            const previewUrl = await readFileAsDataUrl(file).catch(() => null)
-            if (!previewUrl) {
-              alert('Impossible de charger la vidéo.')
-              return
-            }
-            setMediaItems((prev) => {
-              const videos = (prev || []).filter((i) => i.type === 'video').length
-              if (videos >= ALBUM_TIERS.tier2.videos) {
-                alert(`Limite de ${ALBUM_TIERS.tier2.videos} vidéos atteinte.`)
-                return prev || []
-              }
-              return [...(prev || []), { id: newId, type: 'video', url: previewUrl } as any]
-            })
-            setIsPremium(true)
-            return
-          }
-
-          // Image: resize max 2k JPEG 80%, puis upload R2 (presigned), fallback base64
-          const previewUrl = await fileToDataUrl(file).catch(() => null)
+        if (isVideo) {
+          const previewUrl = await readFileAsDataUrl(file).catch(() => null)
           if (!previewUrl) {
-            alert('Impossible de charger un fichier. Utilisez des photos en JPEG ou PNG.')
+            alert('Impossible de charger la vidéo.')
             return
           }
-          let key: string | undefined
-          let mimeType: string | undefined
-          let filesize: number | undefined
-          const blob = await dataUrlToBlob(previewUrl)
-          const safeName = `postcard-album-${Date.now()}-${Math.random().toString(36).slice(2, 9)}.jpg`
-          try {
-            const presignedRes = await fetch('/api/upload-presigned', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                filename: safeName,
-                mimeType: 'image/jpeg',
-                filesize: blob.size,
-              }),
-            })
-            if (presignedRes.ok) {
-              const { url, key: k } = await presignedRes.json()
-              const putRes = await fetch(url, {
-                method: 'PUT',
-                body: blob,
-                headers: { 'Content-Type': 'image/jpeg' },
-              })
-              if (putRes.ok) {
-                key = k
-                mimeType = 'image/jpeg'
-                filesize = blob.size
-              }
-            }
-          } catch (_) {
-            /* fallback to base64 */
-          }
-
           setMediaItems((prev) => {
-            const photos = (prev || []).filter((i) => i.type === 'image').length
-            if (photos >= ALBUM_TIERS.tier2.photos) {
-              alert(`Limite de ${ALBUM_TIERS.tier2.photos} photos atteinte.`)
+            const videos = (prev || []).filter((i) => i.type === 'video').length
+            if (videos >= ALBUM_TIERS.tier2.videos) {
+              alert(`Limite de ${ALBUM_TIERS.tier2.videos} vidéos atteinte.`)
               return prev || []
             }
-            const newItem = {
-              id: newId,
-              type: 'image',
-              url: previewUrl,
-              ...(key && { key, mimeType, filesize }),
-            } as any
-            return [...(prev || []), newItem]
+            return [...(prev || []), { id: newId, type: 'video', url: previewUrl } as any]
           })
           setIsPremium(true)
-        })()
+          return
+        }
+
+        // Image: resize max 2k JPEG 80%, puis upload R2 (presigned), fallback base64
+        const previewUrl = await fileToDataUrl(file).catch(() => null)
+        if (!previewUrl) {
+          alert('Impossible de charger un fichier. Utilisez des photos en JPEG ou PNG.')
+          return
+        }
+        let key: string | undefined
+        let mimeType: string | undefined
+        let filesize: number | undefined
+        const blob = await dataUrlToBlob(previewUrl)
+        const safeName = `postcard-album-${Date.now()}-${Math.random().toString(36).slice(2, 9)}.jpg`
+        try {
+          const presignedRes = await fetch('/api/upload-presigned', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              filename: safeName,
+              mimeType: 'image/jpeg',
+              filesize: blob.size,
+            }),
+          })
+          if (presignedRes.ok) {
+            const { url, key: k } = await presignedRes.json()
+            const putRes = await fetch(url, {
+              method: 'PUT',
+              body: blob,
+              headers: { 'Content-Type': 'image/jpeg' },
+            })
+            if (putRes.ok) {
+              key = k
+              mimeType = 'image/jpeg'
+              filesize = blob.size
+            }
+          }
+        } catch (_) {
+          /* fallback to base64 */
+        }
+
+        setMediaItems((prev) => {
+          const photos = (prev || []).filter((i) => i.type === 'image').length
+          if (photos >= ALBUM_TIERS.tier2.photos) {
+            alert(`Limite de ${ALBUM_TIERS.tier2.photos} photos atteinte.`)
+            return prev || []
+          }
+          const newItem = {
+            id: newId,
+            type: 'image',
+            url: previewUrl,
+            ...(key && { key, mimeType, filesize }),
+          } as any
+          return [...(prev || []), newItem]
+        })
+        setIsPremium(true)
+      })()
     }
   }
 
   const getAlbumPrice = () => {
     if (codeSuccess) return 0
     if (!mediaItems || mediaItems.length === 0) return 0
-    const photos = mediaItems.filter(i => i.type === 'image').length
-    const videos = mediaItems.filter(i => i.type === 'video').length
+    const photos = mediaItems.filter((i) => i.type === 'image').length
+    const videos = mediaItems.filter((i) => i.type === 'video').length
 
     if (photos <= ALBUM_TIERS.tier1.photos && videos === 0) {
       return ALBUM_TIERS.tier1.price
@@ -1138,9 +1224,7 @@ export default function EditorPage() {
 
   const currentPostcard: Postcard = {
     id: createdPostcardId || 'editor-preview',
-    frontImage:
-      frontImage ||
-      '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
+    frontImage: frontImage || '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
     frontImageCrop: frontImage ? frontImageCrop : undefined,
     frontImageFilter: frontImage ? frontImageFilter : undefined,
     frontCaption: frontCaption.trim() || undefined,
@@ -1170,26 +1254,27 @@ export default function EditorPage() {
   const postcardForPreview: Postcard =
     currentStep === 'redaction' && versoPreviewTemplateId
       ? (() => {
-        const tpl = SAMPLE_TEMPLATES.find((t) => t.id === versoPreviewTemplateId)
-        if (!tpl) return currentPostcard
-        return {
-          ...currentPostcard,
-          message: tpl.message ?? currentPostcard.message,
-          location: tpl.location ?? currentPostcard.location,
-          stampStyle: tpl.stampStyle ?? currentPostcard.stampStyle,
-        }
-      })()
+          const tpl = SAMPLE_TEMPLATES.find((t) => t.id === versoPreviewTemplateId)
+          if (!tpl) return currentPostcard
+          return {
+            ...currentPostcard,
+            message: tpl.message ?? currentPostcard.message,
+            location: tpl.location ?? currentPostcard.location,
+            stampStyle: tpl.stampStyle ?? currentPostcard.stampStyle,
+          }
+        })()
       : currentPostcard
 
   const filteredTemplates = SAMPLE_TEMPLATES
   const selectedTemplate = selectedTemplateId
-    ? SAMPLE_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? null
+    ? (SAMPLE_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? null)
     : null
   const selectedTemplateCategory = selectedTemplate
-    ? TEMPLATE_CATEGORIES.find((cat) => cat.key === selectedTemplate.category) ?? null
+    ? (TEMPLATE_CATEGORIES.find((cat) => cat.key === selectedTemplate.category) ?? null)
     : null
   const currentEmojiCategory =
-    EMOJI_CATEGORIES.find((category) => category.key === selectedEmojiCategory) ?? EMOJI_CATEGORIES[0]
+    EMOJI_CATEGORIES.find((category) => category.key === selectedEmojiCategory) ??
+    EMOJI_CATEGORIES[0]
 
   const handlePublish = async () => {
     setIsPublishing(true)
@@ -1200,13 +1285,34 @@ export default function EditorPage() {
       let sendKey = frontImageKey
       let sendMime = frontImageMimeType
       let sendFilesize = frontImageFilesize
-      const hasCrop = frontImageCrop.scale !== 1 || frontImageCrop.x !== 50 || frontImageCrop.y !== 50
+      const hasCrop =
+        frontImageCrop.scale !== 1 || frontImageCrop.x !== 50 || frontImageCrop.y !== 50
       const hasImageEdits = hasCrop || isFrontFilterEdited
-      const canBake = frontImage && (frontImage.startsWith('data:') || frontImage.startsWith('http') || frontImage.startsWith('/'))
+      const canBake =
+        frontImage &&
+        (frontImage.startsWith('data:') ||
+          frontImage.startsWith('http') ||
+          frontImage.startsWith('/'))
       if (canBake && hasImageEdits) {
         try {
-          const imgUrl = frontImage.startsWith('data:') ? frontImage : (typeof window !== 'undefined' && frontImage.startsWith('/') ? window.location.origin + frontImage : frontImage)
-          const dataUrl = frontImage.startsWith('data:') ? frontImage : await fetch(imgUrl).then((r) => r.blob()).then((b) => new Promise<string>((res, rej) => { const reader = new FileReader(); reader.onloadend = () => res(reader.result as string); reader.onerror = rej; reader.readAsDataURL(b) }))
+          const imgUrl = frontImage.startsWith('data:')
+            ? frontImage
+            : typeof window !== 'undefined' && frontImage.startsWith('/')
+              ? window.location.origin + frontImage
+              : frontImage
+          const dataUrl = frontImage.startsWith('data:')
+            ? frontImage
+            : await fetch(imgUrl)
+                .then((r) => r.blob())
+                .then(
+                  (b) =>
+                    new Promise<string>((res, rej) => {
+                      const reader = new FileReader()
+                      reader.onloadend = () => res(reader.result as string)
+                      reader.onerror = rej
+                      reader.readAsDataURL(b)
+                    }),
+                )
           finalFrontImage = await bakeFrontImageCrop(dataUrl, frontImageCrop, frontImageFilter)
           sendKey = null
           sendMime = null
@@ -1221,10 +1327,10 @@ export default function EditorPage() {
       const result = await createPostcard({
         ...currentPostcard,
         frontImage: sendKey ? undefined : finalFrontImage,
-        mediaItems: currentPostcard.mediaItems?.map(item => ({
+        mediaItems: currentPostcard.mediaItems?.map((item) => ({
           ...item,
           // Only send the Base64 URL if we don't have an R2 key
-          url: item.key ? undefined : item.url
+          url: item.key ? undefined : item.url,
         })),
         recipients: [],
         allowComments,
@@ -1239,7 +1345,7 @@ export default function EditorPage() {
       if (result.success && result.publicId) {
         setCreatedPostcardId(result.publicId)
         setShareUrl(`${window.location.origin}/carte/${result.publicId}`)
-        
+
         // Trigger email modal if user is not logged in and hasn't provided an email
         if (!currentUser && !senderEmail) {
           setShowEmailPromptModal(true)
@@ -1276,21 +1382,47 @@ export default function EditorPage() {
         // We need to publish now to get an ID
         // Strip large Base64 strings etc. exactly as handlePublish does
         let finalFrontImage = currentPostcard.frontImage
-        const hasCrop = frontImageCrop.scale !== 1 || frontImageCrop.x !== 50 || frontImageCrop.y !== 50
+        const hasCrop =
+          frontImageCrop.scale !== 1 || frontImageCrop.x !== 50 || frontImageCrop.y !== 50
         const hasImageEdits = hasCrop || isFrontFilterEdited
-        const canBake = frontImage && (frontImage.startsWith('data:') || frontImage.startsWith('http') || frontImage.startsWith('/'))
+        const canBake =
+          frontImage &&
+          (frontImage.startsWith('data:') ||
+            frontImage.startsWith('http') ||
+            frontImage.startsWith('/'))
         if (canBake && hasImageEdits) {
           try {
-            const imgUrl = frontImage.startsWith('data:') ? frontImage : (typeof window !== 'undefined' && frontImage.startsWith('/') ? window.location.origin + frontImage : frontImage)
-            const dataUrl = frontImage.startsWith('data:') ? frontImage : await fetch(imgUrl).then((r) => r.blob()).then((b) => new Promise<string>((res, rej) => { const reader = new FileReader(); reader.onloadend = () => res(reader.result as string); reader.onerror = rej; reader.readAsDataURL(b) }))
+            const imgUrl = frontImage.startsWith('data:')
+              ? frontImage
+              : typeof window !== 'undefined' && frontImage.startsWith('/')
+                ? window.location.origin + frontImage
+                : frontImage
+            const dataUrl = frontImage.startsWith('data:')
+              ? frontImage
+              : await fetch(imgUrl)
+                  .then((r) => r.blob())
+                  .then(
+                    (b) =>
+                      new Promise<string>((res, rej) => {
+                        const reader = new FileReader()
+                        reader.onloadend = () => res(reader.result as string)
+                        reader.onerror = rej
+                        reader.readAsDataURL(b)
+                      }),
+                  )
             finalFrontImage = await bakeFrontImageCrop(dataUrl, frontImageCrop, frontImageFilter)
-          } catch (_) { /* ignore */ }
+          } catch (_) {
+            /* ignore */
+          }
         }
 
         const result = await createPostcard({
           ...currentPostcard,
           frontImage: frontImageKey ? undefined : finalFrontImage,
-          mediaItems: currentPostcard.mediaItems?.map(item => ({ ...item, url: item.key ? undefined : item.url })),
+          mediaItems: currentPostcard.mediaItems?.map((item) => ({
+            ...item,
+            url: item.key ? undefined : item.url,
+          })),
           recipients: [],
           ...(frontImageKey && {
             frontImageKey,
@@ -1307,9 +1439,14 @@ export default function EditorPage() {
           // If promo code was used, mark it as used in DB
           if (codeSuccess && promoCode) {
             const { usePromoCode } = await import('@/actions/leads-actions')
-            const numericId = typeof result.id === 'number' ? result.id : (typeof result.id === 'string' ? parseInt(result.id) : undefined);
+            const numericId =
+              typeof result.id === 'number'
+                ? result.id
+                : typeof result.id === 'string'
+                  ? parseInt(result.id)
+                  : undefined
             if (numericId) {
-               await usePromoCode(promoCode, numericId)
+              await usePromoCode(promoCode, numericId)
             }
           }
         } else {
@@ -1378,7 +1515,7 @@ export default function EditorPage() {
                         ? 'bg-teal-500 text-white shadow-md shadow-teal-200'
                         : isCompleted
                           ? 'bg-teal-50 text-teal-700 hover:bg-teal-100'
-                          : 'bg-stone-100 text-stone-400'
+                          : 'bg-stone-100 text-stone-400',
                     )}
                   >
                     {isCompleted ? <Check size={16} /> : <Icon size={16} />}
@@ -1388,7 +1525,7 @@ export default function EditorPage() {
                     <div
                       className={cn(
                         'flex-1 h-0.5 mx-2 rounded-full transition-colors',
-                        index < currentStepIndex ? 'bg-teal-400' : 'bg-stone-200'
+                        index < currentStepIndex ? 'bg-teal-400' : 'bg-stone-200',
                       )}
                     />
                   )}
@@ -1410,7 +1547,11 @@ export default function EditorPage() {
                   Aperçu en direct
                 </span>
                 <div className="flex items-center gap-1.5 ml-auto text-stone-400 text-xs font-medium">
-                  <RefreshCw size={12} className="animate-spin" style={{ animationDuration: '3s' }} />
+                  <RefreshCw
+                    size={12}
+                    className="animate-spin"
+                    style={{ animationDuration: '3s' }}
+                  />
                   Mise à jour en temps réel
                 </div>
               </div>
@@ -1429,7 +1570,9 @@ export default function EditorPage() {
                 />
               </div>
               <div className="mt-4 flex flex-col gap-4">
-                <p className="text-stone-400 text-[10px] uppercase tracking-widest font-bold text-center">L&apos;aperçu se met à jour en temps réel</p>
+                <p className="text-stone-400 text-[10px] uppercase tracking-widest font-bold text-center">
+                  L&apos;aperçu se met à jour en temps réel
+                </p>
 
                 <div className="flex flex-col w-full gap-3">
                   <Button
@@ -1451,7 +1594,7 @@ export default function EditorPage() {
                           'rounded-xl font-bold flex items-center justify-center gap-2 px-6 py-4 h-auto transition-all shadow-lg shadow-teal-100',
                           canGoNext()
                             ? 'bg-teal-500 hover:bg-teal-600 text-white'
-                            : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                            : 'bg-stone-200 text-stone-400 cursor-not-allowed',
                         )}
                       >
                         Continuer
@@ -1486,7 +1629,7 @@ export default function EditorPage() {
                         ? 'border-teal-400 bg-teal-50/10 p-4'
                         : frontImage && !uploadedFileName
                           ? 'border-stone-200 bg-shadow-sm p-8'
-                          : 'border-stone-300 p-8'
+                          : 'border-stone-300 p-8',
                   )}
                   onClick={() => fileInputRef.current?.click()}
                   onDragEnter={handleDropZoneDragEnter}
@@ -1505,11 +1648,7 @@ export default function EditorPage() {
                     <div className="flex items-center gap-4 justify-center text-left">
                       {frontImage && (
                         <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-teal-200 bg-stone-100 flex-shrink-0 shadow-sm transition-transform hover:scale-105">
-                          <img
-                            src={frontImage}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={frontImage} alt="" className="w-full h-full object-cover" />
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
@@ -1517,10 +1656,14 @@ export default function EditorPage() {
                           <div className="w-6 h-6 rounded-full bg-teal-500 flex items-center justify-center">
                             <Check size={14} className="text-white" />
                           </div>
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-teal-600">Image sélectionnée</span>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-teal-600">
+                            Image sélectionnée
+                          </span>
                         </div>
                         <p className="text-stone-800 font-bold truncate">{uploadedFileName}</p>
-                        <p className="text-stone-400 text-[10px] font-bold uppercase tracking-wider mt-1 group-hover:text-teal-500 transition-colors">Cliquez pour changer</p>
+                        <p className="text-stone-400 text-[10px] font-bold uppercase tracking-wider mt-1 group-hover:text-teal-500 transition-colors">
+                          Cliquez pour changer
+                        </p>
                       </div>
                     </div>
                   ) : (
@@ -1532,85 +1675,111 @@ export default function EditorPage() {
                         />
                       </div>
                       <div>
-                        <p className="text-stone-700 font-semibold">Glissez ou déposez votre photo ici</p>
+                        <p className="text-stone-700 font-semibold">
+                          Glissez ou déposez votre photo ici
+                        </p>
                         <p className="text-stone-400 text-sm mt-1">
-                          {isDropActive ? 'Relâchez pour importer votre image' : 'ou cliquez pour parcourir (JPG, PNG, WebP)'}
+                          {isDropActive
+                            ? 'Relâchez pour importer votre image'
+                            : 'ou cliquez pour parcourir (JPG, PNG, WebP)'}
                         </p>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Divider */}
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="flex-1 h-px bg-stone-200" />
-                  <span className="text-stone-400 text-sm font-semibold uppercase tracking-wider">
-                    ou choisissez un modèle
-                  </span>
-                  <div className="flex-1 h-px bg-stone-200" />
+                {/* Mobile-friendly: Collapsible Template Section */}
+                <div className="mb-8">
+                  <button
+                    type="button"
+                    onClick={() => setShowTemplateSection(!showTemplateSection)}
+                    className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-stone-300 bg-stone-50/50 px-4 py-3 text-stone-600 hover:border-teal-300 hover:bg-teal-50/30 hover:text-teal-600 transition-all group"
+                  >
+                    <ImageIcon
+                      size={18}
+                      className="text-stone-400 group-hover:text-teal-500 transition-colors"
+                    />
+                    <span className="text-sm font-semibold">
+                      {showTemplateSection ? 'Masquer les modèles' : 'Ou choisir un modèle'}
+                    </span>
+                    <ChevronRight
+                      size={16}
+                      className={cn(
+                        'text-stone-400 transition-transform',
+                        showTemplateSection ? 'rotate-90' : '',
+                      )}
+                    />
+                  </button>
                 </div>
 
-                {/* Modèles : raccourcis de base + "..." pour ouvrir le modal */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-stone-700">Choisissez un modèle</p>
-                    <button
+                {/* Template Selection - Collapsible */}
+                {showTemplateSection && (
+                  <div className="space-y-3 mb-8">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-stone-700">Choisissez un modèle</p>
+                      <button
+                        type="button"
+                        onClick={() => setShowTemplateModal(true)}
+                        className="flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-600 transition hover:border-teal-300 hover:bg-stone-50 hover:text-teal-600"
+                        aria-label="Voir tous les modèles"
+                      >
+                        <MoreHorizontal size={16} />
+                        Plus de modèles
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {BASE_TEMPLATE_IDS.map((id) => {
+                        const tpl = SAMPLE_TEMPLATES.find((t) => t.id === id)
+                        if (!tpl) return null
+                        const cat = TEMPLATE_CATEGORIES.find((c) => c.key === tpl.category)
+                        const isSelected = selectedTemplateId === tpl.id
+                        return (
+                          <button
+                            key={tpl.id}
+                            type="button"
+                            onClick={() => handleSelectTemplate(tpl)}
+                            className={cn(
+                              'flex items-center gap-2 rounded-2xl border p-2.5 text-left transition-all min-w-0 max-w-full',
+                              isSelected
+                                ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-200'
+                                : 'border-stone-200 bg-white hover:border-teal-200 hover:bg-stone-50',
+                            )}
+                            title={tpl.description ? `${tpl.name} – ${tpl.description}` : tpl.name}
+                          >
+                            <div className="h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-stone-100">
+                              <img
+                                src={tpl.imageUrl}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-semibold text-stone-800 truncate">
+                                {tpl.name}
+                              </p>
+                              <p className="flex items-center gap-0.5 text-[0.65rem] uppercase tracking-wider text-stone-400">
+                                {cat?.icon && <span>{cat.icon}</span>}
+                                <span className="truncate">{cat?.label ?? tpl.category}</span>
+                              </p>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <Button
                       type="button"
-                      onClick={() => setShowTemplateModal(true)}
-                      className="flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-600 transition hover:border-teal-300 hover:bg-stone-50 hover:text-teal-600"
-                      aria-label="Voir tous les modèles"
+                      onClick={() => setShowUnsplashModal(true)}
+                      variant="outline"
+                      className="w-full h-12 rounded-2xl border-2 border-stone-200 hover:border-teal-400 hover:bg-teal-50/50 flex items-center justify-center gap-3 text-stone-700 font-semibold transition-all group"
                     >
-                      <MoreHorizontal size={16} />
-                      Plus de modèles
-                    </button>
+                      <ImageIcon
+                        size={20}
+                        className="text-stone-400 group-hover:text-teal-600 transition-colors"
+                      />
+                      <span>Chercher sur Unsplash</span>
+                    </Button>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {BASE_TEMPLATE_IDS.map((id) => {
-                      const tpl = SAMPLE_TEMPLATES.find((t) => t.id === id)
-                      if (!tpl) return null
-                      const cat = TEMPLATE_CATEGORIES.find((c) => c.key === tpl.category)
-                      const isSelected = selectedTemplateId === tpl.id
-                      return (
-                        <button
-                          key={tpl.id}
-                          type="button"
-                          onClick={() => handleSelectTemplate(tpl)}
-                          className={cn(
-                            'flex items-center gap-2 rounded-2xl border p-2.5 text-left transition-all min-w-0 max-w-full',
-                            isSelected
-                              ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-200'
-                              : 'border-stone-200 bg-white hover:border-teal-200 hover:bg-stone-50'
-                          )}
-                          title={tpl.description ? `${tpl.name} – ${tpl.description}` : tpl.name}
-                        >
-                          <div className="h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-stone-100">
-                            <img
-                              src={tpl.imageUrl}
-                              alt=""
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-semibold text-stone-800 truncate">{tpl.name}</p>
-                            <p className="flex items-center gap-0.5 text-[0.65rem] uppercase tracking-wider text-stone-400">
-                              {cat?.icon && <span>{cat.icon}</span>}
-                              <span className="truncate">{cat?.label ?? tpl.category}</span>
-                            </p>
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                  <Button
-                    type="button"
-                    onClick={() => setShowUnsplashModal(true)}
-                    variant="outline"
-                    className="w-full h-12 rounded-2xl border-2 border-stone-200 hover:border-teal-400 hover:bg-teal-50/50 flex items-center justify-center gap-3 text-stone-700 font-semibold transition-all group"
-                  >
-                    <ImageIcon size={20} className="text-stone-400 group-hover:text-teal-600 transition-colors" />
-                    <span>Chercher sur Unsplash</span>
-                  </Button>
-                </div>
+                )}
 
                 {/* Retouche photo : filtres + recadrage/zoom dans un modal */}
                 {frontImage && (
@@ -1626,7 +1795,7 @@ export default function EditorPage() {
                         'flex items-center gap-3 w-full rounded-xl border-2 p-3 text-left transition-all',
                         showImageEditModal || showCropPanel || isFrontFilterEdited
                           ? 'border-teal-500 bg-teal-50'
-                          : 'border-stone-200 hover:border-teal-200 hover:bg-stone-50'
+                          : 'border-stone-200 hover:border-teal-200 hover:bg-stone-50',
                       )}
                     >
                       <span
@@ -1634,7 +1803,7 @@ export default function EditorPage() {
                           'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
                           showImageEditModal || showCropPanel || isFrontFilterEdited
                             ? 'bg-teal-500 text-white'
-                            : 'bg-teal-100 text-teal-600'
+                            : 'bg-teal-100 text-teal-600',
                         )}
                       >
                         <SlidersHorizontal size={20} />
@@ -1662,9 +1831,7 @@ export default function EditorPage() {
                       <h3 className="text-sm font-bold text-stone-800 uppercase tracking-wider">
                         Face avant
                       </h3>
-                      <p className="text-xs text-stone-500">
-                        Texte et emoji sur la photo
-                      </p>
+                      <p className="text-xs text-stone-500">Texte et emoji sur la photo</p>
                     </div>
                   </div>
                   <div className="space-y-4">
@@ -1691,7 +1858,8 @@ export default function EditorPage() {
                         className="h-11 rounded-xl border-stone-200 bg-stone-50/80 text-stone-800 placeholder:text-stone-400 focus:border-teal-400 focus:ring-teal-400"
                       />
                       <p className="mt-1 text-[11px] text-stone-400">
-                        Optionnel : laissez vide pour ne rien afficher sur la carte (max. 40 caractères)
+                        Optionnel : laissez vide pour ne rien afficher sur la carte (max. 40
+                        caractères)
                       </p>
                     </div>
                     <div>
@@ -1699,7 +1867,9 @@ export default function EditorPage() {
                         <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider">
                           Opacité du fond texte
                         </label>
-                        <span className="text-xs font-medium text-stone-500 tabular-nums">{frontTextBgOpacity}%</span>
+                        <span className="text-xs font-medium text-stone-500 tabular-nums">
+                          {frontTextBgOpacity}%
+                        </span>
                       </div>
                       <input
                         type="range"
@@ -1726,7 +1896,7 @@ export default function EditorPage() {
                                 'flex h-10 w-10 items-center justify-center rounded-xl border-2 text-xl transition-all',
                                 frontEmoji === emoji
                                   ? 'border-teal-500 bg-teal-50 text-teal-700 shadow-sm'
-                                  : 'border-stone-200 bg-white text-stone-500 hover:border-teal-300 hover:bg-teal-50/50'
+                                  : 'border-stone-200 bg-white text-stone-500 hover:border-teal-300 hover:bg-teal-50/50',
                               )}
                               title={`Choisir ${emoji}`}
                             >
@@ -1773,7 +1943,7 @@ export default function EditorPage() {
                                     'flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold transition-all',
                                     selectedEmojiCategory === category.key
                                       ? 'border-teal-500 bg-teal-50 text-teal-700 shadow-sm'
-                                      : 'border-stone-200 bg-white text-stone-500 hover:border-teal-300'
+                                      : 'border-stone-200 bg-white text-stone-500 hover:border-teal-300',
                                   )}
                                 >
                                   <span>{category.icon}</span>
@@ -1811,7 +1981,7 @@ export default function EditorPage() {
                       'rounded-xl font-bold flex items-center justify-center gap-2 px-6 py-4 h-auto transition-all shadow-lg shadow-teal-100',
                       canGoNext()
                         ? 'bg-teal-500 hover:bg-teal-600 text-white'
-                        : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                        : 'bg-stone-200 text-stone-400 cursor-not-allowed',
                     )}
                   >
                     Continuer
@@ -1824,11 +1994,10 @@ export default function EditorPage() {
             {/* ==================== STEP: PAIEMENT ==================== */}
             {currentStep === 'payment' && (
               <div className="w-full max-w-full bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
-                <h2 className="text-2xl font-serif font-bold text-stone-800 mb-2">
-                  Règlement
-                </h2>
+                <h2 className="text-2xl font-serif font-bold text-stone-800 mb-2">Règlement</h2>
                 <p className="text-stone-500 mb-8">
-                  Paiement sécurisé via Revolut. Vous pourrez finaliser le paiement à l&apos;étape suivante.
+                  Paiement sécurisé via Revolut. Vous pourrez finaliser le paiement à l&apos;étape
+                  suivante.
                 </p>
 
                 {/* Récap commande */}
@@ -1862,19 +2031,24 @@ export default function EditorPage() {
                       <CreditCard size={24} />
                     </div>
                     <div className="flex-1">
-                      <p className="font-bold text-stone-800 text-lg">Paiement par CB / Apple Pay / Google Pay</p>
+                      <p className="font-bold text-stone-800 text-lg">
+                        Paiement par CB / Apple Pay / Google Pay
+                      </p>
                       <p className="text-sm text-stone-500">
                         Carte bancaire, Apple Pay ou Google Pay
                       </p>
                     </div>
                     {getAlbumPrice() > 0 && (
                       <div className="text-right">
-                        <span className="text-2xl font-black text-teal-600">{getAlbumPrice().toFixed(2)}€</span>
+                        <span className="text-2xl font-black text-teal-600">
+                          {getAlbumPrice().toFixed(2)}€
+                        </span>
                       </div>
                     )}
                   </div>
                   <p className="mt-4 text-xs text-stone-400 bg-white/50 p-2 rounded-lg border border-teal-100">
-                    Cliquez sur le bouton ci-dessous pour régler votre option et finaliser votre carte.
+                    Cliquez sur le bouton ci-dessous pour régler votre option et finaliser votre
+                    carte.
                   </p>
                 </div>
 
@@ -1966,31 +2140,53 @@ export default function EditorPage() {
 
                   {/* Réglages de la carte (Commentaires & Visibilité) */}
                   <section className="bg-stone-50/50 rounded-2xl p-5 border border-stone-100 flex flex-wrap gap-6 items-center">
-                    <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setAllowComments(!allowComments)}>
-                      <div className={cn(
-                        "w-5 h-5 rounded border transition-all flex items-center justify-center",
-                        allowComments ? "bg-teal-500 border-teal-500 text-white" : "border-stone-300 bg-white group-hover:border-teal-300"
-                      )}>
+                    <div
+                      className="flex items-center gap-3 cursor-pointer group"
+                      onClick={() => setAllowComments(!allowComments)}
+                    >
+                      <div
+                        className={cn(
+                          'w-5 h-5 rounded border transition-all flex items-center justify-center',
+                          allowComments
+                            ? 'bg-teal-500 border-teal-500 text-white'
+                            : 'border-stone-300 bg-white group-hover:border-teal-300',
+                        )}
+                      >
                         {allowComments && <Check size={14} strokeWidth={3} />}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-stone-700">Autoriser les commentaires</span>
-                        <span className="text-[10px] text-stone-400 uppercase tracking-wider font-medium">Les gens pourront vous répondre</span>
+                        <span className="text-sm font-bold text-stone-700">
+                          Autoriser les commentaires
+                        </span>
+                        <span className="text-[10px] text-stone-400 uppercase tracking-wider font-medium">
+                          Les gens pourront vous répondre
+                        </span>
                       </div>
                     </div>
 
                     <div className="w-px h-8 bg-stone-200 hidden sm:block" />
 
-                    <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setIsPublic(!isPublic)}>
-                      <div className={cn(
-                        "w-5 h-5 rounded border transition-all flex items-center justify-center",
-                        isPublic ? "bg-amber-500 border-amber-500 text-white" : "border-stone-300 bg-white group-hover:border-amber-300"
-                      )}>
+                    <div
+                      className="flex items-center gap-3 cursor-pointer group"
+                      onClick={() => setIsPublic(!isPublic)}
+                    >
+                      <div
+                        className={cn(
+                          'w-5 h-5 rounded border transition-all flex items-center justify-center',
+                          isPublic
+                            ? 'bg-amber-500 border-amber-500 text-white'
+                            : 'border-stone-300 bg-white group-hover:border-amber-300',
+                        )}
+                      >
                         {isPublic && <Check size={14} strokeWidth={3} />}
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-bold text-stone-700">Carte Publique</span>
-                        <span className="text-[10px] text-stone-400 uppercase tracking-wider font-medium">{isPublic ? "Visible dans la galerie publique" : "Privée, accessible via le lien uniquement"}</span>
+                        <span className="text-[10px] text-stone-400 uppercase tracking-wider font-medium">
+                          {isPublic
+                            ? 'Visible dans la galerie publique'
+                            : 'Privée, accessible via le lien uniquement'}
+                        </span>
                       </div>
                     </div>
                   </section>
@@ -2010,25 +2206,31 @@ export default function EditorPage() {
                           const val = e.target.value
                           setLocation(val)
                           if (val.length > 2) {
-                            fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(val)}&limit=5&lang=fr`)
-                              .then(res => res.json())
-                              .then(data => {
+                            fetch(
+                              `https://photon.komoot.io/api/?q=${encodeURIComponent(val)}&limit=5&lang=fr`,
+                            )
+                              .then((res) => res.json())
+                              .then((data) => {
                                 setSuggestions(data.features || [])
                               })
-                              .catch(err => console.error('Photon error:', err))
+                              .catch((err) => console.error('Photon error:', err))
                           } else {
                             setSuggestions([])
                           }
                         }}
                         className="pl-10 h-12 bg-stone-50 border-stone-200 focus:border-teal-500 rounded-xl"
                       />
-                      <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
+                      <MapPin
+                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+                        size={18}
+                      />
                       {suggestions.length > 0 && (
                         <div className="absolute z-50 w-full mt-1 bg-white border border-stone-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                           {suggestions.map((s, i) => {
                             const city = s.properties.city || s.properties.name
                             const country = s.properties.country
-                            const fullLabel = city && country ? `${city}, ${country}` : city || country || ''
+                            const fullLabel =
+                              city && country ? `${city}, ${country}` : city || country || ''
                             return (
                               <button
                                 key={i}
@@ -2039,7 +2241,7 @@ export default function EditorPage() {
                                   if (s.geometry.coordinates) {
                                     setCoords({
                                       lat: s.geometry.coordinates[1],
-                                      lng: s.geometry.coordinates[0]
+                                      lng: s.geometry.coordinates[0],
                                     })
                                   }
                                 }}
@@ -2048,7 +2250,9 @@ export default function EditorPage() {
                                 <MapPin size={14} className="text-teal-500 shrink-0" />
                                 <div className="flex flex-col">
                                   <span className="text-sm font-medium text-stone-800">{city}</span>
-                                  {country && <span className="text-xs text-stone-500">{country}</span>}
+                                  {country && (
+                                    <span className="text-xs text-stone-500">{country}</span>
+                                  )}
                                 </div>
                               </button>
                             )
@@ -2169,7 +2373,7 @@ export default function EditorPage() {
                             'py-3 px-2 rounded-xl text-xs font-bold capitalize transition-all border-2',
                             stampStyle === style.value
                               ? 'border-teal-500 bg-teal-50 text-teal-800 shadow-sm'
-                              : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-300 hover:bg-white'
+                              : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-300 hover:bg-white',
                           )}
                         >
                           {style.label}
@@ -2178,7 +2382,9 @@ export default function EditorPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-3 mt-3">
                       <div>
-                        <label className="block text-xs font-medium text-stone-500 mb-1">Texte du timbre</label>
+                        <label className="block text-xs font-medium text-stone-500 mb-1">
+                          Texte du timbre
+                        </label>
                         <input
                           type="text"
                           value={stampLabel}
@@ -2188,7 +2394,9 @@ export default function EditorPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-stone-500 mb-1">Année</label>
+                        <label className="block text-xs font-medium text-stone-500 mb-1">
+                          Année
+                        </label>
                         <input
                           type="text"
                           value={stampYear}
@@ -2209,8 +2417,12 @@ export default function EditorPage() {
                       <div className="sm:hidden p-3 mb-5 bg-amber-50/50 border border-amber-100 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
                         <Sparkles size={18} className="text-amber-500 shrink-0" />
                         <div className="flex-1">
-                          <p className="text-[10px] font-black text-amber-900 uppercase tracking-[0.15em]">Option payante (dès +2,99€)</p>
-                          <p className="text-[10px] text-amber-700/80 leading-tight mt-0.5">Multi-photos, HD et options premium jusqu&apos;à la carte augmentée.</p>
+                          <p className="text-[10px] font-black text-amber-900 uppercase tracking-[0.15em]">
+                            Option payante (dès +2,99€)
+                          </p>
+                          <p className="text-[10px] text-amber-700/80 leading-tight mt-0.5">
+                            Multi-photos, HD et options premium jusqu&apos;à la carte augmentée.
+                          </p>
                         </div>
                       </div>
                     )}
@@ -2226,7 +2438,10 @@ export default function EditorPage() {
                         <div className="relative group/info">
                           <button
                             type="button"
-                            onClick={(e) => { e.preventDefault(); setShowPricingModal(true); }}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              setShowPricingModal(true)
+                            }}
                             onKeyDown={(e) => e.key === 'Enter' && setShowPricingModal(true)}
                             title="Cliquer pour voir les tarifs détaillés"
                             className="inline-flex items-center justify-center w-7 h-7 rounded-full text-teal-700 bg-teal-50 border border-teal-200 shadow-sm hover:text-teal-800 hover:bg-teal-100 hover:border-teal-300 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500/40"
@@ -2243,7 +2458,10 @@ export default function EditorPage() {
                         {isPremium ? (
                           <div className="flex flex-col items-end gap-1">
                             <span className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100 font-bold">
-                              <Sparkles size={12} fill="currentColor" /> {getAlbumPrice() === ALBUM_TIERS.tier1.price ? 'Palier Personnalisée activé' : 'Palier Augmentée activé'}
+                              <Sparkles size={12} fill="currentColor" />{' '}
+                              {getAlbumPrice() === ALBUM_TIERS.tier1.price
+                                ? 'Palier Personnalisée activé'
+                                : 'Palier Augmentée activé'}
                             </span>
                             <div className="flex items-center gap-2">
                               {getAlbumPrice() > 0 && (
@@ -2252,21 +2470,47 @@ export default function EditorPage() {
                                 </span>
                               )}
                               <span className="text-[10px] text-stone-400 font-bold">
-                                {(mediaItems || []).filter(i => i.type === 'image').length}/{getAlbumPrice() === ALBUM_TIERS.tier1.price ? ALBUM_TIERS.tier1.photos : ALBUM_TIERS.tier2.photos} photos
-                                {getAlbumPrice() === ALBUM_TIERS.tier2.price && ` - ${(mediaItems || []).filter(i => i.type === 'video').length}/${ALBUM_TIERS.tier2.videos} vidéos`}
+                                {(mediaItems || []).filter((i) => i.type === 'image').length}/
+                                {getAlbumPrice() === ALBUM_TIERS.tier1.price
+                                  ? ALBUM_TIERS.tier1.photos
+                                  : ALBUM_TIERS.tier2.photos}{' '}
+                                photos
+                                {getAlbumPrice() === ALBUM_TIERS.tier2.price &&
+                                  ` - ${(mediaItems || []).filter((i) => i.type === 'video').length}/${ALBUM_TIERS.tier2.videos} vidéos`}
                               </span>
                             </div>
                           </div>
                         ) : (
                           <div className="w-full">
                             <div className="flex flex-wrap items-center gap-2 w-full justify-start sm:justify-end">
-                              <span className={cn("text-[11px] sm:text-xs px-2.5 py-1.5 rounded-lg font-extrabold border-2 transition-colors whitespace-nowrap", (mediaItems || []).length === 0 ? "bg-teal-50 text-teal-800 border-teal-300 shadow-sm" : "bg-stone-50 text-stone-500 border-stone-200")}>
+                              <span
+                                className={cn(
+                                  'text-[11px] sm:text-xs px-2.5 py-1.5 rounded-lg font-extrabold border-2 transition-colors whitespace-nowrap',
+                                  (mediaItems || []).length === 0
+                                    ? 'bg-teal-50 text-teal-800 border-teal-300 shadow-sm'
+                                    : 'bg-stone-50 text-stone-500 border-stone-200',
+                                )}
+                              >
                                 Gratuit : 1 photo
                               </span>
-                              <span className={cn("text-[11px] sm:text-xs px-2.5 py-1.5 rounded-lg font-extrabold border-2 transition-colors whitespace-nowrap", getAlbumPrice() === ALBUM_TIERS.tier1.price ? "bg-amber-50 text-amber-800 border-amber-300 shadow-sm" : "bg-stone-50 text-stone-500 border-stone-200")}>
+                              <span
+                                className={cn(
+                                  'text-[11px] sm:text-xs px-2.5 py-1.5 rounded-lg font-extrabold border-2 transition-colors whitespace-nowrap',
+                                  getAlbumPrice() === ALBUM_TIERS.tier1.price
+                                    ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-sm'
+                                    : 'bg-stone-50 text-stone-500 border-stone-200',
+                                )}
+                              >
                                 2,99€ : jusqu&apos;à 6 photos
                               </span>
-                              <span className={cn("text-[11px] sm:text-xs px-2.5 py-1.5 rounded-lg font-extrabold border-2 transition-colors whitespace-nowrap", getAlbumPrice() === ALBUM_TIERS.tier2.price ? "bg-purple-50 text-purple-800 border-purple-300 shadow-sm" : "bg-stone-50 text-stone-500 border-stone-200")}>
+                              <span
+                                className={cn(
+                                  'text-[11px] sm:text-xs px-2.5 py-1.5 rounded-lg font-extrabold border-2 transition-colors whitespace-nowrap',
+                                  getAlbumPrice() === ALBUM_TIERS.tier2.price
+                                    ? 'bg-purple-50 text-purple-800 border-purple-300 shadow-sm'
+                                    : 'bg-stone-50 text-stone-500 border-stone-200',
+                                )}
+                              >
                                 4,99€ : photos + vidéos
                               </span>
                             </div>
@@ -2285,7 +2529,11 @@ export default function EditorPage() {
                             <video src={item.url} className="w-full h-full object-cover" />
                           ) : (
                             <img
-                              src={getOptimizedImageUrl(item.url, { width: 400, height: 400, fit: 'cover' })}
+                              src={getOptimizedImageUrl(item.url, {
+                                width: 400,
+                                height: 400,
+                                fit: 'cover',
+                              })}
                               alt="album item"
                               className="w-full h-full object-cover"
                             />
@@ -2365,15 +2613,30 @@ export default function EditorPage() {
                         }}
                         disabled={!promoCode || codeSuccess || isActivatingCode}
                         className={cn(
-                          "h-12 px-6 rounded-xl font-bold transition-all",
-                          codeSuccess ? "bg-emerald-500 hover:bg-emerald-600 text-white" : "bg-stone-800 hover:bg-stone-900 text-white"
+                          'h-12 px-6 rounded-xl font-bold transition-all',
+                          codeSuccess
+                            ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                            : 'bg-stone-800 hover:bg-stone-900 text-white',
                         )}
                       >
-                        {isActivatingCode ? <RefreshCw size={18} className="animate-spin" /> : codeSuccess ? 'Activé !' : 'Appliquer'}
+                        {isActivatingCode ? (
+                          <RefreshCw size={18} className="animate-spin" />
+                        ) : codeSuccess ? (
+                          'Activé !'
+                        ) : (
+                          'Appliquer'
+                        )}
                       </Button>
                     </div>
-                    {codeError && <p className="text-xs text-red-500 mt-2 font-medium">{codeError}</p>}
-                    {codeSuccess && <p className="text-xs text-emerald-600 mt-2 font-bold flex items-center gap-1.5"><Sparkles size={12} /> Votre carte pro avec galerie est maintenant gratuite !</p>}
+                    {codeError && (
+                      <p className="text-xs text-red-500 mt-2 font-medium">{codeError}</p>
+                    )}
+                    {codeSuccess && (
+                      <p className="text-xs text-emerald-600 mt-2 font-bold flex items-center gap-1.5">
+                        <Sparkles size={12} /> Votre carte pro avec galerie est maintenant gratuite
+                        !
+                      </p>
+                    )}
                   </section>
 
                   {/* Bouton Continuer en bas à droite (étape rédaction) */}
@@ -2385,7 +2648,7 @@ export default function EditorPage() {
                         'rounded-full font-bold flex items-center gap-2 px-6 py-5 h-auto transition-all',
                         canGoNext()
                           ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-md shadow-teal-200 hover:-translate-y-0.5'
-                          : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                          : 'bg-stone-200 text-stone-400 cursor-not-allowed',
                       )}
                     >
                       Continuer
@@ -2406,7 +2669,8 @@ export default function EditorPage() {
                       Votre carte est prête ! 🎉
                     </h2>
                     <p className="text-stone-500 text-sm leading-relaxed max-w-xl">
-                      Partagez-la maintenant avec vos proches. Cliquez sur la carte en bas de page pour la retourner. Vous pouvez encore la modifier si besoin avant de quitter.
+                      Partagez-la maintenant avec vos proches. Cliquez sur la carte en bas de page
+                      pour la retourner. Vous pouvez encore la modifier si besoin avant de quitter.
                     </p>
                   </div>
 
@@ -2415,40 +2679,58 @@ export default function EditorPage() {
                     {isPublishing ? (
                       <div className="bg-stone-50 rounded-2xl p-10 border border-stone-100 flex flex-col items-center justify-center text-center">
                         <RefreshCw size={40} className="text-teal-500 animate-spin mb-4" />
-                        <p className="text-stone-600 font-serif font-medium">Nous préparons votre lien...</p>
+                        <p className="text-stone-600 font-serif font-medium">
+                          Nous préparons votre lien...
+                        </p>
                       </div>
                     ) : shareError ? (
                       <div className="bg-red-50 rounded-2xl p-8 border border-red-100 flex flex-col items-center justify-center text-center">
                         <XCircle size={40} className="text-red-500 mb-4" />
-                        <h3 className="text-lg font-bold text-stone-900 mb-2">Erreur de création</h3>
+                        <h3 className="text-lg font-bold text-stone-900 mb-2">
+                          Erreur de création
+                        </h3>
                         <p className="text-stone-600 text-sm mb-6">{shareError}</p>
-                        <Button onClick={() => { setShareError(null); handlePublish(); }} className="bg-teal-500 hover:bg-teal-600 text-white rounded-xl">
+                        <Button
+                          onClick={() => {
+                            setShareError(null)
+                            handlePublish()
+                          }}
+                          className="bg-teal-500 hover:bg-teal-600 text-white rounded-xl"
+                        >
                           <RefreshCw size={16} className="mr-2" /> Réessayer
                         </Button>
                       </div>
                     ) : !shareUrl ? (
                       <div className="bg-stone-50 rounded-2xl p-10 border border-stone-100 flex flex-col items-center justify-center text-center">
                         <RefreshCw size={40} className="text-teal-500 animate-spin mb-4" />
-                        <p className="text-stone-600 font-serif font-medium">Génération du lien en cours...</p>
+                        <p className="text-stone-600 font-serif font-medium">
+                          Génération du lien en cours...
+                        </p>
                       </div>
                     ) : (
                       <div className="bg-teal-50/50 rounded-[2rem] p-6 sm:p-10 border border-teal-100 text-center animate-in fade-in slide-in-from-top-6 duration-700 shadow-sm relative overflow-hidden">
                         {/* Decorative background element */}
                         <div className="absolute -top-12 -right-12 w-32 h-32 bg-teal-200/20 rounded-full blur-3xl pointer-events-none" />
-                        
+
                         {/* Paiement Revolut Section */}
                         {paymentMethod === 'revolut' && getAlbumPrice() > 0 && (
                           <div className="mb-10 p-6 rounded-2xl bg-stone-900 text-white text-left shadow-2xl relative z-10">
                             <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
-                              <CreditCard size={20} className="text-teal-400" /> Finalisez le paiement
+                              <CreditCard size={20} className="text-teal-400" /> Finalisez le
+                              paiement
                             </h3>
-                            <p className="text-stone-400 text-sm mb-4">Votre carte est prête, il ne manque que le règlement pour débloquer l'album complet.</p>
+                            <p className="text-stone-400 text-sm mb-4">
+                              Votre carte est prête, il ne manque que le règlement pour débloquer
+                              l'album complet.
+                            </p>
                             <Button
                               onClick={handlePayWithRevolut}
                               disabled={isRevolutRedirecting}
                               className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl px-8 py-6 h-auto transition-all"
                             >
-                              {isRevolutRedirecting ? 'Redirection...' : `Payer ${getAlbumPrice().toFixed(2)}€ avec Revolut`}
+                              {isRevolutRedirecting
+                                ? 'Redirection...'
+                                : `Payer ${getAlbumPrice().toFixed(2)}€ avec Revolut`}
                             </Button>
                           </div>
                         )}
@@ -2456,8 +2738,12 @@ export default function EditorPage() {
                         <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg border border-teal-50 transform hover:scale-105 transition-transform duration-300">
                           <Send size={36} className="text-teal-600" />
                         </div>
-                        <h3 className="text-2xl font-serif font-black text-stone-900 mb-2 italic">Lien prêt à être envoyé !</h3>
-                        <p className="text-stone-500 text-[10px] sm:text-xs mb-8 uppercase tracking-[0.2em] font-black">Copiez le lien ou partagez directement</p>
+                        <h3 className="text-2xl font-serif font-black text-stone-900 mb-2 italic">
+                          Lien prêt à être envoyé !
+                        </h3>
+                        <p className="text-stone-500 text-[10px] sm:text-xs mb-8 uppercase tracking-[0.2em] font-black">
+                          Copiez le lien ou partagez directement
+                        </p>
 
                         <div className="mb-10 w-full max-w-xl mx-auto">
                           <div className="flex flex-col sm:flex-row gap-3">
@@ -2480,22 +2766,22 @@ export default function EditorPage() {
                         </div>
 
                         <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-                          <a 
-                            href={`mailto:?subject=Regarde ma carte postale !&body=J'ai créé une carte postale pour toi : ${shareUrl}`} 
+                          <a
+                            href={`mailto:?subject=Regarde ma carte postale !&body=J'ai créé une carte postale pour toi : ${shareUrl}`}
                             className="flex items-center gap-2 px-5 py-3 bg-white text-stone-700 border border-stone-200 rounded-xl font-bold text-xs hover:bg-stone-50 transition-all shadow-sm active:scale-95"
                           >
                             <Mail size={18} className="text-stone-400" /> <span>Emails</span>
                           </a>
-                          <a 
-                            href={`sms:?body=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} 
+                          <a
+                            href={`sms:?body=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`}
                             className="flex items-center gap-2 px-5 py-3 bg-stone-800 text-white rounded-xl font-bold text-xs hover:bg-stone-900 transition-all shadow-md active:scale-95"
                           >
                             <MessageSquare size={18} /> <span>SMS</span>
                           </a>
-                          <a 
-                            href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
+                          <a
+                            href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="flex items-center gap-2 px-5 py-3 bg-[#25D366] text-white rounded-xl font-bold text-xs hover:opacity-90 transition-all shadow-md active:scale-95"
                           >
                             <Share2 size={18} /> <span>WhatsApp</span>
@@ -2541,7 +2827,9 @@ export default function EditorPage() {
                             </div>
                             <div className="flex-1 overflow-hidden">
                               <p className="font-black text-sm truncate">{currentUser.email}</p>
-                              <p className="text-xs text-teal-600 font-bold uppercase tracking-wider">Compte configuré</p>
+                              <p className="text-xs text-teal-600 font-bold uppercase tracking-wider">
+                                Compte configuré
+                              </p>
                             </div>
                           </div>
                         ) : isEmailSent ? (
@@ -2549,7 +2837,9 @@ export default function EditorPage() {
                             <CheckCircle2 size={24} className="text-teal-600" />
                             <div>
                               <p className="font-black text-sm">C'est tout bon !</p>
-                              <p className="text-xs text-teal-600 font-bold uppercase tracking-wider italic">Vérifiez vos e-mails</p>
+                              <p className="text-xs text-teal-600 font-bold uppercase tracking-wider italic">
+                                Vérifiez vos e-mails
+                              </p>
                             </div>
                           </div>
                         ) : (
@@ -2565,25 +2855,39 @@ export default function EditorPage() {
                             <Button
                               onClick={async () => {
                                 if (!createdPostcardId) return
-                                if (!senderEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) {
-                                  alert("Veuillez entrer une adresse email valide.")
+                                if (
+                                  !senderEmail ||
+                                  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)
+                                ) {
+                                  alert('Veuillez entrer une adresse email valide.')
                                   return
                                 }
-                                setIsSendingEmail(true);
+                                setIsSendingEmail(true)
                                 try {
-                                  const result = await linkPostcardToUser(createdPostcardId, senderEmail)
-                                  if (result.success) setIsEmailSent(true);
-                                  else alert("Erreur: " + (result.error || "Impossible de lier le compte."));
+                                  const result = await linkPostcardToUser(
+                                    createdPostcardId,
+                                    senderEmail,
+                                  )
+                                  if (result.success) setIsEmailSent(true)
+                                  else
+                                    alert(
+                                      'Erreur: ' +
+                                        (result.error || 'Impossible de lier le compte.'),
+                                    )
                                 } catch (e) {
-                                  alert("Une erreur est survenue.");
+                                  alert('Une erreur est survenue.')
                                 } finally {
-                                  setIsSendingEmail(false);
+                                  setIsSendingEmail(false)
                                 }
                               }}
                               disabled={isSendingEmail}
                               className="w-full rounded-2xl bg-teal-500 hover:bg-teal-600 text-white py-5 h-auto font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-teal-500/30 transition-all active:scale-95 flex items-center justify-center gap-2"
                             >
-                              {isSendingEmail ? <RefreshCw className="animate-spin" size={18} /> : <span>ENREGISTRER MA CARTE</span>}
+                              {isSendingEmail ? (
+                                <RefreshCw className="animate-spin" size={18} />
+                              ) : (
+                                <span>ENREGISTRER MA CARTE</span>
+                              )}
                             </Button>
                           </div>
                         )}
@@ -2599,8 +2903,13 @@ export default function EditorPage() {
                           <Send size={24} />
                         </div>
                         <div>
-                          <h3 className="font-serif font-black text-xl text-stone-900 leading-tight">Envoyer par e-mail (suivi)</h3>
-                          <p className="text-stone-500 text-sm mt-1 leading-relaxed">Chaque destinataire recevra un lien unique permettant de suivre l'ouverture de sa carte.</p>
+                          <h3 className="font-serif font-black text-xl text-stone-900 leading-tight">
+                            Envoyer par e-mail (suivi)
+                          </h3>
+                          <p className="text-stone-500 text-sm mt-1 leading-relaxed">
+                            Chaque destinataire recevra un lien unique permettant de suivre
+                            l'ouverture de sa carte.
+                          </p>
                         </div>
                       </div>
 
@@ -2611,8 +2920,10 @@ export default function EditorPage() {
                         </div>
                       ) : (
                         <div className="flex flex-col gap-6">
-                           <p className="text-stone-500 text-xs font-bold uppercase tracking-wider">Destinataires</p>
-                           <div className="space-y-4">
+                          <p className="text-stone-500 text-xs font-bold uppercase tracking-wider">
+                            Destinataires
+                          </p>
+                          <div className="space-y-4">
                             {recipients.map((r, i) => (
                               <div key={i} className="flex flex-col sm:flex-row gap-2">
                                 <Input
@@ -2639,7 +2950,9 @@ export default function EditorPage() {
                                 <Button
                                   variant="ghost"
                                   className="h-12 px-4 text-stone-300 hover:text-red-500"
-                                  onClick={() => setRecipients(recipients.filter((_, j) => j !== i))}
+                                  onClick={() =>
+                                    setRecipients(recipients.filter((_, j) => j !== i))
+                                  }
                                   disabled={recipients.length <= 1}
                                 >
                                   <X size={20} />
@@ -2647,38 +2960,57 @@ export default function EditorPage() {
                               </div>
                             ))}
                           </div>
-                          
+
                           <div className="flex flex-col sm:flex-row gap-4 pt-4">
                             <Button
                               variant="outline"
-                              onClick={() => setRecipients([...recipients, { firstName: '', lastName: '', email: '' }])}
+                              onClick={() =>
+                                setRecipients([
+                                  ...recipients,
+                                  { firstName: '', lastName: '', email: '' },
+                                ])
+                              }
                               className="rounded-xl border-stone-200 h-14 px-6 font-bold flex items-center justify-center gap-2 hover:bg-stone-50"
                             >
                               <Plus size={18} /> Ajouter un autre
                             </Button>
                             <Button
                               onClick={async () => {
-                                if (!createdPostcardId) return;
-                                const needSender = !currentUser && !(senderEmail || '').trim() && !isEmailSent;
-                                if (needSender) return alert('Indiquez votre e-mail plus haut avant d’envoyer.');
-                                const valid = recipients.filter((r) => (r.email || '').trim());
-                                if (valid.length === 0) return alert('Ajoutez au moins un e-mail valide.');
-                                
-                                  setIsSendingToRecipients(true);
+                                if (!createdPostcardId) return
+                                const needSender =
+                                  !currentUser && !(senderEmail || '').trim() && !isEmailSent
+                                if (needSender)
+                                  return alert('Indiquez votre e-mail plus haut avant d’envoyer.')
+                                const valid = recipients.filter((r) => (r.email || '').trim())
+                                if (valid.length === 0)
+                                  return alert('Ajoutez au moins un e-mail valide.')
+
+                                setIsSendingToRecipients(true)
                                 try {
-                                  const result = await sendPostcardToRecipientsFromEditor(createdPostcardId, valid, (currentUser?.email ?? senderEmail) || undefined);
-                                  if (result.success && result.sentCount !== undefined) setRecipientsSentCount(result.sentCount);
-                                  else alert(result.error || 'Erreur lors de l’envoi.');
+                                  const result = await sendPostcardToRecipientsFromEditor(
+                                    createdPostcardId,
+                                    valid,
+                                    (currentUser?.email ?? senderEmail) || undefined,
+                                  )
+                                  if (result.success && result.sentCount !== undefined)
+                                    setRecipientsSentCount(result.sentCount)
+                                  else alert(result.error || 'Erreur lors de l’envoi.')
                                 } catch (e) {
-                                  alert('Une erreur est survenue.');
+                                  alert('Une erreur est survenue.')
                                 } finally {
-                                  setIsSendingToRecipients(false);
+                                  setIsSendingToRecipients(false)
                                 }
                               }}
                               disabled={isSendingToRecipients || !createdPostcardId}
                               className="flex-1 rounded-xl bg-stone-900 hover:bg-black text-white h-14 font-black uppercase tracking-wider shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all"
                             >
-                              {isSendingToRecipients ? <RefreshCw className="animate-spin" size={20} /> : <><Send size={20} /> ENVOYER MAINTENANT</>}
+                              {isSendingToRecipients ? (
+                                <RefreshCw className="animate-spin" size={20} />
+                              ) : (
+                                <>
+                                  <Send size={20} /> ENVOYER MAINTENANT
+                                </>
+                              )}
                             </Button>
                           </div>
                         </div>
@@ -2699,7 +3031,7 @@ export default function EditorPage() {
                       Aperçu de votre carte
                     </span>
                     <div className="flex items-center gap-1.5 ml-auto text-stone-400 text-[10px] font-medium">
-                      {(isPublishing || shareUrl) ? (
+                      {isPublishing || shareUrl ? (
                         <div className="flex items-center gap-1 text-teal-600">
                           {isPublishing ? (
                             <RefreshCw size={10} className="animate-spin" />
@@ -2710,7 +3042,11 @@ export default function EditorPage() {
                         </div>
                       ) : (
                         <>
-                          <RefreshCw size={10} className="animate-spin" style={{ animationDuration: '3s' }} />
+                          <RefreshCw
+                            size={10}
+                            className="animate-spin"
+                            style={{ animationDuration: '3s' }}
+                          />
                           Temps réel
                         </>
                       )}
@@ -2718,7 +3054,11 @@ export default function EditorPage() {
                   </div>
                   <div className="flex justify-center -mb-8 sm:mb-0">
                     <div className="transform scale-[0.8] sm:scale-[0.85] origin-top">
-                      <PostcardView postcard={postcardForPreview} flipped={showBack} frontTextBgOpacity={frontTextBgOpacity} />
+                      <PostcardView
+                        postcard={postcardForPreview}
+                        flipped={showBack}
+                        frontTextBgOpacity={frontTextBgOpacity}
+                      />
                     </div>
                   </div>
                 </div>
@@ -2733,7 +3073,7 @@ export default function EditorPage() {
                       'rounded-full font-semibold flex items-center gap-2 transition-all',
                       currentStepIndex === 0
                         ? 'opacity-0 pointer-events-none'
-                        : 'text-stone-600 hover:text-stone-800 hover:bg-stone-100'
+                        : 'text-stone-600 hover:text-stone-800 hover:bg-stone-100',
                     )}
                   >
                     <ChevronLeft size={18} />
@@ -2745,7 +3085,7 @@ export default function EditorPage() {
           </div>
         </div>
       </div>
-      
+
       {/* Floating Preview Button for Mobile */}
       <div className="lg:hidden fixed bottom-4 left-4 z-[45] animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Button
@@ -2760,79 +3100,80 @@ export default function EditorPage() {
       </div>
 
       {/* Modal plein écran : voir comme le destinataire */}
-      {
-        showFullscreen && (
+      {showFullscreen && (
+        <div
+          className="fixed inset-0 z-50 bg-stone-900/95 flex items-center justify-center p-2 sm:p-4 overflow-auto"
+          onClick={() => setShowFullscreen(false)}
+        >
           <div
-            className="fixed inset-0 z-50 bg-stone-900/95 flex items-center justify-center p-2 sm:p-4 overflow-auto"
-            onClick={() => setShowFullscreen(false)}
+            onClick={(e) => e.stopPropagation()}
+            className="relative flex items-center justify-center w-full h-full p-4 sm:p-12"
           >
-            <div onClick={(e) => e.stopPropagation()} className="relative flex items-center justify-center w-full h-full p-4 sm:p-12">
-              <button
-                onClick={() => setShowFullscreen(false)}
-                className="absolute top-2 right-2 sm:top-6 sm:right-6 p-4 text-white hover:text-red-400 transition-all z-50 bg-black/20 hover:bg-black/40 backdrop-blur-sm rounded-full active:scale-95"
-                aria-label="Fermer"
+            <button
+              onClick={() => setShowFullscreen(false)}
+              className="absolute top-2 right-2 sm:top-6 sm:right-6 p-4 text-white hover:text-red-400 transition-all z-50 bg-black/20 hover:bg-black/40 backdrop-blur-sm rounded-full active:scale-95"
+              aria-label="Fermer"
+            >
+              <X size={48} strokeWidth={3} />
+            </button>
+            <div className="flex items-center justify-center w-full h-full">
+              <div
+                className="transition-transform duration-200"
+                style={{ transform: `scale(${fullscreenScale})`, transformOrigin: 'center' }}
               >
-                <X size={48} strokeWidth={3} />
-              </button>
-              <div className="flex items-center justify-center w-full h-full">
-                <div
-                  className="transition-transform duration-200"
-                  style={{ transform: `scale(${fullscreenScale})`, transformOrigin: 'center' }}
-                >
-                  <PostcardView
-                    postcard={postcardForPreview}
-                    flipped={showBack}
-                    frontTextBgOpacity={frontTextBgOpacity}
-                    className="w-full max-w-[1700px] h-auto aspect-[3/2] shadow-2xl cursor-default"
-                  />
-                </div>
+                <PostcardView
+                  postcard={postcardForPreview}
+                  flipped={showBack}
+                  frontTextBgOpacity={frontTextBgOpacity}
+                  className="w-full max-w-[1700px] h-auto aspect-[3/2] shadow-2xl cursor-default"
+                />
               </div>
-              <div className="absolute bottom-8 left-1/2 flex w-[min(90vw,640px)] -translate-x-1/2 flex-col items-center gap-2 rounded-2xl border border-white/30 bg-black/50 px-4 py-3 text-white backdrop-blur-lg shadow-2xl">
-                <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-white/80">
-                  <span>Zoom</span>
-                  <span className="text-sm text-white">{fullscreenScale.toFixed(2)}×</span>
-                </div>
-                <div className="flex items-center gap-2 w-full">
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      setFullscreenScale((value) => Math.max(0.5, Number((value - 0.1).toFixed(2))))
-                    }}
-                    className="rounded-full border border-white/60 p-2 text-white hover:border-teal-300 hover:text-teal-300"
-                    aria-label="Réduire"
-                  >
-                    <Minus size={14} />
-                  </button>
-                  <input
-                    type="range"
-                    min={0.5}
-                    max={3.0}
-                    step={0.05}
-                    value={fullscreenScale}
-                    onChange={(event) => {
-                      event.stopPropagation()
-                      setFullscreenScale(Number(event.target.value))
-                    }}
-                    className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/40 accent-teal-400 focus-visible:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      setFullscreenScale((value) => Math.min(3.0, Number((value + 0.1).toFixed(2))))
-                    }}
-                    className="rounded-full border border-white/60 p-2 text-white hover:border-teal-300 hover:text-teal-300"
-                    aria-label="Agrandir"
-                  >
-                    <Plus size={14} />
-                  </button>
-                </div>
+            </div>
+            <div className="absolute bottom-8 left-1/2 flex w-[min(90vw,640px)] -translate-x-1/2 flex-col items-center gap-2 rounded-2xl border border-white/30 bg-black/50 px-4 py-3 text-white backdrop-blur-lg shadow-2xl">
+              <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-white/80">
+                <span>Zoom</span>
+                <span className="text-sm text-white">{fullscreenScale.toFixed(2)}×</span>
+              </div>
+              <div className="flex items-center gap-2 w-full">
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    setFullscreenScale((value) => Math.max(0.5, Number((value - 0.1).toFixed(2))))
+                  }}
+                  className="rounded-full border border-white/60 p-2 text-white hover:border-teal-300 hover:text-teal-300"
+                  aria-label="Réduire"
+                >
+                  <Minus size={14} />
+                </button>
+                <input
+                  type="range"
+                  min={0.5}
+                  max={3.0}
+                  step={0.05}
+                  value={fullscreenScale}
+                  onChange={(event) => {
+                    event.stopPropagation()
+                    setFullscreenScale(Number(event.target.value))
+                  }}
+                  className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/40 accent-teal-400 focus-visible:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    setFullscreenScale((value) => Math.min(3.0, Number((value + 0.1).toFixed(2))))
+                  }}
+                  className="rounded-full border border-white/60 p-2 text-white hover:border-teal-300 hover:text-teal-300"
+                  aria-label="Agrandir"
+                >
+                  <Plus size={14} />
+                </button>
               </div>
             </div>
           </div>
-        )
-      }
+        </div>
+      )}
 
       <Dialog
         open={showImageEditModal}
@@ -2849,7 +3190,8 @@ export default function EditorPage() {
               Retouche photo
             </DialogTitle>
             <DialogDescription>
-              Ajustez les filtres, le recadrage et le zoom. L’aperçu à gauche est mis à jour en temps réel.
+              Ajustez les filtres, le recadrage et le zoom. L’aperçu à gauche est mis à jour en
+              temps réel.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-5 p-6 lg:grid-cols-[1.25fr_1fr]">
@@ -2872,7 +3214,12 @@ export default function EditorPage() {
                     src={frontImage}
                     alt="Retouche photo"
                     className="block w-full h-full object-cover"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', filter: frontImageFilterCss }}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      filter: frontImageFilterCss,
+                    }}
                     onLoad={handleCropImgLoad}
                     draggable={false}
                   />
@@ -2896,7 +3243,9 @@ export default function EditorPage() {
 
             <div className="space-y-5">
               <div>
-                <p className="mb-2 text-xs font-semibold text-stone-600 uppercase tracking-wider">Filtres</p>
+                <p className="mb-2 text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                  Filtres
+                </p>
                 <div className="grid grid-cols-2 gap-2">
                   {FILTER_PRESETS.map((preset) => {
                     const isSelected =
@@ -2914,7 +3263,7 @@ export default function EditorPage() {
                           'rounded-xl border px-3 py-2 text-xs font-semibold transition',
                           isSelected
                             ? 'border-teal-500 bg-teal-50 text-teal-700'
-                            : 'border-stone-200 bg-white text-stone-600 hover:border-teal-300 hover:text-teal-700'
+                            : 'border-stone-200 bg-white text-stone-600 hover:border-teal-300 hover:text-teal-700',
                         )}
                       >
                         {preset.label}
@@ -2927,7 +3276,9 @@ export default function EditorPage() {
               <div className="space-y-3">
                 <div>
                   <div className="mb-1.5 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Zoom</span>
+                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                      Zoom
+                    </span>
                     <span className="text-xs font-medium text-stone-500 tabular-nums">
                       {Math.round(frontImageCrop.scale * 100)}%
                     </span>
@@ -2938,15 +3289,21 @@ export default function EditorPage() {
                     max={4}
                     step={0.05}
                     value={frontImageCrop.scale}
-                    onChange={(e) => setFrontImageCrop((c) => ({ ...c, scale: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setFrontImageCrop((c) => ({ ...c, scale: Number(e.target.value) }))
+                    }
                     className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
                   />
                 </div>
 
                 <div>
                   <div className="mb-1.5 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Luminosité</span>
-                    <span className="text-xs font-medium text-stone-500 tabular-nums">{frontImageFilter.brightness}%</span>
+                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                      Luminosité
+                    </span>
+                    <span className="text-xs font-medium text-stone-500 tabular-nums">
+                      {frontImageFilter.brightness}%
+                    </span>
                   </div>
                   <input
                     type="range"
@@ -2954,15 +3311,21 @@ export default function EditorPage() {
                     max={150}
                     step={1}
                     value={frontImageFilter.brightness}
-                    onChange={(e) => setFrontImageFilter((v) => ({ ...v, brightness: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setFrontImageFilter((v) => ({ ...v, brightness: Number(e.target.value) }))
+                    }
                     className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
                   />
                 </div>
 
                 <div>
                   <div className="mb-1.5 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Contraste</span>
-                    <span className="text-xs font-medium text-stone-500 tabular-nums">{frontImageFilter.contrast}%</span>
+                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                      Contraste
+                    </span>
+                    <span className="text-xs font-medium text-stone-500 tabular-nums">
+                      {frontImageFilter.contrast}%
+                    </span>
                   </div>
                   <input
                     type="range"
@@ -2970,15 +3333,21 @@ export default function EditorPage() {
                     max={150}
                     step={1}
                     value={frontImageFilter.contrast}
-                    onChange={(e) => setFrontImageFilter((v) => ({ ...v, contrast: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setFrontImageFilter((v) => ({ ...v, contrast: Number(e.target.value) }))
+                    }
                     className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
                   />
                 </div>
 
                 <div>
                   <div className="mb-1.5 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Saturation</span>
-                    <span className="text-xs font-medium text-stone-500 tabular-nums">{frontImageFilter.saturation}%</span>
+                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                      Saturation
+                    </span>
+                    <span className="text-xs font-medium text-stone-500 tabular-nums">
+                      {frontImageFilter.saturation}%
+                    </span>
                   </div>
                   <input
                     type="range"
@@ -2986,15 +3355,21 @@ export default function EditorPage() {
                     max={170}
                     step={1}
                     value={frontImageFilter.saturation}
-                    onChange={(e) => setFrontImageFilter((v) => ({ ...v, saturation: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setFrontImageFilter((v) => ({ ...v, saturation: Number(e.target.value) }))
+                    }
                     className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
                   />
                 </div>
 
                 <div>
                   <div className="mb-1.5 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Sépia</span>
-                    <span className="text-xs font-medium text-stone-500 tabular-nums">{frontImageFilter.sepia}%</span>
+                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                      Sépia
+                    </span>
+                    <span className="text-xs font-medium text-stone-500 tabular-nums">
+                      {frontImageFilter.sepia}%
+                    </span>
                   </div>
                   <input
                     type="range"
@@ -3002,15 +3377,21 @@ export default function EditorPage() {
                     max={100}
                     step={1}
                     value={frontImageFilter.sepia}
-                    onChange={(e) => setFrontImageFilter((v) => ({ ...v, sepia: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setFrontImageFilter((v) => ({ ...v, sepia: Number(e.target.value) }))
+                    }
                     className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
                   />
                 </div>
 
                 <div>
                   <div className="mb-1.5 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Niveaux de gris</span>
-                    <span className="text-xs font-medium text-stone-500 tabular-nums">{frontImageFilter.grayscale}%</span>
+                    <span className="text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                      Niveaux de gris
+                    </span>
+                    <span className="text-xs font-medium text-stone-500 tabular-nums">
+                      {frontImageFilter.grayscale}%
+                    </span>
                   </div>
                   <input
                     type="range"
@@ -3018,7 +3399,9 @@ export default function EditorPage() {
                     max={100}
                     step={1}
                     value={frontImageFilter.grayscale}
-                    onChange={(e) => setFrontImageFilter((v) => ({ ...v, grayscale: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setFrontImageFilter((v) => ({ ...v, grayscale: Number(e.target.value) }))
+                    }
                     className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
                   />
                 </div>
@@ -3070,7 +3453,9 @@ export default function EditorPage() {
                 <span className="inline-block w-3 h-3 rounded-full bg-green-500" />
                 <h4 className="font-bold text-stone-800">Gratuit — La &quot;Découverte&quot;</h4>
               </div>
-              <p className="text-sm text-stone-600 mb-1">Objectif : faire connaître le site et tester sans friction.</p>
+              <p className="text-sm text-stone-600 mb-1">
+                Objectif : faire connaître le site et tester sans friction.
+              </p>
               <ul className="text-xs text-stone-600 space-y-1 list-disc list-inside">
                 <li>1 seule photo, mise en page classique carte postale</li>
                 <li>Texte limité (comme un tweet)</li>
@@ -3085,7 +3470,9 @@ export default function EditorPage() {
                 <span className="inline-block w-3 h-3 rounded-full bg-teal-500" />
                 <h4 className="font-bold text-stone-800">2,99 € — La &quot;Personnalisée&quot;</h4>
               </div>
-              <p className="text-sm text-stone-600 mb-1">Objectif : un souvenir propre, esthétique et durable.</p>
+              <p className="text-sm text-stone-600 mb-1">
+                Objectif : un souvenir propre, esthétique et durable.
+              </p>
               <ul className="text-xs text-stone-600 space-y-1 list-disc list-inside">
                 <li>Multi-photos (pêle-mêle) : jusqu&apos;à 4 ou 6 photos</li>
                 <li>Zéro publicité, pas de filigrane</li>
@@ -3100,7 +3487,9 @@ export default function EditorPage() {
                 <span className="inline-block w-3 h-3 rounded-full bg-purple-500" />
                 <h4 className="font-bold text-stone-800">4,99 € — L&apos;&quot;Augmentée&quot;</h4>
               </div>
-              <p className="text-sm text-stone-600 mb-1">Objectif : créer une vraie émotion (cadeau numérique).</p>
+              <p className="text-sm text-stone-600 mb-1">
+                Objectif : créer une vraie émotion (cadeau numérique).
+              </p>
               <ul className="text-xs text-stone-600 space-y-1 list-disc list-inside">
                 <li>Carte postale vidéo (30 s) qui se lance au retournement</li>
                 <li>Audio souvenir : message vocal ou musique d&apos;ambiance</li>
@@ -3117,7 +3506,10 @@ export default function EditorPage() {
                 Voir tous les tarifs et abonnements
               </Button>
             </Link>
-            <Button onClick={() => setShowPricingModal(false)} className="rounded-xl bg-teal-500 hover:bg-teal-600">
+            <Button
+              onClick={() => setShowPricingModal(false)}
+              className="rounded-xl bg-teal-500 hover:bg-teal-600"
+            >
               Fermer
             </Button>
           </DialogFooter>
@@ -3136,12 +3528,17 @@ export default function EditorPage() {
               Presque terminé ! ✨
             </DialogTitle>
             <DialogDescription className="text-center text-stone-500 text-base leading-relaxed mt-4">
-              C&apos;est important car vous recevrez un lien pour <strong>gérer votre carte</strong> (la modifier, voir les stats) et vous serez <strong>prévenu</strong> quand elle sera consultée.
+              C&apos;est important car vous recevrez un lien pour <strong>gérer votre carte</strong>{' '}
+              (la modifier, voir les stats) et vous serez <strong>prévenu</strong> quand elle sera
+              consultée.
             </DialogDescription>
           </DialogHeader>
           <div className="mt-8 space-y-4">
             <div className="relative group">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-teal-500 transition-colors" size={20} />
+              <Mail
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-teal-500 transition-colors"
+                size={20}
+              />
               <Input
                 type="email"
                 placeholder="votre@email.com"
@@ -3153,13 +3550,13 @@ export default function EditorPage() {
             <Button
               onClick={async () => {
                 if (!senderEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) {
-                   alert("Veuillez entrer un email valide.");
-                   return;
+                  alert('Veuillez entrer un email valide.')
+                  return
                 }
                 if (createdPostcardId) {
-                  await linkPostcardToUser(createdPostcardId, senderEmail);
+                  await linkPostcardToUser(createdPostcardId, senderEmail)
                 }
-                setShowEmailPromptModal(false);
+                setShowEmailPromptModal(false)
               }}
               className="w-full h-14 rounded-2xl bg-teal-500 hover:bg-teal-600 text-white font-bold text-lg shadow-lg shadow-teal-100 transition-all active:scale-[0.98]"
             >
@@ -3174,7 +3571,7 @@ export default function EditorPage() {
           </div>
         </DialogContent>
       </Dialog>
-      
+
       {/* Modal : tous les modèles avec catégories */}
       {showTemplateModal && (
         <div
@@ -3213,7 +3610,7 @@ export default function EditorPage() {
                         'flex items-center gap-3 rounded-2xl border p-3 text-left transition-all w-full',
                         isSelected
                           ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-200'
-                          : 'border-stone-200 bg-white hover:border-teal-200 hover:bg-stone-50'
+                          : 'border-stone-200 bg-white hover:border-teal-200 hover:bg-stone-50',
                       )}
                     >
                       <div className="h-14 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-stone-100">
@@ -3226,10 +3623,14 @@ export default function EditorPage() {
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-stone-900">{template.name}</p>
                         {template.description && (
-                          <p className="text-xs text-stone-500 line-clamp-1">{template.description}</p>
+                          <p className="text-xs text-stone-500 line-clamp-1">
+                            {template.description}
+                          </p>
                         )}
                         <p className="text-[0.65rem] uppercase tracking-wider text-stone-400 mt-0.5">
-                          {cat?.icon ? `${cat.icon} ${cat.label}` : cat?.label ?? template.category}
+                          {cat?.icon
+                            ? `${cat.icon} ${cat.label}`
+                            : (cat?.label ?? template.category)}
                         </p>
                       </div>
                     </button>
@@ -3247,52 +3648,48 @@ export default function EditorPage() {
       )}
 
       {/* Modal destinataire : iframe de la page réelle */}
-      {
-        showRecipientModal && shareUrl && (
+      {showRecipientModal && shareUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 sm:p-8 overflow-auto"
+          onClick={() => setShowRecipientModal(false)}
+        >
           <div
-            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 sm:p-8 overflow-auto"
-            onClick={() => setShowRecipientModal(false)}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-[1400px] h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-stone-200"
           >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-[1400px] h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-stone-200"
+            <button
+              onClick={() => setShowRecipientModal(false)}
+              className="absolute top-3 right-3 z-50 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all"
+              aria-label="Fermer la vue destinataire"
             >
-              <button
-                onClick={() => setShowRecipientModal(false)}
-                className="absolute top-3 right-3 z-50 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all"
-                aria-label="Fermer la vue destinataire"
-              >
-                <X size={20} />
-              </button>
-              <div className="absolute inset-x-0 top-4 flex justify-center z-40">
-                <span className="bg-white/80 text-stone-600 text-xs font-semibold uppercase tracking-[0.2em] px-4 py-1 rounded-full shadow-sm">
-                  Vue destinataire
-                </span>
-              </div>
-              <iframe
-                src={shareUrl}
-                title="Page destinataire"
-                className="w-full h-full border-0"
-                loading="lazy"
-                allowFullScreen
-              />
+              <X size={20} />
+            </button>
+            <div className="absolute inset-x-0 top-4 flex justify-center z-40">
+              <span className="bg-white/80 text-stone-600 text-xs font-semibold uppercase tracking-[0.2em] px-4 py-1 rounded-full shadow-sm">
+                Vue destinataire
+              </span>
             </div>
+            <iframe
+              src={shareUrl}
+              title="Page destinataire"
+              className="w-full h-full border-0"
+              loading="lazy"
+              allowFullScreen
+            />
           </div>
-        )
-      }
+        </div>
+      )}
       {/* Copy notification toast */}
-      {
-        showCopyToast && (
-          <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-300">
-            <div className="bg-stone-900 border border-white/10 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md">
-              <div className="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center">
-                <Check size={14} className="text-white" />
-              </div>
-              <span className="font-bold text-sm tracking-wide">Lien copié !</span>
+      {showCopyToast && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="bg-stone-900 border border-white/10 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md">
+            <div className="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center">
+              <Check size={14} className="text-white" />
             </div>
+            <span className="font-bold text-sm tracking-wide">Lien copié !</span>
           </div>
-        )
-      }
+        </div>
+      )}
       <UnsplashSearchModal
         isOpen={showUnsplashModal}
         onClose={() => setShowUnsplashModal(false)}

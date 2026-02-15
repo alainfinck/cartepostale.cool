@@ -11,7 +11,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           data-website-id="a094f013-b700-48cd-85c3-5110fe81f558"
         />
       </head>
-      <body>{children}</body>
+      {/* suppressHydrationWarning: Cursor IDE preview can inject data-cursor-element-id into the DOM, causing hydration mismatch. Test in a normal browser to confirm the app is fine. */}
+      <body suppressHydrationWarning>{children}</body>
     </html>
   )
 }

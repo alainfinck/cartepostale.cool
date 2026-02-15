@@ -115,7 +115,7 @@ export default function Home() {
     recipientName: 'La famille',
     senderName: 'Julie',
     stampStyle: 'modern',
-    date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }),
+    date: '15 févr. 2025', // fixed for SSR/client hydration match (no Date.now/toLocale)
     isPremium: true,
     coords: { lat: 48.8566, lng: 2.3522 },
     mediaItems: [
