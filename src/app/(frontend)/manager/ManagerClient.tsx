@@ -61,6 +61,7 @@ import {
     type CreateTrackingLinkData,
 } from '@/actions/espace-client-actions'
 import { getPostcardViewStats, type PostcardViewStats } from '@/actions/postcard-view-stats'
+import { getUmamiPageStats, getDetailedUmamiStats, type DetailedUmamiStats } from '@/actions/umami-actions'
 import {
     getAgencyPostcards,
     updateAgencyPostcard,
@@ -159,9 +160,15 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
     const [columns, setColumns] = useState(3)
     const [isAuto, setIsAuto] = useState(true)
     const [trackingLinks, setTrackingLinks] = useState<PostcardTrackingLink[]>([])
+    const [detailedUmamiStats, setDetailedUmamiStats] = useState<DetailedUmamiStats | null>(null)
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
     const [deleteConfirmBulkIds, setDeleteConfirmBulkIds] = useState<number[] | null>(null)
+    const [umamiStats, setUmamiStats] = useState<Record<string, number>>({})
     const maxAutoColumns = useEspaceClientActions ? 3 : 6
+
+    useEffect(() => {
+        getUmamiPageStats().then(setUmamiStats)
+    }, [])
 
     useEffect(() => {
         if (!isAuto) return
@@ -208,7 +215,9 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
             getPostcardViewStats(selectedPostcard.id).then(setViewStats)
             setTrackingLinks([])
         }
-    }, [selectedPostcard?.id, useEspaceClientActions, useAgenceActions])
+        
+        getDetailedUmamiStats(selectedPostcard.publicId).then(setDetailedUmamiStats)
+    }, [selectedPostcard?.id, selectedPostcard?.publicId, useEspaceClientActions, useAgenceActions])
 
     const postcards = data.docs
 
@@ -219,6 +228,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
     const archivedCount = postcards.filter(p => p.status === 'archived').length
     const totalViews = postcards.reduce((sum, p) => sum + (p.views || 0), 0)
     const totalShares = postcards.reduce((sum, p) => sum + (p.shares || 0), 0)
+    const totalUmamiViews = Object.values(umamiStats).reduce((sum, v) => sum + v, 0)
 
     const fetchPostcards = useAgenceActions
         ? (async (filters?: { status?: StatusFilter; search?: string }) =>
@@ -394,7 +404,8 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
                         <StatCard icon={<FileText size={18} />} label="Publiées" value={publishedCount} variant="success" />
                         <StatCard icon={<FileText size={18} />} label="Brouillons" value={draftCount} variant="warning" />
                         <StatCard icon={<Archive size={18} />} label="Archivées" value={archivedCount} variant="muted" />
-                        <StatCard icon={<Eye size={18} />} label="Vues" value={totalViews} variant="info" />
+                        <StatCard icon={<Eye size={18} />} label="Vues (Int)" value={totalViews} variant="info" />
+                        <StatCard icon={<BarChart3 size={18} />} label="Vues Umami" value={totalUmamiViews} variant="success" />
                         <StatCard icon={<Share2 size={18} />} label="Partages" value={totalShares} variant="info" />
                     </div>
 
@@ -563,6 +574,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
                                         onDuplicate={canDuplicatePostcard ? () => handleDuplicate(postcard.id) : undefined}
                                         onUpdateStatus={handleUpdateStatus}
                                         onDelete={(id) => setDeleteConfirm(id)}
+                                        umamiViews={umamiStats[`/carte/${postcard.publicId}`] || 0}
                                     />
                                 ))}
                             </div>
@@ -607,6 +619,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
                                                     onUpdateStatus={handleUpdateStatus}
                                                     onDelete={(id) => setDeleteConfirm(id)}
                                                     formatDate={formatDate}
+                                                    umamiViews={umamiStats[`/carte/${postcard.publicId}`] || 0}
                                                 />
                                             ))}
                                         </TableBody>
@@ -620,6 +633,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
                     <DetailsSheet
                         postcard={selectedPostcard}
                         viewStats={viewStats}
+                        umamiDetails={detailedUmamiStats}
                         isOpen={!!selectedPostcard}
                         onClose={() => setSelectedPostcard(null)}
                         onEdit={() => setEditingPostcard(selectedPostcard)}
@@ -642,6 +656,7 @@ export default function ManagerClient({ initialData, useEspaceClientActions, use
                                 })
                             }
                         }}
+                        umamiViews={selectedPostcard ? (umamiStats[`/carte/${selectedPostcard.publicId}`] || 0) : 0}
                     />
 
                     {/* Edit Dialog */}
@@ -779,7 +794,7 @@ function StatusDropdown({ currentStatus, onUpdate, postcardId }: {
     )
 }
 
-function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onDuplicate, onUpdateStatus, onDelete }: {
+function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onDuplicate, onUpdateStatus, onDelete, umamiViews }: {
     postcard: PayloadPostcard
     selected: boolean
     onToggleSelect: () => void
@@ -788,6 +803,7 @@ function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onDupl
     onDuplicate?: () => void
     onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
     onDelete: (id: number) => void
+    umamiViews?: number
 }) {
     const imageUrl = getFrontImageUrl(postcard)
     const [isFlipped, setIsFlipped] = useState(false)
@@ -862,22 +878,26 @@ function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onDupl
                                 <span className="truncate">{postcard.location}</span>
                             </div>
 
-                            <div className="flex items-center justify-between pt-3 border-t border-border/10">
-                                <div className="flex items-center gap-3 text-xs text-stone-400">
-                                    <span className="flex items-center gap-1 hover:text-stone-600 transition-colors"><Eye size={12} /> {postcard.views || 0}</span>
-                                    <span className="flex items-center gap-1 hover:text-stone-600 transition-colors"><Share2 size={12} /> {postcard.shares || 0}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
+                            <div className="space-y-3 pt-3 border-t border-border/10">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3 text-xs text-stone-400">
+                                        <span className="flex items-center gap-1 hover:text-stone-600 transition-colors" title="Vues (Interne)"><Eye size={12} /> {postcard.views || 0}</span>
+                                        <span className="flex items-center gap-1 text-teal-600 font-medium" title="Vues Umami"><BarChart3 size={12} /> {umamiViews || 0}</span>
+                                        <span className="flex items-center gap-1 hover:text-stone-600 transition-colors" title="Partages"><Share2 size={12} /> {postcard.shares || 0}</span>
+                                    </div>
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-stone-400 hover:text-teal-600 transition-colors rounded-full border border-border/30"
+                                        className="h-7 w-7 text-stone-400 hover:text-teal-600 transition-colors rounded-full border border-border/30"
                                         onClick={toggleFlip}
                                         title={isFlipped ? 'Retourner recto' : 'Voir le verso'}
                                     >
-                                        <RotateCcw size={14} />
+                                        <RotateCcw size={12} />
                                     </Button>
-                                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                </div>
+
+                                <div className="flex items-center justify-between gap-2" onClick={(e) => e.stopPropagation()}>
+                                    <div className="flex items-center gap-1.5">
                                         <Link href={`/carte/${postcard.publicId}`} target="_blank" onClick={(e) => e.stopPropagation()}>
                                             <Button
                                                 variant="ghost"
@@ -908,6 +928,8 @@ function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onDupl
                                                 <Copy size={14} />
                                             </Button>
                                         )}
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
                                         <StatusDropdown
                                             currentStatus={postcard.status || 'draft'}
                                             onUpdate={onUpdateStatus}
@@ -917,7 +939,8 @@ function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onDupl
                                             variant="ghost"
                                             size="icon"
                                             onClick={(e) => { e.stopPropagation(); onDelete(postcard.id) }}
-                                            className="h-8 w-8 text-stone-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-full"
+                                            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 transition-all rounded-full border border-red-100/50 shadow-sm"
+                                            title="Supprimer la carte"
                                         >
                                             <Trash2 size={14} />
                                         </Button>
@@ -948,7 +971,7 @@ function GridCard({ postcard, selected, onToggleSelect, onSelect, onEdit, onDupl
     )
 }
 
-function ListRow({ postcard, selected, onToggleSelect, onSelect, onEdit, onDuplicate, onUpdateStatus, onDelete, formatDate }: {
+function ListRow({ postcard, selected, onToggleSelect, onSelect, onEdit, onDuplicate, onUpdateStatus, onDelete, formatDate, umamiViews }: {
     postcard: PayloadPostcard
     selected: boolean
     onToggleSelect: () => void
@@ -958,6 +981,7 @@ function ListRow({ postcard, selected, onToggleSelect, onSelect, onEdit, onDupli
     onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
     onDelete: (id: number) => void
     formatDate: (d: string) => string
+    umamiViews?: number
 }) {
     const imageUrl = getFrontImageUrl(postcard)
 
@@ -987,7 +1011,18 @@ function ListRow({ postcard, selected, onToggleSelect, onSelect, onEdit, onDupli
             <TableCell className="text-stone-500 max-w-[150px] truncate">{postcard.location}</TableCell>
             <TableCell className="text-stone-400 text-xs font-medium uppercase">{formatDate(postcard.date)}</TableCell>
             <TableCell><StatusBadge status={postcard.status || 'draft'} /></TableCell>
-            <TableCell className="text-right text-stone-500 font-medium">{postcard.views || 0}</TableCell>
+            <TableCell className="text-right text-stone-500 font-medium">
+                <div className="flex flex-col items-end">
+                    <span className="text-[10px] text-stone-400 uppercase leading-none mb-1">Interne</span>
+                    <span>{postcard.views || 0}</span>
+                </div>
+            </TableCell>
+            <TableCell className="text-right text-teal-600 font-bold">
+                <div className="flex flex-col items-end">
+                    <span className="text-[10px] text-teal-500/70 uppercase leading-none mb-1">Umami</span>
+                    <span className="flex items-center gap-1"><BarChart3 size={10} /> {umamiViews || 0}</span>
+                </div>
+            </TableCell>
             <TableCell className="text-right text-stone-500 font-medium">{postcard.shares || 0}</TableCell>
             <TableCell>
                 <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
@@ -1024,7 +1059,7 @@ function ListRow({ postcard, selected, onToggleSelect, onSelect, onEdit, onDupli
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-stone-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-full"
+                        className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 transition-all rounded-full border border-red-100/30"
                         onClick={() => onDelete(postcard.id)}
                         title="Supprimer"
                     >
@@ -1036,22 +1071,7 @@ function ListRow({ postcard, selected, onToggleSelect, onSelect, onEdit, onDupli
     )
 }
 
-function DetailsSheet({
-    postcard,
-    viewStats,
-    isOpen,
-    onClose,
-    onEdit,
-    onDuplicate,
-    onSetPublicVisibility,
-    onUpdateStatus,
-    onDelete,
-    formatDate,
-    useEspaceClientActions,
-    useAgenceActions,
-    trackingLinks,
-    onRefreshTrackingLinks,
-}: {
+function DetailsSheet(props: {
     postcard: PayloadPostcard | null
     viewStats: PostcardViewStats | null
     isOpen: boolean
@@ -1066,7 +1086,27 @@ function DetailsSheet({
     useAgenceActions?: boolean
     trackingLinks?: PostcardTrackingLink[]
     onRefreshTrackingLinks?: () => void
+    umamiViews?: number
+    umamiDetails?: DetailedUmamiStats | null
 }) {
+    const {
+        postcard,
+        viewStats,
+        isOpen,
+        onClose,
+        onEdit,
+        onDuplicate,
+        onSetPublicVisibility,
+        onUpdateStatus,
+        onDelete,
+        formatDate,
+        useEspaceClientActions,
+        useAgenceActions,
+        trackingLinks,
+        onRefreshTrackingLinks,
+        umamiViews,
+        umamiDetails
+    } = props
     const [activePanelTab, setActivePanelTab] = useState<'details' | 'stats'>('details')
     const [trackingDialogOpen, setTrackingDialogOpen] = useState(false)
     const [emailDialogOpen, setEmailDialogOpen] = useState(false)
@@ -1291,18 +1331,18 @@ function DetailsSheet({
                                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4 opacity-50">Audience & Technique</h4>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
-                                        <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-tight">Vues</p>
+                                        <p className="text-[10px] text-teal-600 mb-1 uppercase tracking-tight font-bold flex items-center gap-1">
+                                            <BarChart3 size={10} /> Umami
+                                        </p>
+                                        <p className="text-2xl font-bold text-teal-700">{umamiViews || 0}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-tight">Vues (Int.)</p>
                                         <p className="text-2xl font-bold text-foreground">{postcard.views || 0}</p>
                                     </div>
                                     <div>
                                         <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-tight">Partages</p>
                                         <p className="text-2xl font-bold text-foreground">{postcard.shares || 0}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-tight">Type</p>
-                                        <Badge variant={postcard.isPremium ? "secondary" : "outline"} className="mt-1 shadow-none">
-                                            {postcard.isPremium ? "Premium" : "Classique"}
-                                        </Badge>
                                     </div>
                                 </div>
                                 {viewStats ? (
@@ -1371,6 +1411,51 @@ function DetailsSheet({
                                     <p className="text-sm text-muted-foreground border-t border-border/20 pt-3">
                                         Les statistiques détaillées se chargent ou ne sont pas encore disponibles pour cette carte.
                                     </p>
+                                )}
+                                {umamiDetails && (
+                                    <div className="pt-4 border-t border-border/20 space-y-4">
+                                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-teal-600 opacity-80 flex items-center gap-2">
+                                            <BarChart3 size={12} /> Umami Analytics
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="p-3 bg-teal-50/50 rounded-xl border border-teal-100/50">
+                                                <p className="text-[10px] text-teal-600 mb-0.5 uppercase tracking-tight font-bold">Vues (Totales)</p>
+                                                <p className="text-xl font-bold text-teal-700">{umamiDetails.views}</p>
+                                            </div>
+                                            <div className="p-3 bg-teal-50/50 rounded-xl border border-teal-100/50">
+                                                <p className="text-[10px] text-teal-600 mb-0.5 uppercase tracking-tight font-bold">Visiteurs uniques</p>
+                                                <p className="text-xl font-bold text-teal-700">{umamiDetails.visitors}</p>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {umamiDetails.countries.length > 0 && (
+                                                <div>
+                                                    <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight font-bold">Top Pays</p>
+                                                    <ul className="space-y-1 text-xs">
+                                                        {umamiDetails.countries.slice(0, 5).map((c) => (
+                                                            <li key={c.x} className="flex justify-between items-center bg-stone-50/50 p-1 rounded px-2">
+                                                                <span className="truncate max-w-[80px]">{c.x}</span>
+                                                                <span className="font-semibold">{c.y}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                            {umamiDetails.browsers.length > 0 && (
+                                                <div>
+                                                    <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight font-bold">Top Navs</p>
+                                                    <ul className="space-y-1 text-xs">
+                                                        {umamiDetails.browsers.slice(0, 5).map((b) => (
+                                                            <li key={b.x} className="flex justify-between items-center bg-stone-50/50 p-1 rounded px-2">
+                                                                <span className="truncate max-w-[80px]">{b.x}</span>
+                                                                <span className="font-semibold">{b.y}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         )}

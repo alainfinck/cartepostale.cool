@@ -12,10 +12,13 @@ import { ExitIntentPopup } from '@/components/ExitIntentPopup'
 export function FrontendLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const isManager = pathname?.startsWith('/manager')
+  const isEspaceClient = pathname?.startsWith('/espace-client')
 
   if (isManager) {
     return <>{children}</>
   }
+
+  const showExitIntent = !isEspaceClient
 
   return (
     <>
@@ -23,7 +26,7 @@ export function FrontendLayoutWrapper({ children }: { children: React.ReactNode 
       <main className="flex-grow">{children}</main>
       <Footer />
       <ScrollToTopButton />
-      <ExitIntentPopup />
+      {showExitIntent && <ExitIntentPopup />}
     </>
   )
 }
