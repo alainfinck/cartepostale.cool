@@ -692,6 +692,7 @@ export default function EditorPage() {
   const [isPublishing, setIsPublishing] = useState(false)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [createdPostcardId, setCreatedPostcardId] = useState<string | null>(null)
+  const [internalPostcardId, setInternalPostcardId] = useState<number | null>(null)
   const [shareError, setShareError] = useState<string | null>(null)
   const [showEmailPromptModal, setShowEmailPromptModal] = useState(false)
 
@@ -1347,6 +1348,9 @@ export default function EditorPage() {
 
       if (result.success && result.publicId) {
         setCreatedPostcardId(result.publicId)
+        if (typeof result.id === 'number') {
+          setInternalPostcardId(result.id)
+        }
         setShareUrl(`${window.location.origin}/carte/${result.publicId}`)
 
         // Trigger email modal if user is not logged in and hasn't provided an email
@@ -2749,10 +2753,10 @@ export default function EditorPage() {
                         </p>
 
                         {/* Real-Time View Statistics */}
-                        {createdPostcardId && (
+                        {createdPostcardId && internalPostcardId && (
                           <div className="flex justify-center mb-6">
                             <RealTimeViewStats
-                              postcardId={createdPostcardId}
+                              postcardId={internalPostcardId}
                               initialViews={0}
                               pollingInterval={5000}
                             />
