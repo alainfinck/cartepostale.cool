@@ -11,7 +11,6 @@ import {
   Eye,
   ChevronRight,
   ChevronLeft,
-  ChevronDown,
   Image as ImageIcon,
   Stamp,
   Sticker as StickerIcon,
@@ -3104,26 +3103,26 @@ export default function EditorPage() {
         </div>
       </div>
 
-      {/* Scroll to preview — fixed next to scroll-to-top on mobile */}
-      <div className="lg:hidden fixed bottom-4 right-[7rem] sm:bottom-6 sm:right-[8rem] z-[70] flex items-center justify-center">
+      {/* Scroll to preview — œil Aperçu (pas flèche), bouton rond */}
+      <div className="lg:hidden fixed bottom-4 right-[4.5rem] sm:bottom-6 sm:right-[5rem] z-[70] flex items-center justify-center">
         <button
           type="button"
           onClick={() =>
             previewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
           }
           aria-label="Aller à l'aperçu"
-          className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-white/50 hover:bg-white/70 text-stone-500 hover:text-stone-700 border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_28px_rgba(0,0,0,0.1)] backdrop-blur-xl flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-400 transition-all duration-300"
+          className="h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-white/50 hover:bg-white/70 text-teal-600 hover:text-teal-700 border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_28px_rgba(0,0,0,0.1)] backdrop-blur-xl flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-400 transition-all duration-300"
         >
-          <ChevronDown className="h-6 w-6 sm:h-7 sm:w-7 rotate-[-90deg]" aria-hidden />
+          <Eye className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden />
         </button>
       </div>
       <div className="lg:hidden fixed bottom-4 left-4 z-[45] animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Button
           onClick={() => setShowFullscreen(true)}
-          className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-white/50 hover:bg-white/70 border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_28px_rgba(0,0,0,0.1)] backdrop-blur-xl text-stone-600 hover:text-teal-600 flex items-center justify-center p-0"
+          className="h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-white/50 hover:bg-white/70 border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_28px_rgba(0,0,0,0.1)] backdrop-blur-xl text-teal-600 hover:text-teal-700 flex items-center justify-center p-0"
           aria-label="Aperçu plein écran"
         >
-          <Eye size={28} />
+          <Eye className="h-7 w-7 sm:h-8 sm:w-8" />
         </Button>
       </div>
 
