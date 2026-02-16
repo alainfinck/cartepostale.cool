@@ -813,36 +813,38 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 opacity: backOpacity,
               }}
             >
-              {/* Top bar: Retourner + Slider taille du texte (marge gauche pour éviter troncature) */}
+              {/* Top bar: [Retourner + Slider A A+] à gauche, [Retourner] à droite */}
               <div className="absolute top-4 left-5 sm:left-8 right-4 z-40 flex items-center justify-between gap-3 transition-opacity duration-300">
-                <div className="flex items-center gap-1.5 text-stone-400 pointer-events-none group-hover:text-stone-600 transition-all duration-300">
-                  <RotateCw size={isLarge ? 22 : 18} />
-                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">
-                    Retourner
-                  </span>
-                </div>
-                <div
-                  className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/70 border border-stone-200/80 shadow-sm"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">
-                    A
-                  </span>
-                  <input
-                    type="range"
-                    min={0.7}
-                    max={2.2}
-                    step={0.05}
-                    value={backTextScale}
-                    onChange={(e) => setBackTextScale(Number(e.target.value))}
-                    className={cn(
-                      'h-1 accent-teal-500 rounded-full appearance-none bg-stone-200 cursor-pointer',
-                      isLarge ? 'w-28 sm:w-40' : 'w-20',
-                    )}
-                  />
-                  <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">
-                    A+
-                  </span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="flex items-center gap-1.5 text-stone-400 pointer-events-none group-hover:text-stone-600 transition-all duration-300">
+                    <RotateCw size={isLarge ? 22 : 18} />
+                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">
+                      Retourner
+                    </span>
+                  </div>
+                  <div
+                    className="flex items-center gap-0.5 px-1 py-px rounded-sm bg-white/25 border border-stone-200/40"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span className="text-[5px] font-medium uppercase tracking-wider text-stone-400/70">
+                      A
+                    </span>
+                    <input
+                      type="range"
+                      min={0.7}
+                      max={2.2}
+                      step={0.05}
+                      value={backTextScale}
+                      onChange={(e) => setBackTextScale(Number(e.target.value))}
+                      className={cn(
+                        'h-px min-w-0 accent-teal-500/70 rounded-full appearance-none bg-stone-200/50 cursor-pointer',
+                        isLarge ? 'w-40 sm:w-64' : 'w-36 sm:w-56',
+                      )}
+                    />
+                    <span className="text-[5px] font-medium uppercase tracking-wider text-stone-400/70">
+                      A+
+                    </span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-1.5 text-stone-400 pointer-events-none group-hover:text-stone-600 transition-all duration-300 sm:flex">
                   <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider hidden sm:inline">
