@@ -12,12 +12,11 @@ import {
   ChevronRight,
   Camera,
   Search,
-  Info,
-  Heart,
   Loader2,
   Mail,
   Maximize2,
-  Minimize2,
+  Minus,
+  Plus,
 } from 'lucide-react'
 import { cn, isCoordinate } from '@/lib/utils'
 import {
@@ -419,22 +418,31 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 - {postcard.senderName}
               </p>
             </div>
-            <div className="flex items-center gap-2 min-w-0 flex-1 justify-center max-w-xs mx-auto order-3 md:order-2">
-              <span className="text-[9px] md:text-[10px] font-bold text-stone-400 uppercase tracking-widest whitespace-nowrap shrink-0">
+            <div className="flex items-center gap-3 min-w-0 flex-1 justify-center max-w-xs mx-auto order-3 md:order-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setMessageModalFontSize((s) => Math.max(1, Number((s - 0.1).toFixed(1))))
+                }
+                className="p-1.5 rounded-full hover:bg-stone-200 text-stone-600 transition-colors border border-stone-200 bg-white"
+                title="Diminuer la taille du texte"
+              >
+                <Minus size={14} />
+              </button>
+              <span className="text-[9px] md:text-[10px] font-bold text-stone-400 uppercase tracking-widest whitespace-nowrap px-2">
                 Taille
               </span>
-              <input
-                type="range"
-                min={1}
-                max={4}
-                step={0.1}
-                value={messageModalFontSize}
-                onChange={(e) => setMessageModalFontSize(Number(e.target.value))}
-                onClick={(e) => e.stopPropagation()}
-                className="flex-1 min-w-[80px] h-2 bg-stone-200 rounded-full appearance-none cursor-pointer accent-teal-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-teal-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow"
-                aria-label="Taille du texte"
-              />
-              <span className="text-[9px] md:text-[10px] font-medium text-stone-500 tabular-nums w-7 shrink-0">
+              <button
+                type="button"
+                onClick={() =>
+                  setMessageModalFontSize((s) => Math.min(4, Number((s + 0.1).toFixed(1))))
+                }
+                className="p-1.5 rounded-full hover:bg-stone-200 text-stone-600 transition-colors border border-stone-200 bg-white"
+                title="Augmenter la taille du texte"
+              >
+                <Plus size={14} />
+              </button>
+              <span className="ml-2 text-[9px] md:text-[10px] font-medium text-stone-500 tabular-nums w-8 shrink-0 text-left">
                 {Math.round(messageModalFontSize * 100)}%
               </span>
             </div>
@@ -823,27 +831,32 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     </span>
                   </div>
                   <div
-                    className="flex items-center gap-0.5 px-1 py-px rounded-sm bg-white/25 border border-stone-200/40"
+                    className="flex items-center gap-2 px-2 py-1 rounded-full bg-white/25 border border-stone-200/40"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <span className="text-[5px] font-medium uppercase tracking-wider text-stone-400/70">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setBackTextScale((s) => Math.max(0.7, Number((s - 0.05).toFixed(2))))
+                      }
+                      className="p-1 rounded-full hover:bg-white/30 text-stone-600 transition-colors"
+                      title="Diminuer la taille du texte"
+                    >
+                      <Minus size={14} />
+                    </button>
+                    <span className="text-[10px] font-bold text-stone-600/80 min-w-[1.2rem] text-center">
                       A
                     </span>
-                    <input
-                      type="range"
-                      min={0.7}
-                      max={2.2}
-                      step={0.05}
-                      value={backTextScale}
-                      onChange={(e) => setBackTextScale(Number(e.target.value))}
-                      className={cn(
-                        'h-px min-w-0 accent-teal-500/70 rounded-full appearance-none bg-stone-200/50 cursor-pointer',
-                        isLarge ? 'w-40 sm:w-64' : 'w-36 sm:w-56',
-                      )}
-                    />
-                    <span className="text-[5px] font-medium uppercase tracking-wider text-stone-400/70">
-                      A+
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setBackTextScale((s) => Math.min(2.2, Number((s + 0.05).toFixed(2))))
+                      }
+                      className="p-1 rounded-full hover:bg-white/30 text-stone-600 transition-colors"
+                      title="Augmenter la taille du texte"
+                    >
+                      <Plus size={14} />
+                    </button>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 text-stone-400 pointer-events-none group-hover:text-stone-600 transition-all duration-300 sm:flex">
