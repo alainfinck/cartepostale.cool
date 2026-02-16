@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import Script from 'next/script'
-import './globals.css' // Changed from styles.css as per provided code edit
+import './styles.css'
 import { FrontendLayoutWrapper } from '@/components/layout/FrontendLayoutWrapper' // Kept this import as it's not explicitly removed by the provided snippet, but the layout component itself changes.
 
 // The siteUrl constant is removed as per the provided code edit.

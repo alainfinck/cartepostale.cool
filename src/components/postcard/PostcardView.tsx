@@ -758,8 +758,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {/* Message démo au-dessus de la localisation (frontCaption sans frontEmoji) */}
               {postcard.frontCaption?.trim() && !postcard.frontEmoji && (
                 <div
-                  className="absolute left-4 sm:left-6 right-4 sm:right-6 z-10 bottom-10 sm:bottom-12 px-5 py-3.5 sm:px-6 sm:py-4 rounded-2xl sm:rounded-3xl border border-white/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300"
-                  style={{ backgroundColor: frontTextBgColor }}
+                  className="absolute left-4 sm:left-6 z-10 bottom-14 sm:bottom-16 w-fit max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-3rem)] px-3 py-2 sm:px-4 sm:py-2.5 rounded-md border border-white/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}
                 >
                   <p className="m-0 text-base sm:text-lg font-bold leading-tight tracking-tight text-stone-900 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] break-words">
                     {postcard.frontCaption}

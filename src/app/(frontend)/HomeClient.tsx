@@ -20,6 +20,7 @@ export default function Home() {
       {
         id: 'demo-ski',
         frontImage: '/images/demo/photo-1486074218988-66a98816c117.jpg',
+        frontCaption: 'Salut des pistes ! ⛷️',
         location: 'Courchevel, France',
         message: "Les pistes sont incroyables cette année ! La poudreuse est au rendez-vous. On profite à fond de chaque descente. On se voit bientôt pour une fondue ?",
         recipientName: "La team Ski",
@@ -36,6 +37,7 @@ export default function Home() {
       {
         id: 'demo-japan',
         frontImage: '/images/demo/photo-1493976040374-85c8e12f0c0e.jpg',
+        frontCaption: 'Kyoto m\'émerveille 🌸',
         location: 'Kyoto, Japon',
         message: "Le calme des temples de Kyoto me ressource tellement. Les cerisiers commencent tout juste à bourgeonner. C'est d'une beauté indescriptible.",
         recipientName: "Anna",
@@ -51,6 +53,7 @@ export default function Home() {
       {
         id: 'demo-canada',
         frontImage: '/images/demo/photo-1503614472-8c93d56e92ce.jpg',
+        frontCaption: 'Les Rocheuses ! 🏔️',
         location: 'Banff, Canada',
         message: "On a vu des ours aujourd'hui ! (De loin, rassurez-vous). Les lacs sont d'un bleu turquoise qu'on ne voit nulle part ailleurs. On explore les Rocheuses en van.",
         recipientName: "Julie",
@@ -66,6 +69,7 @@ export default function Home() {
       {
         id: 'demo-anniv',
         frontImage: '/images/demo/photo-1530103043960-ef38714abb15.jpg',
+        frontCaption: 'Joyeux anniversaire ! 🎂',
         location: 'Votre Cœur, Partout',
         message: "Joyeux Anniversaire ! 🎂 Une petite carte pour marquer le coup et te souhaiter le meilleur pour cette nouvelle année. Profite bien de ta journée !",
         recipientName: "Manon",
@@ -78,6 +82,7 @@ export default function Home() {
       {
         id: 'demo-safari',
         frontImage: '/images/demo/photo-1516426122078-c23e76319801.jpg',
+        frontCaption: 'Safari inoubliable ! 🦁',
         location: 'Kruger Park, Afrique du Sud',
         message: "Réveil à 5h pour le game drive ce matin. On a croisé des éléphants et une lionne avec ses petits. L'aventure est exceptionnelle !",
         recipientName: "Les collègues",
@@ -96,6 +101,7 @@ export default function Home() {
   const demoCard: Postcard = {
     id: 'demo-rv',
     frontImage: '/images/demo/photo-1596394516093-501ba68a0ba6.jpg',
+    frontCaption: 'Salut de Bali ! 🌴',
     location: 'Bali, Indonésie',
     message: "Salut la famille !\n\nOn est bien arrivés à Bali. Les paysages sont à couper le souffle, surtout les rizières d'Ubud. Le temps est magnifique et les gens sont d'une gentillesse incroyable. On profite de chaque instant !\n\nGrosses bises à tous,\nJulie & Thomas 🌴☀️",
     recipientName: "Famille Martin",
