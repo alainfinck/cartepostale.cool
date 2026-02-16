@@ -563,7 +563,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
           background: #94a3b8;
         }
       `}</style>
-      <div className="flex flex-col items-center gap-2 select-none w-full max-w-full" suppressHydrationWarning>
+      <div
+        className="flex flex-col items-center gap-2 select-none w-full max-w-full"
+        suppressHydrationWarning
+      >
         <motion.div
           className={cn(
             'perspective-1000 cursor-pointer active:cursor-grabbing group touch-none transition-shadow duration-300',
@@ -583,17 +586,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
           onDragEnd={handleDragEnd}
           style={{ perspective: 1000, width, height }}
         >
-          {!isFullscreen && !hideFullscreenButton && (
-            <div className="absolute top-2 left-2 md:top-4 md:left-4 z-[60] flex items-center gap-2">
-              <button
-                onClick={toggleFullscreen}
-                className="bg-white/80 backdrop-blur-md p-2 rounded-full shadow-lg border border-stone-200 text-stone-600 hover:text-teal-600 transition-all active:scale-95"
-                title="Plein écran"
-              >
-                <Maximize2 size={20} />
-              </button>
-            </div>
-          )}
           <motion.div
             className={cn('relative w-full h-full transform-style-3d')}
             style={{
@@ -828,65 +820,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Mini barre de contrôle : Retourner, zoom -/+, sortir plein écran */}
-              <div className="absolute top-2 left-2 right-2 sm:top-3 sm:left-4 sm:right-4 z-[60] h-10 sm:h-11 flex items-center justify-between gap-2 px-2 sm:px-3 rounded-lg bg-white/80 backdrop-blur-md border border-stone-200/80 shadow-sm shrink-0">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleFlip()
-                  }}
-                  className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-stone-600 hover:text-teal-600 hover:bg-stone-100/80 transition-all text-[10px] sm:text-xs font-bold uppercase tracking-wider"
-                  title="Retourner la carte"
-                >
-                  <RotateCw size={16} className="shrink-0" />
-                  <span className="hidden sm:inline">Retourner</span>
-                </button>
-                <div
-                  className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-stone-100/60 border border-stone-200/40"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setBackTextScale((s) => Math.max(0.7, Number((s - 0.05).toFixed(2))))
-                    }}
-                    className="p-1 rounded-full hover:bg-white/60 text-stone-600 transition-colors"
-                    title="Diminuer la taille du texte"
-                  >
-                    <Minus size={12} />
-                  </button>
-                  <span className="text-[9px] font-bold text-stone-500 min-w-[1rem] text-center">A</span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setBackTextScale((s) => Math.min(2.2, Number((s + 0.05).toFixed(2))))
-                    }}
-                    className="p-1 rounded-full hover:bg-white/60 text-stone-600 transition-colors"
-                    title="Augmenter la taille du texte"
-                  >
-                    <Plus size={12} />
-                  </button>
-                </div>
-                {(isFullscreen || isInsideFullscreen) && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      if (isInsideFullscreen && onExitFullscreen) onExitFullscreen()
-                      else toggleFullscreen(e)
-                    }}
-                    className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-stone-600 hover:text-teal-600 hover:bg-stone-100/80 transition-all"
-                    title="Sortir du plein écran"
-                  >
-                    <Minimize2 size={16} className="shrink-0" />
-                    <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wider">Sortir</span>
-                  </button>
-                )}
-              </div>
-
               {/* Watermark bottom-left (marge pour ne pas être coupé) */}
               <div className="hidden sm:flex absolute bottom-3 left-7 sm:left-8 items-center gap-1.5 transition-opacity duration-300 opacity-95 bg-white/80 border border-stone-200 rounded-full px-2 py-1 shadow-sm">
                 <Mail size={10} className="text-teal-600 shrink-0" />
@@ -902,7 +835,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               ></div>
 
               {/* Contenu (texte + timbre/carte) sous la barre de contrôle — z-10 < z-60 de la barre */}
-              <div className="relative z-10 flex w-full flex-1 min-h-0 gap-2 sm:gap-6 pt-14 sm:pt-14 transition-all duration-300">
+              <div className="relative z-10 flex w-full flex-1 min-h-0 gap-2 sm:gap-6 pt-4 sm:pt-6 transition-all duration-300">
                 {/* Left Side: Message - marge gauche généreuse pour éviter troncature (police manuscrite) */}
                 <div
                   className={cn(
@@ -910,6 +843,79 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     isLarge ? 'flex-[2]' : 'flex-[1.5]',
                   )}
                 >
+                  {/* Barre de réglages compacte (verso) */}
+                  <div
+                    className="flex items-center gap-2 mb-2 px-1 h-6 sm:h-[22px] shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Font size */}
+                    <div className="flex items-center gap-1 bg-stone-100/80 rounded-md border border-stone-200/60 px-1 h-full shadow-sm">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setBackTextScale((s) => Math.max(0.7, Number((s - 0.05).toFixed(2))))
+                        }}
+                        className="p-0.5 rounded hover:bg-white text-stone-500 hover:text-teal-600 transition-colors"
+                        title="Réduire"
+                      >
+                        <Minus size={12} />
+                      </button>
+                      <span className="text-[10px] font-bold text-stone-400 min-w-[12px] text-center">
+                        A
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setBackTextScale((s) => Math.min(2.2, Number((s + 0.05).toFixed(2))))
+                        }}
+                        className="p-0.5 rounded hover:bg-white text-stone-500 hover:text-teal-600 transition-colors"
+                        title="Agrandir"
+                      >
+                        <Plus size={12} />
+                      </button>
+                    </div>
+
+                    {/* Fullscreen */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (isInsideFullscreen && onExitFullscreen) onExitFullscreen()
+                        else toggleFullscreen(e)
+                      }}
+                      className="h-full px-2 flex items-center gap-1.5 bg-stone-100/80 rounded-md border border-stone-200/60 text-stone-500 hover:text-teal-600 transition-all shadow-sm group"
+                      title={
+                        isFullscreen || isInsideFullscreen ? 'Quitter plein écran' : 'Plein écran'
+                      }
+                    >
+                      {isFullscreen || isInsideFullscreen ? (
+                        <Minimize2 size={12} />
+                      ) : (
+                        <Maximize2 size={12} />
+                      )}
+                      <span className="text-[9px] font-bold uppercase tracking-wider hidden sm:inline">
+                        {isFullscreen || isInsideFullscreen ? 'Sortir' : 'Plein écran'}
+                      </span>
+                    </button>
+
+                    {/* Flip button - kept for convenience */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleFlip()
+                      }}
+                      className="h-full px-2 flex items-center gap-1.5 bg-stone-100/80 rounded-md border border-stone-200/60 text-stone-500 hover:text-teal-600 transition-all shadow-sm"
+                      title="Retourner"
+                    >
+                      <RotateCw size={12} />
+                      <span className="text-[9px] font-bold uppercase tracking-wider hidden sm:inline">
+                        Retourner
+                      </span>
+                    </button>
+                  </div>
                   <div
                     ref={messageContainerRef}
                     className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 pl-1 sm:pl-2 flex flex-col justify-center"
