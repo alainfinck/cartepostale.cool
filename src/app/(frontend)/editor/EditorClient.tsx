@@ -1495,9 +1495,9 @@ export default function EditorPage() {
   return (
     <div className="min-h-screen bg-[#fdfbf7]">
       {/* Step Progress Bar */}
-      <div className="bg-white border-b border-stone-200 sticky top-20 z-40">
-        <div className="max-w-5xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+      <div className="bg-white border-b border-stone-200 sticky top-16 md:top-20 z-40">
+        <div className="max-w-5xl mx-auto px-3 py-2 sm:px-4 sm:py-3 md:py-4">
+          <div className="flex items-center justify-between gap-0">
             {STEPS.map((step, index) => {
               const Icon = step.icon
               const isActive = step.id === currentStep
@@ -1516,7 +1516,7 @@ export default function EditorPage() {
                       }
                     }}
                     className={cn(
-                      'flex items-center gap-2 px-4 py-2 rounded-full transition-all text-sm font-semibold',
+                      'flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full transition-all text-xs sm:text-sm font-semibold shrink-0',
                       isActive
                         ? 'bg-teal-500 text-white shadow-md shadow-teal-200'
                         : isCompleted
@@ -1524,13 +1524,13 @@ export default function EditorPage() {
                           : 'bg-stone-100 text-stone-400',
                     )}
                   >
-                    {isCompleted ? <Check size={16} /> : <Icon size={16} />}
+                    {isCompleted ? <Check size={14} className="sm:w-4 sm:h-4" /> : <Icon size={14} className="sm:w-4 sm:h-4" />}
                     <span className="hidden sm:inline">{step.label}</span>
                   </button>
                   {index < STEPS.length - 1 && !isSkipped && (
                     <div
                       className={cn(
-                        'flex-1 h-0.5 mx-2 rounded-full transition-colors',
+                        'flex-1 min-w-0 h-0.5 mx-1 sm:mx-2 rounded-full transition-colors shrink',
                         index < currentStepIndex ? 'bg-teal-400' : 'bg-stone-200',
                       )}
                     />

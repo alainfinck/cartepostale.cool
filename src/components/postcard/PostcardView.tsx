@@ -15,6 +15,7 @@ import {
   Loader2,
   Mail,
   Maximize2,
+  Minimize2,
   Minus,
   Plus,
 } from 'lucide-react'
@@ -53,6 +54,9 @@ interface PostcardViewProps {
   height?: string
   hideFullscreenButton?: boolean
   hideFlipHints?: boolean
+  /** Quand la carte est affichée dans le modal plein écran, permet d’afficher le bouton « Sortir » au verso */
+  isInsideFullscreen?: boolean
+  onExitFullscreen?: () => void
 }
 
 const FALLBACK_FRONT_IMAGE = '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
@@ -86,6 +90,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   height,
   hideFullscreenButton = false,
   hideFlipHints = false,
+  isInsideFullscreen = false,
+  onExitFullscreen,
 }) => {
   const [isFlipped, setIsFlipped] = useState(flipped ?? false)
   const [isDragging, setIsDragging] = useState(false)
@@ -557,7 +563,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
           background: #94a3b8;
         }
       `}</style>
-      <div className="flex flex-col items-center gap-2 select-none" suppressHydrationWarning>
+      <div className="flex flex-col items-center gap-2 select-none w-full max-w-full" suppressHydrationWarning>
         <motion.div
           className={cn(
             'perspective-1000 cursor-pointer active:cursor-grabbing group touch-none transition-shadow duration-300',
@@ -565,7 +571,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               !height &&
               (isLarge
                 ? 'w-[95vw] h-[65vw] max-w-[460px] max-h-[306px] sm:w-[552px] sm:h-[368px] md:w-[736px] md:h-[490px] lg:w-[920px] lg:h-[612px] sm:max-w-none sm:max-h-none portrait:max-h-none'
-                : 'w-[98vw] sm:w-[552px] aspect-[3/2] sm:h-[368px]'),
+                : 'w-full max-w-full sm:w-[552px] aspect-[3/2] sm:h-[368px]'),
             className,
           )}
           onClick={handleFlip}
@@ -810,7 +816,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             {/* Back of Card — masqué en mode recto (Safari: backface-visibility insuffisant) */}
             <motion.div
               className={cn(
-                'absolute w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#fafaf9] border border-stone-200 flex overflow-hidden',
+                'absolute w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#fafaf9] border border-stone-200 flex flex-col overflow-hidden',
                 isLarge ? 'p-3 sm:p-8 pl-5 sm:pl-10' : 'p-3 sm:p-8 pl-4 sm:pl-8',
                 !isFlipped ? 'pointer-events-none' : '',
               )}
@@ -820,51 +826,65 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 transform: 'rotateY(180deg) translateZ(1px)',
                 opacity: backOpacity,
               }}
+              onClick={(e) => e.stopPropagation()}
             >
-              {/* Top bar: [Retourner + Slider A A+] à gauche, [Retourner] à droite */}
-              <div className="absolute top-4 left-5 sm:left-8 right-4 z-40 flex items-center justify-between gap-3 transition-opacity duration-300">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="flex items-center gap-1.5 text-stone-400 pointer-events-none group-hover:text-stone-600 transition-all duration-300">
-                    <RotateCw size={isLarge ? 22 : 18} />
-                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">
-                      Retourner
-                    </span>
-                  </div>
-                  <div
-                    className="flex items-center gap-2 px-2 py-1 rounded-full bg-white/25 border border-stone-200/40"
-                    onClick={(e) => e.stopPropagation()}
+              {/* Mini barre de contrôle : Retourner, zoom -/+, sortir plein écran */}
+              <div className="absolute top-2 left-2 right-2 sm:top-3 sm:left-4 sm:right-4 z-[60] h-10 sm:h-11 flex items-center justify-between gap-2 px-2 sm:px-3 rounded-lg bg-white/80 backdrop-blur-md border border-stone-200/80 shadow-sm shrink-0">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleFlip()
+                  }}
+                  className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-stone-600 hover:text-teal-600 hover:bg-stone-100/80 transition-all text-[10px] sm:text-xs font-bold uppercase tracking-wider"
+                  title="Retourner la carte"
+                >
+                  <RotateCw size={16} className="shrink-0" />
+                  <span className="hidden sm:inline">Retourner</span>
+                </button>
+                <div
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-stone-100/60 border border-stone-200/40"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setBackTextScale((s) => Math.max(0.7, Number((s - 0.05).toFixed(2))))
+                    }}
+                    className="p-1 rounded-full hover:bg-white/60 text-stone-600 transition-colors"
+                    title="Diminuer la taille du texte"
                   >
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setBackTextScale((s) => Math.max(0.7, Number((s - 0.05).toFixed(2))))
-                      }
-                      className="p-1 rounded-full hover:bg-white/30 text-stone-600 transition-colors"
-                      title="Diminuer la taille du texte"
-                    >
-                      <Minus size={14} />
-                    </button>
-                    <span className="text-[10px] font-bold text-stone-600/80 min-w-[1.2rem] text-center">
-                      A
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setBackTextScale((s) => Math.min(2.2, Number((s + 0.05).toFixed(2))))
-                      }
-                      className="p-1 rounded-full hover:bg-white/30 text-stone-600 transition-colors"
-                      title="Augmenter la taille du texte"
-                    >
-                      <Plus size={14} />
-                    </button>
-                  </div>
+                    <Minus size={12} />
+                  </button>
+                  <span className="text-[9px] font-bold text-stone-500 min-w-[1rem] text-center">A</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setBackTextScale((s) => Math.min(2.2, Number((s + 0.05).toFixed(2))))
+                    }}
+                    className="p-1 rounded-full hover:bg-white/60 text-stone-600 transition-colors"
+                    title="Augmenter la taille du texte"
+                  >
+                    <Plus size={12} />
+                  </button>
                 </div>
-                <div className="flex items-center gap-1.5 text-stone-400 pointer-events-none group-hover:text-stone-600 transition-all duration-300 sm:flex">
-                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider hidden sm:inline">
-                    Retourner
-                  </span>
-                  <RotateCw size={isLarge ? 22 : 18} />
-                </div>
+                {(isFullscreen || isInsideFullscreen) && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (isInsideFullscreen && onExitFullscreen) onExitFullscreen()
+                      else toggleFullscreen(e)
+                    }}
+                    className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-stone-600 hover:text-teal-600 hover:bg-stone-100/80 transition-all"
+                    title="Sortir du plein écran"
+                  >
+                    <Minimize2 size={16} className="shrink-0" />
+                    <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wider">Sortir</span>
+                  </button>
+                )}
               </div>
 
               {/* Watermark bottom-left (marge pour ne pas être coupé) */}
@@ -881,11 +901,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 )}
               ></div>
 
-              <div className="flex w-full h-full min-h-0 gap-2 sm:gap-6 pt-0 transition-all duration-300">
+              {/* Contenu (texte + timbre/carte) sous la barre de contrôle — z-10 < z-60 de la barre */}
+              <div className="relative z-10 flex w-full flex-1 min-h-0 gap-2 sm:gap-6 pt-14 sm:pt-14 transition-all duration-300">
                 {/* Left Side: Message - marge gauche généreuse pour éviter troncature (police manuscrite) */}
                 <div
                   className={cn(
-                    'min-w-0 flex flex-col justify-start relative pt-3 sm:pt-4 pl-[2px] sm:pl-[2px] pr-2 sm:pr-4',
+                    'min-w-0 flex flex-col justify-start relative pl-[2px] sm:pl-[2px] pr-2 sm:pr-4',
                     isLarge ? 'flex-[2]' : 'flex-[1.5]',
                   )}
                 >
@@ -1289,7 +1310,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               !height &&
               (isLarge
                 ? 'w-[95vw] max-w-[460px] sm:w-[552px] sm:max-w-none md:w-[736px] lg:w-[920px]'
-                : 'w-[98vw] sm:w-[552px]'),
+                : 'w-full max-w-full sm:w-[552px]'),
           )}
         >
           <div className="flex items-center justify-center w-full flex-nowrap gap-2 sm:gap-3 rounded-b-xl border-x border-b border-stone-200/80 bg-gradient-to-b from-white/90 to-stone-50/90 backdrop-blur-sm shadow-[0_2px_8px_rgba(0,0,0,0.04)] px-3 py-2 sm:px-4 sm:py-2.5 min-h-[44px]">
@@ -1380,6 +1401,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 className="shadow-[0_40px_100px_rgba(0,0,0,0.3)]"
                 hideFullscreenButton={true}
                 hideFlipHints={true}
+                isInsideFullscreen={true}
+                onExitFullscreen={() => setIsFullscreen(false)}
               />
             </div>
           </motion.div>,

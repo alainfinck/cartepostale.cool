@@ -229,8 +229,8 @@ export const Navbar = () => {
                 )}
               >
                 <Plus size={scrolled ? 14 : 16} strokeWidth={3} />
-                <span className="hidden sm:inline">Créer ma carte postale</span>
-                <span className="sm:hidden">Créer</span>
+                <span className="hidden lg:inline">Créer ma carte postale</span>
+                <span className="lg:hidden">Créer</span>
               </Button>
             </Link>
           </div>
@@ -281,7 +281,7 @@ export const Navbar = () => {
             </span>
           </Link>
 
-          <div className="hidden sm:flex items-center gap-1" ref={dropdownRef}>
+          <div className="hidden lg:flex items-center gap-1" ref={dropdownRef}>
             <NavDropdown
               id="fonctionnalites"
               label="Fonctionnalités"
@@ -439,7 +439,7 @@ export const Navbar = () => {
             </Link>
           </div>
 
-          <div className="sm:hidden flex items-center">
+          <div className="lg:hidden flex items-center">
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -454,7 +454,7 @@ export const Navbar = () => {
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="sm:hidden bg-white border-b border-stone-200 shadow-xl">
+        <div className="lg:hidden bg-white border-b border-stone-200 shadow-xl">
           <div className="px-4 pt-4 pb-6 space-y-3">
             <div className="px-2">
               <Link

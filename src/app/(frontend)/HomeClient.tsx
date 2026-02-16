@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Postcard } from '@/types'
-import { Plus, Compass, ExternalLink, Heart, Library, Instagram, Mail, Sparkles, Zap, Wallet, Share2, Image, Camera, Repeat, MapPin, Check, Maximize2, X, Building2, BarChart3, Palette, ArrowRight } from 'lucide-react'
+import { Plus, Compass, Mail, Sparkles, Zap, Wallet, Share2, Image, Repeat, MapPin, Maximize2, X, Building2, BarChart3, Palette, ArrowRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
@@ -176,8 +176,8 @@ export default function Home() {
             </div>
 
             {/* Droite : carte postale au format recto/verso, clic ou glisser pour retourner */}
-            <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
-              <div className="animate-float-3d hover-tilt-3d transition-transform duration-500">
+            <div className="order-1 lg:order-2 flex justify-center min-w-0 w-full">
+              <div className="animate-float-3d hover-tilt-3d transition-transform duration-500 w-full max-w-full">
                 <PostcardView
                   postcard={heroPostcard}
                   isPreview
@@ -358,41 +358,6 @@ export default function Home() {
                   <Maximize2 size={12} />
                   Plein écran
                 </button>
-              </div>
-
-              <div className="w-[340px] sm:w-[600px] mt-3 flex justify-between items-center px-4 py-3 bg-white border border-stone-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative">
-                <div className="flex items-center gap-4">
-                  <button className="flex items-center gap-1.5 text-stone-400 hover:text-red-500 transition-colors group/btn">
-                    <Heart size={18} className="group-hover/btn:fill-red-500 transition-colors" />
-                    <span className="text-[10px] font-bold">{Math.floor(Math.random() * 50) + 10}</span>
-                  </button>
-                  <span className="text-stone-200">|</span>
-
-                  <Link
-                    href="/business"
-                    className="flex items-center gap-1.5 text-pink-600 hover:text-pink-700 transition-colors text-[10px] font-bold uppercase tracking-wider group/agence"
-                  >
-                    <Library size={14} className="group-hover/agence:rotate-12 transition-transform" />
-                    <span>Photothèque Agence</span>
-                    <ExternalLink size={10} className="opacity-40" />
-                  </Link>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="flex -space-x-2.5">
-                    <div className="w-7 h-7 rounded-full bg-pink-100 border-2 border-white flex items-center justify-center text-[8px] text-pink-700 font-bold shadow-sm">JD</div>
-                    <div className="w-7 h-7 rounded-full bg-purple-100 border-2 border-white flex items-center justify-center text-[8px] text-purple-700 font-bold shadow-sm">AM</div>
-                    <div className="w-7 h-7 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[8px] text-slate-700 font-bold shadow-sm">+8</div>
-                  </div>
-                  <div className="flex gap-2 border-l border-stone-100 pl-4">
-                    <button className="text-stone-300 hover:text-pink-600 transition-colors">
-                      <Instagram size={18} />
-                    </button>
-                    <button className="text-stone-300 hover:text-pink-600 transition-colors">
-                      <Mail size={18} />
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
           ))}
