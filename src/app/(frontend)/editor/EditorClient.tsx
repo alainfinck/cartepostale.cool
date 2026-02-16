@@ -3105,27 +3105,25 @@ export default function EditorPage() {
       </div>
 
       {/* Scroll to preview — fixed next to scroll-to-top on mobile */}
-      <div className="lg:hidden fixed bottom-4 right-[4.5rem] sm:bottom-6 sm:right-[5.5rem] z-[70] flex items-center justify-center">
+      <div className="lg:hidden fixed bottom-4 right-[7rem] sm:bottom-6 sm:right-[8rem] z-[70] flex items-center justify-center">
         <button
           type="button"
           onClick={() =>
             previewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
           }
           aria-label="Aller à l'aperçu"
-          className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/80 hover:bg-white text-stone-400 hover:text-stone-600 border border-stone-200 shadow-sm backdrop-blur-md flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-400 transition-all duration-300"
+          className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-white/50 hover:bg-white/70 text-stone-500 hover:text-stone-700 border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_28px_rgba(0,0,0,0.1)] backdrop-blur-xl flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-400 transition-all duration-300"
         >
-          <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 rotate-[-90deg]" aria-hidden />
+          <ChevronDown className="h-6 w-6 sm:h-7 sm:w-7 rotate-[-90deg]" aria-hidden />
         </button>
       </div>
       <div className="lg:hidden fixed bottom-4 left-4 z-[45] animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Button
           onClick={() => setShowFullscreen(true)}
-          className="h-12 w-12 rounded-full bg-stone-800/90 hover:bg-stone-900 border border-stone-700 shadow-2xl backdrop-blur-md text-white flex items-center justify-center p-0"
+          className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-white/50 hover:bg-white/70 border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_28px_rgba(0,0,0,0.1)] backdrop-blur-xl text-stone-600 hover:text-teal-600 flex items-center justify-center p-0"
           aria-label="Aperçu plein écran"
         >
-          <Eye size={20} />
-          {/* Subtle pulse effect */}
-          <span className="absolute inset-0 rounded-full bg-teal-500/20 animate-ping -z-10" />
+          <Eye size={28} />
         </Button>
       </div>
 
