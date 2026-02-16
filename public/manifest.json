@@ -1,0 +1,42 @@
+{
+  "name": "CartePostale.cool",
+  "short_name": "CartePostale",
+  "description": "Créez et partagez des cartes postales numériques magnifiques en quelques secondes",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdfbf7",
+  "theme_color": "#14b8a6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["social", "lifestyle", "entertainment"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Créer une carte",
+      "short_name": "Créer",
+      "description": "Créer une nouvelle carte postale",
+      "url": "/editor",
+      "icons": []
+    },
+    {
+      "name": "Ma galerie",
+      "short_name": "Galerie",
+      "description": "Voir mes cartes postales",
+      "url": "/galerie",
+      "icons": []
+    }
+  ]
+}

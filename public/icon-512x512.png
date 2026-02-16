@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Background with gradient -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#14b8a6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d9488;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="512" height="512" fill="url(#bg-gradient)" rx="85"/>
+  
+  <!-- Postcard/Envelope icon (larger) -->
+  <g transform="translate(256, 256)">
+    <!-- Main postcard -->
+    <rect x="-160" y="-106" width="320" height="212" fill="#fff" rx="12" stroke="#f97316" stroke-width="8"/>
+    
+    <!-- Stamp area -->
+    <rect x="80" y="-75" width="55" height="40" fill="none" stroke="#14b8a6" stroke-width="5"/>
+    
+    <!-- Decorative stamp pattern -->
+    <circle cx="107.5" cy="-55" r="15" fill="#f97316" opacity="0.3"/>
+    
+    <!-- Address lines -->
+    <line x1="-130" y1="10" x2="30" y2="10" stroke="#f97316" stroke-width="5" stroke-linecap="round"/>
+    <line x1="-130" y1="35" x2="50" y2="35" stroke="#f97316" stroke-width="5" stroke-linecap="round"/>
+    <line x1="-130" y1="60" x2="15" y2="60" stroke="#f97316" stroke-width="5" stroke-linecap="round"/>
+    
+    <!-- Heart decoration -->
+    <circle cx="-100" cy="-60" r="6" fill="#ec4899"/>
+  </g>
+  
+  <!-- App name -->
+  <text x="256" y="440" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="#fff">
+    CartePostale
+  </text>
+</svg>

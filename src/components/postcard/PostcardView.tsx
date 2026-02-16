@@ -557,7 +557,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               !height &&
               (isLarge
                 ? 'w-[95vw] h-[65vw] max-w-[460px] max-h-[306px] sm:w-[552px] sm:h-[368px] md:w-[736px] md:h-[490px] lg:w-[920px] lg:h-[612px] sm:max-w-none sm:max-h-none portrait:max-h-none'
-                : 'w-[min(97vw,372px)] aspect-[3/2] sm:w-[552px] sm:h-[368px]'),
+                : 'w-[98vw] sm:w-[552px] aspect-[3/2] sm:h-[368px]'),
             className,
           )}
           onClick={handleFlip}
@@ -756,7 +756,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               )}
 
               {/* Message démo au-dessus de la localisation (frontCaption sans frontEmoji) */}
-              {postcard.frontCaption && !postcard.frontEmoji && (
+              {postcard.frontCaption?.trim() && !postcard.frontEmoji && (
                 <div
                   className="absolute left-4 sm:left-6 right-4 sm:right-6 z-10 bottom-10 sm:bottom-12 px-5 py-3.5 sm:px-6 sm:py-4 rounded-2xl sm:rounded-3xl border border-white/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300"
                   style={{ backgroundColor: frontTextBgColor }}
@@ -771,7 +771,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 <div
                   className={cn(
                     'absolute left-4 sm:left-6 z-10 bg-white/90 backdrop-blur-md text-teal-900 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-semibold shadow-lg flex items-center gap-1.5 transition-all duration-300',
-                    postcard.frontEmoji ? 'bottom-20 sm:bottom-24' : 'bottom-4 sm:bottom-6',
+                    postcard.frontCaption?.trim() && postcard.frontEmoji
+                      ? 'bottom-20 sm:bottom-24'
+                      : 'bottom-4 sm:bottom-6',
                   )}
                 >
                   <MapPin size={12} className="text-orange-500 shrink-0" />
@@ -781,8 +783,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </div>
               )}
 
-              {/* Bloc caption + emoji en bas (affiché seulement si frontEmoji) — message bien visible */}
-              {(postcard.frontCaption || postcard.frontEmoji) && postcard.frontEmoji && (
+              {/* Bloc caption + emoji en bas (affiché seulement si frontCaption ET frontEmoji) */}
+              {postcard.frontCaption?.trim() && postcard.frontEmoji && (
                 <div
                   className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 z-20 flex items-center gap-3 rounded-2xl sm:rounded-3xl border border-white/50 backdrop-blur-xl px-5 py-3.5 sm:px-6 sm:py-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300"
                   style={{ backgroundColor: frontTextBgColor }}
@@ -790,11 +792,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   <span className="text-xl sm:text-4xl leading-none shrink-0" aria-hidden>
                     {postcard.frontEmoji}
                   </span>
-                  {postcard.frontCaption ? (
-                    <p className="m-0 text-base sm:text-lg font-bold leading-tight tracking-tight text-stone-900 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] break-words line-clamp-2">
-                      {postcard.frontCaption}
-                    </p>
-                  ) : null}
+                  <p className="m-0 text-base sm:text-lg font-bold leading-tight tracking-tight text-stone-900 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] break-words line-clamp-2">
+                    {postcard.frontCaption}
+                  </p>
                 </div>
               )}
             </motion.div>
@@ -1274,7 +1274,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               !height &&
               (isLarge
                 ? 'w-[95vw] max-w-[460px] sm:w-[552px] sm:max-w-none md:w-[736px] lg:w-[920px]'
-                : 'w-[min(97vw,372px)] sm:w-[552px]'),
+                : 'w-[98vw] sm:w-[552px]'),
           )}
         >
           <div className="flex items-center justify-center w-full flex-nowrap gap-2 sm:gap-3 rounded-b-xl border-x border-b border-stone-200/80 bg-gradient-to-b from-white/90 to-stone-50/90 backdrop-blur-sm shadow-[0_2px_8px_rgba(0,0,0,0.04)] px-3 py-2 sm:px-4 sm:py-2.5 min-h-[44px]">

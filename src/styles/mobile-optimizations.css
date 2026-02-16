@@ -1,0 +1,96 @@
+/* Mobile Optimizations for CartePostale.cool */
+
+/* Disable elastic scroll (bounce effect) on iOS */
+html,
+body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: auto;
+}
+
+/* Remove tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Ensure buttons and interactive elements are properly sized for touch */
+button,
+a,
+input,
+textarea,
+select {
+  min-height: 44px; /* Apple's recommended minimum touch target size */
+  min-width: 44px;
+}
+
+/* Prevent text selection on UI elements (but allow in text areas) */
+button,
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection in content areas */
+textarea,
+input,
+p,
+span {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Improve performance with GPU acceleration for animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Safe area support for notched devices */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Prevent zoom on input focus (already handled in viewport meta) */
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='search'],
+textarea {
+  font-size: 16px; /* Prevents zoom on iOS */
+}
+
+/* Optimize thumb zone accessibility on mobile */
+@media (max-width: 768px) {
+  /* Sticky footer for main actions */
+  .mobile-sticky-footer {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    background: white;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Increase touch targets on mobile */
+  button,
+  a {
+    min-height: 48px;
+    padding: 0.75rem 1rem;
+  }
+
+  /* Add spacing between interactive elements */
+  .mobile-buttons-group > * + * {
+    margin-top: 0.75rem;
+  }
+}

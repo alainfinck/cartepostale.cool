@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
-@import "tailwindcss";
+@import 'tailwindcss';
+@import '../styles/mobile-optimizations.css';
 
 @theme {
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
@@ -160,12 +161,12 @@
 
   a,
   button,
-  [role="button"],
-  input[type="button"],
-  input[type="submit"],
-  input[type="reset"],
-  input[type="checkbox"],
-  input[type="radio"],
+  [role='button'],
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'],
+  input[type='checkbox'],
+  input[type='radio'],
   label[for],
   select,
   summary {
@@ -193,7 +194,7 @@
 
   .paper-texture {
     background-color: #fdfbf7;
-    background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+    background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
   }
 
   /* Hide scrollbar for clean UI */
@@ -212,7 +213,6 @@
 
   /* Premium Postcard Animations */
   @keyframes float {
-
     0%,
     100% {
       transform: translateY(0) rotateX(0) rotateY(0);
@@ -259,7 +259,6 @@
 
   /* Effet retournement carte hero */
   @keyframes flip-card {
-
     0%,
     100% {
       transform: perspective(800px) rotateY(-8deg) translateY(0);

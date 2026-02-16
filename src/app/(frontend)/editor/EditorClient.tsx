@@ -11,6 +11,7 @@ import {
   Eye,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   Image as ImageIcon,
   Stamp,
   Sticker as StickerIcon,
@@ -74,6 +75,7 @@ import {
 import { UnsplashSearchModal } from '@/components/UnsplashSearchModal'
 import StickerGallery from '@/components/editor/StickerGallery'
 import StickerLayer from '@/components/editor/StickerLayer'
+import RealTimeViewStats from '@/components/stats/RealTimeViewStats'
 import {
   Dialog,
   DialogContent,
@@ -710,6 +712,7 @@ export default function EditorPage() {
     EMOJI_CATEGORIES[0].key,
   )
   const emojiPickerRef = useRef<HTMLDivElement>(null)
+  const previewSectionRef = useRef<HTMLDivElement>(null)
   const [currentUser, setCurrentUser] = useState<{
     id: number
     email?: string
@@ -2745,6 +2748,17 @@ export default function EditorPage() {
                           Copiez le lien ou partagez directement
                         </p>
 
+                        {/* Real-Time View Statistics */}
+                        {createdPostcardId && (
+                          <div className="flex justify-center mb-6">
+                            <RealTimeViewStats
+                              postcardId={createdPostcardId}
+                              initialViews={0}
+                              pollingInterval={5000}
+                            />
+                          </div>
+                        )}
+
                         <div className="mb-10 w-full max-w-xl mx-auto">
                           <div className="flex flex-col sm:flex-row gap-3">
                             <div className="relative flex-1 group">
@@ -3024,7 +3038,7 @@ export default function EditorPage() {
             {!shareUrl && (
               <div className="mt-4 lg:mt-8">
                 {/* Mobile Card Preview — always visible below editor on small screens */}
-                <div className="lg:hidden">
+                <div ref={previewSectionRef} className="lg:hidden">
                   <div className="flex items-center gap-2 mb-3">
                     <Eye size={14} className="text-teal-500" />
                     <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
@@ -3052,8 +3066,8 @@ export default function EditorPage() {
                       )}
                     </div>
                   </div>
-                  <div className="flex justify-center -mb-8 sm:mb-0">
-                    <div className="transform scale-[0.8] sm:scale-[0.85] origin-top">
+                  <div className="flex justify-center -mb-8 sm:mb-0 w-full px-1 sm:px-0">
+                    <div className="transform scale-100 sm:scale-[0.85] origin-top w-full max-w-full">
                       <PostcardView
                         postcard={postcardForPreview}
                         flipped={showBack}
@@ -3086,7 +3100,19 @@ export default function EditorPage() {
         </div>
       </div>
 
-      {/* Floating Preview Button for Mobile */}
+      {/* Scroll to preview — fixed next to scroll-to-top on mobile */}
+      <div className="lg:hidden fixed bottom-4 right-[4.5rem] sm:bottom-6 sm:right-[5.5rem] z-[70] flex items-center justify-center">
+        <button
+          type="button"
+          onClick={() =>
+            previewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+          aria-label="Aller à l'aperçu"
+          className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/80 hover:bg-white text-stone-400 hover:text-stone-600 border border-stone-200 shadow-sm backdrop-blur-md flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-400 transition-all duration-300"
+        >
+          <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 rotate-[-90deg]" aria-hidden />
+        </button>
+      </div>
       <div className="lg:hidden fixed bottom-4 left-4 z-[45] animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Button
           onClick={() => setShowFullscreen(true)}
@@ -3183,12 +3209,24 @@ export default function EditorPage() {
           if (!open) setImgNaturalSize(null)
         }}
       >
-        <DialogContent className="max-w-4xl bg-white rounded-3xl p-0 overflow-hidden border-none shadow-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-3xl p-0 border-none shadow-2xl">
           <DialogHeader className="px-6 pt-6 pb-3 border-b border-stone-100">
-            <DialogTitle className="flex items-center gap-2 text-stone-800">
-              <SlidersHorizontal size={18} className="text-teal-600" />
-              Retouche photo
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center gap-2 text-stone-800">
+                <SlidersHorizontal size={18} className="text-teal-600" />
+                Retouche photo
+              </DialogTitle>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowImageEditModal(false)
+                  setShowCropPanel(false)
+                }}
+                className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-400 hover:text-stone-600"
+              >
+                <X size={20} />
+              </button>
+            </div>
             <DialogDescription>
               Ajustez les filtres, le recadrage et le zoom. L’aperçu à gauche est mis à jour en
               temps réel.

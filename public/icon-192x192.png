@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <!-- Background -->
+  <rect width="192" height="192" fill="#14b8a6" rx="32"/>
+  
+  <!-- Envelope/Postcard icon -->
+  <g transform="translate(96, 96)">
+    <!-- Postcard rectangle -->
+    <rect x="-60" y="-40" width="120" height="80" fill="#fff" rx="4" stroke="#f97316" stroke-width="3"/>
+    
+    <!-- Decorative lines (stamp area) -->
+    <rect x="30" y="-25" width="20" height="15" fill="none" stroke="#14b8a6" stroke-width="2"/>
+    
+    <!-- Address lines -->
+    <line x1="-50" y1="5" x2="10" y2="5" stroke="#f97316" stroke-width="2" stroke-linecap="round"/>
+    <line x1="-50" y1="15" x2="20" y2="15" stroke="#f97316" stroke-width="2" stroke-linecap="round"/>
+    <line x1="-50" y1="25" x2="5" y2="25" stroke="#f97316" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  
+  <!-- App name -->
+  <text x="96" y="165" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#fff">
+    Carte
+  </text>
+</svg>
