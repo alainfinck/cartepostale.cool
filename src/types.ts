@@ -6,6 +6,15 @@ export interface MediaItem {
   mimeType?: string
   filesize?: number
   note?: string
+  exif?: {
+    gps?: {
+      latitude: number
+      longitude: number
+    }
+    dateTime?: string
+    cameraMake?: string
+    cameraModel?: string
+  }
 }
 
 /** Position de recadrage de la photo (pour aperçu / éditeur). x,y en % (0–100). */

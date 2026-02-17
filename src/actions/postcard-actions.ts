@@ -97,6 +97,7 @@ export async function createPostcard(
             filename: data.frontImageKey,
             mimeType: data.frontImageMimeType || 'image/jpeg',
             filesize: data.frontImageFilesize ?? 0,
+            exif: data.frontExif, // Save EXIF data
           },
         })
         frontImageId = media.id as number
@@ -120,6 +121,7 @@ export async function createPostcard(
           collection: 'media',
           data: {
             alt: `Front Image for postcard ${data.recipientName || 'unnamed'}`,
+            exif: data.frontExif, // Save EXIF data
           },
           file: {
             data: buffer,
@@ -167,6 +169,7 @@ export async function createPostcard(
                 filename: item.key,
                 mimeType: item.mimeType || 'image/jpeg',
                 filesize: item.filesize ?? 0,
+                exif: item.exif, // Save EXIF data
               },
             })
             mediaId = media.id
@@ -186,6 +189,7 @@ export async function createPostcard(
             collection: 'media',
             data: {
               alt: `Album item for postcard`,
+              exif: item.exif, // Save EXIF data
             },
             file: {
               data: buffer,
@@ -204,9 +208,6 @@ export async function createPostcard(
           processedMediaItems.push(item)
         } else if (item.url && (item.url.startsWith('http') || item.url.startsWith('/'))) {
           // Already an URL (maybe from previous save)
-          // We need to find the media by URL or just keep it as is if it's already an ID
-          // In Payload 3, if it's a relationship, it should be an ID.
-          // If we are updating, we might already have the media items as IDs.
           processedMediaItems.push(item)
         }
       }
@@ -218,7 +219,8 @@ export async function createPostcard(
       frontImageKey: __,
       frontImageMimeType: ___,
       frontImageFilesize: ____,
-      mediaItems: _____,
+      frontExif: _____, // Remove from cleanData
+      mediaItems: ______,
       id,
       author: _author,
       authorId: _authorId,

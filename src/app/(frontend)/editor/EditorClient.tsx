@@ -72,6 +72,7 @@ import {
   getOptimizedImageUrl,
   JPEG_QUALITY,
 } from '@/lib/image-processing'
+import { extractExifData, ExifData } from '@/lib/extract-exif'
 import { UnsplashSearchModal } from '@/components/UnsplashSearchModal'
 import StickerGallery from '@/components/editor/StickerGallery'
 import StickerLayer from '@/components/editor/StickerLayer'
@@ -658,6 +659,7 @@ export default function EditorPage() {
   const [frontImageKey, setFrontImageKey] = useState<string | null>(null)
   const [frontImageMimeType, setFrontImageMimeType] = useState<string | null>(null)
   const [frontImageFilesize, setFrontImageFilesize] = useState<number | null>(null)
+  const [frontExif, setFrontExif] = useState<ExifData | null>(null)
   /** Recadrage / zoom de la photo face avant (position en %, scale 1 = fit). */
   const [frontImageCrop, setFrontImageCrop] = useState<FrontImageCrop>({ scale: 1, x: 50, y: 50 })
   const [frontImageFilter, setFrontImageFilter] = useState<FrontImageFilter>(DEFAULT_FRONT_FILTER)
@@ -879,6 +881,10 @@ export default function EditorPage() {
 
   const processFrontImageFile = useCallback(async (file: File) => {
     setUploadedFileName(file.name)
+
+    // Extract EXIF data
+    const exif = await extractExifData(file)
+    setFrontExif(exif)
 
     // Resize max 2k, JPEG 80%, puis upload du résultat (pas l’original)
     const dataUrl = await fileToDataUrl(file).catch(() => null)
@@ -1152,6 +1158,10 @@ export default function EditorPage() {
           alert('Impossible de charger un fichier. Utilisez des photos en JPEG ou PNG.')
           return
         }
+
+        // Extract EXIF data
+        const exif = await extractExifData(file)
+
         let key: string | undefined
         let mimeType: string | undefined
         let filesize: number | undefined
@@ -1194,6 +1204,7 @@ export default function EditorPage() {
             id: newId,
             type: 'image',
             url: previewUrl,
+            exif,
             ...(key && { key, mimeType, filesize }),
           } as any
           return [...(prev || []), newItem]
@@ -1348,6 +1359,11 @@ export default function EditorPage() {
           frontImageKey: sendKey,
           frontImageMimeType: sendMime ?? undefined,
           frontImageFilesize: sendFilesize ?? undefined,
+          frontExif: frontExif ?? undefined,
+        }),
+        // Also pass frontExif if we are sending base64
+        ...(!sendKey && {
+          frontExif: frontExif ?? undefined,
         }),
       })
 
@@ -1440,6 +1456,11 @@ export default function EditorPage() {
             frontImageKey,
             frontImageMimeType: frontImageMimeType ?? undefined,
             frontImageFilesize: frontImageFilesize ?? undefined,
+            frontExif: frontExif ?? undefined,
+          }),
+          // Also pass frontExif if we are sending base64
+          ...(!frontImageKey && {
+            frontExif: frontExif ?? undefined,
           }),
         })
 

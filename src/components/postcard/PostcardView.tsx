@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { FrontImageFilter, Postcard } from '@/types'
+import { PhotoLocation } from '@/components/ui/PhotoMarker'
 import {
   RotateCw,
   MapPin,
@@ -187,6 +188,44 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   // Zoom de la mini-carte au verso (pour que + / - fonctionnent sans déclencher le flip)
   const [backMapZoom, setBackMapZoom] = useState(6)
   const [isActionsOpen, setIsActionsOpen] = useState(true)
+
+  // Calculate photo locations from EXIF data
+  const photoLocations: PhotoLocation[] = React.useMemo(() => {
+    if (!postcard.mediaItems) return []
+
+    // Group by location (approximate to 4 decimal places ? or exact?)
+    // Let's use exact for now, or maybe small radius.
+    // Simpler: group by exact lat/lng strings
+
+    const groups: Record<string, PhotoLocation> = {}
+
+    postcard.mediaItems.forEach((item) => {
+      if (item.exif?.gps) {
+        const key = `${item.exif.gps.latitude.toFixed(4)},${item.exif.gps.longitude.toFixed(4)}`
+        if (!groups[key]) {
+          groups[key] = {
+            id: key,
+            lat: item.exif.gps.latitude,
+            lng: item.exif.gps.longitude,
+            mediaItems: [],
+          }
+        }
+        groups[key].mediaItems.push(item)
+      }
+    })
+
+    return Object.values(groups)
+  }, [postcard.mediaItems])
+
+  const handleMapPhotoClick = (mediaItem: any) => {
+    if (!postcard.mediaItems) return
+    const index = postcard.mediaItems.findIndex((item) => item.id === mediaItem.id)
+    if (index !== -1) {
+      setCurrentMediaIndex(index)
+      setIsMapOpen(false)
+      setIsAlbumOpen(true)
+    }
+  }
 
   const messageContainerRef = useRef<HTMLDivElement>(null)
   const messageTextRef = useRef<HTMLParagraphElement>(null)
@@ -1246,6 +1285,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                               coords={postcard.coords!}
                               zoom={backMapZoom}
                               onClick={openMap}
+                              photoLocations={photoLocations}
                             />
                           </div>
                           {/* Boutons zoom + / - au-dessus de la carte, cliquables sans déclencher flip ni ouverture modal */}
@@ -1435,6 +1475,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             image={postcard.frontImage}
             message={postcard.message}
             isLarge={isLarge}
+            photoLocations={photoLocations}
+            onPhotoClick={handleMapPhotoClick}
           />,
           portalRoot,
         )}

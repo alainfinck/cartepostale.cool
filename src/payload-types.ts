@@ -208,6 +208,30 @@ export interface Agency {
 export interface Media {
   id: number;
   alt: string;
+  exif?: {
+    gps?: {
+      /**
+       * Latitude GPS extraite de l'image
+       */
+      latitude?: number | null;
+      /**
+       * Longitude GPS extraite de l'image
+       */
+      longitude?: number | null;
+    };
+    /**
+     * Date et heure de la prise de vue (EXIF)
+     */
+    dateTime?: string | null;
+    /**
+     * Fabricant de l'appareil photo
+     */
+    cameraMake?: string | null;
+    /**
+     * Modèle de l'appareil photo
+     */
+    cameraModel?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -676,6 +700,19 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  exif?:
+    | T
+    | {
+        gps?:
+          | T
+          | {
+              latitude?: T;
+              longitude?: T;
+            };
+        dateTime?: T;
+        cameraMake?: T;
+        cameraModel?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   url?: T;

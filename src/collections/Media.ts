@@ -11,6 +11,53 @@ export const Media: CollectionConfig = {
       type: 'text',
       required: true,
     },
+    {
+      name: 'exif',
+      type: 'group',
+      fields: [
+        {
+          name: 'gps',
+          type: 'group',
+          fields: [
+            {
+              name: 'latitude',
+              type: 'number',
+              admin: {
+                description: "Latitude GPS extraite de l'image",
+              },
+            },
+            {
+              name: 'longitude',
+              type: 'number',
+              admin: {
+                description: "Longitude GPS extraite de l'image",
+              },
+            },
+          ],
+        },
+        {
+          name: 'dateTime',
+          type: 'date',
+          admin: {
+            description: 'Date et heure de la prise de vue (EXIF)',
+          },
+        },
+        {
+          name: 'cameraMake',
+          type: 'text',
+          admin: {
+            description: "Fabricant de l'appareil photo",
+          },
+        },
+        {
+          name: 'cameraModel',
+          type: 'text',
+          admin: {
+            description: "Modèle de l'appareil photo",
+          },
+        },
+      ],
+    },
   ],
   upload: {
     staticDir: 'public/media',
