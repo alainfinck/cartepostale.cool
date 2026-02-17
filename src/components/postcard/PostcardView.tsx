@@ -1407,7 +1407,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
         <div
           className={cn(
-            'flex flex-col items-center relative z-0 transition-all duration-500 ease-spring',
+            'flex flex-col items-center relative z-20 transition-all duration-500 ease-spring',
             !width &&
               !height &&
               (isLarge
@@ -1515,12 +1515,13 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 e.stopPropagation()
                 setIsActionsOpen(true)
               }}
-              className="absolute top-full left-1/2 -translate-x-1/2 h-1.5 w-32 bg-white/80 hover:bg-white/95 backdrop-blur-md rounded-b-full shadow-[0_3px_6px_rgba(0,0,0,0.12)] border border-stone-200/80 text-stone-400 hover:text-teal-600 transition-all z-[-1] cursor-pointer flex justify-center items-center group/toggle"
+              className="absolute top-full left-1/2 -translate-x-1/2 h-6 w-24 min-h-0 py-0.5 bg-white/80 hover:bg-white/95 backdrop-blur-md rounded-b-full shadow-[0_3px_6px_rgba(0,0,0,0.12)] border border-stone-200/80 text-stone-500 hover:text-teal-600 transition-all z-[-1] cursor-pointer flex justify-center items-center group/toggle"
               title="Afficher les actions"
             >
               <ChevronDown
-                size={14}
-                className="group-hover/toggle:translate-y-0.5 transition-transform"
+                size={18}
+                strokeWidth={2.5}
+                className="group-hover/toggle:translate-y-0.5 transition-transform shrink-0"
               />
             </button>
           )}

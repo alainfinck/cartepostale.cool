@@ -1627,82 +1627,6 @@ export default function EditorPage() {
                   isActive={!showBack && currentStep === 'photo'} // Only interactive on front in step 1
                 />
               </div>
-              <div className="mt-0">
-                {/* Compact Control Bar "Coming from behind" */}
-                {/* La carte est en z-10 (relative), la barre en z-0 avec marge négative */}
-                <div className="relative z-0 -mt-4 mx-6 pt-6 pb-2.5 px-5 bg-white/90 backdrop-blur-sm border-x border-b border-stone-200/80 rounded-b-xl shadow-sm flex items-center justify-between transition-all hover:bg-white hover:shadow-md">
-                  <div className="flex items-center gap-5">
-                    <button className="flex items-center gap-2 text-[10px] font-bold text-stone-500 hover:text-teal-600 transition-colors uppercase tracking-wider group">
-                      <Camera
-                        size={14}
-                        className="text-stone-400 group-hover:text-teal-500 transition-colors"
-                      />
-                      <span>
-                        ALBUM{' '}
-                        <span className="ml-0.5 text-stone-400 group-hover:text-teal-500">
-                          {mediaItems?.length || 0}
-                        </span>
-                      </span>
-                    </button>
-
-                    <div className="w-px h-3 bg-stone-300/50"></div>
-
-                    <button
-                      onClick={() => setShowBack(!showBack)}
-                      className="flex items-center gap-2 text-[10px] font-bold text-stone-500 hover:text-teal-600 transition-colors uppercase tracking-wider group"
-                      title={showBack ? 'Voir le recto' : 'Voir le verso'}
-                    >
-                      <RotateCw
-                        size={14}
-                        className={cn(
-                          'text-stone-400 group-hover:text-teal-500 transition-transform duration-500',
-                          showBack ? '-rotate-180' : '',
-                        )}
-                      />
-                      <span>{showBack ? 'RECTO' : 'OUVRIR CARTE'}</span>
-                    </button>
-                  </div>
-
-                  <button
-                    onClick={() => setShowFullscreen(true)}
-                    className="flex items-center gap-2 text-[10px] font-bold text-stone-500 hover:text-teal-600 transition-colors uppercase tracking-wider group"
-                    title="Mode plein écran"
-                  >
-                    <Maximize2
-                      size={14}
-                      className="text-stone-400 group-hover:text-teal-500 transition-transform group-hover:scale-110"
-                    />
-                    <span>PLEIN ÉCRAN</span>
-                  </button>
-                </div>
-
-                <div className="mt-2 flex flex-col gap-2">
-                  <p className="text-stone-300 text-[9px] uppercase tracking-widest font-bold text-center opacity-0 hover:opacity-100 transition-opacity">
-                    L&apos;aperçu se met à jour en temps réel
-                  </p>
-
-                  <div className="flex flex-col w-full gap-3">
-                    {/* Bouton Continuer à gauche sous la carte */}
-                    {(currentStep === 'photo' || currentStep === 'redaction') && (
-                      <div className="flex justify-start mt-2">
-                        <Button
-                          onClick={goNext}
-                          disabled={!canGoNext()}
-                          className={cn(
-                            'rounded-xl font-bold flex items-center justify-center gap-2 px-6 py-4 h-auto transition-all shadow-lg shadow-teal-100',
-                            canGoNext()
-                              ? 'bg-teal-500 hover:bg-teal-600 text-white'
-                              : 'bg-stone-200 text-stone-400 cursor-not-allowed',
-                          )}
-                        >
-                          Continuer
-                          <ChevronRight size={18} />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -3146,9 +3070,9 @@ export default function EditorPage() {
             )}
 
             {!shareUrl && (
-              <div className="mt-4 lg:mt-8">
-                {/* Mobile Card Preview — always visible below editor on small screens */}
-                <div ref={previewSectionRef} className="lg:hidden">
+              <div className="mt-4 lg:mt-8 lg:hidden">
+                {/* Card Preview — visible uniquement en mobile/tablette ; en desktop l’aperçu unique est dans le panneau gauche */}
+                <div ref={previewSectionRef}>
                   <div className="flex items-center gap-2 mb-3">
                     <Eye size={14} className="text-teal-500" />
                     <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">

@@ -97,7 +97,7 @@ export const Footer = () => {
           </a>
         </div>
 
-        <p className="text-stone-400 text-sm flex items-center justify-center gap-1">
+        <p className="text-stone-400 text-sm flex items-center justify-center gap-1" suppressHydrationWarning>
           © {new Date().getFullYear()} cartepostale.cool. Des sourires{' '}
           <Heart className="w-3 h-3 fill-red-400 text-red-400 inline" /> dans vos boîtes aux lettres
           numériques.

@@ -5,6 +5,7 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top'
 import { ExitIntentPopup } from '@/components/ExitIntentPopup'
+import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration'
 
 /**
  * On /manager* routes we don't show the public Navbar/Footer (admin has its own shell).
@@ -22,6 +23,7 @@ export function FrontendLayoutWrapper({ children }: { children: React.ReactNode 
 
   return (
     <>
+      <ServiceWorkerRegistration />
       <Navbar />
       <main className="flex-grow">{children}</main>
       <Footer />

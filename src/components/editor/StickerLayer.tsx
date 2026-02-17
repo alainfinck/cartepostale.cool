@@ -73,7 +73,7 @@ export default function StickerLayer({ stickers, onUpdate, onRemove, isActive }:
     return (
         <div
             ref={containerRef}
-            className="absolute inset-0 z-20 overflow-hidden"
+            className="absolute inset-0 z-20 pointer-events-none"
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onClick={() => setSelectedId(null)}

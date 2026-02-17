@@ -1,5 +1,6 @@
 // Service Worker for CartePostale.cool PWA
-const CACHE_NAME = 'cartepostale-v1'
+// CACHE_NAME is replaced at build time by scripts/generate-sw.mjs (do not edit manually).
+const CACHE_NAME = 'cartepostale-eb7078349e62'
 const STATIC_CACHE = [
   '/',
   '/editor',
@@ -35,14 +36,9 @@ self.addEventListener('activate', (event) => {
   self.clients.claim()
 })
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - navigation always network-first so HTML/JS stay fresh; images cache-first
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') {
-    return
-  }
-
-  // Skip API calls and admin routes
+  if (event.request.method !== 'GET') return
   if (
     event.request.url.includes('/api/') ||
     event.request.url.includes('/admin') ||
@@ -51,13 +47,20 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  // Navigation (HTML pages): always fetch from network so users get latest code (fixes stale clicks on Safari desktop)
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    )
+    return
+  }
+
+  // Images and static assets: cache-first
   event.respondWith(
     caches.match(event.request).then((response) => {
-      // Return cached version or fetch from network
       return (
         response ||
         fetch(event.request).then((fetchResponse) => {
-          // Cache successful responses for images and static assets
           if (
             fetchResponse.ok &&
             (event.request.url.includes('/images/') ||
@@ -74,6 +77,6 @@ self.addEventListener('fetch', (event) => {
           return fetchResponse
         })
       )
-    }),
+    })
   )
 })
