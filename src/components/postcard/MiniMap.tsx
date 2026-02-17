@@ -1,8 +1,8 @@
-// ... imports
+import React from 'react'
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import { cn } from '@/lib/utils'
 import PhotoMarker, { PhotoLocation } from '@/components/ui/PhotoMarker'
-import { MapContainer, TileLayer, Marker } from 'react-leaflet'
-
-// ... (previous imports)
 
 interface MiniMapProps {
   coords: { lat: number; lng: number }
@@ -12,7 +12,11 @@ interface MiniMapProps {
   photoLocations?: PhotoLocation[]
 }
 
-// ... (ChangeView component)
+function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }) {
+  const map = useMap()
+  map.setView(center, zoom)
+  return null
+}
 
 const MiniMap: React.FC<MiniMapProps> = ({
   coords,

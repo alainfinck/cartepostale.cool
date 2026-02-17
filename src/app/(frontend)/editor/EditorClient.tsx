@@ -45,6 +45,7 @@ import {
   CheckCircle2,
   Info,
   SlidersHorizontal,
+  FileText, // Added for note editing
 } from 'lucide-react'
 import {
   Postcard,
@@ -724,6 +725,10 @@ export default function EditorPage() {
   const [isRevolutRedirecting, setIsRevolutRedirecting] = useState(false)
   const [revolutError, setRevolutError] = useState<string | null>(null)
 
+  // Note editing state
+  const [editingMediaNoteId, setEditingMediaNoteId] = useState<string | null>(null)
+  const [editingMediaNoteText, setEditingMediaNoteText] = useState('')
+
   // Promo code state
   const [promoCode, setPromoCode] = useState('')
   const [isActivatingCode, setIsActivatingCode] = useState(false)
@@ -1232,6 +1237,22 @@ export default function EditorPage() {
       setIsPremium(updated.length > 0)
       return updated
     })
+  }
+
+  const openNoteEditor = (id: string, currentNote: string = '') => {
+    setEditingMediaNoteId(id)
+    setEditingMediaNoteText(currentNote)
+  }
+
+  const saveMediaNote = () => {
+    if (!editingMediaNoteId) return
+    setMediaItems((prev) =>
+      (prev || []).map((item) =>
+        item.id === editingMediaNoteId ? { ...item, note: editingMediaNoteText } : item,
+      ),
+    )
+    setEditingMediaNoteId(null)
+    setEditingMediaNoteText('')
   }
 
   const isFrontFilterEdited =
@@ -2624,6 +2645,20 @@ export default function EditorPage() {
                             className="absolute top-2 right-2 bg-white text-red-500 p-1 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
                           >
                             <X size={14} />
+                          </button>
+
+                          {/* Note Button */}
+                          <button
+                            onClick={() => openNoteEditor(item.id, item.note)}
+                            className={cn(
+                              'absolute bottom-2 right-2 p-1.5 rounded-full shadow-md transition-all',
+                              item.note
+                                ? 'bg-teal-500 text-white opacity-100'
+                                : 'bg-white text-stone-500 opacity-0 group-hover:opacity-100 hover:bg-teal-50 hover:text-teal-600',
+                            )}
+                            title="Ajouter une note / légende"
+                          >
+                            <FileText size={14} />
                           </button>
                         </div>
                       ))}

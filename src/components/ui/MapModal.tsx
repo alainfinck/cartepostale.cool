@@ -1,9 +1,9 @@
-// ... imports
-import PhotoMarker, { PhotoLocation } from './PhotoMarker'
-import { MapContainer, TileLayer, Marker, Popup, LayersControl } from 'react-leaflet'
+import React, { useState, useEffect } from 'react'
+import { MapContainer, TileLayer, Marker, Popup, LayersControl, useMap } from 'react-leaflet'
 import { Camera, Eye, EyeOff, Loader2, Globe, X, Map as MapIcon } from 'lucide-react'
-
-// ... (previous imports and code)
+import 'leaflet/dist/leaflet.css'
+import { cn } from '@/lib/utils'
+import PhotoMarker, { PhotoLocation } from './PhotoMarker'
 
 interface MapModalProps {
   isOpen: boolean
@@ -17,7 +17,13 @@ interface MapModalProps {
   onPhotoClick?: (mediaItem: any) => void
 }
 
-// ... (MapEffects component)
+function MapEffects({ center, zoom }: { center: [number, number]; zoom: number }) {
+  const map = useMap()
+  useEffect(() => {
+    map.setView(center, zoom)
+  }, [center, zoom, map])
+  return null
+}
 
 const MapModal: React.FC<MapModalProps> = ({
   isOpen,
@@ -37,7 +43,41 @@ const MapModal: React.FC<MapModalProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [showPhotos, setShowPhotos] = useState(true)
 
-  // ... (useEffect for geocoding)
+  useEffect(() => {
+    async function geocode() {
+      if (coords) {
+        setPosition([coords.lat, coords.lng])
+        return
+      }
+
+      if (!location) return
+
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`,
+        )
+        const data = await response.json()
+
+        if (data && data.length > 0) {
+          setPosition([parseFloat(data[0].lat), parseFloat(data[0].lon)])
+        } else {
+          setError('Localisation non trouvée')
+        }
+      } catch (err) {
+        console.error('Geocoding error:', err)
+        setError('Erreur de chargement de la carte')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    if (isOpen) {
+      geocode()
+    }
+  }, [location, coords, isOpen])
 
   if (!isOpen) return null
 
@@ -108,7 +148,9 @@ const MapModal: React.FC<MapModalProps> = ({
             <LayersControl position="topleft">
               <LayersControl.BaseLayer checked name="Plan (OSM)">
                 <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  attribution={
+                    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  }
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
               </LayersControl.BaseLayer>

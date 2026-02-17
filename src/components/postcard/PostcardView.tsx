@@ -21,6 +21,7 @@ import {
   Plus,
   ChevronDown,
   ChevronUp,
+  BookOpen, // New Icon
 } from 'lucide-react'
 import { cn, isCoordinate } from '@/lib/utils'
 import {
@@ -44,6 +45,12 @@ const MapModal = dynamic(() => import('@/components/ui/MapModal'), {
 const MiniMap = dynamic(() => import('@/components/postcard/MiniMap'), {
   ssr: false,
   loading: () => <div className="w-full h-full bg-stone-100 animate-pulse" />,
+})
+
+// Dynamic import for JournalModal
+const JournalModal = dynamic(() => import('@/components/postcard/JournalModal'), {
+  ssr: false,
+  loading: () => null,
 })
 
 interface PostcardViewProps {
@@ -179,6 +186,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
   const [isMessageOpen, setIsMessageOpen] = useState(false)
   const [isAlbumOpen, setIsAlbumOpen] = useState(false)
+  const [isJournalOpen, setIsJournalOpen] = useState(false) // New State
   const [isMapOpen, setIsMapOpen] = useState(false)
   const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null)
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0)
@@ -368,6 +376,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     }
   }
 
+  const openJournal = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setIsJournalOpen(true)
+  }
+
   const openMessage = (e: React.MouseEvent) => {
     e.stopPropagation()
     setIsMessageOpen(true)
@@ -466,6 +479,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 - {postcard.senderName}
               </p>
             </div>
+
+            {/* Map Button */}
             <div className="flex items-center gap-3 min-w-0 flex-1 justify-center max-w-xs mx-auto order-3 md:order-2">
               <button
                 type="button"
@@ -948,6 +963,39 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     Retourner
                   </span>
                 </button>
+              </div>
+
+              {/* Boutons d'action (Album, Carte, Journal) - Centrés en haut */}
+              <div className="absolute top-6 left-0 right-0 flex justify-center items-start gap-4 z-40 px-4 pointer-events-none">
+                {/* Album Button */}
+                {hasMedia && (
+                  <button
+                    onClick={openAlbum}
+                    className="pointer-events-auto flex flex-col items-center gap-1 group/btn"
+                  >
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border border-stone-200 shadow-md flex items-center justify-center text-stone-600 transition-all group-hover/btn:scale-110 group-hover/btn:bg-teal-50 group-hover/btn:text-teal-600 group-hover/btn:border-teal-200">
+                      <Camera size={18} className="sm:w-5 sm:h-5" />
+                    </div>
+                    <span className="text-[9px] sm:text-[10px] font-bold text-stone-500 uppercase tracking-wider bg-white/80 backdrop-blur-sm px-1.5 py-0.5 rounded-md shadow-sm border border-stone-100 opacity-0 group-hover/btn:opacity-100 transition-opacity -translate-y-1 group-hover/btn:translate-y-0">
+                      Album
+                    </span>
+                  </button>
+                )}
+
+                {/* Carnet Button (Journal) */}
+                {hasMedia && (
+                  <button
+                    onClick={openJournal}
+                    className="pointer-events-auto flex flex-col items-center gap-1 group/btn"
+                  >
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border border-stone-200 shadow-md flex items-center justify-center text-stone-600 transition-all group-hover/btn:scale-110 group-hover/btn:bg-amber-50 group-hover/btn:text-amber-600 group-hover/btn:border-amber-200">
+                      <BookOpen size={18} className="sm:w-5 sm:h-5" />
+                    </div>
+                    <span className="text-[9px] sm:text-[10px] font-bold text-stone-500 uppercase tracking-wider bg-white/80 backdrop-blur-sm px-1.5 py-0.5 rounded-md shadow-sm border border-stone-100 opacity-0 group-hover/btn:opacity-100 transition-opacity -translate-y-1 group-hover/btn:translate-y-0">
+                      Carnet
+                    </span>
+                  </button>
+                )}
               </div>
 
               {/* Contenu (texte + timbre/carte) sous la barre de contrôle — z-10 < z-60 de la barre */}
