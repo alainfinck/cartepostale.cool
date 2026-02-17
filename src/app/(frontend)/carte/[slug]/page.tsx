@@ -2,298 +2,285 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Metadata } from 'next'
 import { getPostcardByPublicId } from '@/actions/postcard-actions'
-import PostcardView from '@/components/postcard/PostcardView'
+import PostcardViewToggle from '@/components/view/PostcardViewToggle'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Sparkles, Eye } from 'lucide-react'
-import { NumberTicker } from '@/components/ui/number-ticker'
+import { ArrowRight, Sparkles } from 'lucide-react'
 import { Postcard as PayloadPostcard, Media } from '@/payload-types'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
-import { RotateDevicePrompt } from "@/components/ui/rotate-device-prompt"
+import { RotateDevicePrompt } from '@/components/ui/rotate-device-prompt'
 import SocialBar from '@/components/social/SocialBar'
 import ViewPageTitle from '@/components/view/ViewPageTitle'
 import DistanceDisplay from '@/components/view/DistanceDisplay'
-import PhotoAlbum from '@/components/view/PhotoAlbum'
+import PhotoFeed from '@/components/view/PhotoFeed'
 import EnvelopeExperience from '@/components/view/EnvelopeExperience'
 
 type SearchParams = {
-    [key: string]: string | string[] | undefined
+  [key: string]: string | string[] | undefined
 }
 
 interface PageProps {
-    params: Promise<{ slug: string }>
-    searchParams?: Promise<SearchParams>
+  params: Promise<{ slug: string }>
+  searchParams?: Promise<SearchParams>
 }
 
 // Helper to check if media is an object
 function isMedia(media: any): media is Media {
-    return media && typeof media === 'object' && ('url' in media || 'filename' in media)
+  return media && typeof media === 'object' && ('url' in media || 'filename' in media)
 }
 
 // Build media URL (Payload stores in public/media, Next.js serves at /media/)
 function mediaUrl(media: Media | null | undefined): string {
-    if (!media || typeof media !== 'object') return ''
-    if (media.url) return media.url
-    if (media.filename) {
-        const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')
-        if (base) return `${base}/${media.filename}`
-        return `/media/${media.filename}`
-    }
-    return ''
+  if (!media || typeof media !== 'object') return ''
+  if (media.url) return media.url
+  if (media.filename) {
+    const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')
+    if (base) return `${base}/${media.filename}`
+    return `/media/${media.filename}`
+  }
+  return ''
 }
 
 // Normalize legacy API URLs to static /media/ URLs (fixes 400 on public page)
 function normalizeMediaUrl(url: string): string {
-    if (!url) return ''
+  if (!url) return ''
 
-    // Si c'est déjà une URL absolue, ne rien faire
-    if (url.startsWith('http')) return url
+  // Si c'est déjà une URL absolue, ne rien faire
+  if (url.startsWith('http')) return url
 
-    const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')
+  const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')
 
-    const apiMatch = url.match(/^\/api\/media\/file\/(.+)$/)
-    if (apiMatch) {
-        if (base) return `${base}/${apiMatch[1]}`
-        return `/media/${apiMatch[1]}`
-    }
+  const apiMatch = url.match(/^\/api\/media\/file\/(.+)$/)
+  if (apiMatch) {
+    if (base) return `${base}/${apiMatch[1]}`
+    return `/media/${apiMatch[1]}`
+  }
 
-    const mediaMatch = url.match(/^\/media\/(.+)$/)
-    if (mediaMatch) {
-        if (base) return `${base}/${mediaMatch[1]}`
-        return url
-    }
-
-    // Si c'est juste le nom du fichier
-    if (!url.startsWith('/') && base) {
-        return `${base}/${url}`
-    }
-
+  const mediaMatch = url.match(/^\/media\/(.+)$/)
+  if (mediaMatch) {
+    if (base) return `${base}/${mediaMatch[1]}`
     return url
+  }
+
+  // Si c'est juste le nom du fichier
+  if (!url.startsWith('/') && base) {
+    return `${base}/${url}`
+  }
+
+  return url
 }
 
 // Geocode location string via Nominatim (when postcard has location but no coords)
 async function geocodeLocation(location: string): Promise<{ lat: number; lng: number } | null> {
-    if (!location?.trim()) return null
-    try {
-        const res = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location.trim())}&limit=1`,
-            { headers: { 'User-Agent': 'CartePostaleCool/1.0 (https://cartepostale.cool)' } }
-        )
-        const data = await res.json()
-        const first = data?.[0]
-        if (first?.lat != null && first?.lon != null) {
-            return { lat: Number(first.lat), lng: Number(first.lon) }
-        }
-    } catch {
-        // ignore
+  if (!location?.trim()) return null
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location.trim())}&limit=1`,
+      { headers: { 'User-Agent': 'CartePostaleCool/1.0 (https://cartepostale.cool)' } },
+    )
+    const data = await res.json()
+    const first = data?.[0]
+    if (first?.lat != null && first?.lon != null) {
+      return { lat: Number(first.lat), lng: Number(first.lon) }
     }
-    return null
+  } catch {
+    // ignore
+  }
+  return null
 }
 
 // Mapper function
 function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
-    let frontImageUrl = payloadPostcard.frontImageURL || ''
+  let frontImageUrl = payloadPostcard.frontImageURL || ''
 
-    if (!frontImageUrl && isMedia(payloadPostcard.frontImage)) {
-        frontImageUrl = mediaUrl(payloadPostcard.frontImage as Media)
+  if (!frontImageUrl && isMedia(payloadPostcard.frontImage)) {
+    frontImageUrl = mediaUrl(payloadPostcard.frontImage as Media)
+  }
+  frontImageUrl = normalizeMediaUrl(frontImageUrl)
+
+  // Fallback if no image found (shouldn't happen for valid cards)
+  if (!frontImageUrl) {
+    frontImageUrl = '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
+  }
+
+  const mediaItems: MediaItem[] = []
+  for (const item of (payloadPostcard.mediaItems || []) as any[]) {
+    if (isMedia(item.media)) {
+      const url = normalizeMediaUrl(mediaUrl(item.media as Media))
+      if (!url) continue
+      mediaItems.push({
+        id: item.id || Math.random().toString(36).substring(7),
+        type: item.type === 'video' ? 'video' : 'image',
+        url,
+        note: item.note || undefined,
+      })
     }
-    frontImageUrl = normalizeMediaUrl(frontImageUrl)
+  }
 
-    // Fallback if no image found (shouldn't happen for valid cards)
-    if (!frontImageUrl) {
-        frontImageUrl = '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
-    }
-
-    const mediaItems: MediaItem[] = (payloadPostcard.mediaItems || []).map((item: any) => {
-        if (isMedia(item.media)) {
-            const url = normalizeMediaUrl(mediaUrl(item.media as Media))
-            if (!url) return null
-            return {
-                id: item.id || Math.random().toString(36).substring(7),
-                type: item.type === 'video' ? 'video' : 'image',
-                url,
-            }
-        }
-        return null
-    }).filter((item): item is MediaItem => item !== null)
-
-    return {
-        id: payloadPostcard.publicId, // Use publicId for frontend ID
-        frontImage: frontImageUrl,
-        frontCaption: payloadPostcard.frontCaption || undefined,
-        frontEmoji: payloadPostcard.frontEmoji || undefined,
-        message: payloadPostcard.message,
-        recipientName: payloadPostcard.recipientName || '',
-        senderName: payloadPostcard.senderName || '',
-        location: payloadPostcard.location || '',
-        stampStyle: payloadPostcard.stampStyle || 'classic',
-        stampLabel: payloadPostcard.stampLabel || undefined,
-        stampYear: payloadPostcard.stampYear || undefined,
-        date: new Date(payloadPostcard.date).toLocaleDateString('fr-FR', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        }),
-        mediaItems,
-        isPremium: payloadPostcard.isPremium || false,
-        // coordinates if available
-        coords: payloadPostcard.coords?.lat && payloadPostcard.coords?.lng ? {
+  return {
+    id: payloadPostcard.publicId, // Use publicId for frontend ID
+    frontImage: frontImageUrl,
+    frontCaption: payloadPostcard.frontCaption || undefined,
+    frontEmoji: payloadPostcard.frontEmoji || undefined,
+    message: payloadPostcard.message,
+    recipientName: payloadPostcard.recipientName || '',
+    senderName: payloadPostcard.senderName || '',
+    location: payloadPostcard.location || '',
+    stampStyle: payloadPostcard.stampStyle || 'classic',
+    stampLabel: payloadPostcard.stampLabel || undefined,
+    stampYear: payloadPostcard.stampYear || undefined,
+    date: new Date(payloadPostcard.date).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }),
+    mediaItems,
+    isPremium: payloadPostcard.isPremium || false,
+    // coordinates if available
+    coords:
+      payloadPostcard.coords?.lat && payloadPostcard.coords?.lng
+        ? {
             lat: payloadPostcard.coords.lat,
-            lng: payloadPostcard.coords.lng
-        } : undefined
-    }
+            lng: payloadPostcard.coords.lng,
+          }
+        : undefined,
+  }
 }
 
 import { isCoordinate } from '@/lib/utils'
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const { slug } = await params
-    const postcard = await getPostcardByPublicId(slug)
+  const { slug } = await params
+  const postcard = await getPostcardByPublicId(slug)
 
-    if (!postcard) {
-        return {
-            title: 'Carte postale introuvable',
-        }
-    }
-
-    const title = `Une carte postale de ${postcard.senderName} vous attend !`
-    const description = isCoordinate(postcard.location)
-        ? `Découvrez la carte envoyée par ${postcard.senderName}.`
-        : `Découvrez la carte envoyée par ${postcard.senderName} depuis ${postcard.location}.`
-
+  if (!postcard) {
     return {
-        title,
-        description,
-        openGraph: {
-            title,
-            description,
-            type: 'article',
-            url: `https://cartepostale.cool/carte/${slug}`,
-            siteName: 'CartePostale.cool',
-            images: [
-                {
-                    url: '/media/enveloppe-social2.jpg',
-                    width: 1200,
-                    height: 630,
-                    alt: 'cartepostale.cool - Une carte postale vous attend',
-                },
-            ],
-        },
-        twitter: {
-            card: 'summary_large_image',
-            title,
-            description,
-            images: ['/media/enveloppe-social2.jpg'],
-        },
+      title: 'Carte postale introuvable',
     }
+  }
+
+  const title = `Une carte postale de ${postcard.senderName} vous attend !`
+  const description = isCoordinate(postcard.location)
+    ? `Découvrez la carte envoyée par ${postcard.senderName}.`
+    : `Découvrez la carte envoyée par ${postcard.senderName} depuis ${postcard.location}.`
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'article',
+      url: `https://cartepostale.cool/carte/${slug}`,
+      siteName: 'CartePostale.cool',
+      images: [
+        {
+          url: '/media/enveloppe-social2.jpg',
+          width: 1200,
+          height: 630,
+          alt: 'cartepostale.cool - Une carte postale vous attend',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['/media/enveloppe-social2.jpg'],
+    },
+  }
 }
 
 export default async function PostcardPage({ params, searchParams }: PageProps) {
-    const { slug } = await params
-    const resolvedSearchParams = (await (searchParams ?? Promise.resolve({}))) as SearchParams
-    const envelopeParam = resolvedSearchParams.enveloppe
-    const showEnvelope = envelopeParam !== '0'
+  const { slug } = await params
+  const resolvedSearchParams = (await (searchParams ?? Promise.resolve({}))) as SearchParams
+  const envelopeParam = resolvedSearchParams.enveloppe
+  const showEnvelope = envelopeParam !== '0'
 
-    const payloadPostcard = await getPostcardByPublicId(slug)
+  const payloadPostcard = await getPostcardByPublicId(slug)
 
-    if (!payloadPostcard) {
-        notFound()
-    }
+  if (!payloadPostcard) {
+    notFound()
+  }
 
-    const frontendPostcard = mapPostcard(payloadPostcard)
-    // Geocode when we have location but no coords so the back map can display
-    if (frontendPostcard.location && !frontendPostcard.coords) {
-        const coords = await geocodeLocation(frontendPostcard.location)
-        if (coords) frontendPostcard.coords = coords
-    }
+  const frontendPostcard = mapPostcard(payloadPostcard)
+  // Geocode when we have location but no coords so the back map can display
+  if (frontendPostcard.location && !frontendPostcard.coords) {
+    const coords = await geocodeLocation(frontendPostcard.location)
+    if (coords) frontendPostcard.coords = coords
+  }
 
-    const cardBlock = (
-        <div className="inline-flex flex-col items-end">
-            <PostcardView
-                postcard={frontendPostcard}
-                flipped={false}
-                isLarge={true}
-                className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] md:shadow-[0_30px_70px_rgba(0,0,0,0.2)] hover:shadow-[0_28px_60px_rgba(0,0,0,0.2)] md:hover:shadow-[0_40px_90px_rgba(0,0,0,0.25)]"
-            />
+  const heroSection = (
+    <ViewPageTitle
+      title="Vous avez reçu une carte postale !"
+      senderName={frontendPostcard.senderName}
+    />
+  )
 
-            {/* Compteur de vues - sous la carte, aligné au bord droit de la carte */}
-            <div className="mt-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
-                    <Eye size={14} className="text-stone-300" />
-                    <NumberTicker value={payloadPostcard.views || 0} className="text-stone-400 font-bold" />
-                    <span>vues</span>
-                </div>
-            </div>
-        </div>
-    )
+  const pageContent = (
+    <div className="min-h-screen bg-[#fdfbf7] pt-9 md:pt-0 flex flex-col items-center overflow-x-hidden landscape:justify-center landscape:pt-4 landscape:pb-4">
+      <RotateDevicePrompt />
 
-    const heroSection = (
-        <ViewPageTitle
-            title="Vous avez reçu une carte postale !"
-            senderName={frontendPostcard.senderName}
+      <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-4 md:mb-6 px-2 md:px-4">
+        <PostcardViewToggle postcard={frontendPostcard} views={payloadPostcard.views || 0} />
+      </div>
+
+      {/* Social Bar (Reactions + Sharing) */}
+      <div className="w-full max-w-4xl px-4">
+        <SocialBar
+          postcardId={payloadPostcard.id}
+          publicId={slug}
+          senderName={frontendPostcard.senderName}
+          initialViews={payloadPostcard.views || 0}
+          initialShares={payloadPostcard.shares || 0}
+          coords={frontendPostcard.coords}
         />
-    )
+      </div>
 
-    const pageContent = (
-        <div className="min-h-screen bg-[#fdfbf7] pt-9 md:pt-0 flex flex-col items-center overflow-x-hidden landscape:justify-center landscape:pt-4 landscape:pb-4">
-            <RotateDevicePrompt />
+      {/* Photo Album */}
+      {frontendPostcard.mediaItems && frontendPostcard.mediaItems.length > 0 && (
+        <PhotoFeed
+          mediaItems={frontendPostcard.mediaItems}
+          senderName={frontendPostcard.senderName}
+        />
+      )}
 
-            <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-4 md:mb-6 px-2 md:px-4">
-                {cardBlock}
-            </div>
-
-            {/* Social Bar (Reactions + Sharing) */}
-            <div className="w-full max-w-4xl px-4">
-                <SocialBar
-                    postcardId={payloadPostcard.id}
-                    publicId={slug}
-                    senderName={frontendPostcard.senderName}
-                    initialViews={payloadPostcard.views || 0}
-                    initialShares={payloadPostcard.shares || 0}
-                    coords={frontendPostcard.coords}
-                />
-            </div>
-
-            {/* Photo Album */}
-            {frontendPostcard.mediaItems && frontendPostcard.mediaItems.length > 0 && (
-                <PhotoAlbum
-                    mediaItems={frontendPostcard.mediaItems}
-                    senderName={frontendPostcard.senderName}
-                />
-            )}
-
-            <div className="w-full bg-white/50 backdrop-blur-sm border-y border-stone-100 py-16 md:py-24 px-4">
-                <div className="max-w-md mx-auto text-center">
-                    <div className="inline-flex items-center justify-center w-12 h-12 bg-orange-100 text-orange-600 rounded-full mb-6">
-                        <Sparkles size={24} />
-                    </div>
-                    <h3 className="font-serif font-bold text-2xl text-stone-800 mb-3">
-                        Envoyez le même bonheur
-                    </h3>
-                    <p className="text-stone-500 mb-10 leading-relaxed font-medium">
-                        Créez vos propres cartes postales numériques et partagez vos meilleurs moments avec vos proches.
-                    </p>
-                    <Link href="/editor">
-                        <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-7 text-xl rounded-2xl shadow-2xl shadow-teal-100 transition-all hover:-translate-y-1 active:scale-[0.98]">
-                            Créer ma carte postale <ArrowRight className="ml-2" />
-                        </Button>
-                    </Link>
-                    <p className="mt-6 text-stone-400 text-xs font-medium">
-                        C&apos;est gratuit et instantané ✨
-                    </p>
-                </div>
-            </div>
-
-            <div className="py-12 text-center">
-                <Link href="/" className="text-stone-400 hover:text-stone-600 text-sm font-medium transition-colors border-b border-transparent hover:border-stone-300 pb-1">
-                    {"Retour au site"}
-                </Link>
-            </div>
+      <div className="w-full bg-white/50 backdrop-blur-sm border-y border-stone-100 py-16 md:py-24 px-4">
+        <div className="max-w-md mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-orange-100 text-orange-600 rounded-full mb-6">
+            <Sparkles size={24} />
+          </div>
+          <h3 className="font-serif font-bold text-2xl text-stone-800 mb-3">
+            Envoyez le même bonheur
+          </h3>
+          <p className="text-stone-500 mb-10 leading-relaxed font-medium">
+            Créez vos propres cartes postales numériques et partagez vos meilleurs moments avec vos
+            proches.
+          </p>
+          <Link href="/editor">
+            <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-7 text-xl rounded-2xl shadow-2xl shadow-teal-100 transition-all hover:-translate-y-1 active:scale-[0.98]">
+              Créer ma carte postale <ArrowRight className="ml-2" />
+            </Button>
+          </Link>
+          <p className="mt-6 text-stone-400 text-xs font-medium">
+            C&apos;est gratuit et instantané ✨
+          </p>
         </div>
-    )
+      </div>
 
-    return (
-        <EnvelopeExperience enabled={showEnvelope} hero={heroSection}>
-            {pageContent}
-        </EnvelopeExperience>
-    )
+      <div className="py-12 text-center">
+        <Link
+          href="/"
+          className="text-stone-400 hover:text-stone-600 text-sm font-medium transition-colors border-b border-transparent hover:border-stone-300 pb-1"
+        >
+          {'Retour au site'}
+        </Link>
+      </div>
+    </div>
+  )
+
+  return (
+    <EnvelopeExperience enabled={showEnvelope} hero={heroSection}>
+      {pageContent}
+    </EnvelopeExperience>
+  )
 }

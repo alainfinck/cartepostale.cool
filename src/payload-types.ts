@@ -269,6 +269,10 @@ export interface Postcard {
     | {
         media?: (number | null) | Media;
         type?: ('image' | 'video') | null;
+        /**
+         * Note ou légende pour cette photo/vidéo
+         */
+        note?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -752,6 +756,7 @@ export interface PostcardsSelect<T extends boolean = true> {
     | {
         media?: T;
         type?: T;
+        note?: T;
         id?: T;
       };
   isPremium?: T;

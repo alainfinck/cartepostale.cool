@@ -613,8 +613,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     style={(() => {
                       // Manual cover + user crop logic (matching EditorClient.tsx)
                       // The container aspect is fixed at 3/2 (same as POSTCARD_ASPECT)
-                      const containerW = 100 // % of parent
-                      const containerH = 100 // % of parent
                       const POSTCARD_ASPECT = 3 / 2
 
                       // We simulate the cover scale first
@@ -622,7 +620,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                       // Let's use relative units.
                       const imgAspect = imgNaturalSize.w / imgNaturalSize.h
 
-                      let w, h, left, top
+                      let w: number, h: number
 
                       if (imgAspect > POSTCARD_ASPECT) {
                         // Image is wider than postcard (height-limited)
@@ -634,8 +632,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                         h = (w / imgAspect) * POSTCARD_ASPECT
                       }
 
-                      left = 50 - (postcard.frontImageCrop.x / 100) * w
-                      top = 50 - (postcard.frontImageCrop.y / 100) * h
+                      const left = 50 - (postcard.frontImageCrop.x / 100) * w
+                      const top = 50 - (postcard.frontImageCrop.y / 100) * h
 
                       return {
                         width: `${w}%`,
@@ -835,7 +833,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               ></div>
 
               {/* Contenu (texte + timbre/carte) sous la barre de contrôle — z-10 < z-60 de la barre */}
-              <div className="relative z-10 flex w-full flex-1 min-h-0 gap-2 sm:gap-6 pt-4 sm:pt-6 transition-all duration-300">
+              <div className="relative z-10 flex w-full flex-1 min-h-0 gap-2 sm:gap-6 pt-12 sm:pt-14 transition-all duration-300">
                 {/* Left Side: Message - marge gauche généreuse pour éviter troncature (police manuscrite) */}
                 <div
                   className={cn(

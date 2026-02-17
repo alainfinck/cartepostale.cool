@@ -21,6 +21,7 @@ import {
   Camera,
   Plane,
   PenTool,
+  RotateCw,
   RefreshCw,
   Locate,
   Navigation,
@@ -728,7 +729,12 @@ export default function EditorPage() {
   const [codeSuccess, setCodeSuccess] = useState(false)
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
-  const showBack = currentStep === 'redaction'
+  const [showBack, setShowBack] = useState(currentStep === 'redaction')
+
+  // Sync showBack when step changes
+  useEffect(() => {
+    setShowBack(currentStep === 'redaction')
+  }, [currentStep])
 
   // Image de couverture depuis la galerie (param ?cover=...)
   useEffect(() => {
@@ -1524,7 +1530,11 @@ export default function EditorPage() {
                           : 'bg-stone-100 text-stone-400',
                     )}
                   >
-                    {isCompleted ? <Check size={14} className="sm:w-4 sm:h-4" /> : <Icon size={14} className="sm:w-4 sm:h-4" />}
+                    {isCompleted ? (
+                      <Check size={14} className="sm:w-4 sm:h-4" />
+                    ) : (
+                      <Icon size={14} className="sm:w-4 sm:h-4" />
+                    )}
                     <span className="hidden sm:inline">{step.label}</span>
                   </button>
                   {index < STEPS.length - 1 && !isSkipped && (
@@ -1561,7 +1571,7 @@ export default function EditorPage() {
                   Mise à jour en temps réel
                 </div>
               </div>
-              <div className="relative">
+              <div className="relative z-10 transition-transform duration-300">
                 <PostcardView
                   postcard={postcardForPreview}
                   flipped={showBack}
@@ -1575,39 +1585,80 @@ export default function EditorPage() {
                   isActive={!showBack && currentStep === 'photo'} // Only interactive on front in step 1
                 />
               </div>
-              <div className="mt-4 flex flex-col gap-4">
-                <p className="text-stone-400 text-[10px] uppercase tracking-widest font-bold text-center">
-                  L&apos;aperçu se met à jour en temps réel
-                </p>
+              <div className="mt-0">
+                {/* Compact Control Bar "Coming from behind" */}
+                {/* La carte est en z-10 (relative), la barre en z-0 avec marge négative */}
+                <div className="relative z-0 -mt-4 mx-6 pt-6 pb-2.5 px-5 bg-white/90 backdrop-blur-sm border-x border-b border-stone-200/80 rounded-b-xl shadow-sm flex items-center justify-between transition-all hover:bg-white hover:shadow-md">
+                  <div className="flex items-center gap-5">
+                    <button className="flex items-center gap-2 text-[10px] font-bold text-stone-500 hover:text-teal-600 transition-colors uppercase tracking-wider group">
+                      <Camera
+                        size={14}
+                        className="text-stone-400 group-hover:text-teal-500 transition-colors"
+                      />
+                      <span>
+                        ALBUM{' '}
+                        <span className="ml-0.5 text-stone-400 group-hover:text-teal-500">
+                          {mediaItems?.length || 0}
+                        </span>
+                      </span>
+                    </button>
 
-                <div className="flex flex-col w-full gap-3">
-                  <Button
-                    onClick={() => setShowFullscreen(true)}
-                    variant="outline"
-                    className="w-full text-stone-600 border-stone-200 hover:bg-stone-50 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 h-10 transition-all group"
-                  >
-                    <Maximize2 size={14} className="group-hover:scale-110 transition-transform" />
-                    Aperçu en plein écran
-                  </Button>
+                    <div className="w-px h-3 bg-stone-300/50"></div>
 
-                  {/* Bouton Continuer à gauche sous la carte */}
-                  {(currentStep === 'photo' || currentStep === 'redaction') && (
-                    <div className="flex justify-start">
-                      <Button
-                        onClick={goNext}
-                        disabled={!canGoNext()}
+                    <button
+                      onClick={() => setShowBack(!showBack)}
+                      className="flex items-center gap-2 text-[10px] font-bold text-stone-500 hover:text-teal-600 transition-colors uppercase tracking-wider group"
+                      title={showBack ? 'Voir le recto' : 'Voir le verso'}
+                    >
+                      <RotateCw
+                        size={14}
                         className={cn(
-                          'rounded-xl font-bold flex items-center justify-center gap-2 px-6 py-4 h-auto transition-all shadow-lg shadow-teal-100',
-                          canGoNext()
-                            ? 'bg-teal-500 hover:bg-teal-600 text-white'
-                            : 'bg-stone-200 text-stone-400 cursor-not-allowed',
+                          'text-stone-400 group-hover:text-teal-500 transition-transform duration-500',
+                          showBack ? '-rotate-180' : '',
                         )}
-                      >
-                        Continuer
-                        <ChevronRight size={18} />
-                      </Button>
-                    </div>
-                  )}
+                      />
+                      <span>{showBack ? 'RECTO' : 'OUVRIR CARTE'}</span>
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => setShowFullscreen(true)}
+                    className="flex items-center gap-2 text-[10px] font-bold text-stone-500 hover:text-teal-600 transition-colors uppercase tracking-wider group"
+                    title="Mode plein écran"
+                  >
+                    <Maximize2
+                      size={14}
+                      className="text-stone-400 group-hover:text-teal-500 transition-transform group-hover:scale-110"
+                    />
+                    <span>PLEIN ÉCRAN</span>
+                  </button>
+                </div>
+
+                <div className="mt-2 flex flex-col gap-2">
+                  <p className="text-stone-300 text-[9px] uppercase tracking-widest font-bold text-center opacity-0 hover:opacity-100 transition-opacity">
+                    L&apos;aperçu se met à jour en temps réel
+                  </p>
+
+                  <div className="flex flex-col w-full gap-3">
+                    {/* Bouton Continuer à gauche sous la carte */}
+                    {(currentStep === 'photo' || currentStep === 'redaction') && (
+                      <div className="flex justify-start mt-2">
+                        <Button
+                          onClick={goNext}
+                          disabled={!canGoNext()}
+                          className={cn(
+                            'rounded-xl font-bold flex items-center justify-center gap-2 px-6 py-4 h-auto transition-all shadow-lg shadow-teal-100',
+                            canGoNext()
+                              ? 'bg-teal-500 hover:bg-teal-600 text-white'
+                              : 'bg-stone-200 text-stone-400 cursor-not-allowed',
+                          )}
+                        >
+                          Continuer
+                          <ChevronRight size={18} />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
