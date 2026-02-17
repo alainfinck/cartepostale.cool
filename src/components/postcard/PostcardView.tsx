@@ -404,6 +404,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
   const hasMedia = postcard.mediaItems && postcard.mediaItems.length > 0
 
+  const actionButtonBase =
+    'inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 px-3 sm:px-6 py-1.5 rounded-lg text-[8px] sm:text-[9px] font-bold uppercase tracking-wider active:scale-95 transition-all shadow-sm text-center whitespace-normal sm:whitespace-nowrap'
+
   useEffect(() => {
     setPortalRoot(document.body)
   }, [])
@@ -1412,7 +1415,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 : 'w-full max-w-full sm:w-[552px]'),
           )}
           style={{
-            marginTop: isActionsOpen ? -12 : -52,
+            // Coller au bas de la carte : annule gap-2 (8px) du parent
+            marginTop: isActionsOpen ? -12 : -8,
           }}
         >
           <motion.div
@@ -1423,18 +1427,24 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               pointerEvents: isActionsOpen ? 'auto' : 'none',
             }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="w-full flex justify-center"
+            className={cn(
+              'w-full flex justify-center',
+              !isActionsOpen && 'h-0 min-h-0 overflow-hidden',
+            )}
           >
-            <div className="flex items-center justify-center w-[90%] sm:w-[80%] flex-nowrap gap-2 sm:gap-3 rounded-b-xl border-x border-b border-stone-200/80 bg-gradient-to-b from-white/95 to-stone-50/95 backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.06)] px-2 py-1.5 sm:px-3 sm:py-2 min-h-[36px]">
+            <div className="flex items-center justify-center w-[95%] sm:w-[90%] flex-nowrap gap-2 sm:gap-3 rounded-b-xl border-x border-b border-stone-200/80 bg-gradient-to-b from-white/95 to-stone-50/95 backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.06)] px-2 py-1.5 sm:px-3 sm:py-2.5 min-h-[40px]">
               {hasMedia && (
                 <button
                   onClick={openAlbum}
                   title="Voir les photos de la carte"
-                  className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg bg-amber-50 border border-amber-200/90 text-amber-800 shadow-sm transition-all text-[9px] font-bold uppercase tracking-wider active:scale-95 hover:bg-amber-100 hover:border-amber-300 hover:shadow whitespace-nowrap"
+                  className={cn(
+                    actionButtonBase,
+                    'bg-amber-50 border border-amber-200/90 text-amber-800 hover:bg-amber-100 hover:border-amber-300 hover:shadow',
+                  )}
                 >
                   <Camera size={12} className="text-amber-600 shrink-0" />
                   <span>Album</span>
-                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-3.5 px-1 rounded-md bg-amber-200/50 text-amber-900 text-[8px] font-extrabold leading-none">
+                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-3.5 px-1 rounded-md bg-amber-200/50 text-amber-900 text-[8px] font-extrabold leading-none mt-1 sm:mt-0 sm:ml-1">
                     {postcard.mediaItems!.length}
                   </span>
                 </button>
@@ -1443,7 +1453,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {(postcard.coords || postcard.location) && (
                 <button
                   onClick={openMap}
-                  className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg bg-teal-50/80 border border-teal-200/70 text-teal-800 shadow-sm transition-all text-[9px] font-bold uppercase tracking-wider active:scale-95 hover:bg-teal-100 hover:border-teal-300 hover:shadow whitespace-nowrap"
+                  className={cn(
+                    actionButtonBase,
+                    'bg-teal-50/80 border border-teal-200/70 text-teal-800 hover:bg-teal-100 hover:border-teal-300 hover:shadow',
+                  )}
                   title="Localiser le lieu sur la carte"
                 >
                   <MapPin size={12} className="text-teal-600 shrink-0" />
@@ -1454,7 +1467,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {!isFullscreen && !hideFullscreenButton && (
                 <button
                   onClick={toggleFullscreen}
-                  className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg bg-white border border-stone-200/80 text-stone-600 shadow-sm transition-all text-[9px] font-bold uppercase tracking-wider active:scale-95 hover:text-teal-600 hover:border-teal-200 hover:shadow group whitespace-nowrap"
+                  className={cn(
+                    actionButtonBase,
+                    'group bg-white border border-stone-200/80 text-stone-600 hover:text-teal-600 hover:border-teal-200 hover:shadow',
+                  )}
                 >
                   <Maximize2
                     size={12}
@@ -1469,7 +1485,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   e.stopPropagation()
                   handleFlip()
                 }}
-                className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg bg-white border border-stone-200/80 text-stone-600 shadow-sm transition-all text-[9px] font-bold uppercase tracking-wider active:scale-95 hover:text-teal-600 hover:border-teal-200 hover:shadow whitespace-nowrap"
+                className={cn(
+                  actionButtonBase,
+                  'bg-white border border-stone-200/80 text-stone-600 hover:text-teal-600 hover:border-teal-200 hover:shadow',
+                )}
                 title="Retourner la carte"
               >
                 <RotateCw size={12} className="shrink-0" />
@@ -1496,7 +1515,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 e.stopPropagation()
                 setIsActionsOpen(true)
               }}
-              className="absolute top-full left-1/2 -translate-x-1/2 -mt-[2px] h-4 w-32 bg-white/60 hover:bg-white/90 backdrop-blur-md rounded-b-xl shadow-[0_2px_4px_rgba(0,0,0,0.05)] border-x border-b border-stone-200/50 text-stone-400 hover:text-teal-600 transition-all z-[-1] cursor-pointer flex justify-center items-center group/toggle"
+              className="absolute top-full left-1/2 -translate-x-1/2 h-1.5 w-32 bg-white/80 hover:bg-white/95 backdrop-blur-md rounded-b-full shadow-[0_3px_6px_rgba(0,0,0,0.12)] border border-stone-200/80 text-stone-400 hover:text-teal-600 transition-all z-[-1] cursor-pointer flex justify-center items-center group/toggle"
               title="Afficher les actions"
             >
               <ChevronDown
