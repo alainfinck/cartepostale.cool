@@ -18,6 +18,8 @@ import {
   Minimize2,
   Minus,
   Plus,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 import { cn, isCoordinate } from '@/lib/utils'
 import {
@@ -184,6 +186,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const [backTextScale, setBackTextScale] = useState(isLarge ? 1.2 : 1)
   // Zoom de la mini-carte au verso (pour que + / - fonctionnent sans déclencher le flip)
   const [backMapZoom, setBackMapZoom] = useState(6)
+  const [isActionsOpen, setIsActionsOpen] = useState(true)
 
   const messageContainerRef = useRef<HTMLDivElement>(null)
   const messageTextRef = useRef<HTMLParagraphElement>(null)
@@ -569,7 +572,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
       >
         <motion.div
           className={cn(
-            'perspective-1000 cursor-pointer active:cursor-grabbing group touch-none transition-shadow duration-300',
+            'perspective-1000 cursor-pointer active:cursor-grabbing group touch-none transition-shadow duration-300 relative z-10', // z-10 for layering
             !width &&
               !height &&
               (isLarge
@@ -577,7 +580,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 : 'w-full max-w-full sm:w-[552px] aspect-[3/2] sm:h-[368px]'),
             className,
           )}
-          onClick={handleFlip}
+          onClick={() => {}} // Removed handleFlip from wrapper to prevent back-face clicks from flipping
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.2}
@@ -597,8 +600,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             <motion.div
               className={cn(
                 'absolute w-full h-full backface-hidden rounded-xl shadow-2xl overflow-hidden bg-white border border-stone-200',
-                isFlipped ? 'pointer-events-none' : '',
+                isFlipped ? 'pointer-events-none' : 'cursor-pointer',
               )}
+              onClick={handleFlip} // Only front face is clickable for flipping
               style={{
                 backfaceVisibility: 'hidden',
                 WebkitBackfaceVisibility: 'hidden',
@@ -832,88 +836,91 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 )}
               ></div>
 
+              {/* Top Controls Bar (Moved to absolute top-left) */}
+              <div
+                className={cn(
+                  'absolute top-3 sm:top-5 z-20 flex items-center gap-2 h-6 sm:h-[28px]', // Increased height slightly for better touch target
+                  isLarge ? 'left-5 sm:left-10' : 'left-4 sm:left-8',
+                )}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Font size */}
+                <div className="flex items-center gap-0.5 sm:gap-1 bg-white/50 backdrop-blur-[2px] rounded-lg border border-stone-200/50 px-1 sm:px-1.5 h-full shadow-sm">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setBackTextScale((s) => Math.max(0.7, Number((s - 0.05).toFixed(2))))
+                    }}
+                    className="w-5 h-full flex items-center justify-center rounded hover:bg-white text-stone-500 hover:text-teal-600 transition-colors"
+                    title="Réduire"
+                  >
+                    <Minus size={12} />
+                  </button>
+                  <span className="text-[9px] sm:text-[10px] font-bold text-stone-400 min-w-[12px] text-center select-none pt-[1px]">
+                    A
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setBackTextScale((s) => Math.min(2.2, Number((s + 0.05).toFixed(2))))
+                    }}
+                    className="w-5 h-full flex items-center justify-center rounded hover:bg-white text-stone-500 hover:text-teal-600 transition-colors"
+                    title="Agrandir"
+                  >
+                    <Plus size={12} />
+                  </button>
+                </div>
+
+                {/* Fullscreen */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (isInsideFullscreen && onExitFullscreen) onExitFullscreen()
+                    else toggleFullscreen(e)
+                  }}
+                  className="h-full px-2 sm:px-3 flex items-center gap-1.5 bg-white/50 backdrop-blur-[2px] rounded-lg border border-stone-200/50 text-stone-500 hover:text-teal-600 transition-all shadow-sm group hover:bg-white"
+                  title={isFullscreen || isInsideFullscreen ? 'Quitter plein écran' : 'Plein écran'}
+                >
+                  {isFullscreen || isInsideFullscreen ? (
+                    <Minimize2 size={12} />
+                  ) : (
+                    <Maximize2 size={12} />
+                  )}
+                  <span className="text-[9px] font-bold uppercase tracking-wider hidden sm:inline pt-[1px]">
+                    {isFullscreen || isInsideFullscreen ? 'Sortir' : 'Plein Écran'}
+                  </span>
+                </button>
+
+                {/* Flip button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleFlip()
+                  }}
+                  className="h-full px-2 sm:px-3 flex items-center gap-1.5 bg-white/50 backdrop-blur-[2px] rounded-lg border border-stone-200/50 text-stone-500 hover:text-teal-600 transition-all shadow-sm hover:bg-white"
+                  title="Retourner"
+                >
+                  <RotateCw size={12} />
+                  <span className="text-[9px] font-bold uppercase tracking-wider hidden sm:inline pt-[1px]">
+                    Retourner
+                  </span>
+                </button>
+              </div>
+
               {/* Contenu (texte + timbre/carte) sous la barre de contrôle — z-10 < z-60 de la barre */}
-              <div className="relative z-10 flex w-full flex-1 min-h-0 gap-2 sm:gap-6 pt-12 sm:pt-14 transition-all duration-300">
+              {/* Reduced general padding, added specific margin for Left column to clear controls */}
+              <div className="relative z-10 flex w-full flex-1 min-h-0 gap-2 sm:gap-6 pt-4 sm:pt-4 transition-all duration-300">
                 {/* Left Side: Message - marge gauche généreuse pour éviter troncature (police manuscrite) */}
                 <div
                   className={cn(
-                    'min-w-0 flex flex-col justify-start relative pl-[2px] sm:pl-[2px] pr-2 sm:pr-4',
+                    'min-w-0 flex flex-col justify-start relative pl-[2px] sm:pl-[2px] pr-2 sm:pr-4 mt-8 sm:mt-10', // Added mt to clear top controls
                     isLarge ? 'flex-[2]' : 'flex-[1.5]',
                   )}
                 >
-                  {/* Barre de réglages compacte (verso) */}
-                  <div
-                    className="flex items-center gap-2 mb-2 px-1 h-6 sm:h-[22px] shrink-0"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {/* Font size */}
-                    <div className="flex items-center gap-1 bg-stone-100/80 rounded-md border border-stone-200/60 px-1 h-full shadow-sm">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setBackTextScale((s) => Math.max(0.7, Number((s - 0.05).toFixed(2))))
-                        }}
-                        className="p-0.5 rounded hover:bg-white text-stone-500 hover:text-teal-600 transition-colors"
-                        title="Réduire"
-                      >
-                        <Minus size={12} />
-                      </button>
-                      <span className="text-[10px] font-bold text-stone-400 min-w-[12px] text-center">
-                        A
-                      </span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setBackTextScale((s) => Math.min(2.2, Number((s + 0.05).toFixed(2))))
-                        }}
-                        className="p-0.5 rounded hover:bg-white text-stone-500 hover:text-teal-600 transition-colors"
-                        title="Agrandir"
-                      >
-                        <Plus size={12} />
-                      </button>
-                    </div>
-
-                    {/* Fullscreen */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        if (isInsideFullscreen && onExitFullscreen) onExitFullscreen()
-                        else toggleFullscreen(e)
-                      }}
-                      className="h-full px-2 flex items-center gap-1.5 bg-stone-100/80 rounded-md border border-stone-200/60 text-stone-500 hover:text-teal-600 transition-all shadow-sm group"
-                      title={
-                        isFullscreen || isInsideFullscreen ? 'Quitter plein écran' : 'Plein écran'
-                      }
-                    >
-                      {isFullscreen || isInsideFullscreen ? (
-                        <Minimize2 size={12} />
-                      ) : (
-                        <Maximize2 size={12} />
-                      )}
-                      <span className="text-[9px] font-bold uppercase tracking-wider hidden sm:inline">
-                        {isFullscreen || isInsideFullscreen ? 'Sortir' : 'Plein écran'}
-                      </span>
-                    </button>
-
-                    {/* Flip button - kept for convenience */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleFlip()
-                      }}
-                      className="h-full px-2 flex items-center gap-1.5 bg-stone-100/80 rounded-md border border-stone-200/60 text-stone-500 hover:text-teal-600 transition-all shadow-sm"
-                      title="Retourner"
-                    >
-                      <RotateCw size={12} />
-                      <span className="text-[9px] font-bold uppercase tracking-wider hidden sm:inline">
-                        Retourner
-                      </span>
-                    </button>
-                  </div>
                   <div
                     ref={messageContainerRef}
                     className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 pl-1 sm:pl-2 flex flex-col justify-center"
@@ -955,14 +962,14 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                       <button
                         onClick={openAlbum}
                         title="Voir les photos de la carte"
-                        className="relative inline-flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-[11px] sm:text-xs uppercase tracking-wide shadow-md border-2 border-amber-200/80 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 text-amber-900 group-hover/album:from-amber-100 group-hover/album:via-orange-100 group-hover/album:to-rose-100 group-hover/album:shadow-xl group-hover/album:border-amber-300/90 group-hover/album:scale-[1.05] active:scale-[0.98] transition-all duration-200"
+                        className="relative inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-semibold text-[10px] sm:text-[11px] uppercase tracking-wide shadow-sm border border-amber-200/80 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 text-amber-900 group-hover/album:from-amber-100 group-hover/album:via-orange-100 group-hover/album:to-rose-100 group-hover/album:shadow-md group-hover/album:border-amber-300/90 transition-all duration-200"
                       >
                         <Camera
-                          size={14}
+                          size={12}
                           className="text-amber-600 sm:text-amber-700 group-hover/album:rotate-6 transition-transform"
                         />
                         <span>Album photos</span>
-                        <span className="text-[10px] text-amber-600/80 font-normal">
+                        <span className="text-[9px] text-amber-600/80 font-normal">
                           ({postcard.mediaItems!.length})
                         </span>
                         {/* Tooltip au survol */}
@@ -1309,53 +1316,107 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
         <div
           className={cn(
-            'flex justify-center',
+            'flex flex-col items-center relative z-0 transition-all duration-500 ease-spring',
             !width &&
               !height &&
               (isLarge
                 ? 'w-[95vw] max-w-[460px] sm:w-[552px] sm:max-w-none md:w-[736px] lg:w-[920px]'
                 : 'w-full max-w-full sm:w-[552px]'),
           )}
+          style={{
+            marginTop: isActionsOpen ? -12 : -52,
+          }}
         >
-          <div className="flex items-center justify-center w-full flex-nowrap gap-2 sm:gap-3 rounded-b-xl border-x border-b border-stone-200/80 bg-gradient-to-b from-white/90 to-stone-50/90 backdrop-blur-sm shadow-[0_2px_8px_rgba(0,0,0,0.04)] px-3 py-2 sm:px-4 sm:py-2.5 min-h-[44px]">
-            {hasMedia && (
-              <button
-                onClick={openAlbum}
-                title="Voir les photos de la carte"
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-50 border border-amber-200/90 text-amber-800 shadow-sm transition-all text-[10px] font-bold uppercase tracking-wider active:scale-95 hover:bg-amber-100 hover:border-amber-300 hover:shadow"
-              >
-                <Camera size={12} className="text-amber-600 shrink-0" />
-                <span>Album</span>
-                <span className="inline-flex items-center justify-center min-w-[1.25rem] h-4 px-1 rounded-md bg-amber-200/50 text-amber-900 text-[9px] font-extrabold leading-none">
-                  {postcard.mediaItems!.length}
-                </span>
-              </button>
-            )}
+          <motion.div
+            initial={false}
+            animate={{
+              y: isActionsOpen ? 0 : -20,
+              opacity: isActionsOpen ? 1 : 0,
+              pointerEvents: isActionsOpen ? 'auto' : 'none',
+            }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="w-full flex justify-center"
+          >
+            <div className="flex items-center justify-center w-[90%] sm:w-[80%] flex-nowrap gap-2 sm:gap-3 rounded-b-xl border-x border-b border-stone-200/80 bg-gradient-to-b from-white/95 to-stone-50/95 backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.06)] px-2 py-1.5 sm:px-3 sm:py-2 min-h-[36px]">
+              {hasMedia && (
+                <button
+                  onClick={openAlbum}
+                  title="Voir les photos de la carte"
+                  className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg bg-amber-50 border border-amber-200/90 text-amber-800 shadow-sm transition-all text-[9px] font-bold uppercase tracking-wider active:scale-95 hover:bg-amber-100 hover:border-amber-300 hover:shadow whitespace-nowrap"
+                >
+                  <Camera size={12} className="text-amber-600 shrink-0" />
+                  <span>Album</span>
+                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-3.5 px-1 rounded-md bg-amber-200/50 text-amber-900 text-[8px] font-extrabold leading-none">
+                    {postcard.mediaItems!.length}
+                  </span>
+                </button>
+              )}
 
-            {(postcard.coords || postcard.location) && (
-              <button
-                onClick={openMap}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-teal-50/80 border border-teal-200/70 text-teal-800 shadow-sm transition-all text-[10px] font-bold uppercase tracking-wider active:scale-95 hover:bg-teal-100 hover:border-teal-300 hover:shadow"
-                title="Localiser le lieu sur la carte"
-              >
-                <MapPin size={12} className="text-teal-600 shrink-0" />
-                <span>Ouvrir carte</span>
-              </button>
-            )}
+              {(postcard.coords || postcard.location) && (
+                <button
+                  onClick={openMap}
+                  className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg bg-teal-50/80 border border-teal-200/70 text-teal-800 shadow-sm transition-all text-[9px] font-bold uppercase tracking-wider active:scale-95 hover:bg-teal-100 hover:border-teal-300 hover:shadow whitespace-nowrap"
+                  title="Localiser le lieu sur la carte"
+                >
+                  <MapPin size={12} className="text-teal-600 shrink-0" />
+                  <span>Carte</span>
+                </button>
+              )}
 
-            {!isFullscreen && !hideFullscreenButton && (
+              {!isFullscreen && !hideFullscreenButton && (
+                <button
+                  onClick={toggleFullscreen}
+                  className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg bg-white border border-stone-200/80 text-stone-600 shadow-sm transition-all text-[9px] font-bold uppercase tracking-wider active:scale-95 hover:text-teal-600 hover:border-teal-200 hover:shadow group whitespace-nowrap"
+                >
+                  <Maximize2
+                    size={12}
+                    className="group-hover:scale-105 transition-transform shrink-0"
+                  />
+                  <span>Plein écran</span>
+                </button>
+              )}
+
               <button
-                onClick={toggleFullscreen}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-stone-200/80 text-stone-600 shadow-sm transition-all text-[10px] font-bold uppercase tracking-wider active:scale-95 hover:text-teal-600 hover:border-teal-200 hover:shadow group"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleFlip()
+                }}
+                className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg bg-white border border-stone-200/80 text-stone-600 shadow-sm transition-all text-[9px] font-bold uppercase tracking-wider active:scale-95 hover:text-teal-600 hover:border-teal-200 hover:shadow whitespace-nowrap"
+                title="Retourner la carte"
               >
-                <Maximize2
-                  size={12}
-                  className="group-hover:scale-105 transition-transform shrink-0"
-                />
-                <span>Plein écran</span>
+                <RotateCw size={12} className="shrink-0" />
+                <span>Retourner</span>
               </button>
-            )}
-          </div>
+
+              {/* Close Button Integration */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsActionsOpen(false)
+                }}
+                className="inline-flex items-center justify-center w-6 h-6 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-colors ml-1"
+                title="Masquer la barre"
+              >
+                <ChevronUp size={14} />
+              </button>
+            </div>
+          </motion.div>
+
+          {!isActionsOpen && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsActionsOpen(true)
+              }}
+              className="absolute top-full left-1/2 -translate-x-1/2 -mt-[2px] h-4 w-32 bg-white/60 hover:bg-white/90 backdrop-blur-md rounded-b-xl shadow-[0_2px_4px_rgba(0,0,0,0.05)] border-x border-b border-stone-200/50 text-stone-400 hover:text-teal-600 transition-all z-[-1] cursor-pointer flex justify-center items-center group/toggle"
+              title="Afficher les actions"
+            >
+              <ChevronDown
+                size={14}
+                className="group-hover/toggle:translate-y-0.5 transition-transform"
+              />
+            </button>
+          )}
         </div>
       </div>
 
