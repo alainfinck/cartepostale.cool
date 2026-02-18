@@ -97,7 +97,7 @@ export async function createPostcard(
             filename: data.frontImageKey,
             mimeType: data.frontImageMimeType || 'image/jpeg',
             filesize: data.frontImageFilesize ?? 0,
-            exif: data.frontExif, // Save EXIF data
+            ...(data.frontExif ? { exif: data.frontExif } : {}), // Save EXIF data
           },
         })
         frontImageId = media.id as number
@@ -121,7 +121,7 @@ export async function createPostcard(
           collection: 'media',
           data: {
             alt: `Front Image for postcard ${data.recipientName || 'unnamed'}`,
-            exif: data.frontExif, // Save EXIF data
+            ...(data.frontExif ? { exif: data.frontExif } : {}), // Save EXIF data
           },
           file: {
             data: buffer,
@@ -169,7 +169,7 @@ export async function createPostcard(
                 filename: item.key,
                 mimeType: item.mimeType || 'image/jpeg',
                 filesize: item.filesize ?? 0,
-                exif: item.exif, // Save EXIF data
+                ...(item.exif ? { exif: item.exif } : {}), // Save EXIF data
               },
             })
             mediaId = media.id
@@ -189,7 +189,7 @@ export async function createPostcard(
             collection: 'media',
             data: {
               alt: `Album item for postcard`,
-              exif: item.exif, // Save EXIF data
+              ...(item.exif ? { exif: item.exif } : {}), // Save EXIF data
             },
             file: {
               data: buffer,

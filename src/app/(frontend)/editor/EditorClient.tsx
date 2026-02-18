@@ -1138,6 +1138,20 @@ export default function EditorPage() {
     }
   }, [])
 
+  const [isApplyingDefaultPhoto, setIsApplyingDefaultPhoto] = useState(false)
+  const handleContinueWithDefaultPhoto = useCallback(async () => {
+    const baseTemplate = SAMPLE_TEMPLATES[0]
+    if (!baseTemplate) return
+    setIsApplyingDefaultPhoto(true)
+    try {
+      await handleSelectTemplate(baseTemplate)
+      setCurrentStep('redaction')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } finally {
+      setIsApplyingDefaultPhoto(false)
+    }
+  }, [handleSelectTemplate])
+
   const handleSelectUnsplashImage = useCallback(
     async (imageUrl: string) => {
       setShowUnsplashModal(false)
@@ -2159,7 +2173,27 @@ export default function EditorPage() {
                   </div>
                 </section>
 
-                <div className="mt-8 pt-6 border-t border-stone-200 flex justify-end">
+                <div className="mt-8 pt-6 border-t border-stone-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
+                  {!frontImage && (
+                    <Button
+                      type="button"
+                      onClick={handleContinueWithDefaultPhoto}
+                      disabled={isApplyingDefaultPhoto}
+                      className="rounded-xl font-bold flex items-center justify-center gap-2 px-6 py-4 h-auto transition-all shadow-lg shadow-teal-100 bg-teal-500 hover:bg-teal-600 text-white"
+                    >
+                      {isApplyingDefaultPhoto ? (
+                        <>
+                          <RefreshCw size={18} className="animate-spin" />
+                          Chargement…
+                        </>
+                      ) : (
+                        <>
+                          Continuer avec la photo de base
+                          <ChevronRight size={18} />
+                        </>
+                      )}
+                    </Button>
+                  )}
                   <Button
                     onClick={goNext}
                     disabled={!canGoNext()}
@@ -2747,44 +2781,49 @@ export default function EditorPage() {
                       {(mediaItems || []).map((item) => (
                         <div
                           key={item.id}
-                          className="relative aspect-square rounded-xl overflow-hidden shadow-sm group border border-stone-200"
+                          className="flex flex-col rounded-xl overflow-hidden shadow-sm border border-stone-200 bg-white"
                         >
-                          {item.type === 'video' ? (
-                            <video src={item.url} className="w-full h-full object-cover" />
-                          ) : (
-                            <img
-                              src={getOptimizedImageUrl(item.url, {
-                                width: 400,
-                                height: 400,
-                                fit: 'cover',
-                              })}
-                              alt="album item"
-                              className="w-full h-full object-cover"
-                            />
-                          )}
-                          <div className="absolute top-2 left-2 bg-black/50 backdrop-blur-sm p-1 rounded-md text-white">
-                            {item.type === 'video' ? <Camera size={12} /> : <ImageIcon size={12} />}
-                          </div>
-                          <button
-                            onClick={() => removeMediaItem(item.id)}
-                            className="absolute top-2 right-2 bg-white text-red-500 p-1 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
-                          >
-                            <X size={14} />
-                          </button>
-
-                          {/* Note Button */}
-                          <button
-                            onClick={() => openNoteEditor(item.id, item.note)}
-                            className={cn(
-                              'absolute bottom-2 right-2 p-1.5 rounded-full shadow-md transition-all',
-                              item.note
-                                ? 'bg-teal-500 text-white opacity-100'
-                                : 'bg-white text-stone-500 opacity-0 group-hover:opacity-100 hover:bg-teal-50 hover:text-teal-600',
+                          <div className="relative aspect-square overflow-hidden">
+                            {item.type === 'video' ? (
+                              <video src={item.url} className="w-full h-full object-cover" />
+                            ) : (
+                              <img
+                                src={getOptimizedImageUrl(item.url, {
+                                  width: 400,
+                                  height: 400,
+                                  fit: 'cover',
+                                })}
+                                alt="album item"
+                                className="w-full h-full object-cover"
+                              />
                             )}
-                            title="Ajouter une note / légende"
-                          >
-                            <FileText size={14} />
-                          </button>
+                            <div className="absolute top-1 left-1 flex items-center justify-center w-5 h-5 bg-black/50 backdrop-blur-sm rounded text-white">
+                              {item.type === 'video' ? <Camera size={8} /> : <ImageIcon size={8} />}
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-center gap-1 py-1.5 px-1 border-t border-stone-100 bg-stone-50/50">
+                            <button
+                              type="button"
+                              onClick={() => openNoteEditor(item.id, item.note)}
+                              className={cn(
+                                'flex items-center justify-center w-7 h-7 rounded-md transition-colors',
+                                item.note
+                                  ? 'bg-teal-500 text-white'
+                                  : 'text-stone-400 hover:bg-teal-50 hover:text-teal-600',
+                              )}
+                              title="Ajouter une note / légende"
+                            >
+                              <FileText size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeMediaItem(item.id)}
+                              className="flex items-center justify-center w-7 h-7 rounded-md text-stone-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                              title="Retirer de l'album"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
                         </div>
                       ))}
 
