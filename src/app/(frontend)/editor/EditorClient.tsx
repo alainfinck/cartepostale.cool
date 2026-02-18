@@ -728,6 +728,11 @@ export default function EditorPage() {
   // Note editing state
   const [editingMediaNoteId, setEditingMediaNoteId] = useState<string | null>(null)
   const [editingMediaNoteText, setEditingMediaNoteText] = useState('')
+  const [uploadStatus, setUploadStatus] = useState<{
+    current: number
+    total: number
+    step: string
+  } | null>(null)
 
   // Promo code state
   const [promoCode, setPromoCode] = useState('')
@@ -886,14 +891,17 @@ export default function EditorPage() {
 
   const processFrontImageFile = useCallback(async (file: File) => {
     setUploadedFileName(file.name)
+    setUploadStatus({ current: 1, total: 1, step: 'Lecture des données EXIF...' })
 
     // Extract EXIF data
     const exif = await extractExifData(file)
     setFrontExif(exif)
 
+    setUploadStatus({ current: 1, total: 1, step: "Optimisation de l'image..." })
     // Resize max 2k, JPEG 80%, puis upload du résultat (pas l’original)
     const dataUrl = await fileToDataUrl(file).catch(() => null)
     if (!dataUrl) {
+      setUploadStatus(null)
       setUploadedFileName('')
       alert('Impossible de charger cette image. Utilisez une photo en JPEG ou PNG.')
       return
@@ -903,6 +911,7 @@ export default function EditorPage() {
     const safeName = `postcard-front-${Date.now()}.jpg`
 
     try {
+      setUploadStatus({ current: 1, total: 1, step: "Préparation de l'envoi..." })
       const presignedRes = await fetch('/api/upload-presigned', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -913,6 +922,7 @@ export default function EditorPage() {
         }),
       })
       if (presignedRes.ok) {
+        setUploadStatus({ current: 1, total: 1, step: "Transfert de l'image..." })
         const { url, key } = await presignedRes.json()
         const putRes = await fetch(url, {
           method: 'PUT',
@@ -927,12 +937,14 @@ export default function EditorPage() {
           setFrontImageCrop({ scale: 1, x: 50, y: 50 })
           setFrontImageFilter(DEFAULT_FRONT_FILTER)
           setSelectedTemplateId(null)
+          setUploadStatus(null)
           return
         }
       }
     } catch (_) {
       /* fallback to base64 */
     }
+    setUploadStatus(null)
     setFrontImageKey(null)
     setFrontImageMimeType(null)
     setFrontImageFilesize(null)
@@ -1128,42 +1140,55 @@ export default function EditorPage() {
     )
   }
 
-  const handleAlbumUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAlbumUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     e.target.value = ''
+    if (files.length === 0) return
 
-    for (const file of files) {
+    setUploadStatus({ current: 0, total: files.length, step: 'Initialisation...' })
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
       const isVideo = file.type.startsWith('video/')
+      const type = isVideo ? ('video' as const) : ('image' as const)
+      const newId = Date.now() + Math.random().toString()
 
-      ;(async () => {
-        const type = isVideo ? ('video' as const) : ('image' as const)
-        const newId = Date.now() + Math.random().toString()
+      setUploadStatus({
+        current: i + 1,
+        total: files.length,
+        step: isVideo
+          ? `Traitement vidéo ${i + 1}/${files.length}...`
+          : `Optimisation image ${i + 1}/${files.length}...`,
+      })
 
-        if (isVideo) {
-          const previewUrl = await readFileAsDataUrl(file).catch(() => null)
-          if (!previewUrl) {
-            alert('Impossible de charger la vidéo.')
-            return
-          }
-          setMediaItems((prev) => {
-            const videos = (prev || []).filter((i) => i.type === 'video').length
-            if (videos >= ALBUM_TIERS.tier2.videos) {
-              alert(`Limite de ${ALBUM_TIERS.tier2.videos} vidéos atteinte.`)
-              return prev || []
-            }
-            return [...(prev || []), { id: newId, type: 'video', url: previewUrl } as any]
-          })
-          setIsPremium(true)
-          return
+      if (isVideo) {
+        const previewUrl = await readFileAsDataUrl(file).catch(() => null)
+        if (!previewUrl) {
+          alert(`Impossible de charger la vidéo ${file.name}.`)
+          continue
         }
-
+        setMediaItems((prev) => {
+          const videos = (prev || []).filter((i) => i.type === 'video').length
+          if (videos >= ALBUM_TIERS.tier2.videos) {
+            alert(`Limite de ${ALBUM_TIERS.tier2.videos} vidéos atteinte.`)
+            return prev || []
+          }
+          return [...(prev || []), { id: newId, type: 'video', url: previewUrl } as any]
+        })
+        setIsPremium(true)
+      } else {
         // Image: resize max 2k JPEG 80%, puis upload R2 (presigned), fallback base64
         const previewUrl = await fileToDataUrl(file).catch(() => null)
         if (!previewUrl) {
-          alert('Impossible de charger un fichier. Utilisez des photos en JPEG ou PNG.')
-          return
+          alert(`Impossible de charger ${file.name}. Utilisez des photos en JPEG ou PNG.`)
+          continue
         }
 
+        setUploadStatus({
+          current: i + 1,
+          total: files.length,
+          step: `Extraction EXIF ${i + 1}/${files.length}...`,
+        })
         // Extract EXIF data
         const exif = await extractExifData(file)
 
@@ -1172,7 +1197,13 @@ export default function EditorPage() {
         let filesize: number | undefined
         const blob = await dataUrlToBlob(previewUrl)
         const safeName = `postcard-album-${Date.now()}-${Math.random().toString(36).slice(2, 9)}.jpg`
+
         try {
+          setUploadStatus({
+            current: i + 1,
+            total: files.length,
+            step: `Upload image ${i + 1}/${files.length}...`,
+          })
           const presignedRes = await fetch('/api/upload-presigned', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1215,12 +1246,14 @@ export default function EditorPage() {
           return [...(prev || []), newItem]
         })
         setIsPremium(true)
-      })()
+      }
     }
+    setUploadStatus(null)
   }
 
   const getAlbumPrice = () => {
     if (codeSuccess) return 0
+    if (currentUser?.role === 'admin') return 0
     if (!mediaItems || mediaItems.length === 0) return 0
     const photos = mediaItems.filter((i) => i.type === 'image').length
     const videos = mediaItems.filter((i) => i.type === 'video').length
@@ -1542,9 +1575,9 @@ export default function EditorPage() {
 
   return (
     <div className="min-h-screen bg-[#fdfbf7]">
-      {/* Step Progress Bar */}
-      <div className="bg-white border-b border-stone-200 sticky top-16 md:top-20 z-40">
-        <div className="max-w-5xl mx-auto px-3 py-2 sm:px-4 sm:py-3 md:py-4">
+      {/* Step Progress Bar — collé sous la topbar (top = hauteur navbar, -mt-1 supprime le jour avec la bordure) */}
+      <div className="bg-white border-b border-stone-200 sticky top-16 md:top-20 z-40 -mt-1 mb-6 md:mb-8">
+        <div className="max-w-5xl mx-auto px-3 py-1.5 sm:px-4 sm:py-2 md:py-2.5">
           <div className="flex items-center justify-between gap-0">
             {STEPS.map((step, index) => {
               const Icon = step.icon
@@ -1799,7 +1832,7 @@ export default function EditorPage() {
                         size={20}
                         className="text-stone-400 group-hover:text-teal-600 transition-colors"
                       />
-                      <span>Chercher sur Unsplash</span>
+                      <span>Chercher une image sur la banque d&apos;images ou similaire</span>
                     </Button>
                   </div>
                 )}
@@ -1885,25 +1918,27 @@ export default function EditorPage() {
                         caractères)
                       </p>
                     </div>
-                    <div>
-                      <div className="mb-1.5 flex items-center justify-between">
-                        <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider">
-                          Opacité du fond texte
-                        </label>
-                        <span className="text-xs font-medium text-stone-500 tabular-nums">
-                          {frontTextBgOpacity}%
-                        </span>
+                    {frontCaption.trim().length > 0 && (
+                      <div>
+                        <div className="mb-1.5 flex items-center justify-between">
+                          <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                            Opacité du fond texte
+                          </label>
+                          <span className="text-xs font-medium text-stone-500 tabular-nums">
+                            {frontTextBgOpacity}%
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          step={1}
+                          value={frontTextBgOpacity}
+                          onChange={(e) => setFrontTextBgOpacity(Number(e.target.value))}
+                          className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                        />
                       </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={frontTextBgOpacity}
-                        onChange={(e) => setFrontTextBgOpacity(Number(e.target.value))}
-                        className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
-                      />
-                    </div>
+                    )}
                     <div>
                       <label className="mb-2 block text-xs font-semibold text-stone-600 uppercase tracking-wider">
                         Emoji
@@ -2109,6 +2144,44 @@ export default function EditorPage() {
                     <ChevronLeft size={18} className="mr-2" />
                     Modifier ma commande
                   </Button>
+
+                  {/* Late Promo Code in Payment Step */}
+                  {!codeSuccess && (
+                    <div className="mt-8 pt-6 border-t border-stone-100">
+                      <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">
+                        Un code promo ?
+                      </p>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="CODE"
+                          value={promoCode}
+                          onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                          className="h-10 text-sm font-mono"
+                        />
+                        <Button
+                          size="sm"
+                          onClick={async () => {
+                            if (!promoCode || isActivatingCode) return
+                            setIsActivatingCode(true)
+                            const { validatePromoCode } = await import('@/actions/leads-actions')
+                            const res = await validatePromoCode(promoCode)
+                            setIsActivatingCode(false)
+                            if (res.success) {
+                              setCodeSuccess(true)
+                              setIsPremium(true)
+                            } else {
+                              setCodeError(res.error || 'Invalide')
+                              setTimeout(() => setCodeError(null), 3000)
+                            }
+                          }}
+                          className="bg-stone-800 text-white h-10 px-4"
+                        >
+                          Appliquer
+                        </Button>
+                      </div>
+                      {codeError && <p className="text-[10px] text-red-500 mt-1">{codeError}</p>}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -2605,6 +2678,38 @@ export default function EditorPage() {
                         </label>
                       </div>
                     </div>
+
+                    {/* Upload Progress Overlay */}
+                    {uploadStatus && (
+                      <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-md flex items-center justify-center p-6 text-center animate-in fade-in duration-300">
+                        <div className="max-w-sm w-full bg-white rounded-3xl shadow-2xl shadow-teal-200/50 border border-teal-100 p-8">
+                          <div className="mb-6 relative inline-block">
+                            <div className="w-20 h-20 border-4 border-teal-100 rounded-full"></div>
+                            <div className="w-20 h-20 border-4 border-teal-500 rounded-full border-t-transparent animate-spin absolute inset-0"></div>
+                            <div className="absolute inset-0 flex items-center justify-center text-teal-600 font-black">
+                              {Math.round((uploadStatus.current / uploadStatus.total) * 100)}%
+                            </div>
+                          </div>
+                          <h3 className="text-xl font-serif font-black text-stone-900 mb-2">
+                            Chargement en cours...
+                          </h3>
+                          <p className="text-stone-500 text-sm mb-4 font-medium uppercase tracking-wider">
+                            {uploadStatus.step}
+                          </p>
+                          <div className="w-full bg-stone-100 h-2 rounded-full overflow-hidden">
+                            <div
+                              className="bg-teal-500 h-full transition-all duration-300 rounded-full"
+                              style={{
+                                width: `${(uploadStatus.current / uploadStatus.total) * 100}%`,
+                              }}
+                            />
+                          </div>
+                          <p className="text-[10px] text-stone-400 mt-4 font-bold uppercase tracking-[0.2em]">
+                            Étape {uploadStatus.current} sur {uploadStatus.total}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </section>
 
                   <div className="h-px bg-stone-100" />
@@ -3586,58 +3691,114 @@ export default function EditorPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal d'invitation à laisser son email après création */}
-      <Dialog open={showEmailPromptModal} onOpenChange={setShowEmailPromptModal}>
-        <DialogContent className="max-w-md bg-white rounded-3xl p-8 border-none shadow-2xl overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 via-amber-400 to-teal-400" />
-          <DialogHeader className="pt-4">
-            <div className="mx-auto w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-4 animate-bounce-subtle">
-              <Mail size={32} />
+      {/* Modal Email Prompt */}
+      {showEmailPromptModal && (
+        <Dialog open={showEmailPromptModal} onOpenChange={setShowEmailPromptModal}>
+          <DialogContent className="sm:max-w-md bg-white rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden">
+            <div className="p-8 text-center bg-stone-50 border-b border-stone-100">
+              <div className="w-16 h-16 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Mail size={32} />
+              </div>
+              <DialogTitle className="text-2xl font-serif font-black text-stone-900 mb-2">
+                Recevez votre carte !
+              </DialogTitle>
+              <DialogDescription className="text-stone-500 text-sm font-medium">
+                Saisissez votre email pour sauvegarder cette carte et recevoir votre lien magique.
+              </DialogDescription>
             </div>
-            <DialogTitle className="text-2xl font-serif font-bold text-center text-stone-800">
-              Presque terminé ! ✨
-            </DialogTitle>
-            <DialogDescription className="text-center text-stone-500 text-base leading-relaxed mt-4">
-              C&apos;est important car vous recevrez un lien pour <strong>gérer votre carte</strong>{' '}
-              (la modifier, voir les stats) et vous serez <strong>prévenu</strong> quand elle sera
-              consultée.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-8 space-y-4">
-            <div className="relative group">
-              <Mail
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-teal-500 transition-colors"
-                size={20}
-              />
+            <div className="p-8 space-y-4">
               <Input
                 type="email"
                 placeholder="votre@email.com"
                 value={senderEmail}
                 onChange={(e) => setSenderEmail(e.target.value)}
-                className="pl-12 h-14 rounded-2xl border-stone-200 focus:border-teal-400 focus:ring-teal-400 text-lg transition-all bg-stone-50"
+                className="h-12 rounded-xl border-stone-200 focus:border-teal-500 shadow-sm text-lg"
               />
+              <Button
+                onClick={() => {
+                  if (senderEmail) {
+                    setIsSendingEmail(true)
+                    linkPostcardToUser(createdPostcardId!, senderEmail).then((res) => {
+                      setIsSendingEmail(false)
+                      if (res.success) {
+                        setIsEmailSent(true)
+                        setTimeout(() => {
+                          setShowEmailPromptModal(false)
+                        }, 1500)
+                      }
+                    })
+                  }
+                }}
+                disabled={!senderEmail || isSendingEmail}
+                className="w-full bg-stone-900 hover:bg-black text-white rounded-xl py-6 h-auto font-black flex items-center justify-center gap-2 shadow-lg"
+              >
+                {isSendingEmail ? (
+                  <RefreshCw size={20} className="animate-spin" />
+                ) : isEmailSent ? (
+                  <>
+                    <CheckCircle2 size={20} className="text-teal-400" />
+                    Envoyé !
+                  </>
+                ) : (
+                  'Sauvegarder et Envoyer'
+                )}
+              </Button>
+              <button
+                onClick={() => setShowEmailPromptModal(false)}
+                className="w-full text-stone-400 hover:text-stone-600 text-[10px] sm:text-xs uppercase tracking-widest font-black transition-colors"
+                aria-label="Ignorer cette étape"
+              >
+                Plus tard
+              </button>
             </div>
-            <Button
-              onClick={async () => {
-                if (!senderEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) {
-                  alert('Veuillez entrer un email valide.')
-                  return
-                }
-                if (createdPostcardId) {
-                  await linkPostcardToUser(createdPostcardId, senderEmail)
-                }
-                setShowEmailPromptModal(false)
-              }}
-              className="w-full h-14 rounded-2xl bg-teal-500 hover:bg-teal-600 text-white font-bold text-lg shadow-lg shadow-teal-100 transition-all active:scale-[0.98]"
-            >
-              Enregistrer mon email
-            </Button>
-            <button
-              onClick={() => setShowEmailPromptModal(false)}
-              className="w-full text-stone-400 text-sm font-semibold hover:text-stone-600 transition-colors py-2"
-            >
-              Je le ferai plus tard
-            </button>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Note Editor Dialog */}
+      <Dialog
+        open={!!editingMediaNoteId}
+        onOpenChange={(open) => !open && setEditingMediaNoteId(null)}
+      >
+        <DialogContent className="sm:max-w-md bg-white rounded-3xl border-none shadow-2xl p-0 overflow-hidden">
+          <div className="p-6 border-b border-stone-100 bg-teal-50/30">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-teal-500 text-white rounded-xl flex items-center justify-center shadow-md shadow-teal-100">
+                <FileText size={20} />
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-serif font-extrabold text-stone-900">
+                  Légende de la photo
+                </DialogTitle>
+                <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest leading-none mt-1">
+                  Ajoutez un souvenir
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="p-6 space-y-4">
+            <textarea
+              value={editingMediaNoteText}
+              onChange={(e) => setEditingMediaNoteText(e.target.value)}
+              placeholder="Racontez l'histoire de cette photo..."
+              className="w-full min-h-[150px] rounded-2xl border border-stone-200 focus:border-teal-500 focus:ring-teal-500 text-base p-4 bg-stone-50/50 resize-none transition-all placeholder:text-stone-300"
+              autoFocus
+            />
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                onClick={saveMediaNote}
+                className="flex-1 bg-teal-500 hover:bg-teal-600 text-white rounded-xl font-black shadow-lg shadow-teal-100 transition-all h-12"
+              >
+                Sauvegarder
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => setEditingMediaNoteId(null)}
+                className="bg-stone-50 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-xl font-bold h-12"
+              >
+                Annuler
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

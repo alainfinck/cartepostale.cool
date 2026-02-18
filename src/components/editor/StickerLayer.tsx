@@ -74,9 +74,6 @@ export default function StickerLayer({ stickers, onUpdate, onRemove, isActive }:
         <div
             ref={containerRef}
             className="absolute inset-0 z-20 pointer-events-none"
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onClick={() => setSelectedId(null)}
         >
             {stickers.map((sticker) => (
                 <div
@@ -94,6 +91,9 @@ export default function StickerLayer({ stickers, onUpdate, onRemove, isActive }:
                         touchAction: 'none'
                     }}
                     onPointerDown={(e) => handlePointerDown(e, sticker.id, 'move')}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    onPointerLeave={handlePointerUp}
                     onClick={(e) => e.stopPropagation()}
                 >
                     <img

@@ -938,7 +938,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     if (isInsideFullscreen && onExitFullscreen) onExitFullscreen()
                     else toggleFullscreen(e)
                   }}
-                  className="h-full px-2 sm:px-3 flex items-center gap-1.5 bg-white/50 backdrop-blur-[2px] rounded-lg border border-stone-200/50 text-stone-500 hover:text-teal-600 transition-all shadow-sm group hover:bg-white"
+                  className="h-[28px] max-h-[28px] min-h-0 box-border px-2 sm:px-3 flex items-center gap-1.5 bg-white/50 backdrop-blur-[2px] rounded-lg border border-stone-200/50 text-stone-500 hover:text-teal-600 transition-all shadow-sm group hover:bg-white"
                   title={isFullscreen || isInsideFullscreen ? 'Quitter plein écran' : 'Plein écran'}
                 >
                   {isFullscreen || isInsideFullscreen ? (
@@ -958,7 +958,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     e.stopPropagation()
                     handleFlip()
                   }}
-                  className="h-full px-2 sm:px-3 flex items-center gap-1.5 bg-white/50 backdrop-blur-[2px] rounded-lg border border-stone-200/50 text-stone-500 hover:text-teal-600 transition-all shadow-sm hover:bg-white"
+                  className="h-[28px] max-h-[28px] min-h-0 box-border px-2 sm:px-3 flex items-center gap-1.5 bg-white/50 backdrop-blur-[2px] rounded-lg border border-stone-200/50 text-stone-500 hover:text-teal-600 transition-all shadow-sm hover:bg-white"
                   title="Retourner"
                 >
                   <RotateCw size={12} />
