@@ -18,7 +18,7 @@ export default function MobilePostcardView({ postcard }: MobilePostcardViewProps
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="w-full max-w-lg mx-auto px-4 flex flex-col gap-0"
+      className="w-full max-w-2xl mx-auto px-4 flex flex-col gap-0"
     >
       {/* 1. Front Image — full width, tall */}
       <div className="relative w-full rounded-t-2xl overflow-hidden shadow-xl border border-stone-200 border-b-0">
