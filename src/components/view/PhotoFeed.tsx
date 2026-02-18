@@ -225,36 +225,49 @@ const InstaCard = ({
             <CoolMode options={{ particle: '❤️', size: 30 }}>
               <button
                 onClick={() => handleToggleReaction('❤️')}
-                className="hover:scale-110 active:scale-90 transition-transform"
+                className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-transform"
               >
                 <Heart
                   size={24}
                   className={cn(
-                    'transition-colors',
+                    'transition-colors shrink-0',
                     userReactions['❤️'] ? 'fill-red-500 text-red-500' : 'text-stone-900',
                   )}
                   strokeWidth={userReactions['❤️'] ? 0 : 2}
                 />
+                {canShowReactions && (counts['❤️'] ?? 0) > 0 && (
+                  <span className="text-sm font-semibold text-stone-700 tabular-nums">
+                    {counts['❤️']}
+                  </span>
+                )}
               </button>
             </CoolMode>
             <button className="hover:text-stone-600 transition-colors" type="button" aria-label="Envoyer">
               <Send size={24} className="text-stone-900 -mt-1 rotate-12" />
             </button>
             {canShowReactions &&
-              ['🔥', '😂', '😮'].map((emoji) => (
-                <CoolMode key={emoji} options={{ particle: emoji }}>
-                  <button
-                    type="button"
-                    onClick={() => handleToggleReaction(emoji)}
-                    className={cn(
-                      'text-lg hover:scale-125 transition-transform opacity-70 hover:opacity-100',
-                      userReactions[emoji] && 'opacity-100 scale-110',
-                    )}
-                  >
-                    {emoji}
-                  </button>
-                </CoolMode>
-              ))}
+              ['🔥', '😂', '😮'].map((emoji) => {
+                const n = counts[emoji] ?? 0
+                return (
+                  <CoolMode key={emoji} options={{ particle: emoji }}>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleReaction(emoji)}
+                      className={cn(
+                        'flex items-center gap-1.5 text-lg hover:scale-105 active:scale-95 transition-transform opacity-70 hover:opacity-100',
+                        userReactions[emoji] && 'opacity-100 scale-110',
+                      )}
+                    >
+                      <span>{emoji}</span>
+                      {n > 0 && (
+                        <span className="text-sm font-semibold text-stone-700 tabular-nums">
+                          {n}
+                        </span>
+                      )}
+                    </button>
+                  </CoolMode>
+                )
+              })}
           </div>
           <button type="button" className="hover:text-stone-600 transition-colors" aria-label="Enregistrer">
             <Bookmark size={24} className="text-stone-900" />

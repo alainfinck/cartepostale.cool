@@ -277,6 +277,20 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
         />
       </div>
 
+      {/* Signature de l'expéditeur + lieu et date */}
+      <div className="w-full py-8 text-center space-y-2">
+        <p className="font-serif text-stone-600 text-lg sm:text-xl italic">
+          — {frontendPostcard.senderName}
+        </p>
+        <p className="text-stone-500 text-sm">
+          Carte postale envoyée avec amour
+          {frontendPostcard.location?.trim()
+            ? ` de ${frontendPostcard.location.trim()}`
+            : ''}
+          {frontendPostcard.date ? `, le ${frontendPostcard.date}` : ''}.
+        </p>
+      </div>
+
       <div className="w-full bg-white/50 backdrop-blur-sm border-y border-stone-100 py-16 md:py-24 px-4">
         <div className="max-w-md mx-auto text-center">
           <div className="inline-flex items-center justify-center w-12 h-12 bg-orange-100 text-orange-600 rounded-full mb-6">
@@ -300,13 +314,19 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
         </div>
       </div>
 
-      <div className="py-12 text-center">
+      <div className="py-12 text-center space-y-6">
         <Link
           href="/"
           className="text-stone-400 hover:text-stone-600 text-sm font-medium transition-colors border-b border-transparent hover:border-stone-300 pb-1"
         >
           {'Retour au site'}
         </Link>
+        <p className="text-stone-500 text-sm leading-relaxed max-w-sm mx-auto">
+          Merci de faire vivre les cartes postales numériques. Chaque envoi compte.
+        </p>
+        <p className="text-stone-400 text-xs font-semibold tracking-wider uppercase">
+          — L&apos;équipe cartepostale.cool
+        </p>
       </div>
     </div>
   )

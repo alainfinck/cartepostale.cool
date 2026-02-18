@@ -258,10 +258,16 @@ export default async function PostcardPage({
                     </Link>
                 </div>
 
-                <div className="mt-8 text-center text-stone-400 text-sm">
-                    <Link href="/" className="hover:text-stone-600 underline">
+                <div className="mt-8 text-center space-y-6">
+                    <Link href="/" className="text-stone-400 hover:text-stone-600 text-sm font-medium underline">
                         {"Retour à l'accueil"}
                     </Link>
+                    <p className="text-stone-500 text-sm leading-relaxed max-w-sm mx-auto">
+                        Merci de faire vivre les cartes postales numériques. Chaque envoi compte.
+                    </p>
+                    <p className="text-stone-400 text-xs font-semibold tracking-wider uppercase">
+                        — L&apos;équipe cartepostale.cool
+                    </p>
                 </div>
 
             </div>
