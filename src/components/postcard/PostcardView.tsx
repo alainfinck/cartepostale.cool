@@ -950,10 +950,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {/* Top Controls Bar — boutons plats, larges, icônes plus grandes */}
               <div
                 className={cn(
-                  'absolute top-2 sm:top-4 z-20 flex flex-wrap items-center justify-start gap-1.5 h-6 sm:h-7',
+                  'absolute top-2 sm:top-4 z-20 flex flex-wrap items-center justify-start gap-1.5 h-8',
                   isLarge
                     ? 'left-2 right-4 sm:left-4 sm:right-auto sm:pl-8'
-                    : 'left-2 right-4 sm:left-3 sm:right-auto sm:pl-6',
+                    : 'left-2 right-4 sm:left-3 sm:right-auto sm:pl-3',
                 )}
                 onClick={(e) => e.stopPropagation()}
               >
@@ -1109,9 +1109,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </div>
 
                 {/* Right Side: Stamp + Map */}
-                <div className="flex-1 h-full min-h-0 flex flex-col relative min-w-0 pt-0 sm:pt-1">
-                  {/* Top Section: Stamp */}
-                  <div className="flex-none flex justify-end items-start mb-0.5 gap-2 min-h-0">
+                <div className="flex-1 h-full flex flex-col relative min-w-0 pt-0 min-h-[8rem] sm:min-h-[10rem]">
+                  {/* Top Section: Stamp — remonté pour alignement visuel */}
+                  <div className="flex-none flex justify-end items-start mb-0.5 gap-2 min-h-[4.5rem] sm:min-h-[5.5rem] -mt-6 sm:-mt-8 -mr-1 sm:-mr-3">
                     {/* Stamp - plus petit et plus réaliste */}
                     {(() => {
                       const style = postcard.stampStyle || 'classic'
