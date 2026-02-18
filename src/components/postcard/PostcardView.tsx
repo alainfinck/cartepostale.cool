@@ -988,10 +988,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {/* Top Controls Bar — boutons plats, larges, icônes plus grandes */}
               <div
                 className={cn(
-                  'absolute top-3 sm:top-5 z-20 flex flex-wrap items-center justify-start gap-1.5 h-6 sm:h-7',
+                  'absolute top-2 sm:top-4 z-20 flex flex-wrap items-center justify-start gap-1.5 h-6 sm:h-7',
                   isLarge
-                    ? 'left-4 right-4 sm:left-5 sm:right-auto sm:pl-10'
-                    : 'left-4 right-4 sm:left-4 sm:right-auto sm:pl-8',
+                    ? 'left-2 right-4 sm:left-4 sm:right-auto sm:pl-8'
+                    : 'left-2 right-4 sm:left-3 sm:right-auto sm:pl-6',
                 )}
                 onClick={(e) => e.stopPropagation()}
               >
