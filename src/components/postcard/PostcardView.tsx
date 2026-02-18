@@ -1455,7 +1455,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               !isActionsOpen && 'h-0 min-h-0 overflow-hidden',
             )}
           >
-            <div className="flex items-center justify-center w-[95%] sm:w-[90%] flex-nowrap gap-2 sm:gap-3 rounded-b-xl border-x border-b border-stone-200/80 bg-gradient-to-b from-white/95 to-stone-50/95 backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.06)] px-2 py-1.5 sm:px-3 sm:py-2.5 min-h-[40px]">
+            <div className="flex items-center justify-center w-[95%] sm:w-[90%] flex-nowrap gap-2 sm:gap-3 rounded-b-xl border-x border-b border-stone-200 bg-white shadow-[0_4px_12px_rgba(0,0,0,0.08)] px-2 py-1.5 sm:px-3 sm:py-2.5 min-h-[40px]">
               {hasMedia && (
                 <button
                   onClick={openAlbum}

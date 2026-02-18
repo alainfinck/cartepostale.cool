@@ -225,7 +225,7 @@ export const Navbar = () => {
               <Button
                 className={cn(
                   'bg-gradient-cta hover:opacity-95 text-white rounded-full font-bold shadow-xl shadow-pink-500/30 transition-all border-0 flex items-center gap-2',
-                  scrolled ? 'text-xs px-3.5 h-8' : 'text-xs md:text-sm px-4 md:px-5 h-9 md:h-10',
+                  scrolled ? 'text-xs px-3 h-7' : 'text-xs md:text-sm px-3.5 md:px-4 h-8 md:h-9',
                 )}
               >
                 <Plus size={scrolled ? 14 : 16} strokeWidth={3} />

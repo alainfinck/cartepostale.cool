@@ -60,10 +60,10 @@ export default function PhotoFeed({ mediaItems, senderName }: PhotoFeedProps) {
   return (
     <section
       id="photo-feed"
-      className="w-full max-w-xl mx-auto mt-12 mb-20 px-4 flex flex-col items-center"
+      className="w-full max-w-xl mx-auto mt-12 mb-20 px-3 sm:px-4 flex flex-col items-center overflow-x-hidden min-w-0"
     >
       {!isVisible ? (
-        <div className="text-center py-10">
+        <div className="text-center py-10 w-full max-w-full min-w-0">
           <CoolMode>
             <ShimmerButton
               onClick={() => setIsVisible(true)}
@@ -72,17 +72,17 @@ export default function PhotoFeed({ mediaItems, senderName }: PhotoFeedProps) {
               shimmerDuration="2.5s"
               borderRadius="16px"
               background="linear-gradient(135deg, #09090b 0%, #18181b 100%)"
-              className="bg-stone-950 px-12 py-8 group transition-all hover:scale-105 active:scale-95 shadow-2xl"
+              className="w-full max-w-full min-w-0 bg-stone-950 px-4 py-6 sm:px-12 sm:py-8 group transition-all hover:scale-105 active:scale-95 shadow-2xl"
             >
-              <div className="flex items-center gap-3">
-                <Sparkles className="w-5 h-5 text-emerald-400 group-hover:animate-pulse" />
-                <span className="text-white font-bold text-lg uppercase tracking-widest">
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                <Sparkles className="w-5 h-5 text-emerald-400 group-hover:animate-pulse shrink-0" />
+                <span className="text-white font-bold text-sm sm:text-lg uppercase tracking-widest whitespace-normal text-center">
                   Afficher l'album photo, cliquez ici
                 </span>
               </div>
             </ShimmerButton>
           </CoolMode>
-          <p className="text-stone-400 mt-6 text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">
+          <p className="text-stone-400 mt-6 text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 break-words px-1">
             Découvrir les souvenirs partagés
           </p>
         </div>

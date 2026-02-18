@@ -210,14 +210,13 @@ export default async function PostcardPage({
                             isLarge={true}
                             className="z-10"
                         />
-
-                        {/* View Counter - juste sous la carte, en bas à droite */}
-                        <div className="flex justify-end w-full mt-2 px-2 md:px-0">
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
-                                <Eye size={14} className="text-stone-300" />
-                                <NumberTicker value={payloadPostcard.views || 0} className="text-stone-400 font-bold" />
-                                <span>vues</span>
-                            </div>
+                    </div>
+                    {/* View Counter - en bas à droite du bloc carte */}
+                    <div className="absolute bottom-0 right-2 md:right-0 pb-0 z-20">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
+                            <Eye size={14} className="text-stone-300" />
+                            <NumberTicker value={payloadPostcard.views || 0} className="text-stone-400 font-bold" />
+                            <span>vues</span>
                         </div>
                     </div>
                 </div>
