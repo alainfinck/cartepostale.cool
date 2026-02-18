@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { FrontImageFilter, Postcard } from '@/types'
 import { PhotoLocation } from '@/components/ui/PhotoMarker'
@@ -26,14 +26,7 @@ import {
   Volume2,
 } from 'lucide-react'
 import { cn, isCoordinate } from '@/lib/utils'
-import {
-  AnimatePresence,
-  motion,
-  useSpring,
-  useMotionValue,
-  useTransform,
-  useAnimation,
-} from 'framer-motion'
+import { AnimatePresence, motion, useSpring, useMotionValue, useTransform } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 
@@ -96,7 +89,6 @@ const buildFrontImageFilterCss = (filter?: FrontImageFilter): string => {
 
 const PostcardView: React.FC<PostcardViewProps> = ({
   postcard,
-  isPreview = false,
   flipped,
   frontTextBgOpacity = 90,
   className,
@@ -116,7 +108,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const [isFrontImageLoading, setIsFrontImageLoading] = useState(!!postcard.frontImage)
   const frontImageRef = useRef<HTMLImageElement>(null)
   const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
 
   const captionPos = postcard.frontCaptionPosition ?? DEFAULT_CAPTION_POSITION
   const usePositionedCaption =
@@ -206,9 +197,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const rotateY = useMotionValue(flipped ? 180 : 0)
   const springRotateY = useSpring(rotateY, { stiffness: 80, damping: 26 })
 
-  // Controls for animation
-  const controls = useAnimation()
-
   // Derived opacity for faces to avoid ghosting in Safari/Chrome during 3D flip
   // Values derived from springRotateY to sync with animation and avoid "flash"
   const frontOpacity = useTransform(springRotateY, [88, 92, 268, 272], [1, 0, 0, 1])
@@ -233,6 +221,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   // Zoom de la mini-carte au verso (pour que + / - fonctionnent sans déclencher le flip)
   const [backMapZoom, setBackMapZoom] = useState(6)
   const [isActionsOpen, setIsActionsOpen] = useState(true)
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false)
 
   // Calculate photo locations from EXIF data
   const photoLocations: PhotoLocation[] = React.useMemo(() => {
@@ -632,11 +622,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
       <JournalModal
         isOpen={isJournalOpen}
         onClose={() => setIsJournalOpen(false)}
-        mediaItems={postcard.mediaItems}
-        location={postcard.location}
-        date={postcard.date}
-        journalTitle={`Carnet de ${postcard.senderName}`}
-        isLarge={!!isLarge}
+        postcard={postcard}
       />,
       portalRoot,
     )
