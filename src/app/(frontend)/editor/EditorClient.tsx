@@ -1293,18 +1293,66 @@ export default function EditorPage() {
       })
 
       if (isVideo) {
+        // Video: upload R2 (presigned), fallback URL.createObjectURL for preview?
         const previewUrl = await readFileAsDataUrl(file).catch(() => null)
         if (!previewUrl) {
           alert(`Impossible de charger la vidéo ${file.name}.`)
           continue
         }
+
+        let key: string | undefined
+        let mimeType: string | undefined
+        let filesize: number | undefined
+        const blob = file // Video file is already a blob
+
+        try {
+          setUploadStatus({
+            current: i + 1,
+            total: files.length,
+            step: `Upload vidéo ${i + 1}/${files.length}...`,
+          })
+          const safeName = `postcard-video-${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${file.name.split('.').pop()}`
+
+          const presignedRes = await fetch('/api/upload-presigned', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              filename: safeName,
+              mimeType: file.type,
+              filesize: file.size,
+            }),
+          })
+
+          if (presignedRes.ok) {
+            const { url, key: k } = await presignedRes.json()
+            const putRes = await fetch(url, {
+              method: 'PUT',
+              body: blob,
+              headers: { 'Content-Type': file.type },
+            })
+            if (putRes.ok) {
+              key = k
+              mimeType = file.type
+              filesize = file.size
+            }
+          }
+        } catch (e) {
+          console.error('Video upload failed', e)
+        }
+
         setMediaItems((prev) => {
           const videos = (prev || []).filter((i) => i.type === 'video').length
           if (videos >= ALBUM_TIERS.tier2.videos) {
             alert(`Limite de ${ALBUM_TIERS.tier2.videos} vidéos atteinte.`)
             return prev || []
           }
-          return [...(prev || []), { id: newId, type: 'video', url: previewUrl } as any]
+          const newItem = {
+            id: newId,
+            type: 'video',
+            url: previewUrl,
+            ...(key && { key, mimeType, filesize }),
+          } as any
+          return [...(prev || []), newItem]
         })
         setIsPremium(true)
       } else {
