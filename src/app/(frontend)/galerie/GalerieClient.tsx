@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import {
   Plus,
   Camera,
@@ -29,6 +30,7 @@ import {
   ChevronLeft,
   Minus,
   Info,
+  MapPin,
 } from 'lucide-react'
 import { Postcard } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -36,6 +38,11 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import { searchUnsplashPhotos, type UnsplashPhoto, type UnsplashOrderBy } from '@/lib/unsplash'
+
+const GalleryMap = dynamic(
+  () => import('./GalleryMap').then((m) => m.GalleryMap),
+  { ssr: false, loading: () => <div className="h-[400px] rounded-2xl bg-stone-100 animate-pulse flex items-center justify-center text-stone-500">Chargement de la carte…</div> }
+)
 
 const SHOWCASE_POSTCARDS: Postcard[] = [
   {
@@ -279,6 +286,7 @@ const UNSPLASH_DEBOUNCE_MS = 400
 
 export default function GalerieClient() {
   const [postcards, setPostcards] = useState<Postcard[]>([])
+  const [showMapView, setShowMapView] = useState(false)
   const [unsplashQuery, setUnsplashQuery] = useState('')
   const [unsplashInput, setUnsplashInput] = useState('')
   const [unsplashResults, setUnsplashResults] = useState<UnsplashPhoto[]>([])
@@ -395,7 +403,18 @@ export default function GalerieClient() {
                 .
               </p>
             </div>
-
+            {!unsplashQuery && (
+              <Button
+                type="button"
+                variant={showMapView ? 'secondary' : 'outline'}
+                onClick={() => setShowMapView((v) => !v)}
+                className="shrink-0 rounded-xl gap-2"
+                title={showMapView ? 'Masquer la carte' : 'Afficher les emplacements sur la carte'}
+              >
+                <MapPin size={18} />
+                {showMapView ? 'Masquer la carte' : 'Voir sur la carte'}
+              </Button>
+            )}
           </div>
 
           {/* Grand champ de recherche Unsplash */}
@@ -627,8 +646,14 @@ export default function GalerieClient() {
               )}
             </div>
           ) : (
-            <div className="flex flex-wrap justify-center gap-x-12 gap-y-24">
-              {postcards.map((card) => (
+            <>
+              {showMapView && (
+                <div className="max-w-7xl mx-auto mb-12">
+                  <GalleryMap postcards={postcards} />
+                </div>
+              )}
+              <div className="flex flex-wrap justify-center gap-x-12 gap-y-24">
+                {postcards.map((card) => (
                 <div key={card.id} className="flex flex-col items-center">
                   <PostcardView postcard={card} />
                   <div className="w-[340px] sm:w-[600px] mt-6 flex justify-between items-center px-4 py-3 bg-white border border-stone-100 rounded-2xl shadow-sm">
@@ -648,7 +673,8 @@ export default function GalerieClient() {
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+            </>
           )}
         </div>
       </section>

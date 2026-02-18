@@ -3129,7 +3129,7 @@ export default function EditorPage() {
                           <div className="flex items-center gap-4 bg-teal-50 border-2 border-teal-200 text-teal-800 px-5 py-5 rounded-2xl animate-in fade-in slide-in-from-top-2 shadow-sm">
                             <CheckCircle2 size={24} className="text-teal-600" />
                             <div>
-                              <p className="font-black text-sm">C'est tout bon !</p>
+                              <p className="font-black text-sm">C&apos;est tout bon !</p>
                               <p className="text-xs text-teal-600 font-bold uppercase tracking-wider italic">
                                 Vérifiez vos e-mails
                               </p>
@@ -3200,8 +3200,8 @@ export default function EditorPage() {
                             Envoyer par e-mail (suivi)
                           </h3>
                           <p className="text-stone-500 text-sm mt-1 leading-relaxed">
-                            Le destinataire recevra l&apos;URL de la carte par email.ettant de
-                            suivre l'ouverture de sa carte.
+                            Le destinataire recevra l&apos;URL de la carte par email, permettant de
+                            suivre l&apos;ouverture de sa carte.
                           </p>
                         </div>
                       </div>
