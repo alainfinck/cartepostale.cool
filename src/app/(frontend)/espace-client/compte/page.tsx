@@ -26,9 +26,7 @@ export default async function EspaceClientComptePage() {
     <div className="space-y-8 max-w-2xl">
       <div>
         <h1 className="text-3xl font-serif font-bold text-stone-800">Mon compte</h1>
-        <p className="text-stone-600 mt-1">
-          Vos informations et préférences.
-        </p>
+        <p className="text-stone-600 mt-1">Vos informations et préférences.</p>
       </div>
 
       <div className="bg-white border border-stone-200 rounded-2xl shadow-sm overflow-hidden">
@@ -38,9 +36,7 @@ export default async function EspaceClientComptePage() {
               <User className="w-7 h-7 text-teal-600" />
             </div>
             <div>
-              <p className="font-bold text-stone-800 text-lg">
-                {user.name || 'Utilisateur'}
-              </p>
+              <p className="font-bold text-stone-800 text-lg">{user.name || 'Utilisateur'}</p>
               <p className="text-stone-500 text-sm">{user.email}</p>
             </div>
           </div>
@@ -79,9 +75,7 @@ export default async function EspaceClientComptePage() {
           </div>
           {typeof user.cardsCreated === 'number' && (
             <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-2">
-              <dt className="text-stone-500 text-sm font-medium sm:w-40 shrink-0">
-                Cartes créées
-              </dt>
+              <dt className="text-stone-500 text-sm font-medium sm:w-40 shrink-0">Cartes créées</dt>
               <dd className="text-stone-800">{user.cardsCreated}</dd>
             </div>
           )}
@@ -89,7 +83,7 @@ export default async function EspaceClientComptePage() {
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <Link href="/connexion/mot-de-passe-oublié">
+        <Link href="/connexion/mot-de-passe-oublie">
           <Button variant="outline" className="rounded-xl">
             Changer le mot de passe
           </Button>

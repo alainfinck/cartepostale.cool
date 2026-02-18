@@ -26,9 +26,7 @@ export default async function EspaceAgenceComptePage() {
     <div className="space-y-8 max-w-2xl">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Mon compte</h1>
-        <p className="text-muted-foreground mt-1">
-          Vos informations personnelles.
-        </p>
+        <p className="text-muted-foreground mt-1">Vos informations personnelles.</p>
       </div>
 
       <div className="bg-card border border-border rounded-xl overflow-hidden">
@@ -38,9 +36,7 @@ export default async function EspaceAgenceComptePage() {
               <User className="w-7 h-7 text-teal-600" />
             </div>
             <div>
-              <p className="font-bold text-foreground text-lg">
-                {user.name || 'Utilisateur'}
-              </p>
+              <p className="font-bold text-foreground text-lg">{user.name || 'Utilisateur'}</p>
               <p className="text-muted-foreground text-sm">{user.email}</p>
             </div>
           </div>
@@ -81,7 +77,7 @@ export default async function EspaceAgenceComptePage() {
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <Link href="/connexion/mot-de-passe-oublié">
+        <Link href="/connexion/mot-de-passe-oublie">
           <Button variant="outline" className="rounded-xl">
             Changer le mot de passe
           </Button>

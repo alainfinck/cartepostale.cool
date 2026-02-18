@@ -4,6 +4,7 @@ import { Camera, Eye, EyeOff, Loader2, Globe, X, Map as MapIcon } from 'lucide-r
 import 'leaflet/dist/leaflet.css'
 import { cn } from '@/lib/utils'
 import PhotoMarker, { PhotoLocation } from './PhotoMarker'
+import LeafletFix from './LeafletFix'
 
 interface MapModalProps {
   isOpen: boolean
@@ -143,6 +144,7 @@ const MapModal: React.FC<MapModalProps> = ({
             style={{ width: '100%', height: '100%' }}
             className="z-0"
           >
+            <LeafletFix />
             <MapEffects center={position} zoom={13} />
 
             <LayersControl position="topleft">

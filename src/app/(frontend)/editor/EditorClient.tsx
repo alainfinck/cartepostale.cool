@@ -120,6 +120,8 @@ const FILTER_PRESETS: { id: string; label: string; values: FrontImageFilter }[] 
   },
 ]
 
+const LOCAL_STORAGE_KEY = 'cartepostale_draft_v1'
+
 function getCropPreviewStyle(
   crop: FrontImageCrop,
   naturalSize: { w: number; h: number },
@@ -797,6 +799,115 @@ export default function EditorPage() {
         else setCurrentUser(null)
       })
       .catch(() => setCurrentUser(null))
+  }, [])
+
+  // Sauvegarde locale automatique (Debounce ou effet simple)
+  useEffect(() => {
+    // Ne pas sauvegarder si on visualise une carte créée ou si on est en train de publier
+    if (createdPostcardId || isPublishing) {
+      localStorage.removeItem(LOCAL_STORAGE_KEY)
+      return
+    }
+
+    // On sauvegarde l'état pertinent
+    const stateToSave = {
+      frontImage,
+      frontImageCrop,
+      frontImageFilter,
+      frontCaption,
+      frontEmoji,
+      message,
+      recipientName,
+      senderName,
+      senderEmail,
+      location,
+      stampStyle,
+      stampLabel,
+      stampYear,
+      postmarkText,
+      mediaItems, // Attention: URLs blobs ne persistent pas après reload, mais URLs base64 oui.
+      isPremium,
+      stickers,
+      selectedTemplateId,
+      updatedAt: Date.now(),
+    }
+
+    // Éviter de sauvegarder si vide (juste l'init)
+    if (!frontImage && message.startsWith('Un petit coucou')) return
+
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave))
+    } catch (e) {
+      console.warn('LocalStorage full or error', e)
+    }
+  }, [
+    createdPostcardId,
+    isPublishing,
+    frontImage,
+    frontImageCrop,
+    frontImageFilter,
+    frontCaption,
+    frontEmoji,
+    message,
+    recipientName,
+    senderName,
+    senderEmail,
+    location,
+    stampStyle,
+    stampLabel,
+    stampYear,
+    postmarkText,
+    mediaItems,
+    isPremium,
+    stickers,
+    selectedTemplateId,
+  ])
+
+  // Restauration de la sauvegarde locale au montage
+  useEffect(() => {
+    // Seulement si on n'a pas d'ID dans l'URL (création neuve) et pas de cover imposée
+    if (searchParams.get('id') || searchParams.get('cover')) return
+
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY)
+    if (saved) {
+      try {
+        const data = JSON.parse(saved)
+        // Vérifier si la sauvegarde n'est pas trop vieille (ex: 24h)
+        if (Date.now() - data.updatedAt > 24 * 60 * 60 * 1000) {
+          localStorage.removeItem(LOCAL_STORAGE_KEY)
+          return
+        }
+
+        const confirmRestore = window.confirm(
+          'Une carte non terminée a été retrouvée. Voulez-vous la restaurer ?',
+        )
+        if (confirmRestore) {
+          if (data.frontImage) setFrontImage(data.frontImage)
+          if (data.frontImageCrop) setFrontImageCrop(data.frontImageCrop)
+          if (data.frontImageFilter) setFrontImageFilter(data.frontImageFilter)
+          if (data.frontCaption) setFrontCaption(data.frontCaption)
+          if (data.frontEmoji) setFrontEmoji(data.frontEmoji)
+          if (data.message) setMessage(data.message)
+          if (data.recipientName) setRecipientName(data.recipientName)
+          if (data.senderName) setSenderName(data.senderName)
+          if (data.senderEmail) setSenderEmail(data.senderEmail)
+          if (data.location) setLocation(data.location)
+          if (data.stampStyle) setStampStyle(data.stampStyle)
+          if (data.stampLabel) setStampLabel(data.stampLabel)
+          if (data.stampYear) setStampYear(data.stampYear)
+          if (data.postmarkText) setPostmarkText(data.postmarkText)
+          if (data.mediaItems) setMediaItems(data.mediaItems)
+          if (data.isPremium) setIsPremium(data.isPremium)
+          if (data.stickers) setStickers(data.stickers)
+          if (data.selectedTemplateId) setSelectedTemplateId(data.selectedTemplateId)
+        } else {
+          localStorage.removeItem(LOCAL_STORAGE_KEY)
+        }
+      } catch (e) {
+        console.error('Error restoring draft', e)
+        localStorage.removeItem(LOCAL_STORAGE_KEY)
+      }
+    }
   }, [])
 
   // De base : afficher ma position sur la carte (géolocalisation au chargement)
@@ -1571,6 +1682,17 @@ export default function EditorPage() {
     } finally {
       setIsRevolutRedirecting(false)
     }
+  }
+
+  const handleCreateVariant = () => {
+    setCreatedPostcardId(null)
+    setInternalPostcardId(null)
+    setShareUrl(null)
+    setIsPublishing(false)
+    setCurrentStep('redaction')
+    // On garde tout le reste du state (image, message, etc.)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // toast ?
   }
 
   return (
@@ -2949,6 +3071,18 @@ export default function EditorPage() {
                           <Plane size={24} className="animate-bounce-subtle" />
                           <span>VOIR COMME DESTINATAIRE</span>
                         </Button>
+
+                        {/* Bouton Créer une variante */}
+                        <div className="mt-4 flex justify-center">
+                          <Button
+                            variant="ghost"
+                            onClick={handleCreateVariant}
+                            className="text-stone-500 hover:text-teal-600 hover:bg-teal-50 rounded-xl px-4 py-2 font-bold text-xs sm:text-sm flex items-center gap-2 transition-all"
+                          >
+                            <Copy size={16} />
+                            <span>Créer une variante de cette carte</span>
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>

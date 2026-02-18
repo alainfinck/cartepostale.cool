@@ -2,6 +2,7 @@ import { Metadata, Viewport } from 'next'
 
 import './styles.css'
 import { FrontendLayoutWrapper } from '@/components/layout/FrontendLayoutWrapper'
+import { InstallPrompt } from '@/components/pwa/InstallPrompt'
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -55,7 +56,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'CartePostale',
+    title: 'CartePostale.cool',
   },
   icons: {
     icon: [
@@ -71,6 +72,7 @@ export default function FrontendLayout({ children }: { children: React.ReactNode
     <>
       <div className="flex flex-col min-h-screen bg-[#faf8f5] font-sans antialiased">
         <FrontendLayoutWrapper>{children}</FrontendLayoutWrapper>
+        <InstallPrompt />
       </div>
     </>
   )

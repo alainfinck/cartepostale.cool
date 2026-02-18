@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { cn } from '@/lib/utils'
 import PhotoMarker, { PhotoLocation } from '@/components/ui/PhotoMarker'
+import LeafletFix from '@/components/ui/LeafletFix'
 
 interface MiniMapProps {
   coords: { lat: number; lng: number }
@@ -42,6 +43,7 @@ const MiniMap: React.FC<MiniMapProps> = ({
         attributionControl={false}
         style={{ width: '100%', height: '100%' }}
       >
+        <LeafletFix />
         <ChangeView center={position} zoom={zoom} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

@@ -1,6 +1,6 @@
 {
   "name": "CartePostale.cool",
-  "short_name": "CartePostale",
+  "short_name": "CartePostale.cool",
   "description": "Créez et partagez des cartes postales numériques magnifiques en quelques secondes",
   "start_url": "/",
   "display": "standalone",

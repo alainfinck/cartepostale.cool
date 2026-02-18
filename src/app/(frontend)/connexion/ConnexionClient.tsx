@@ -40,7 +40,11 @@ export default function ConnexionClient() {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        setError(data.errors?.[0]?.message || data.message || (res.status === 401 ? 'Email ou mot de passe incorrect.' : 'Une erreur est survenue.'))
+        setError(
+          data.errors?.[0]?.message ||
+            data.message ||
+            (res.status === 401 ? 'Email ou mot de passe incorrect.' : 'Une erreur est survenue.'),
+        )
         setLoading(false)
         return
       }
@@ -69,7 +73,9 @@ export default function ConnexionClient() {
       })
       const createData = await createRes.json().catch(() => ({}))
       if (!createRes.ok) {
-        setSignupError(createData.errors?.[0]?.message || createData.message || 'Une erreur est survenue.')
+        setSignupError(
+          createData.errors?.[0]?.message || createData.message || 'Une erreur est survenue.',
+        )
         setSignupLoading(false)
         return
       }
@@ -116,7 +122,10 @@ export default function ConnexionClient() {
           <div className="perspective-1000 min-h-[600px]">
             <div
               className="relative w-full min-h-[600px] transform-style-3d"
-              style={{ transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)', transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)' }}
+              style={{
+                transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
             >
               {/* Recto : Connexion */}
               <div
@@ -134,7 +143,9 @@ export default function ConnexionClient() {
                     </div>
                   )}
                   <div className="space-y-3">
-                    <label htmlFor="email" className="text-base font-medium text-stone-700">Email</label>
+                    <label htmlFor="email" className="text-base font-medium text-stone-700">
+                      Email
+                    </label>
                     <div className="relative">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-stone-400" />
                       <Input
@@ -149,7 +160,9 @@ export default function ConnexionClient() {
                     </div>
                   </div>
                   <div className="space-y-3">
-                    <label htmlFor="password" className="text-base font-medium text-stone-700">Mot de passe</label>
+                    <label htmlFor="password" className="text-base font-medium text-stone-700">
+                      Mot de passe
+                    </label>
                     <div className="relative">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-stone-400" />
                       <Input
@@ -164,7 +177,10 @@ export default function ConnexionClient() {
                     </div>
                   </div>
                   <div className="pt-2">
-                    <Link href="/connexion/mot-de-passe-oublié" className="text-base text-teal-600 hover:text-teal-700 font-medium">
+                    <Link
+                      href="/connexion/mot-de-passe-oublie"
+                      className="text-base text-teal-600 hover:text-teal-700 font-medium"
+                    >
                       Mot de passe oublié ?
                     </Link>
                   </div>
@@ -189,7 +205,8 @@ export default function ConnexionClient() {
                     onClick={() => setFlipped(true)}
                     className="text-base text-stone-500 hover:text-teal-600 font-medium mt-auto pt-3"
                   >
-                    Pas encore de compte ? <span className="text-teal-600 underline">Créer un compte</span>
+                    Pas encore de compte ?{' '}
+                    <span className="text-teal-600 underline">Créer un compte</span>
                   </button>
                 </form>
               </div>
@@ -210,7 +227,9 @@ export default function ConnexionClient() {
                     </div>
                   )}
                   <div className="space-y-3">
-                    <label htmlFor="signup-name" className="text-base font-medium text-stone-700">Nom (optionnel)</label>
+                    <label htmlFor="signup-name" className="text-base font-medium text-stone-700">
+                      Nom (optionnel)
+                    </label>
                     <div className="relative">
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-stone-400" />
                       <Input
@@ -224,7 +243,9 @@ export default function ConnexionClient() {
                     </div>
                   </div>
                   <div className="space-y-3">
-                    <label htmlFor="signup-email" className="text-base font-medium text-stone-700">Email</label>
+                    <label htmlFor="signup-email" className="text-base font-medium text-stone-700">
+                      Email
+                    </label>
                     <div className="relative">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-stone-400" />
                       <Input
@@ -239,7 +260,12 @@ export default function ConnexionClient() {
                     </div>
                   </div>
                   <div className="space-y-3">
-                    <label htmlFor="signup-password" className="text-base font-medium text-stone-700">Mot de passe</label>
+                    <label
+                      htmlFor="signup-password"
+                      className="text-base font-medium text-stone-700"
+                    >
+                      Mot de passe
+                    </label>
                     <div className="relative">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-stone-400" />
                       <Input
