@@ -22,7 +22,7 @@ export default function MobilePostcardView({ postcard }: MobilePostcardViewProps
     >
       {/* 1. Front Image — full width, tall */}
       <div className="relative w-full rounded-t-2xl overflow-hidden shadow-xl border border-stone-200 border-b-0">
-        <div className="w-full aspect-[3/4] relative">
+        <div className="w-full aspect-[3/2] relative">
           <Image
             src={postcard.frontImage || '/images/demo/photo-1507525428034-b723cf961d3e.jpg'}
             alt="Carte postale recto"

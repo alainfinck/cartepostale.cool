@@ -21,6 +21,7 @@ import {
   Star,
   Zap,
   Heart,
+  BookOpen,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -71,6 +72,12 @@ const dropdownDecouvrir = [
     icon: ImageIcon,
     title: 'Galerie',
     description: 'Cartes postales créées par la communauté',
+  },
+  {
+    href: '/blog',
+    icon: BookOpen,
+    title: 'Blog',
+    description: 'Astuces et actualités',
   },
   {
     href: '/a-propos',
@@ -221,11 +228,11 @@ export const Navbar = () => {
                 cartepostale.cool
               </span>
             </Link>
-            <Link href="/editor">
+            <Link href="/editor" className="my-1.5 flex items-center">
               <Button
                 className={cn(
                   'bg-gradient-cta hover:opacity-95 text-white rounded-full font-bold shadow-xl shadow-pink-500/30 transition-all border-0 flex items-center gap-2',
-                  scrolled ? 'text-xs px-3 h-7' : 'text-xs md:text-sm px-3.5 md:px-4 h-8 md:h-9',
+                  scrolled ? 'text-xs px-3 h-6' : 'text-xs md:text-sm px-3.5 md:px-4 h-7 md:h-8',
                 )}
               >
                 <Plus size={scrolled ? 14 : 16} strokeWidth={3} />

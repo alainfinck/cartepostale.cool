@@ -44,23 +44,19 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
         </button>
       </div>
 
-      {/* Card view */}
-      {isMobileView ? (
-        <MobilePostcardView postcard={postcard} />
-      ) : (
-        <div className="inline-flex flex-col items-end">
+      {/* Card view + compteur de vues (même bloc, aligné à droite sous la carte) */}
+      <div className="inline-flex flex-col items-end">
+        {isMobileView ? (
+          <MobilePostcardView postcard={postcard} />
+        ) : (
           <PostcardView
             postcard={postcard}
             flipped={false}
             isLarge={true}
             className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] md:shadow-[0_30px_70px_rgba(0,0,0,0.2)] hover:shadow-[0_28px_60px_rgba(0,0,0,0.2)] md:hover:shadow-[0_40px_90px_rgba(0,0,0,0.25)]"
           />
-        </div>
-      )}
-
-      {/* View counter - always visible */}
-      <div className="mt-2">
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
+        )}
+        <div className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
           <Eye size={14} className="text-stone-300" />
           <NumberTicker value={views} className="text-stone-400 font-bold" />
           <span>vues</span>

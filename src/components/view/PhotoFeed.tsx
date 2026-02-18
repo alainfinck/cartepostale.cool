@@ -1,20 +1,290 @@
 'use client'
 
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MediaItem } from '@/types'
-import { Camera, ChevronLeft, ChevronRight, X, Sparkles, StickyNote, User } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Sparkles,
+  StickyNote,
+  User,
+  Heart,
+  Send,
+  Bookmark,
+  MoreHorizontal,
+  Flag,
+  Share2,
+  Link2,
+} from 'lucide-react'
 import { CoolMode } from '@/components/ui/cool-mode'
 import ShimmerButton from '@/components/ui/shimmer-button'
 import { useSessionId } from '@/hooks/useSessionId'
 import { getReactions, getUserReactions, toggleReaction } from '@/actions/social-actions'
-import ReactionBar from '@/components/social/ReactionBar'
+import { cn } from '@/lib/utils'
 
 interface PhotoFeedProps {
   mediaItems: MediaItem[]
   senderName: string
   postcardId?: number
+}
+
+// Helper component for the card to keep the main component clean
+const InstaCard = ({
+  item,
+  index,
+  totalCount,
+  senderName,
+  postcardId,
+  sessionId,
+  canShowReactions,
+  counts,
+  userReactions,
+  onReactionUpdate,
+  onImageClick,
+}: {
+  item: MediaItem
+  index: number
+  totalCount: number
+  senderName: string
+  postcardId?: number
+  sessionId?: string
+  canShowReactions: boolean
+  counts: Record<string, number>
+  userReactions: Record<string, boolean>
+  onReactionUpdate: (emoji: string, added: boolean, newCount: number) => void
+  onImageClick: () => void
+}) => {
+  const [lastClick, setLastClick] = useState(0)
+  const [moreOpen, setMoreOpen] = useState(false)
+  const moreRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setMoreOpen(false)
+      }
+    }
+    if (moreOpen) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [moreOpen])
+
+  const handleCopyLink = () => {
+    const url = typeof window !== 'undefined' ? window.location.href : ''
+    navigator.clipboard?.writeText(url).then(() => setMoreOpen(false))
+  }
+
+  const handleShare = async () => {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Carte postale',
+          url: window.location.href,
+          text: `Photo de ${senderName}`,
+        })
+        setMoreOpen(false)
+      } catch {
+        handleCopyLink()
+      }
+    } else {
+      handleCopyLink()
+    }
+  }
+
+  // Double click to like
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const now = Date.now()
+    if (now - lastClick < 300) {
+      if (!userReactions['❤️']) {
+        handleToggleReaction('❤️')
+      }
+    }
+    setLastClick(now)
+  }
+
+  const handleToggleReaction = async (emoji: string) => {
+    if (!postcardId || !sessionId) return
+
+    // Optimistic
+    const wasActive = userReactions[emoji]
+    const currentCount = counts[emoji] || 0
+    onReactionUpdate(emoji, !wasActive, wasActive ? currentCount - 1 : currentCount + 1)
+
+    try {
+      const result = await toggleReaction(postcardId, emoji, sessionId)
+      onReactionUpdate(emoji, result.added, result.newCount)
+    } catch {
+      onReactionUpdate(emoji, wasActive, currentCount)
+    }
+  }
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      className="flex flex-col bg-white border border-stone-200 rounded-lg overflow-hidden shadow-sm"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-3 py-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full p-[1.5px] bg-gradient-to-tr from-amber-400 to-fuchsia-600">
+            <div className="w-full h-full rounded-full bg-white p-[1.5px]">
+              <div className="w-full h-full rounded-full bg-stone-100 flex items-center justify-center overflow-hidden">
+                <User size={16} className="text-stone-400" />
+              </div>
+            </div>
+          </div>
+          <span className="font-semibold text-sm text-stone-900">{senderName}</span>
+        </div>
+        <div className="relative" ref={moreRef}>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setMoreOpen((v) => !v)
+            }}
+            className="text-stone-900 p-1 rounded hover:bg-stone-100 transition-colors"
+            aria-label="Plus d’options"
+          >
+            <MoreHorizontal size={20} />
+          </button>
+          <AnimatePresence>
+            {moreOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.15 }}
+                className="absolute right-0 top-full mt-1 py-1 min-w-[180px] bg-white border border-stone-200 rounded-lg shadow-lg z-50"
+              >
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-stone-700 hover:bg-stone-50"
+                >
+                  <Share2 size={16} />
+                  Partager
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-stone-700 hover:bg-stone-50"
+                >
+                  <Link2 size={16} />
+                  Copier le lien
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMoreOpen(false)}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-stone-500 hover:bg-stone-50"
+                >
+                  <Flag size={16} />
+                  Signaler
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Image */}
+      <div
+        className="relative w-full aspect-square bg-stone-100 cursor-pointer"
+        onClick={onImageClick}
+        onDoubleClick={handleDoubleClick}
+      >
+        {item.type === 'video' ? (
+          <video
+            src={item.url}
+            className="w-full h-full object-cover"
+            playsInline
+            muted
+            preload="metadata"
+          />
+        ) : (
+          <Image
+            src={item.url}
+            alt={`Photo ${index + 1}`}
+            fill
+            className="object-cover"
+            sizes="(max-width: 470px) 100vw, 470px"
+          />
+        )}
+      </div>
+
+      {/* Actions + réactions sur la même ligne */}
+      <div className="px-3 pt-3 pb-2">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3 flex-wrap">
+            <CoolMode options={{ particle: '❤️', size: 30 }}>
+              <button
+                onClick={() => handleToggleReaction('❤️')}
+                className="hover:scale-110 active:scale-90 transition-transform"
+              >
+                <Heart
+                  size={24}
+                  className={cn(
+                    'transition-colors',
+                    userReactions['❤️'] ? 'fill-red-500 text-red-500' : 'text-stone-900',
+                  )}
+                  strokeWidth={userReactions['❤️'] ? 0 : 2}
+                />
+              </button>
+            </CoolMode>
+            <button className="hover:text-stone-600 transition-colors" type="button" aria-label="Envoyer">
+              <Send size={24} className="text-stone-900 -mt-1 rotate-12" />
+            </button>
+            {canShowReactions &&
+              ['🔥', '😂', '😮'].map((emoji) => (
+                <CoolMode key={emoji} options={{ particle: emoji }}>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleReaction(emoji)}
+                    className={cn(
+                      'text-lg hover:scale-125 transition-transform opacity-70 hover:opacity-100',
+                      userReactions[emoji] && 'opacity-100 scale-110',
+                    )}
+                  >
+                    {emoji}
+                  </button>
+                </CoolMode>
+              ))}
+          </div>
+          <button type="button" className="hover:text-stone-600 transition-colors" aria-label="Enregistrer">
+            <Bookmark size={24} className="text-stone-900" />
+          </button>
+        </div>
+
+        {/* Commentaire de la photo (affiché seulement s'il y en a un) */}
+        {item.note != null && String(item.note).trim() !== '' && (
+          <div className="mb-2">
+            <span className="font-semibold text-stone-900 text-sm mr-2">{senderName}</span>
+            <span className="text-stone-700 text-sm">{String(item.note).trim()}</span>
+          </div>
+        )}
+
+        {/* Likes Count */}
+        <div className="text-sm font-semibold text-stone-900 mb-1">
+          {(counts['❤️'] || 0) + (counts['🔥'] || 0) + (counts['😂'] || 0) > 0 ? (
+            <span>{Object.values(counts).reduce((a, b) => a + b, 0)} J&apos;aime</span>
+          ) : (
+            <span className="text-stone-500 font-normal">Soyez le premier à aimer</span>
+          )}
+        </div>
+
+        {/* Date/Counter */}
+        <div className="text-[10px] uppercase text-stone-500 font-medium mt-1">
+          Photo {index + 1} sur {totalCount} • IL Y A 2 HEURES
+        </div>
+      </div>
+    </motion.article>
+  )
 }
 
 export default function PhotoFeed({ mediaItems, senderName, postcardId }: PhotoFeedProps) {
@@ -95,13 +365,31 @@ export default function PhotoFeed({ mediaItems, senderName, postcardId }: PhotoF
   return (
     <section
       id="photo-feed"
+      aria-labelledby="photo-feed-heading"
       className="w-full max-w-xl mx-auto mt-12 mb-20 px-3 sm:px-4 flex flex-col items-center overflow-x-hidden min-w-0"
     >
+      <h2
+        id="photo-feed-heading"
+        className="w-full max-w-[470px] mx-auto mb-6 text-center text-stone-700 font-serif text-xl sm:text-2xl font-bold"
+      >
+        Album photo{senderName ? ` de ${senderName}` : ''}
+      </h2>
       {!isVisible ? (
         <div className="text-center py-10 w-full max-w-full min-w-0">
           <CoolMode>
             <ShimmerButton
-              onClick={() => setIsVisible(true)}
+              onClick={() => {
+                setIsVisible(true)
+                // Descendre dans la page vers la section album après affichage
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => {
+                    document.getElementById('photo-feed')?.scrollIntoView({
+                      behavior: 'smooth',
+                      block: 'start',
+                    })
+                  })
+                })
+              }}
               shimmerColor="#ffffff"
               shimmerSize="0.1em"
               shimmerDuration="2.5s"
@@ -112,7 +400,7 @@ export default function PhotoFeed({ mediaItems, senderName, postcardId }: PhotoF
               <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                 <Sparkles className="w-5 h-5 text-emerald-400 group-hover:animate-pulse shrink-0" />
                 <span className="text-white font-bold text-sm sm:text-lg uppercase tracking-widest whitespace-normal text-center">
-                  Afficher l'album photo, cliquez ici
+                  Afficher l&apos;album photo, cliquez ici
                 </span>
               </div>
             </ShimmerButton>
@@ -126,90 +414,25 @@ export default function PhotoFeed({ mediaItems, senderName, postcardId }: PhotoF
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="w-full flex flex-col gap-8"
+          className="w-full flex flex-col gap-6"
         >
-          <div className="flex items-center gap-2 justify-center">
-            <Camera size={24} className="text-teal-600" />
-            <h3 className="font-serif text-2xl font-bold text-stone-800">Album de {senderName}</h3>
-          </div>
-
-          {/* Instagram-style cards: each card fits in viewport height */}
-          <div className="flex flex-col gap-8">
+          {/* Instagram-style Feed */}
+          <div className="flex flex-col gap-8 w-full max-w-[470px] mx-auto">
             {mediaItems.map((item, index) => (
-              <motion.article
+              <InstaCard
                 key={item.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.08, duration: 0.5 }}
-                className="flex flex-col max-h-[88vh] rounded-2xl overflow-hidden shadow-xl border border-stone-100 bg-white cursor-pointer"
-                onClick={() => setSelectedIndex(index)}
-              >
-                {/* Card header — Instagram-like */}
-                <div className="flex items-center gap-3 px-4 py-3 border-b border-stone-100 shrink-0">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-100 to-teal-200 flex items-center justify-center shrink-0">
-                    <User size={18} className="text-teal-600" />
-                  </div>
-                  <span className="font-semibold text-stone-800">{senderName}</span>
-                  <span className="text-stone-400 text-xs ml-auto">
-                    {index + 1}/{mediaItems.length}
-                  </span>
-                </div>
-
-                {/* Media: flex-1, contained so full image visible without scrolling card */}
-                <div className="relative flex-1 min-h-0 w-full flex items-center justify-center bg-stone-50">
-                  {item.type === 'video' ? (
-                    <div className="w-full h-full min-h-[200px] max-h-[55vh] flex items-center justify-center">
-                      <video
-                        src={item.url}
-                        className="max-w-full max-h-full w-auto h-auto object-contain rounded-b-none"
-                        playsInline
-                        muted
-                        preload="metadata"
-                      />
-                      <div className="absolute inset-0 bg-black/10 flex items-center justify-center pointer-events-none">
-                        <div className="w-14 h-14 bg-white/40 backdrop-blur-md rounded-full flex items-center justify-center">
-                          <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[16px] border-l-white border-b-[10px] border-b-transparent ml-1" />
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="relative w-full h-full min-h-[200px] max-h-[55vh]">
-                      <Image
-                        src={item.url}
-                        alt={`Photo ${index + 1} de ${senderName}`}
-                        fill
-                        unoptimized
-                        className="object-contain transition-transform duration-300"
-                        sizes="(max-width: 768px) 100vw, 576px"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Caption (note) */}
-                {item.note?.trim() && (
-                  <div className="px-4 py-3 border-t border-stone-100 shrink-0 bg-amber-50/50">
-                    <p className="text-sm text-stone-700 line-clamp-2 leading-relaxed">
-                      <span className="font-semibold text-stone-800">{senderName}</span>{' '}
-                      <span className="italic">&ldquo;{item.note}&rdquo;</span>
-                    </p>
-                  </div>
-                )}
-
-                {/* Reactions per card */}
-                {canShowReactions && (
-                  <div className="px-2 py-2 border-t border-stone-100 shrink-0">
-                    <ReactionBar
-                      postcardId={postcardId!}
-                      sessionId={sessionId}
-                      counts={counts}
-                      userReactions={userReactions}
-                      views={0}
-                      onReactionUpdate={handleReactionUpdate}
-                    />
-                  </div>
-                )}
-              </motion.article>
+                item={item}
+                index={index}
+                totalCount={mediaItems.length}
+                senderName={senderName}
+                postcardId={postcardId}
+                sessionId={sessionId}
+                canShowReactions={canShowReactions}
+                counts={counts}
+                userReactions={userReactions}
+                onReactionUpdate={handleReactionUpdate}
+                onImageClick={() => setSelectedIndex(index)}
+              />
             ))}
           </div>
         </motion.div>
@@ -226,10 +449,15 @@ export default function PhotoFeed({ mediaItems, senderName, postcardId }: PhotoF
             onClick={() => setSelectedIndex(null)}
           >
             <button
-              className="absolute top-6 right-6 text-white/70 hover:text-white p-2 z-50 bg-white/10 rounded-full transition-colors"
-              onClick={() => setSelectedIndex(null)}
+              type="button"
+              aria-label="Fermer (Échap)"
+              className="absolute top-4 right-4 z-[110] p-2.5 rounded-full bg-black/50 hover:bg-black/70 text-white/90 hover:text-white border border-white/20 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation()
+                setSelectedIndex(null)
+              }}
             >
-              <X size={28} />
+              <X size={28} strokeWidth={2.5} />
             </button>
 
             {mediaItems.length > 1 && (

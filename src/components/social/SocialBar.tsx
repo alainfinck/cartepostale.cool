@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
@@ -28,6 +29,8 @@ interface SocialBarProps {
     initialShares: number
     coords?: { lat: number; lng: number }
     allowComments?: boolean
+    /** Id du noeud DOM où afficher la barre de réactions (ex. sous la carte). Si défini, les réactions sont rendues dans ce noeud, le reste en dessous. */
+    reactionsPortalTargetId?: string
 }
 
 
@@ -39,6 +42,7 @@ export default function SocialBar({
     initialShares,
     coords,
     allowComments = true,
+    reactionsPortalTargetId,
 }: SocialBarProps) {
     const searchParams = useSearchParams()
     const sessionId = useSessionId()
@@ -48,6 +52,7 @@ export default function SocialBar({
     const [comments, setComments] = useState<Comment[]>([])
     const [views] = useState(initialViews + 1) // Optimistic +1
     const [loaded, setLoaded] = useState(false)
+    const [portalTargetReady, setPortalTargetReady] = useState(false)
     const eventIdRef = useRef<number | null>(null)
     const openedAtRef = useRef<number>(0)
     const closeSentRef = useRef(false)
@@ -93,6 +98,12 @@ export default function SocialBar({
         load()
     }, [postcardId, sessionId, trackingToken])
 
+    // Pour le portal: la cible peut n'être pas encore en DOM au premier rendu (hydration)
+    useEffect(() => {
+        if (!reactionsPortalTargetId || typeof document === 'undefined') return
+        if (document.getElementById(reactionsPortalTargetId)) setPortalTargetReady(true)
+    }, [reactionsPortalTargetId])
+
 
     // On leave: visibility hidden, pagehide, beforeunload, and unmount
     useEffect(() => {
@@ -136,15 +147,18 @@ export default function SocialBar({
         )
     }
 
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="w-full max-w-4xl mx-auto px-4 space-y-6 mb-12"
+    const reactionBarNode = (
+        <section
+            aria-labelledby="reactions-heading"
+            className="w-full max-w-4xl mx-auto px-4 pb-2 sm:pb-4"
         >
-            <div className="max-w-4xl mx-auto space-y-4">
-                {/* Reactions + Views */}
+            <div className="rounded-xl border border-stone-200 bg-white/80 backdrop-blur-sm shadow-sm px-4 py-3 sm:px-5 sm:py-4">
+                <h2
+                    id="reactions-heading"
+                    className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-stone-400 mb-2 sm:mb-3"
+                >
+                    Réactions
+                </h2>
                 <ReactionBar
                     postcardId={postcardId}
                     sessionId={sessionId}
@@ -153,9 +167,34 @@ export default function SocialBar({
                     views={views}
                     onReactionUpdate={handleReactionUpdate}
                 />
+            </div>
+        </section>
+    )
 
-                {/* Distance calculation (Manual via button) */}
-                <DistanceDisplay
+    const portalTarget =
+        typeof document !== 'undefined' && reactionsPortalTargetId
+            ? document.getElementById(reactionsPortalTargetId)
+            : null
+    const reactionsPortal =
+        reactionsPortalTargetId && portalTargetReady && portalTarget
+            ? createPortal(reactionBarNode, portalTarget)
+            : null
+
+    return (
+        <>
+            {reactionsPortal}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="w-full max-w-4xl mx-auto px-4 space-y-6 mb-12"
+            >
+                <div className="max-w-4xl mx-auto space-y-4">
+                    {/* Reactions: inline si pas de portal, sinon déjà rendues sous la carte */}
+                    {!reactionsPortalTargetId && reactionBarNode}
+
+                    {/* Distance calculation (Manual via button) */}
+                    <DistanceDisplay
                     targetCoords={coords}
                     senderName={senderName}
                 />
@@ -186,6 +225,7 @@ export default function SocialBar({
                     onCommentAdded={handleCommentAdded}
                 />
             )}
-        </motion.div>
+            </motion.div>
+        </>
     )
 }

@@ -221,7 +221,15 @@ export default async function PostcardPage({
                     </div>
                 </div>
 
-                {/* Social Bar (Reactions + Sharing) */}
+                {/* Album photo (sous la carte postale) */}
+                {frontendPostcard.mediaItems && frontendPostcard.mediaItems.length > 0 && (
+                    <PhotoAlbum
+                        mediaItems={frontendPostcard.mediaItems}
+                        senderName={frontendPostcard.senderName}
+                    />
+                )}
+
+                {/* Réactions, partage et commentaires (après l'album) */}
                 <SocialBar
                     postcardId={payloadPostcard.id}
                     publicId={slug}
@@ -231,14 +239,6 @@ export default async function PostcardPage({
                     allowComments={frontendPostcard.allowComments}
                     coords={frontendPostcard.coords}
                 />
-
-                {/* Photo Album */}
-                {frontendPostcard.mediaItems && frontendPostcard.mediaItems.length > 0 && (
-                    <PhotoAlbum
-                        mediaItems={frontendPostcard.mediaItems}
-                        senderName={frontendPostcard.senderName}
-                    />
-                )}
 
                 {/* CTA Section */}
                 <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200 text-center max-w-md w-full">

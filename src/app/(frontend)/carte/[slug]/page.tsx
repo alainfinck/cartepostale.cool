@@ -252,7 +252,19 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
         <PostcardViewToggle postcard={frontendPostcard} views={payloadPostcard.views || 0} />
       </div>
 
-      {/* Social Bar (Reactions + Sharing) */}
+      {/* Cible pour la barre de réactions (rendue ici par SocialBar via portal) */}
+      <div id="reactions-under-card" className="w-full" />
+
+      {/* Galerie photo (avant le livre d'or) */}
+      {frontendPostcard.mediaItems && frontendPostcard.mediaItems.length > 0 && (
+        <PhotoFeed
+          mediaItems={frontendPostcard.mediaItems}
+          senderName={frontendPostcard.senderName}
+          postcardId={payloadPostcard.id}
+        />
+      )}
+
+      {/* Réactions (affichées sous la carte via portal), partage et livre d'or */}
       <div className="w-full max-w-4xl px-4">
         <SocialBar
           postcardId={payloadPostcard.id}
@@ -261,17 +273,9 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
           initialViews={payloadPostcard.views || 0}
           initialShares={payloadPostcard.shares || 0}
           coords={frontendPostcard.coords}
+          reactionsPortalTargetId="reactions-under-card"
         />
       </div>
-
-      {/* Photo Album */}
-      {frontendPostcard.mediaItems && frontendPostcard.mediaItems.length > 0 && (
-        <PhotoFeed
-          mediaItems={frontendPostcard.mediaItems}
-          senderName={frontendPostcard.senderName}
-          postcardId={payloadPostcard.id}
-        />
-      )}
 
       <div className="w-full bg-white/50 backdrop-blur-sm border-y border-stone-100 py-16 md:py-24 px-4">
         <div className="max-w-md mx-auto text-center">

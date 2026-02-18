@@ -483,7 +483,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const hasMedia = postcard.mediaItems && postcard.mediaItems.length > 0
 
   const actionButtonBase =
-    'inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 px-3 sm:px-6 py-1.5 rounded-lg text-[8px] sm:text-[9px] font-bold uppercase tracking-wider active:scale-95 transition-all shadow-sm text-center whitespace-normal sm:whitespace-nowrap'
+    'inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 px-3 sm:px-5 py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider active:scale-95 transition-all shadow-sm text-center whitespace-normal sm:whitespace-nowrap text-stone-800'
 
   useEffect(() => {
     setPortalRoot(document.body)
@@ -1555,7 +1555,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               !isActionsOpen && 'h-0 min-h-0 overflow-hidden',
             )}
           >
-            <div className="flex items-center justify-center w-[95%] sm:w-[90%] flex-nowrap gap-2 sm:gap-3 rounded-b-xl border-x border-b border-stone-200 bg-white shadow-[0_4px_12px_rgba(0,0,0,0.08)] px-2 py-1.5 sm:px-3 sm:py-2.5 min-h-[40px]">
+            <div className="flex items-center justify-center w-[95%] sm:w-[90%] flex-nowrap gap-2 sm:gap-3 rounded-b-xl border-x border-b border-stone-300 bg-stone-50 shadow-[0_6px_20px_rgba(0,0,0,0.1)] px-3 py-2.5 sm:px-4 sm:py-3 min-h-[48px]">
               {hasMedia && (
                 <button
                   onClick={openAlbum}
@@ -1565,9 +1565,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     'bg-amber-50 border border-amber-200/90 text-amber-800 hover:bg-amber-100 hover:border-amber-300 hover:shadow',
                   )}
                 >
-                  <Camera size={12} className="text-amber-600 shrink-0" />
+                  <Camera size={14} className="text-amber-600 shrink-0" />
                   <span>Album</span>
-                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-3.5 px-1 rounded-md bg-amber-200/50 text-amber-900 text-[8px] font-extrabold leading-none mt-1 sm:mt-0 sm:ml-1">
+                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-4 px-1.5 rounded-md bg-amber-200/50 text-amber-900 text-[9px] font-extrabold leading-none mt-1 sm:mt-0 sm:ml-1">
                     {postcard.mediaItems!.length}
                   </span>
                 </button>
@@ -1582,7 +1582,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   )}
                   title="Localiser le lieu sur la carte"
                 >
-                  <MapPin size={12} className="text-teal-600 shrink-0" />
+                  <MapPin size={14} className="text-teal-600 shrink-0" />
                   <span>Carte</span>
                 </button>
               )}
@@ -1592,11 +1592,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   onClick={toggleFullscreen}
                   className={cn(
                     actionButtonBase,
-                    'group bg-white border border-stone-200/80 text-stone-600 hover:text-teal-600 hover:border-teal-200 hover:shadow',
+                    'group bg-white border border-stone-200 text-stone-800 hover:text-teal-600 hover:border-teal-200 hover:shadow hover:bg-teal-50/50',
                   )}
                 >
                   <Maximize2
-                    size={12}
+                    size={14}
                     className="group-hover:scale-105 transition-transform shrink-0"
                   />
                   <span>Plein écran</span>
@@ -1610,11 +1610,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 }}
                 className={cn(
                   actionButtonBase,
-                  'bg-white border border-stone-200/80 text-stone-600 hover:text-teal-600 hover:border-teal-200 hover:shadow',
+                  'bg-white border border-stone-200 text-stone-800 hover:text-teal-600 hover:border-teal-200 hover:shadow hover:bg-teal-50/50',
                 )}
                 title="Retourner la carte"
               >
-                <RotateCw size={12} className="shrink-0" />
+                <RotateCw size={14} className="shrink-0" />
                 <span>Retourner</span>
               </button>
 
@@ -1624,10 +1624,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   e.stopPropagation()
                   setIsActionsOpen(false)
                 }}
-                className="inline-flex items-center justify-center w-6 h-6 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-colors ml-1"
+                className="inline-flex items-center justify-center w-7 h-7 rounded-full hover:bg-stone-200/80 text-stone-500 hover:text-stone-700 transition-colors ml-1"
                 title="Masquer la barre"
               >
-                <ChevronUp size={14} />
+                <ChevronUp size={16} />
               </button>
             </div>
           </motion.div>
