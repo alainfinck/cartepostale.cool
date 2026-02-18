@@ -637,6 +637,8 @@ export default function EditorPage() {
   const [currentStep, setCurrentStep] = useState<StepId>('photo')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isLocating, setIsLocating] = useState(false)
+  /** Synchronisé avec la Navbar : quand elle se réduit au scroll, on colle la barre d'étapes en dessous. */
+  const [navbarScrolled, setNavbarScrolled] = useState(false)
 
   // Postcard state
   const [frontImage, setFrontImage] = useState('')
@@ -765,6 +767,14 @@ export default function EditorPage() {
   useEffect(() => {
     setShowBack(currentStep === 'redaction')
   }, [currentStep])
+
+  // Même seuil que la Navbar : quand elle passe en mode réduit, on ajuste le top de la barre d'étapes
+  useEffect(() => {
+    const handleScroll = () => setNavbarScrolled(window.scrollY > 20)
+    handleScroll() // valeur initiale
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Image de couverture depuis la galerie (param ?cover=...)
   useEffect(() => {
@@ -1921,8 +1931,13 @@ export default function EditorPage() {
 
   return (
     <div className="min-h-screen bg-[#fdfbf7]">
-      {/* Step Progress Bar — collé sous la topbar (top = hauteur navbar, -mt-1 supprime le jour avec la bordure) */}
-      <div className="bg-white border-b border-stone-200 sticky top-16 md:top-20 z-40 -mt-1 mb-6 md:mb-8">
+      {/* Step Progress Bar — collé sous la topbar ; top suit la hauteur navbar (réduite au scroll) */}
+      <div
+        className={cn(
+          'bg-white border-b border-stone-200 sticky z-40 -mt-1 mb-6 md:mb-8 transition-[top] duration-300',
+          navbarScrolled ? 'top-14 md:top-16' : 'top-16 md:top-20',
+        )}
+      >
         <div className="max-w-5xl mx-auto px-3 py-1.5 sm:px-4 sm:py-2 md:py-2.5">
           <div className="flex items-center justify-between gap-0">
             {STEPS.map((step, index) => {

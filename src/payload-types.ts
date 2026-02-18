@@ -264,6 +264,13 @@ export interface Postcard {
    * Emoji affiché près du texte de la face avant
    */
   frontEmoji?: string | null;
+  /**
+   * Position du bloc caption+emoji sur la face (x, y en % 0-100, centre du bloc)
+   */
+  frontCaptionPosition?: {
+    x?: number | null;
+    y?: number | null;
+  };
   message: string;
   recipients?:
     | {
@@ -761,6 +768,12 @@ export interface PostcardsSelect<T extends boolean = true> {
   frontImageURL?: T;
   frontCaption?: T;
   frontEmoji?: T;
+  frontCaptionPosition?:
+    | T
+    | {
+        x?: T;
+        y?: T;
+      };
   message?: T;
   recipients?:
     | T

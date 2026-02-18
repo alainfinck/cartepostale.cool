@@ -45,6 +45,17 @@ export const Postcards: CollectionConfig = {
       },
     },
     {
+      name: 'frontCaptionPosition',
+      type: 'group',
+      admin: {
+        description: 'Position du bloc caption+emoji sur la face (x, y en % 0-100, centre du bloc)',
+      },
+      fields: [
+        { name: 'x', type: 'number', defaultValue: 50 },
+        { name: 'y', type: 'number', defaultValue: 85 },
+      ],
+    },
+    {
       name: 'message',
       type: 'textarea',
       required: true,

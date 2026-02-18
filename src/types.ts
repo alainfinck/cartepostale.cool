@@ -35,6 +35,12 @@ export interface FrontImageFilter {
   grayscale: number
 }
 
+/** Position du bloc caption+emoji sur la face avant (x, y en % 0–100, centre du bloc). */
+export interface FrontCaptionPosition {
+  x: number
+  y: number
+}
+
 export interface Postcard {
   id: string
   frontImage: string
@@ -44,6 +50,8 @@ export interface Postcard {
   frontImageFilter?: FrontImageFilter
   frontCaption?: string
   frontEmoji?: string
+  /** Position du bloc caption+emoji sur la carte (centre en %). Par défaut en bas au centre. */
+  frontCaptionPosition?: FrontCaptionPosition
   message: string
   recipientName: string
   senderName: string

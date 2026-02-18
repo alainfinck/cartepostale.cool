@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { FrontImageFilter, Postcard } from '@/types'
 import { PhotoLocation } from '@/components/ui/PhotoMarker'
