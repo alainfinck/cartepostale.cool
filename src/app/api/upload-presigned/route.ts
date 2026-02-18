@@ -10,7 +10,8 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 const BUCKET = process.env.S3_BUCKET
 const ENDPOINT = process.env.S3_ENDPOINT
 const MAX_SIZE = 100 * 1024 * 1024 // 100 MB
-const ALLOWED_MIME = /^image\/(jpeg|jpg|png|webp|gif)|video\/(mp4|quicktime|webm)$/i
+const ALLOWED_MIME =
+  /^image\/(jpeg|jpg|png|webp|gif)|video\/(mp4|quicktime|webm)|audio\/(webm|mpeg|mp4|wav|ogg)$/i
 const SAFE_FILENAME = /^[a-zA-Z0-9._-]+$/
 
 /** Normalize and validate R2/S3 Access Key ID. Sigv4 credential must be "accessKeyId/date/region/service/aws4_request"; if the ID contains "=" or "/", R2 returns "Credential should have at least 5 slash-separated parts, not 1". */
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
   }
   if (!ALLOWED_MIME.test(mimeType)) {
     return NextResponse.json(
-      { error: 'Type MIME non autorisé (images et vidéos uniquement)' },
+      { error: 'Type MIME non autorisé (images, vidéos et audio uniquement)' },
       { status: 400 },
     )
   }

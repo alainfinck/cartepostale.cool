@@ -6,25 +6,25 @@ import { Postcard } from '@/types'
 import {
   Plus,
   Compass,
-  Mail,
   Sparkles,
-  Zap,
-  Wallet,
   Share2,
-  Image,
   Repeat,
-  MapPin,
-  Maximize2,
   X,
   Building2,
   BarChart3,
   Palette,
   ArrowRight,
+  BookOpen,
+  Video,
+  Mic,
+  Map,
+  Smartphone,
+  Heart,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
-import WordRotate from '@/components/ui/word-rotate'
+
 import ComparisonSection from '@/components/home/ComparisonSection'
 import ShareHomeButtons from '@/components/social/ShareHomeButtons'
 
@@ -308,67 +308,67 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
             <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white border border-stone-100 shadow-lg shadow-stone-200/30 hover:shadow-xl hover:shadow-pink-200/20 hover:border-pink-200/60 transition-all duration-300 hover:-translate-y-1">
               <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Mail className="w-8 h-8 text-pink-600" />
+                <BookOpen className="w-8 h-8 text-pink-600" />
               </div>
-              <h3 className="text-xl font-bold text-stone-800 mb-3">Carte postale virtuelle</h3>
+              <h3 className="text-xl font-bold text-stone-800 mb-3">Carnet de Voyage</h3>
               <p className="text-stone-600 text-base leading-relaxed">
-                Créez une vraie carte en quelques clics depuis votre téléphone ou ordinateur. Plus
-                besoin de chercher timbre ni boîte aux lettres.
+                Plus qu&apos;une simple image. Ajoutez des notes détaillées à chaque photo pour
+                raconter l&apos;histoire complète de votre voyage.
               </p>
             </div>
 
             <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white border border-stone-100 shadow-lg shadow-stone-200/30 hover:shadow-xl hover:shadow-purple-200/20 hover:border-purple-200/60 transition-all duration-300 hover:-translate-y-1">
               <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Sparkles className="w-8 h-8 text-purple-600" />
+                <Smartphone className="w-8 h-8 text-purple-600" />
               </div>
-              <h3 className="text-xl font-bold text-stone-800 mb-3">Nouveau & innovant</h3>
+              <h3 className="text-xl font-bold text-stone-800 mb-3">Vue Mobile & Flux</h3>
               <p className="text-stone-600 text-base leading-relaxed">
-                Une façon moderne de garder le charme du papier : message personnel, photos, vidéos
-                et même localisation sur la carte.
+                Une expérience de lecture fluide sur mobile. Basculez instantanément entre la carte
+                classique et un flux vertical moderne.
               </p>
             </div>
 
             <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white border border-stone-100 shadow-lg shadow-stone-200/30 hover:shadow-xl hover:shadow-pink-200/20 hover:border-pink-200/60 transition-all duration-300 hover:-translate-y-1">
               <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-100 to-orange-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Zap className="w-8 h-8 text-pink-600" />
+                <Video className="w-8 h-8 text-pink-600" />
               </div>
-              <h3 className="text-xl font-bold text-stone-800 mb-3">Instantané</h3>
+              <h3 className="text-xl font-bold text-stone-800 mb-3">Vidéos immersives</h3>
               <p className="text-stone-600 text-base leading-relaxed">
-                Fini les délais de la poste. Votre carte arrive tout de suite chez vos proches, où
-                qu&apos;ils soient dans le monde.
+                Ne figez pas le temps, capturez-le ! Intégrez vos vidéos directement dans la carte
+                pour partager l&apos;ambiance réelle du moment.
               </p>
             </div>
 
             <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white border border-stone-100 shadow-lg shadow-stone-200/30 hover:shadow-xl hover:shadow-purple-200/20 hover:border-purple-200/60 transition-all duration-300 hover:-translate-y-1">
               <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Wallet className="w-8 h-8 text-purple-600" />
+                <Mic className="w-8 h-8 text-purple-600" />
               </div>
-              <h3 className="text-xl font-bold text-stone-800 mb-3">Prix imbattable</h3>
+              <h3 className="text-xl font-bold text-stone-800 mb-3">Message Audio</h3>
               <p className="text-stone-600 text-base leading-relaxed">
-                Payez 1 seule fois, envoyez à autant de personnes que vous voulez via un lien
-                unique. Beaucoup moins cher que 10 timbres !
+                Faites entendre votre voix. Enregistrez un message audio personnel qui touchera vos
+                proches bien plus qu&apos;un simple texte.
               </p>
             </div>
 
             <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white border border-stone-100 shadow-lg shadow-stone-200/30 hover:shadow-xl hover:shadow-pink-200/20 hover:border-pink-200/60 transition-all duration-300 hover:-translate-y-1">
               <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Share2 className="w-8 h-8 text-pink-600" />
+                <Map className="w-8 h-8 text-pink-600" />
               </div>
-              <h3 className="text-xl font-bold text-stone-800 mb-3">Vos proches réagissent !</h3>
+              <h3 className="text-xl font-bold text-stone-800 mb-3">Carte Interactive</h3>
               <p className="text-stone-600 text-base leading-relaxed">
-                Plus qu&apos;une simple lecture : ils peuvent liker, commenter et signer votre livre
-                d&apos;or. Interactivité garantie.
+                Vos photos se positionnent automatiquement sur la carte. Vos proches visualisent
+                votre parcours et chaque étape de votre voyage.
               </p>
             </div>
 
             <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white border border-stone-100 shadow-lg shadow-stone-200/30 hover:shadow-xl hover:shadow-purple-200/20 hover:border-purple-200/60 transition-all duration-300 hover:-translate-y-1">
               <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Image className="w-8 h-8 text-purple-600" />
+                <Heart className="w-8 h-8 text-purple-600" />
               </div>
-              <h3 className="text-xl font-bold text-stone-800 mb-3">Vos photos, votre carte</h3>
+              <h3 className="text-xl font-bold text-stone-800 mb-3">Réactions & Livre d&apos;Or</h3>
               <p className="text-stone-600 text-base leading-relaxed">
-                Mettez vos plus belles photos sur la carte, ajoutez un message à la main (style
-                manuscrit) et envoyez. Simple et personnel.
+                Créez le lien. Vos amis peuvent laisser des J&apos;aime, signer le livre d&apos;or
+                et répondre à votre carte instantanément.
               </p>
             </div>
           </div>

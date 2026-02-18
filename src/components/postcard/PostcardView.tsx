@@ -1407,7 +1407,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
         <div
           className={cn(
-            'flex flex-col items-center relative z-20 transition-all duration-500 ease-spring',
+            'flex flex-col items-center relative z-0 transition-all duration-500 ease-spring',
             !width &&
               !height &&
               (isLarge

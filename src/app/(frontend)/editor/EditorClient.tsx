@@ -46,6 +46,11 @@ import {
   Info,
   SlidersHorizontal,
   FileText, // Added for note editing
+  Mic,
+  Square,
+  Play,
+  Trash2,
+  Volume2,
 } from 'lucide-react'
 import {
   Postcard,
@@ -742,6 +747,16 @@ export default function EditorPage() {
   const [isActivatingCode, setIsActivatingCode] = useState(false)
   const [codeError, setCodeError] = useState<string | null>(null)
   const [codeSuccess, setCodeSuccess] = useState(false)
+
+  // Audio state
+  const [isRecording, setIsRecording] = useState(false)
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
+  const [audioUrl, setAudioUrl] = useState<string | null>(null)
+  const [audioDuration, setAudioDuration] = useState(0)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
+  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const [recordingTime, setRecordingTime] = useState(0)
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
   const [showBack, setShowBack] = useState(currentStep === 'redaction')
@@ -1529,6 +1544,143 @@ export default function EditorPage() {
     EMOJI_CATEGORIES.find((category) => category.key === selectedEmojiCategory) ??
     EMOJI_CATEGORIES[0]
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      audioChunksRef.current = []
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data)
+        }
+      }
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        const audioUrl = URL.createObjectURL(audioBlob)
+        setAudioBlob(audioBlob)
+        setAudioUrl(audioUrl)
+
+        // Get duration
+        const audio = new Audio(audioUrl)
+        audio.onloadedmetadata = () => {
+          setAudioDuration(audio.duration)
+        }
+      }
+
+      mediaRecorder.start()
+      setIsRecording(true)
+      setRecordingTime(0)
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingTime((prev) => prev + 1)
+      }, 1000)
+    } catch (err) {
+      console.error('Error accessing microphone:', err)
+      alert("Impossible d'accéder au microphone. Vérifiez vos permissions.")
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop()
+      mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop())
+      setIsRecording(false)
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current)
+      }
+    }
+  }
+
+  const deleteAudio = () => {
+    setAudioBlob(null)
+    setAudioUrl(null)
+    setAudioDuration(0)
+    setRecordingTime(0)
+  }
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  // Upload audio logic (called during publish/pay)
+  const uploadAudio = async (): Promise<string | undefined> => {
+    if (!audioBlob) return undefined
+
+    // Check if we already uploaded it (optimization: store uploaded URL in state?)
+    // For now, re-upload logic similar to images
+
+    try {
+      const filename = `postcard-audio-${Date.now()}.webm`
+      const filesize = audioBlob.size
+
+      const presignedRes = await fetch('/api/upload-presigned', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename,
+          mimeType: 'audio/webm',
+          filesize,
+        }),
+      })
+
+      if (presignedRes.ok) {
+        const { url, key } = await presignedRes.json()
+        const putRes = await fetch(url, {
+          method: 'PUT',
+          body: audioBlob,
+          headers: { 'Content-Type': 'audio/webm' },
+        })
+
+        if (putRes.ok) {
+          return key // Return the key (filename) to be stored
+        }
+      }
+    } catch (e) {
+      console.error('Audio upload failed', e)
+    }
+    return undefined // Fail silently or handle error?
+  }
+
+  const handleAutoLocate = () => {
+    if (!navigator.geolocation) {
+      alert('Votre navigateur ne supporte pas la géolocalisation.')
+      return
+    }
+
+    setIsLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        setCoords({ lat: latitude, lng: longitude })
+
+        // Reverse geocoding with Photon
+        fetch(`https://photon.komoot.io/reverse?lat=${latitude}&lon=${longitude}&lang=fr`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.features && data.features.length > 0) {
+              const p = data.features[0].properties
+              const locName = `${p.city || p.name || ''}, ${p.country || ''}`
+              setLocation(locName)
+            }
+            setIsLocating(false)
+          })
+          .catch((err) => {
+            console.error('Reverse geocoding error:', err)
+            setIsLocating(false)
+          })
+      },
+      (error) => {
+        console.error('Geolocation error:', error)
+        setIsLocating(false)
+        alert('Impossible de vous localiser. Vérifiez vos permissions.')
+      },
+    )
+  }
+
   const handlePublish = async () => {
     setIsPublishing(true)
     setShareError(null)
@@ -1588,6 +1740,10 @@ export default function EditorPage() {
         recipients: [],
         allowComments,
         isPublic,
+        ...(audioUrl && {
+          audioMessage: await uploadAudio(), // Upload and get key
+          audioDuration: Math.round(audioDuration),
+        }),
         ...(sendKey && {
           frontImageKey: sendKey,
           frontImageMimeType: sendMime ?? undefined,
@@ -2220,6 +2376,92 @@ export default function EditorPage() {
                     </div>
                   </div>
                 </section>
+                {/* Lieu du souvenir */}
+                <section className="mt-8 pt-8 border-t border-stone-200">
+                  <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
+                    <span className="flex items-center gap-2">
+                      <MapPin size={16} className="text-teal-500" /> Lieu du souvenir
+                    </span>
+                  </label>
+                  <div className="relative">
+                    <Input
+                      placeholder="Tapez un lieu (ville, pays, région…)"
+                      value={location}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setLocation(val)
+                        if (val.length > 2) {
+                          setIsLocating(true)
+                          // Debounce search
+                          const timeoutId = setTimeout(() => {
+                            fetch(`https://photon.komoot.io/api/?q=${val}&lang=fr`)
+                              .then((res) => res.json())
+                              .then((data) => {
+                                setSuggestions(data.features || [])
+                                setIsLocating(false)
+                              })
+                              .catch(() => setIsLocating(false))
+                          }, 500)
+                          return () => clearTimeout(timeoutId)
+                        } else {
+                          setSuggestions([])
+                        }
+                      }}
+                      className="w-full rounded-xl border border-stone-200 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-base py-3 px-4 pl-10 bg-stone-50 focus:bg-white transition-colors placeholder:text-stone-400"
+                    />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400">
+                      {isLocating ? (
+                        <RefreshCw size={18} className="animate-spin text-teal-500" />
+                      ) : (
+                        <MapPin size={18} />
+                      )}
+                    </div>
+                    {suggestions.length > 0 && (
+                      <div className="absolute z-50 mt-1 w-full rounded-xl border border-stone-100 bg-white shadow-xl max-h-60 overflow-y-auto">
+                        {suggestions.map((s: any, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            className="w-full px-4 py-3 text-left hover:bg-teal-50 transition-colors border-b border-stone-50 last:border-0 flex items-center gap-2 text-sm"
+                            onClick={() => {
+                              setLocation(
+                                `${s.properties.name}, ${
+                                  s.properties.city || s.properties.country || ''
+                                }`,
+                              )
+                              if (s.geometry?.coordinates) {
+                                setCoords({
+                                  lat: s.geometry.coordinates[1],
+                                  lng: s.geometry.coordinates[0],
+                                })
+                              }
+                              setSuggestions([])
+                            }}
+                          >
+                            <MapPin size={14} className="text-teal-500 shrink-0" />
+                            <span className="font-medium text-stone-700">{s.properties.name}</span>
+                            <span className="text-stone-400 text-xs ml-auto">
+                              {s.properties.city} {s.properties.country}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {/* Bouton de géolocalisation automatique */}
+                    <button
+                      type="button"
+                      onClick={handleAutoLocate}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-colors"
+                      title="Me géolocaliser"
+                    >
+                      <Locate size={18} />
+                    </button>
+                  </div>
+                  <p className="mt-2 text-[11px] text-stone-400 flex items-start gap-1.5">
+                    <Info size={12} className="shrink-0 mt-0.5" />
+                    Ce lieu apparaîtra sur le timbre et la carte au verso.
+                  </p>
+                </section>
 
                 <div className="mt-8 pt-6 border-t border-stone-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
                   {!frontImage && (
@@ -2497,9 +2739,89 @@ export default function EditorPage() {
                     </div>
                   </section>
 
+                  {/* SECTION MESSAGE VOCAL */}
+                  <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
+                        <Mic size={16} />
+                      </div>
+                      <h3 className="font-semibold text-stone-800">Message Vocal</h3>
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center gap-4 p-4 border-2 border-dashed border-stone-200 rounded-xl bg-stone-50">
+                      {!audioUrl ? (
+                        isRecording ? (
+                          <div className="flex flex-col items-center gap-3">
+                            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center animate-pulse">
+                              <Mic size={32} className="text-red-500" />
+                            </div>
+                            <div className="text-red-500 font-mono font-bold text-xl">
+                              {formatTime(recordingTime)}
+                            </div>
+                            <button
+                              onClick={stopRecording}
+                              className="flex items-center gap-2 px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full font-medium transition-colors"
+                            >
+                              <Square size={16} fill="currentColor" /> Arrêter
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center gap-2">
+                            <p className="text-sm text-stone-500 text-center mb-2">
+                              Enregistrez un message personnel ou l&apos;ambiance du lieu (max 30s)
+                            </p>
+                            <button
+                              onClick={startRecording}
+                              className="flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-full font-medium transition-colors shadow-sm"
+                            >
+                              <Mic size={20} /> Enregistrer un message
+                            </button>
+                          </div>
+                        )
+                      ) : (
+                        <div className="w-full flex items-center gap-3 bg-white p-3 rounded-lg border border-stone-200 shadow-sm">
+                          <button
+                            onClick={() => {
+                              const audio = new Audio(audioUrl)
+                              audio.play()
+                            }}
+                            className="w-10 h-10 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center hover:bg-teal-200 transition-colors shrink-0"
+                          >
+                            <Play size={20} fill="currentColor" />
+                          </button>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="h-8 flex items-center gap-0.5 opacity-50">
+                              {/* Fake waveform visual */}
+                              {Array.from({ length: 20 }).map((_, i) => (
+                                <div
+                                  key={i}
+                                  className="flex-1 bg-teal-500 rounded-full"
+                                  style={{ height: `${Math.random() * 100}%` }}
+                                ></div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <span className="text-xs font-mono text-stone-500 tabular-nums">
+                            {formatTime(audioDuration)}
+                          </span>
+
+                          <button
+                            onClick={deleteAudio}
+                            className="p-2 text-stone-400 hover:text-red-500 transition-colors"
+                            title="Supprimer"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+
                   {/* Lieu du souvenir */}
-                  <section>
-                    <label className="flex items-center justify-between text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
+                  <section className="mt-8 pt-8 border-t border-stone-200">
+                    <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
                       <span className="flex items-center gap-2">
                         <MapPin size={16} className="text-teal-500" /> Lieu du souvenir
                       </span>
@@ -2512,73 +2834,78 @@ export default function EditorPage() {
                           const val = e.target.value
                           setLocation(val)
                           if (val.length > 2) {
-                            fetch(
-                              `https://photon.komoot.io/api/?q=${encodeURIComponent(val)}&limit=5&lang=fr`,
-                            )
-                              .then((res) => res.json())
-                              .then((data) => {
-                                setSuggestions(data.features || [])
-                              })
-                              .catch((err) => console.error('Photon error:', err))
+                            setIsLocating(true)
+                            // Debounce search
+                            const timeoutId = setTimeout(() => {
+                              fetch(`https://photon.komoot.io/api/?q=${val}&lang=fr`)
+                                .then((res) => res.json())
+                                .then((data) => {
+                                  setSuggestions(data.features || [])
+                                  setIsLocating(false)
+                                })
+                                .catch(() => setIsLocating(false))
+                            }, 500)
+                            return () => clearTimeout(timeoutId)
                           } else {
                             setSuggestions([])
                           }
                         }}
-                        className="pl-10 h-12 bg-stone-50 border-stone-200 focus:border-teal-500 rounded-xl"
+                        className="w-full rounded-xl border border-stone-200 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-base py-3 px-4 pl-10 bg-stone-50 focus:bg-white transition-colors placeholder:text-stone-400"
                       />
-                      <MapPin
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
-                        size={18}
-                      />
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400">
+                        {isLocating ? (
+                          <RefreshCw size={18} className="animate-spin text-teal-500" />
+                        ) : (
+                          <MapPin size={18} />
+                        )}
+                      </div>
                       {suggestions.length > 0 && (
-                        <div className="absolute z-50 w-full mt-1 bg-white border border-stone-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                          {suggestions.map((s, i) => {
-                            const city = s.properties.city || s.properties.name
-                            const country = s.properties.country
-                            const fullLabel =
-                              city && country ? `${city}, ${country}` : city || country || ''
-                            return (
-                              <button
-                                key={i}
-                                type="button"
-                                onClick={() => {
-                                  setLocation(fullLabel)
-                                  setSuggestions([])
-                                  if (s.geometry.coordinates) {
-                                    setCoords({
-                                      lat: s.geometry.coordinates[1],
-                                      lng: s.geometry.coordinates[0],
-                                    })
-                                  }
-                                }}
-                                className="w-full text-left px-4 py-3 hover:bg-stone-50 border-b border-stone-50 last:border-0 transition-colors flex items-center gap-3"
-                              >
-                                <MapPin size={14} className="text-teal-500 shrink-0" />
-                                <div className="flex flex-col">
-                                  <span className="text-sm font-medium text-stone-800">{city}</span>
-                                  {country && (
-                                    <span className="text-xs text-stone-500">{country}</span>
-                                  )}
-                                </div>
-                              </button>
-                            )
-                          })}
+                        <div className="absolute z-50 mt-1 w-full rounded-xl border border-stone-100 bg-white shadow-xl max-h-60 overflow-y-auto">
+                          {suggestions.map((s: any, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              className="w-full px-4 py-3 text-left hover:bg-teal-50 transition-colors border-b border-stone-50 last:border-0 flex items-center gap-2 text-sm"
+                              onClick={() => {
+                                setLocation(
+                                  `${s.properties.name}, ${
+                                    s.properties.city || s.properties.country || ''
+                                  }`,
+                                )
+                                if (s.geometry?.coordinates) {
+                                  setCoords({
+                                    lat: s.geometry.coordinates[1],
+                                    lng: s.geometry.coordinates[0],
+                                  })
+                                }
+                                setSuggestions([])
+                              }}
+                            >
+                              <MapPin size={14} className="text-teal-500 shrink-0" />
+                              <span className="font-medium text-stone-700">
+                                {s.properties.name}
+                              </span>
+                              <span className="text-stone-400 text-xs ml-auto">
+                                {s.properties.city} {s.properties.country}
+                              </span>
+                            </button>
+                          ))}
                         </div>
                       )}
+                      {/* Bouton de géolocalisation automatique */}
+                      <button
+                        type="button"
+                        onClick={handleAutoLocate}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-colors"
+                        title="Me géolocaliser"
+                      >
+                        <Locate size={18} />
+                      </button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleGeolocation}
-                      className="mt-2 text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-lg h-9 px-3 gap-2 flex"
-                    >
-                      {isLocating ? (
-                        <RefreshCw size={14} className="animate-spin" />
-                      ) : (
-                        <Navigation size={14} />
-                      )}
-                      <span>Ma position actuelle</span>
-                    </Button>
+                    <p className="mt-2 text-[11px] text-stone-400 flex items-start gap-1.5">
+                      <Info size={12} className="shrink-0 mt-0.5" />
+                      Ce lieu apparaîtra sur le timbre et la carte au verso.
+                    </p>
                   </section>
 
                   <div className="h-px bg-stone-100" />

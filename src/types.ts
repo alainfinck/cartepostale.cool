@@ -71,6 +71,8 @@ export interface Postcard {
   agencyId?: string
   brandLogo?: string
   stickers?: StickerPlacement[]
+  audioMessage?: string
+  audioDuration?: number
   allowComments?: boolean
   isPublic?: boolean
 }
