@@ -58,6 +58,7 @@ import {
   TemplateCategory,
   FrontImageCrop,
   FrontImageFilter,
+  FrontCaptionPosition,
   StickerPlacement,
   Sticker,
 } from '@/types'
@@ -644,6 +645,10 @@ export default function EditorPage() {
   const [frontImage, setFrontImage] = useState('')
   const [frontCaption, setFrontCaption] = useState('')
   const [frontEmoji, setFrontEmoji] = useState('✨')
+  const [frontCaptionPosition, setFrontCaptionPosition] = useState<FrontCaptionPosition>({
+    x: 50,
+    y: 85,
+  })
   const [frontTextBgOpacity, setFrontTextBgOpacity] = useState(90)
   const [message, setMessage] = useState(
     'Un petit coucou de mes vacances ! Tout se passe merveilleusement bien, les paysages sont magnifiques. On pense bien à vous !',
@@ -847,6 +852,7 @@ export default function EditorPage() {
       frontImageFilter,
       frontCaption,
       frontEmoji,
+      frontCaptionPosition,
       message,
       recipientName,
       senderName,
@@ -879,6 +885,7 @@ export default function EditorPage() {
     frontImageFilter,
     frontCaption,
     frontEmoji,
+    frontCaptionPosition,
     message,
     recipientName,
     senderName,
@@ -918,6 +925,7 @@ export default function EditorPage() {
           if (data.frontImageFilter) setFrontImageFilter(data.frontImageFilter)
           if (data.frontCaption) setFrontCaption(data.frontCaption)
           if (data.frontEmoji) setFrontEmoji(data.frontEmoji)
+          if (data.frontCaptionPosition) setFrontCaptionPosition(data.frontCaptionPosition)
           if (data.message) setMessage(data.message)
           if (data.recipientName) setRecipientName(data.recipientName)
           if (data.senderName) setSenderName(data.senderName)
@@ -1507,6 +1515,7 @@ export default function EditorPage() {
     frontImageFilter: frontImage ? frontImageFilter : undefined,
     frontCaption: frontCaption.trim() || undefined,
     frontEmoji: frontEmoji.trim() || undefined,
+    frontCaptionPosition,
     message: message || '',
     recipientName: recipientName || '',
     senderName: senderName || '',
@@ -2013,6 +2022,7 @@ export default function EditorPage() {
                   flipped={showBack}
                   frontTextBgOpacity={frontTextBgOpacity}
                   className="w-full h-auto aspect-[3/2] shadow-xl rounded-xl border border-stone-100"
+                  onCaptionPositionChange={setFrontCaptionPosition}
                 />
                 <StickerLayer
                   stickers={stickers}
@@ -3780,6 +3790,7 @@ export default function EditorPage() {
                         postcard={postcardForPreview}
                         flipped={showBack}
                         frontTextBgOpacity={frontTextBgOpacity}
+                        onCaptionPositionChange={setFrontCaptionPosition}
                       />
                     </div>
                   </div>
@@ -3858,6 +3869,7 @@ export default function EditorPage() {
                   flipped={showBack}
                   frontTextBgOpacity={frontTextBgOpacity}
                   className="w-full max-w-[1700px] h-auto aspect-[3/2] shadow-2xl cursor-default"
+                  onCaptionPositionChange={setFrontCaptionPosition}
                 />
               </div>
             </div>

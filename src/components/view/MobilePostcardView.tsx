@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Postcard } from '@/types'
 import { MapPin, Mail } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 
 interface MobilePostcardViewProps {
@@ -55,11 +56,25 @@ export default function MobilePostcardView({ postcard }: MobilePostcardViewProps
             </div>
           ))}
 
-          {/* Caption + emoji */}
+          {/* Caption + emoji (position personnalisée ou en bas par défaut) */}
           {postcard.frontCaption?.trim() && (
             <div
-              className="absolute bottom-4 left-4 right-4 z-10 flex items-center gap-2.5 rounded-xl border border-white/40 backdrop-blur-xl px-4 py-3 shadow-lg"
-              style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}
+              className={cn(
+                'z-10 flex items-center gap-2.5 rounded-xl border border-white/40 backdrop-blur-xl px-4 py-3 shadow-lg w-fit max-w-[calc(100%-2rem)]',
+                postcard.frontCaptionPosition
+                  ? 'absolute'
+                  : 'absolute bottom-4 left-4 right-4',
+              )}
+              style={
+                postcard.frontCaptionPosition
+                  ? {
+                      left: `${postcard.frontCaptionPosition.x}%`,
+                      top: `${postcard.frontCaptionPosition.y}%`,
+                      transform: 'translate(-50%, -50%)',
+                      backgroundColor: 'rgba(255,255,255,0.65)',
+                    }
+                  : { backgroundColor: 'rgba(255,255,255,0.65)' }
+              }
             >
               {postcard.frontEmoji && (
                 <span className="text-2xl leading-none shrink-0">{postcard.frontEmoji}</span>

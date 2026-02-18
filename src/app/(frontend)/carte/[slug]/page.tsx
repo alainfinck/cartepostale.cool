@@ -121,6 +121,14 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
     frontImage: frontImageUrl,
     frontCaption: payloadPostcard.frontCaption || undefined,
     frontEmoji: payloadPostcard.frontEmoji || undefined,
+    frontCaptionPosition:
+      payloadPostcard.frontCaptionPosition?.x != null &&
+      payloadPostcard.frontCaptionPosition?.y != null
+        ? {
+            x: Number(payloadPostcard.frontCaptionPosition.x),
+            y: Number(payloadPostcard.frontCaptionPosition.y),
+          }
+        : undefined,
     message: payloadPostcard.message,
     recipientName: payloadPostcard.recipientName || '',
     senderName: payloadPostcard.senderName || '',

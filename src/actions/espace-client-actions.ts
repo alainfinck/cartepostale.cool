@@ -314,6 +314,10 @@ export async function duplicateMyPostcard(
         frontImageURL: source.frontImageURL ?? undefined,
         frontCaption: source.frontCaption ?? undefined,
         frontEmoji: source.frontEmoji ?? undefined,
+        frontCaptionPosition:
+          source.frontCaptionPosition?.x != null && source.frontCaptionPosition?.y != null
+            ? { x: source.frontCaptionPosition.x, y: source.frontCaptionPosition.y }
+            : undefined,
         message: source.message ?? '',
         recipients: (source.recipients ?? []).map((recipient) => ({
           email: recipient?.email ?? undefined,
