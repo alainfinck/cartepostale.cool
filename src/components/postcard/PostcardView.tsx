@@ -32,7 +32,6 @@ import {
   useSpring,
   useMotionValue,
   useTransform,
-  PanInfo,
   useAnimation,
 } from 'framer-motion'
 import dynamic from 'next/dynamic'
@@ -111,7 +110,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   onCaptionPositionChange,
 }) => {
   const [isFlipped, setIsFlipped] = useState(flipped ?? false)
-  const [isDragging, setIsDragging] = useState(false)
   const [isDraggingCaption, setIsDraggingCaption] = useState(false)
   const frontFaceRef = useRef<HTMLDivElement>(null)
   const [frontImageSrc, setFrontImageSrc] = useState(postcard.frontImage || FALLBACK_FRONT_IMAGE)
@@ -369,38 +367,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   }, [isFlipped, computeAutoFontSize])
 
   const handleFlip = () => {
-    if (isDragging) return
     const newFlippedState = !isFlipped
     setIsFlipped(newFlippedState)
     rotateY.set(newFlippedState ? 180 : 0)
-  }
-
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    setIsDragging(false)
-    const currentRotation = rotateY.get()
-    // Normalize rotation to 0-360 range
-    const normalizedRotation = ((currentRotation % 360) + 360) % 360
-
-    // Determine if we should snap to front (0) or back (180)
-    // If rotation is between 90 and 270, snap to back (180)
-    if (normalizedRotation > 90 && normalizedRotation < 270) {
-      setIsFlipped(true)
-      rotateY.set(180)
-    } else {
-      setIsFlipped(false)
-      rotateY.set(0)
-    }
-  }
-
-  const handleDragStart = () => {
-    setIsDragging(true)
-  }
-
-  const handleDrag = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    // Map drag distance to rotation
-    // Sensitive enough to rotate easily but not too fast
-    const current = rotateY.get()
-    rotateY.set(current + info.delta.x * 0.5)
   }
 
   const openAlbum = (e: React.MouseEvent) => {
@@ -696,7 +665,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
       >
         <motion.div
           className={cn(
-            'perspective-1000 cursor-pointer active:cursor-grabbing group touch-none transition-shadow duration-300 relative z-10', // z-10 for layering
+            'perspective-1000 group transition-shadow duration-300 relative z-10', // z-10 for layering; no cursor-grab so card only flips via button
             !width &&
               !height &&
               (isLarge
@@ -704,13 +673,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 : 'w-full max-w-full sm:w-[552px] aspect-[3/2] sm:h-[368px]'),
             className,
           )}
-          onClick={() => {}} // Removed handleFlip from wrapper to prevent back-face clicks from flipping
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.2}
-          onDragStart={handleDragStart}
-          onDrag={handleDrag}
-          onDragEnd={handleDragEnd}
           style={{ perspective: 1000, width, height }}
         >
           <motion.div
