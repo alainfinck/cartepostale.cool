@@ -83,6 +83,8 @@ export interface Postcard {
   audioDuration?: number
   allowComments?: boolean
   isPublic?: boolean
+  contributionToken?: string
+  isContributionEnabled?: boolean
 }
 
 export interface Sticker {

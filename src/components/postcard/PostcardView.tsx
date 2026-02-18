@@ -29,6 +29,8 @@ import { cn, isCoordinate } from '@/lib/utils'
 import { AnimatePresence, motion, useSpring, useMotionValue, useTransform } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
+import { uploadContribution } from '@/actions/contribute-actions'
+import { useRouter } from 'next/navigation'
 
 // Dynamically import MapModal to avoid SSR issues with Leaflet
 const MapModal = dynamic(() => import('@/components/ui/MapModal'), {
@@ -223,6 +225,73 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const [isActionsOpen, setIsActionsOpen] = useState(true)
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false)
+  const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploading, setIsUploading] = useState(false)
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !postcard.contributionToken) return
+
+    setIsUploading(true)
+    try {
+      // 1. Get presigned URL
+      const res = await fetch('/api/upload-presigned', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: file.name,
+          mimeType: file.type,
+          filesize: file.size,
+        }),
+      })
+
+      if (!res.ok) throw new Error("Erreur lors de la préparation de l'envoi")
+      const { url, key } = await res.json()
+
+      // 2. Upload to S3
+      const uploadRes = await fetch(url, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      })
+
+      if (!uploadRes.ok) throw new Error("Erreur lors de l'envoi du fichier")
+
+      // 3. Link to postcard
+      const result = await uploadContribution(postcard.id, postcard.contributionToken, {
+        key,
+        mimeType: file.type,
+        filesize: file.size,
+      })
+
+      if (!result.success) throw new Error(result.error)
+
+      alert('Photo ajoutée avec succès !')
+      router.refresh()
+      // Optional: Close modal or switch to new photo
+    } catch (err) {
+      console.error(err)
+      alert(err instanceof Error ? err.message : 'Une erreur est survenue')
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleShareContribution = () => {
+    if (!postcard.contributionToken) return
+    const url = new URL(window.location.href)
+    url.searchParams.set('token', postcard.contributionToken)
+    navigator.clipboard.writeText(url.toString())
+    alert('Lien de participation copié ! Envoyez-le à vos amis.')
+  }
 
   // Calculate photo locations from EXIF data
   const photoLocations: PhotoLocation[] = React.useMemo(() => {
@@ -545,10 +614,41 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         >
           <button
             onClick={() => setIsAlbumOpen(false)}
-            className="absolute -top-12 right-0 md:right-0 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-all shadow-lg backdrop-blur-md border border-white/20"
+            className="absolute -top-12 right-0 md:right-0 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-all shadow-lg backdrop-blur-md border border-white/20 z-50"
           >
             <X size={24} />
           </button>
+
+          {/* Contribution Actions */}
+          {postcard.contributionToken && postcard.isContributionEnabled !== false && (
+            <div className="absolute -top-12 left-0 flex gap-2 z-50">
+              <button
+                onClick={handleUploadClick}
+                disabled={isUploading}
+                className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isUploading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Camera size={16} />
+                )}
+                <span className="hidden sm:inline">Ajouter une photo</span>
+              </button>
+              <button
+                onClick={handleShareContribution}
+                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg backdrop-blur-md border border-white/20 transition-all flex items-center gap-2"
+              >
+                <span className="hidden sm:inline">Inviter</span>
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </div>
+          )}
 
           <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden shadow-2xl flex items-center justify-center mb-6">
             {postcard.mediaItems![currentMediaIndex].type === 'video' ? (
@@ -655,7 +755,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             !width &&
               !height &&
               (isLarge
-                ? 'w-[95vw] h-[65vw] max-w-[460px] max-h-[306px] sm:w-[552px] sm:h-[368px] md:w-[736px] md:h-[490px] lg:w-[920px] lg:h-[612px] sm:max-w-none sm:max-h-none portrait:max-h-none'
+                ? 'w-[95vw] h-[65vw] max-w-[460px] max-h-[306px] sm:w-[552px] sm:h-[368px] md:w-[660px] md:h-[440px] lg:w-[780px] lg:h-[520px] xl:w-[840px] xl:h-[560px] sm:max-w-none sm:max-h-none portrait:max-h-none'
                 : 'w-full max-w-full sm:w-[552px] aspect-[3/2] sm:h-[368px]'),
             className,
           )}

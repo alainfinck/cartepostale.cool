@@ -4,19 +4,52 @@ import React, { useState, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MediaItem } from '@/types'
-import { Camera, ChevronLeft, ChevronRight, X, Sparkles, StickyNote } from 'lucide-react'
+import { Camera, ChevronLeft, ChevronRight, X, Sparkles, StickyNote, User } from 'lucide-react'
 import { CoolMode } from '@/components/ui/cool-mode'
 import ShimmerButton from '@/components/ui/shimmer-button'
+import { useSessionId } from '@/hooks/useSessionId'
+import { getReactions, getUserReactions, toggleReaction } from '@/actions/social-actions'
+import ReactionBar from '@/components/social/ReactionBar'
 
 interface PhotoFeedProps {
   mediaItems: MediaItem[]
   senderName: string
+  postcardId?: number
 }
 
-export default function PhotoFeed({ mediaItems, senderName }: PhotoFeedProps) {
+export default function PhotoFeed({ mediaItems, senderName, postcardId }: PhotoFeedProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [isFlipped, setIsFlipped] = useState(false)
+
+  const sessionId = useSessionId()
+  const [counts, setCounts] = useState<Record<string, number>>({})
+  const [userReactions, setUserReactions] = useState<Record<string, boolean>>({})
+  const [reactionsLoaded, setReactionsLoaded] = useState(false)
+
+  useEffect(() => {
+    if (!postcardId || !sessionId) return
+    const load = async () => {
+      const [reactionsData, userReactionsData] = await Promise.all([
+        getReactions(postcardId),
+        getUserReactions(postcardId, sessionId),
+      ])
+      setCounts(reactionsData.counts)
+      setUserReactions(userReactionsData)
+      setReactionsLoaded(true)
+    }
+    load()
+  }, [postcardId, sessionId])
+
+  const handleReactionUpdate = useCallback((emoji: string, added: boolean, newCount: number) => {
+    setCounts((prev) => ({ ...prev, [emoji]: newCount }))
+    setUserReactions((prev) => {
+      const next = { ...prev }
+      if (added) next[emoji] = true
+      else delete next[emoji]
+      return next
+    })
+  }, [])
 
   // Reset flip when changing photo
   useEffect(() => {
@@ -57,6 +90,8 @@ export default function PhotoFeed({ mediaItems, senderName }: PhotoFeedProps) {
     }
   }
 
+  const canShowReactions = Boolean(postcardId && sessionId && reactionsLoaded)
+
   return (
     <section
       id="photo-feed"
@@ -91,73 +126,90 @@ export default function PhotoFeed({ mediaItems, senderName }: PhotoFeedProps) {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="w-full"
+          className="w-full flex flex-col gap-8"
         >
-          <div className="flex items-center gap-2 mb-8 justify-center">
+          <div className="flex items-center gap-2 justify-center">
             <Camera size={24} className="text-teal-600" />
             <h3 className="font-serif text-2xl font-bold text-stone-800">Album de {senderName}</h3>
           </div>
 
-          {/* Instagram-style vertical feed */}
-          <div className="flex flex-col gap-6">
+          {/* Instagram-style cards: each card fits in viewport height */}
+          <div className="flex flex-col gap-8">
             {mediaItems.map((item, index) => (
-              <motion.div
+              <motion.article
                 key={item.id}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.5 }}
-                className="relative group cursor-pointer"
+                transition={{ delay: index * 0.08, duration: 0.5 }}
+                className="flex flex-col max-h-[88vh] rounded-2xl overflow-hidden shadow-xl border border-stone-100 bg-white cursor-pointer"
                 onClick={() => setSelectedIndex(index)}
               >
-                {/* Photo container */}
-                <div className="relative w-full rounded-2xl overflow-hidden shadow-lg border border-stone-100 bg-white">
+                {/* Card header — Instagram-like */}
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-stone-100 shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-100 to-teal-200 flex items-center justify-center shrink-0">
+                    <User size={18} className="text-teal-600" />
+                  </div>
+                  <span className="font-semibold text-stone-800">{senderName}</span>
+                  <span className="text-stone-400 text-xs ml-auto">
+                    {index + 1}/{mediaItems.length}
+                  </span>
+                </div>
+
+                {/* Media: flex-1, contained so full image visible without scrolling card */}
+                <div className="relative flex-1 min-h-0 w-full flex items-center justify-center bg-stone-50">
                   {item.type === 'video' ? (
-                    <div className="w-full aspect-[4/5] relative">
-                      <video src={item.url} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                        <div className="w-14 h-14 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center">
+                    <div className="w-full h-full min-h-[200px] max-h-[55vh] flex items-center justify-center">
+                      <video
+                        src={item.url}
+                        className="max-w-full max-h-full w-auto h-auto object-contain rounded-b-none"
+                        playsInline
+                        muted
+                        preload="metadata"
+                      />
+                      <div className="absolute inset-0 bg-black/10 flex items-center justify-center pointer-events-none">
+                        <div className="w-14 h-14 bg-white/40 backdrop-blur-md rounded-full flex items-center justify-center">
                           <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[16px] border-l-white border-b-[10px] border-b-transparent ml-1" />
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="w-full aspect-[4/5] relative">
+                    <div className="relative w-full h-full min-h-[200px] max-h-[55vh]">
                       <Image
                         src={item.url}
                         alt={`Photo ${index + 1} de ${senderName}`}
                         fill
                         unoptimized
-                        className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                        className="object-contain transition-transform duration-300"
                         sizes="(max-width: 768px) 100vw, 576px"
                       />
                     </div>
                   )}
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                  {/* Note indicator */}
-                  {item.note && (
-                    <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-amber-500/90 backdrop-blur-sm text-white px-2.5 py-1.5 rounded-full shadow-lg text-[11px] font-bold">
-                      <StickyNote size={12} />
-                      <span>Note</span>
-                    </div>
-                  )}
-
-                  {/* Photo number */}
-                  <div className="absolute top-3 left-3 bg-black/50 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
-                    {index + 1}/{mediaItems.length}
-                  </div>
                 </div>
 
-                {/* Caption preview (if note exists) */}
-                {item.note && (
-                  <div className="mt-2 px-1">
-                    <p className="text-sm text-stone-600 line-clamp-2 leading-relaxed">
-                      <span className="font-bold text-stone-800">{senderName}</span> {item.note}
+                {/* Caption (note) */}
+                {item.note?.trim() && (
+                  <div className="px-4 py-3 border-t border-stone-100 shrink-0 bg-amber-50/50">
+                    <p className="text-sm text-stone-700 line-clamp-2 leading-relaxed">
+                      <span className="font-semibold text-stone-800">{senderName}</span>{' '}
+                      <span className="italic">&ldquo;{item.note}&rdquo;</span>
                     </p>
                   </div>
                 )}
-              </motion.div>
+
+                {/* Reactions per card */}
+                {canShowReactions && (
+                  <div className="px-2 py-2 border-t border-stone-100 shrink-0">
+                    <ReactionBar
+                      postcardId={postcardId!}
+                      sessionId={sessionId}
+                      counts={counts}
+                      userReactions={userReactions}
+                      views={0}
+                      onReactionUpdate={handleReactionUpdate}
+                    />
+                  </div>
+                )}
+              </motion.article>
             ))}
           </div>
         </motion.div>
@@ -173,7 +225,6 @@ export default function PhotoFeed({ mediaItems, senderName }: PhotoFeedProps) {
             className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center"
             onClick={() => setSelectedIndex(null)}
           >
-            {/* Close button */}
             <button
               className="absolute top-6 right-6 text-white/70 hover:text-white p-2 z-50 bg-white/10 rounded-full transition-colors"
               onClick={() => setSelectedIndex(null)}
@@ -181,7 +232,6 @@ export default function PhotoFeed({ mediaItems, senderName }: PhotoFeedProps) {
               <X size={28} />
             </button>
 
-            {/* Navigation arrows */}
             {mediaItems.length > 1 && (
               <>
                 <button
@@ -199,7 +249,6 @@ export default function PhotoFeed({ mediaItems, senderName }: PhotoFeedProps) {
               </>
             )}
 
-            {/* Flip card container */}
             <motion.div
               key={selectedIndex}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -207,10 +256,9 @@ export default function PhotoFeed({ mediaItems, senderName }: PhotoFeedProps) {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="relative w-full max-w-4xl mx-4 flex flex-col items-center justify-center"
-              style={{ perspective: '1200px' }}
+              style={{ perspective: '1200px', maxHeight: '85vh' }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Flip card */}
               <div
                 className="relative w-full transition-transform duration-700 ease-in-out"
                 style={{
@@ -220,7 +268,6 @@ export default function PhotoFeed({ mediaItems, senderName }: PhotoFeedProps) {
                   aspectRatio: mediaItems[selectedIndex].type === 'video' ? undefined : '4/5',
                 }}
               >
-                {/* Front — Photo */}
                 <div
                   className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
                   style={{ backfaceVisibility: 'hidden' }}
@@ -244,7 +291,6 @@ export default function PhotoFeed({ mediaItems, senderName }: PhotoFeedProps) {
                   )}
                 </div>
 
-                {/* Back — Note */}
                 <div
                   className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center justify-center p-8"
                   style={{
@@ -254,7 +300,6 @@ export default function PhotoFeed({ mediaItems, senderName }: PhotoFeedProps) {
                       'linear-gradient(145deg, #fef3c7 0%, #fffbeb 30%, #fefce8 60%, #fef9c3 100%)',
                   }}
                 >
-                  {/* Decorative postal lines */}
                   <div
                     className="absolute inset-0 opacity-[0.06]"
                     style={{
@@ -262,7 +307,6 @@ export default function PhotoFeed({ mediaItems, senderName }: PhotoFeedProps) {
                         'repeating-linear-gradient(0deg, transparent, transparent 31px, #92400e 31px, #92400e 32px)',
                     }}
                   />
-
                   <div className="relative z-10 max-w-md text-center">
                     <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 text-amber-600 rounded-full mb-6">
                       <StickyNote size={24} />
@@ -275,8 +319,6 @@ export default function PhotoFeed({ mediaItems, senderName }: PhotoFeedProps) {
                       — {senderName}
                     </p>
                   </div>
-
-                  {/* Stamp decoration */}
                   <div className="absolute top-4 right-4 opacity-20">
                     <div className="w-16 h-20 border-2 border-dashed border-amber-800 rounded-sm flex items-center justify-center">
                       <span className="text-2xl">📮</span>
@@ -285,14 +327,10 @@ export default function PhotoFeed({ mediaItems, senderName }: PhotoFeedProps) {
                 </div>
               </div>
 
-              {/* Controls bar */}
               <div className="mt-6 flex items-center gap-4">
-                {/* Counter */}
                 <span className="text-white/50 text-sm font-medium">
                   {selectedIndex + 1} / {mediaItems.length}
                 </span>
-
-                {/* Flip button (only if note exists) */}
                 {mediaItems[selectedIndex].note && (
                   <button
                     onClick={() => setIsFlipped(!isFlipped)}

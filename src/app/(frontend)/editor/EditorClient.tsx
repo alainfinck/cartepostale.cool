@@ -825,14 +825,20 @@ export default function EditorPage() {
     fetch('/api/users/me', { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data?.user)
+        if (data?.user) {
           setCurrentUser({
             id: data.user.id,
             email: data.user.email,
             name: data.user.name ?? null,
             role: data.user.role,
           })
-        else setCurrentUser(null)
+          // Pré-remplir la signature avec le prénom quand l'utilisateur est connecté
+          const fullName = data.user.name?.trim()
+          if (fullName) {
+            const firstName = fullName.split(/\s+/)[0]
+            if (firstName) setSenderName(firstName)
+          }
+        } else setCurrentUser(null)
       })
       .catch(() => setCurrentUser(null))
   }, [])

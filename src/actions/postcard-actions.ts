@@ -337,6 +337,7 @@ export async function getPostcardByPublicId(publicId: string): Promise<Postcard 
         ],
       },
       depth: 2, // Ensure we get media details
+      overrideAccess: true,
     })
 
     if (result.totalDocs > 0) {

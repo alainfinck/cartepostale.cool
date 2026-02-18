@@ -331,6 +331,14 @@ export interface Postcard {
    * Si décoché, la carte sera privée et non listée
    */
   isPublic?: boolean | null;
+  /**
+   * Token secret pour permettre à des tiers d’ajouter des photos
+   */
+  contributionToken?: string | null;
+  /**
+   * Autoriser l’ajout de photos via le lien de contribution
+   */
+  isContributionEnabled?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -816,6 +824,8 @@ export interface PostcardsSelect<T extends boolean = true> {
   stickers?: T;
   allowComments?: T;
   isPublic?: T;
+  contributionToken?: T;
+  isContributionEnabled?: T;
   updatedAt?: T;
   createdAt?: T;
 }

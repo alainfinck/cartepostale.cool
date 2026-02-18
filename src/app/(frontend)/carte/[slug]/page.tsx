@@ -10,9 +10,9 @@ import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import { RotateDevicePrompt } from '@/components/ui/rotate-device-prompt'
 import SocialBar from '@/components/social/SocialBar'
 import ViewPageTitle from '@/components/view/ViewPageTitle'
-import DistanceDisplay from '@/components/view/DistanceDisplay'
 import PhotoFeed from '@/components/view/PhotoFeed'
 import EnvelopeExperience from '@/components/view/EnvelopeExperience'
+import { getCurrentUser } from '@/lib/auth'
 
 type SearchParams = {
   [key: string]: string | string[] | undefined
@@ -217,6 +217,26 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
     if (coords) frontendPostcard.coords = coords
   }
 
+  // Check contribution access
+  const user = await getCurrentUser()
+  const payloadPostcardAny = payloadPostcard as any
+  const isAuthor =
+    user &&
+    payloadPostcard.author &&
+    (typeof payloadPostcard.author === 'object'
+      ? payloadPostcard.author.id === user.id
+      : payloadPostcard.author === user.id)
+
+  const tokenParam = resolvedSearchParams.token as string | undefined
+  // Access valid if author OR if token param matches DB token
+  const hasContributionAccess =
+    isAuthor || (tokenParam && tokenParam === payloadPostcardAny.contributionToken)
+
+  if (hasContributionAccess) {
+    frontendPostcard.contributionToken = payloadPostcardAny.contributionToken || undefined
+    frontendPostcard.isContributionEnabled = payloadPostcardAny.isContributionEnabled ?? true
+  }
+
   const heroSection = (
     <ViewPageTitle
       title="Vous avez reçu une carte postale !"
@@ -249,6 +269,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
         <PhotoFeed
           mediaItems={frontendPostcard.mediaItems}
           senderName={frontendPostcard.senderName}
+          postcardId={payloadPostcard.id}
         />
       )}
 

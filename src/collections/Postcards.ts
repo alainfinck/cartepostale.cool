@@ -1,7 +1,18 @@
+import crypto from 'node:crypto'
 import type { CollectionConfig } from 'payload'
 
 export const Postcards: CollectionConfig = {
   slug: 'postcards',
+  hooks: {
+    beforeValidate: [
+      ({ data, operation }) => {
+        if (operation === 'create' && data && !data.contributionToken) {
+          data.contributionToken = crypto.randomBytes(16).toString('hex')
+        }
+        return data
+      },
+    ],
+  },
   admin: {
     useAsTitle: 'senderName',
   },
@@ -231,6 +242,23 @@ export const Postcards: CollectionConfig = {
       defaultValue: true,
       admin: {
         description: 'Si décoché, la carte sera privée et non listée',
+      },
+    },
+    {
+      name: 'contributionToken',
+      type: 'text',
+      index: true,
+      admin: {
+        readOnly: true,
+        description: 'Token secret pour permettre à des tiers d’ajouter des photos',
+      },
+    },
+    {
+      name: 'isContributionEnabled',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        description: 'Autoriser l’ajout de photos via le lien de contribution',
       },
     },
   ],
