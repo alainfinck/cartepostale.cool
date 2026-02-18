@@ -723,6 +723,7 @@ export default function EditorPage() {
     id: number
     email?: string
     name?: string | null
+    role?: string
   } | null>(null)
   const [isRevolutRedirecting, setIsRevolutRedirecting] = useState(false)
   const [revolutError, setRevolutError] = useState<string | null>(null)
@@ -795,7 +796,12 @@ export default function EditorPage() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.user)
-          setCurrentUser({ id: data.user.id, email: data.user.email, name: data.user.name ?? null })
+          setCurrentUser({
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.name ?? null,
+            role: data.user.role,
+          })
         else setCurrentUser(null)
       })
       .catch(() => setCurrentUser(null))
@@ -1636,7 +1642,7 @@ export default function EditorPage() {
 
           // If promo code was used, mark it as used in DB
           if (codeSuccess && promoCode) {
-            const { usePromoCode } = await import('@/actions/leads-actions')
+            const { consumePromoCode } = await import('@/actions/leads-actions')
             const numericId =
               typeof result.id === 'number'
                 ? result.id
@@ -1644,7 +1650,7 @@ export default function EditorPage() {
                   ? parseInt(result.id)
                   : undefined
             if (numericId) {
-              await usePromoCode(promoCode, numericId)
+              await consumePromoCode(promoCode, numericId)
             }
           }
         } else {
@@ -2985,7 +2991,7 @@ export default function EditorPage() {
                             </h3>
                             <p className="text-stone-400 text-sm mb-4">
                               Votre carte est prête, il ne manque que le règlement pour débloquer
-                              l'album complet.
+                              l&apos;album complet.
                             </p>
                             <Button
                               onClick={handlePayWithRevolut}
@@ -3194,8 +3200,8 @@ export default function EditorPage() {
                             Envoyer par e-mail (suivi)
                           </h3>
                           <p className="text-stone-500 text-sm mt-1 leading-relaxed">
-                            Chaque destinataire recevra un lien unique permettant de suivre
-                            l'ouverture de sa carte.
+                            Le destinataire recevra l&apos;URL de la carte par email.ettant de
+                            suivre l'ouverture de sa carte.
                           </p>
                         </div>
                       </div>
