@@ -77,15 +77,15 @@ export const Serialize = ({ nodes }: { nodes: Node[] }) => {
         switch (node.type) {
           case 'heading':
             const HeadingTag = (node.tag as any) || 'h1'
-            const className =
-              {
-                h1: 'text-4xl font-bold my-8 text-gray-900 leading-tight border-b pb-4 border-gray-100',
-                h2: 'text-3xl font-bold my-6 text-gray-800 leading-tight',
-                h3: 'text-2xl font-bold my-5 text-gray-800',
-                h4: 'text-xl font-bold my-4 text-gray-800',
-                h5: 'text-lg font-bold my-3 text-gray-800',
-                h6: 'text-base font-bold my-2 text-gray-800',
-              }[HeadingTag] || 'text-xl font-bold my-4'
+            const headings: Record<string, string> = {
+              h1: 'text-4xl font-bold my-8 text-gray-900 leading-tight border-b pb-4 border-gray-100',
+              h2: 'text-3xl font-bold my-6 text-gray-800 leading-tight',
+              h3: 'text-2xl font-bold my-5 text-gray-800',
+              h4: 'text-xl font-bold my-4 text-gray-800',
+              h5: 'text-lg font-bold my-3 text-gray-800',
+              h6: 'text-base font-bold my-2 text-gray-800',
+            }
+            const className = headings[HeadingTag] || 'text-xl font-bold my-4'
 
             return (
               <HeadingTag key={i} className={className}>
