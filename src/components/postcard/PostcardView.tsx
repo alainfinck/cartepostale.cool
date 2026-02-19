@@ -483,7 +483,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const hasMedia = postcard.mediaItems && postcard.mediaItems.length > 0
 
   const actionButtonBase =
-    'inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 px-3 sm:px-5 py-2 rounded-lg text-[9px] sm:text-[10px] md:text-xs font-bold uppercase tracking-wider active:scale-95 transition-all shadow-sm text-center whitespace-normal sm:whitespace-nowrap text-stone-800'
+    'inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-2 rounded-lg text-[7px] min-[375px]:text-[8px] sm:text-[9px] md:text-[10px] font-bold uppercase active:scale-95 transition-all shadow-sm text-center whitespace-normal sm:whitespace-nowrap text-stone-800'
 
   useEffect(() => {
     setPortalRoot(document.body)
@@ -1555,7 +1555,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               !isActionsOpen && 'h-0 min-h-0 overflow-hidden',
             )}
           >
-            <div className="flex items-center justify-center w-[95%] sm:w-[90%] flex-nowrap gap-2 sm:gap-3 rounded-b-xl border-x border-b border-stone-300 bg-stone-50 shadow-[0_6px_20px_rgba(0,0,0,0.1)] px-3 py-2.5 sm:px-4 sm:py-3 min-h-[48px]">
+            <div className="flex items-center justify-center w-[95%] sm:w-[90%] flex-nowrap gap-1.5 sm:gap-3 rounded-b-xl border-x border-b border-stone-300 bg-stone-50 shadow-[0_6px_20px_rgba(0,0,0,0.1)] px-2 py-2.5 sm:px-4 sm:py-3 min-h-[48px]">
               {hasMedia && (
                 <button
                   onClick={openAlbum}
@@ -1567,7 +1567,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 >
                   <Camera size={14} className="text-amber-600 shrink-0" />
                   <span>Album</span>
-                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-4 px-1.5 rounded-md bg-amber-200/50 text-amber-900 text-[9px] font-extrabold leading-none mt-1 sm:mt-0 sm:ml-1">
+                  <span className="inline-flex items-center justify-center min-w-[1.125rem] h-3.5 px-1 rounded bg-amber-200/50 text-amber-900 text-[8px] font-bold leading-none mt-1 sm:mt-0 sm:ml-1">
                     {postcard.mediaItems!.length}
                   </span>
                 </button>

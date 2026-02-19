@@ -16,7 +16,7 @@ export default function AlbumTriggerButton() {
       className="px-6 py-3 rounded-full border border-teal-200 bg-white/70 text-teal-600 font-semibold shadow-lg hover:bg-white hover:border-teal-300 transition"
       onClick={scrollToAlbum}
     >
-      Voir l'album photos
+      Voir l&apos;album photos
     </Button>
   )
 }
