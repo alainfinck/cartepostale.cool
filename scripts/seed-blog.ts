@@ -360,6 +360,390 @@ const blogPosts = [
       },
     },
   },
+  {
+    title: '5 Astuces pour réussir vos photos de voyage',
+    slug: 'astuces-photos-voyage',
+    category: 'tips',
+    excerpt:
+      "Pas besoin d'être un pro pour faire de belles photos. Voici 5 conseils simples pour ramener des souvenirs impérissables et faire des cartes postales qui font mouche.",
+    content: {
+      root: {
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "On a tous connu ça : ce paysage magnifique devant nos yeux qui rend 'plat' et sans âme une fois en photo. La bonne nouvelle, c'est qu'il suffit souvent de quelques ajustements simples pour transformer vos clichés.",
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: '1. La Lumière est Reine', version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "Évitez le soleil de midi, qui écrase les reliefs et crée des ombres dures. Privilégiez la 'Golden Hour' (l'heure dorée), juste après le lever ou avant le coucher du soleil. La lumière est douce, chaude et flatteuse pour tout le monde.",
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: '2. La Règle des Tiers', version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "Imaginez une grille de morpion sur votre image (la plupart des téléphones l'affichent). Ne mettez pas votre sujet en plein centre. Placez-le sur l'une des lignes verticales ou à une intersection. Cela rend l'image plus dynamique et laisse 'respirer' le paysage.",
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: "3. Cherchez l'Insolite et le Détail", version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "La Tour Eiffel en entier, tout le monde l'a vue. Mais ce chat qui dort sur une chaise de bistrot parisien ? Ces carreaux de faïence colorés à Lisbonne ? Les détails racontent souvent mieux l'ambiance d'un lieu que les grands monuments.",
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: '4. Intégrez de la Vie', version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "Un paysage vide peut être beau mais froid. Attendez qu'un cycliste passe, qu'un oiseau s'envole, ou demandez à votre compagnon de voyage de marcher au loin. L'élément humain donne une échelle et une histoire à la photo.",
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: '5. Restez Naturel', version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "Côté retouche, ayez la main légère. Un peu de contraste ou de saturation, c'est bien. Mais si le ciel devient violet radioactif, c'est trop. L'authenticité est la tendance actuelle. Vos proches veulent voir ce que vous avez vu, pas un filtre Instagram.",
+                version: 1,
+              },
+            ],
+          },
+        ],
+      },
+    },
+  },
+  {
+    title: 'Comment préparer son bagage cabine pour 1 semaine',
+    slug: 'bagage-cabine-organisation',
+    category: 'tips',
+    excerpt:
+      "Voyager léger est un art. Fini les frais de bagages en soute et l'attente au tapis roulant. Voici comment tout faire tenir dans un sac à dos !",
+    content: {
+      root: {
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "Partir une semaine avec juste un bagage cabine ? Ça fait peur à beaucoup, mais c'est la clé de la liberté en voyage. Plus mobile, moins cher, moins de stress. Voici la méthode infaillible.",
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: '1. La Règle du 5-4-3-2-1', version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: 'Pour une semaine, limitez-vous à : 5 hauts, 4 bas (short/pantalon/jupe), 3 accessoires, 2 paires de chaussures, 1 maillot de bain. En choisissant des couleurs neutres qui vont toutes ensemble, vous avez plus de 20 tenues différentes !',
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: '2. Roulez, ne pliez pas', version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "C'est la base. Rouler ses vêtements serrés permet de gagner un tiers de place en plus et évite les faux plis. Pour les pro, utilisez des cubes de rangement (packing cubes) pour compresser encore plus.",
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: '3. Les Liquides Solides', version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: 'Le sac ziploc de 1L est votre ennemi. Passez au solide : shampoing solide, savon, déodorant stick, dentifrice en pastilles. Ça ne compte pas dans la limite des liquides et ça ne coule pas dans le sac !',
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: '4. Portez le plus gros sur vous', version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "L'avion est souvent climatisé de toute façon. Portez votre jean le plus lourd, vos grosses baskets et votre pull ou veste sur le dos. C'est autant de place gagnée dans la valise.",
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: '5. Le Tech Minimaliste', version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "Avez-vous vraiment besoin de l'ordi, de la tablette ET de la liseuse ? Votre smartphone fait souvent tout ça. Un bon chargeur universel compact et une batterie externe suffisent généralement.",
+                version: 1,
+              },
+            ],
+          },
+        ],
+      },
+    },
+  },
+  {
+    title: 'City Guide : Un week-end magique à Cannes',
+    slug: 'city-guide-cannes',
+    category: 'travel',
+    excerpt:
+      "Cannes, ce n'est pas que le Festival et les paillettes. Découvrez le charme authentique de la perle de la Côte d'Azur en 48h.",
+    content: {
+      root: {
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "Mondialement connue pour son tapis rouge, Cannes cache bien son jeu. Derrière le glamour se cache une ville provençale authentique, baignée de lumière et d'histoire. Voici notre itinéraire idéal.",
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: 'Samedi Matin : Le Suquet Historique', version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "Commencez par grimper dans le Suquet, la vieille ville. Perdez-vous dans les ruelles pavées et fleuries. Montez jusqu'à l'église Notre-Dame d'Espérance pour la vue panoramique sur la baie. C'est LE spot photo incontournable.",
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: 'Redescendez faire un tour au Marché Forville (fermé le lundi) pour goûter à la Socca locale et acheter quelques fruits frais.',
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [
+              { type: 'text', text: 'Samedi Après-midi : La Croisette et la Plage', version: 1 },
+            ],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: 'Impossible de venir à Cannes sans arpenter la Croisette. Admirez les palaces, les chaises bleues emblématiques. En fin de journée, offrez-vous un verre en terrasse face à la mer pour le coucher de soleil.',
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: 'Dimanche : Évasion aux Îles de Lérins', version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "À 15 minutes de bateau se trouve un autre monde : l'île Sainte-Marguerite. Pas de voiture, juste des pins, des criques turquoises et le chant des cigales. Visitez le Fort Royal (où fut emprisonné l'Homme au Masque de Fer) et pique-niquez au bord de l'eau.",
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: 'Nos Adresses Gourmandes', version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "Pour un dîner authentique, fuyez les 'pièges à touristes' du bord de mer et cherchez les petits restos rue Saint-Antoine dans le Suquet. L'ambiance y est chaleureuse et la cuisine souvent familiale.",
+                version: 1,
+              },
+            ],
+          },
+        ],
+      },
+    },
+  },
+  {
+    title: "L'évolution de la carte postale à l'ère du numérique",
+    slug: 'evolution-carte-postale',
+    category: 'lifestyle',
+    excerpt:
+      "Du carton imprimé à l'expérience multimédia connectée : retour sur 150 ans d'histoire et un futur prometteur.",
+    content: {
+      root: {
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "On a souvent prédit sa mort. L'email, puis MMS, puis les réseaux sociaux devaient l'enterrer. Pourtant, la carte postale survit et se transforme. Comment ce rectangle de carton a-t-il traversé les époques ?",
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: "L'Âge d'Or (1900-1920)", version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "Au début du XXe siècle, c'était le SMS de l'époque ! On s'en envoyait plusieurs par jour, pour se donner rendez-vous ou juste dire bonjour. Les facteurs passaient plusieurs fois par jour. C'était le premier média social visuel de masse.",
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: 'Le Déclin et la Banalisation', version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: 'Avec le téléphone, puis internet, la carte postale est devenue un rituel de vacances un peu kitsch. On achetait des vues génériques, on écrivait trois mots, et ça arrivait (parfois) après notre retour. Elle a perdu son utilité de communication pour devenir un pur symbole.',
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: 'Le Renouveau Hybride', version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "Aujourd'hui, nous vivons une renaissance. Nous avons des milliers de photos dans nos téléphones, mais nous manquons de tangible. Les services comme CartePostale.cool font le pont : la facilité du numérique (on utilise ses propres photos, on écrit sur son clavier) avec l'émotion du physique (une vraie carte dans la boîte aux lettres).",
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            tag: 'h2',
+            children: [{ type: 'text', text: 'La Carte Postale 2.0', version: 1 }],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: "Le futur est interactif. Imaginez scanner votre carte reçue pour voir la vidéo du moment où la photo a été prise. Ou entendre la voix de l'expéditeur. La carte devient une porte d'entrée vers une expérience plus riche, tout en gardant sa valeur d'objet collectionnable.",
+                version: 1,
+              },
+            ],
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                text: 'La technologie ne tue pas la tradition, elle lui donne un nouveau souffle. Alors, à vos claviers... et à vos timbres !',
+                version: 1,
+              },
+            ],
+          },
+        ],
+      },
+    },
+  },
 ]
 
 async function main() {
