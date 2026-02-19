@@ -25,7 +25,7 @@ function GoogleLoginButton() {
           router.push('/espace-agence')
           router.refresh()
         }
-      } catch (err) {
+      } catch (_err) {
         setError('Erreur lors de la connexion Google.')
       } finally {
         setLoading(false)

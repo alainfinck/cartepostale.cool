@@ -34,7 +34,7 @@ export async function loginWithGoogle(accessToken: string) {
       },
     })
 
-    let user = users.docs[0]
+    const user = users.docs[0]
 
     if (!user) {
       return { error: "Aucun compte associé à cet email. Veuillez contacter l'administrateur." }
@@ -43,12 +43,13 @@ export async function loginWithGoogle(accessToken: string) {
     // 3. Generate Session Token (JWT)
     // Payload 3.0 uses 'payload-token' cookie by default.
     // We sign the user data with the Payload Secret.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, hash, salt, ...safeUser } = user
+
     const token = jwt.sign(
       {
-        email: user.email,
-        id: user.id,
+        ...safeUser,
         collection: 'users',
-        ...user,
       },
       process.env.PAYLOAD_SECRET || '',
       {
