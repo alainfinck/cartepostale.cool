@@ -51,6 +51,7 @@ import {
   Play,
   Trash2,
   Volume2,
+  Loader2,
 } from 'lucide-react'
 import {
   Postcard,
@@ -2055,16 +2056,19 @@ export default function EditorPage() {
                 {/* Upload Zone */}
                 <div
                   className={cn(
-                    'relative border-2 border-dashed rounded-2xl text-center cursor-pointer transition-all hover:border-teal-400 hover:bg-teal-50/50 mb-8 group overflow-hidden',
-                    isDropActive
+                    'relative border-2 border-dashed rounded-2xl text-center transition-all mb-8 group overflow-hidden',
+                    uploadStatus
+                      ? 'border-teal-400 bg-teal-50/20 p-6 cursor-wait'
+                      : 'cursor-pointer hover:border-teal-400 hover:bg-teal-50/50',
+                    !uploadStatus && isDropActive
                       ? 'border-teal-400 bg-teal-50/40 p-8'
-                      : uploadedFileName
+                      : !uploadStatus && uploadedFileName
                         ? 'border-teal-400 bg-teal-50/10 p-4'
-                        : frontImage && !uploadedFileName
+                        : !uploadStatus && frontImage && !uploadedFileName
                           ? 'border-stone-200 bg-shadow-sm p-8'
-                          : 'border-stone-300 p-8',
+                          : !uploadStatus && 'border-stone-300 p-8',
                   )}
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => !uploadStatus && fileInputRef.current?.click()}
                   onDragEnter={handleDropZoneDragEnter}
                   onDragOver={handleDropZoneDragOver}
                   onDragLeave={handleDropZoneDragLeave}
@@ -2077,7 +2081,17 @@ export default function EditorPage() {
                     className="hidden"
                     onChange={handleFileUpload}
                   />
-                  {uploadedFileName ? (
+                  {uploadStatus ? (
+                    <div className="flex items-center gap-4 justify-center text-left">
+                      <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                        <Loader2 size={24} className="text-teal-600 animate-spin" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-stone-800 font-bold truncate">{uploadedFileName}</p>
+                        <p className="text-teal-600 text-sm mt-0.5">{uploadStatus.step}</p>
+                      </div>
+                    </div>
+                  ) : uploadedFileName ? (
                     <div className="flex items-center gap-4 justify-center text-left">
                       {frontImage && (
                         <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-teal-200 bg-stone-100 flex-shrink-0 shadow-sm transition-transform hover:scale-105">
@@ -3208,27 +3222,37 @@ export default function EditorPage() {
                             </div>
                           </div>
                           <div className="flex items-center justify-center gap-1 py-1.5 px-1 border-t border-stone-100 bg-stone-50/50">
-                            <button
-                              type="button"
-                              onClick={() => openNoteEditor(item.id, item.note)}
-                              className={cn(
-                                'flex items-center justify-center w-7 h-7 rounded-md transition-colors',
-                                item.note
-                                  ? 'bg-teal-500 text-white'
-                                  : 'text-stone-400 hover:bg-teal-50 hover:text-teal-600',
-                              )}
-                              title="Ajouter une note / légende"
-                            >
-                              <FileText size={14} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => removeMediaItem(item.id)}
-                              className="flex items-center justify-center w-7 h-7 rounded-md text-stone-400 hover:bg-red-50 hover:text-red-500 transition-colors"
-                              title="Retirer de l'album"
-                            >
-                              <X size={14} />
-                            </button>
+                            <div className="relative group/tooltip">
+                              <button
+                                type="button"
+                                onClick={() => openNoteEditor(item.id, item.note)}
+                                className={cn(
+                                  'flex items-center justify-center w-7 h-7 rounded-md transition-colors',
+                                  item.note
+                                    ? 'bg-teal-500 text-white'
+                                    : 'text-stone-400 hover:bg-teal-50 hover:text-teal-600',
+                                )}
+                                aria-label="Ajouter une note / légende"
+                              >
+                                <FileText size={14} />
+                              </button>
+                              <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 px-2 py-1 text-[10px] font-medium text-white bg-stone-800 rounded-md opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20 shadow-lg">
+                                Ajouter une note / légende
+                              </span>
+                            </div>
+                            <div className="relative group/tooltip">
+                              <button
+                                type="button"
+                                onClick={() => removeMediaItem(item.id)}
+                                className="flex items-center justify-center w-7 h-7 rounded-md text-stone-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                                aria-label="Retirer de l'album"
+                              >
+                                <X size={14} />
+                              </button>
+                              <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 px-2 py-1 text-[10px] font-medium text-white bg-stone-800 rounded-md opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20 shadow-lg">
+                                Retirer de l'album
+                              </span>
+                            </div>
                           </div>
                         </div>
                       ))}

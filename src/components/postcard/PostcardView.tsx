@@ -483,7 +483,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const hasMedia = postcard.mediaItems && postcard.mediaItems.length > 0
 
   const actionButtonBase =
-    'inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 px-3 sm:px-5 py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider active:scale-95 transition-all shadow-sm text-center whitespace-normal sm:whitespace-nowrap text-stone-800'
+    'inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 px-3 sm:px-5 py-2 rounded-lg text-[9px] sm:text-[10px] md:text-xs font-bold uppercase tracking-wider active:scale-95 transition-all shadow-sm text-center whitespace-normal sm:whitespace-nowrap text-stone-800'
 
   useEffect(() => {
     setPortalRoot(document.body)
@@ -929,7 +929,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
                   <div className="bg-stone-800/95 backdrop-blur-md px-3 py-2.5 rounded-xl border border-stone-600/50 shadow-xl flex items-center gap-2 transform scale-95 group-hover:scale-100 transition-all duration-300">
                     <RotateCw size={16} className="text-white shrink-0" strokeWidth={2} />
-                    <span className="text-white font-bold uppercase tracking-wider text-[10px] sm:text-xs whitespace-nowrap">
+                    <span className="text-white font-bold uppercase tracking-wider text-[9px] sm:text-[10px] md:text-xs whitespace-nowrap">
                       Retourner la carte postale
                     </span>
                   </div>
