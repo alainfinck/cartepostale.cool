@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { Postcard } from '@/types'
+import { demoPostcards } from '@/data/demoPostcards'
 import {
   Plus,
   Compass,
@@ -29,100 +30,8 @@ import ComparisonSection from '@/components/home/ComparisonSection'
 import ShareHomeButtons from '@/components/social/ShareHomeButtons'
 
 export default function Home() {
-  const [savedPostcards, setSavedPostcards] = useState<Postcard[]>([])
+  const savedPostcards = demoPostcards
   const [fullScreenPostcard, setFullScreenPostcard] = useState<Postcard | null>(null)
-
-  useEffect(() => {
-    setSavedPostcards([
-      {
-        id: 'demo-ski',
-        frontImage: '/images/demo/photo-1486074218988-66a98816c117.jpg',
-        frontCaption: 'Salut des pistes ! ⛷️',
-        location: 'Courchevel, France',
-        message:
-          'Les pistes sont incroyables cette année ! La poudreuse est au rendez-vous. On profite à fond de chaque descente. On se voit bientôt pour une fondue ?',
-        recipientName: 'La team Ski',
-        senderName: 'Léo',
-        stampStyle: 'modern',
-        date: '15 Jan 2025',
-        isPremium: true,
-        coords: { lat: 45.4147, lng: 6.6342 },
-        mediaItems: [
-          { id: 's1', type: 'image', url: '/images/demo/photo-1520629411511-eb4407764282.jpg' },
-          {
-            id: 's2',
-            type: 'video',
-            url: 'https://assets.mixkit.co/videos/preview/mixkit-skier-going-fast-down-a-snowy-mountain-42621-large.mp4',
-          },
-        ],
-      },
-      {
-        id: 'demo-japan',
-        frontImage: '/images/demo/photo-1493976040374-85c8e12f0c0e.jpg',
-        frontCaption: "Kyoto m'émerveille 🌸",
-        location: 'Kyoto, Japon',
-        message:
-          "Le calme des temples de Kyoto me ressource tellement. Les cerisiers commencent tout juste à bourgeonner. C'est d'une beauté indescriptible.",
-        recipientName: 'Anna',
-        senderName: 'Kévin',
-        stampStyle: 'classic',
-        date: '28 Mars 2024',
-        isPremium: true,
-        coords: { lat: 35.0116, lng: 135.7681 },
-        mediaItems: [
-          { id: 'j1', type: 'image', url: '/images/demo/photo-1528164344705-47542687000d.jpg' },
-        ],
-      },
-      {
-        id: 'demo-canada',
-        frontImage: '/images/demo/photo-1503614472-8c93d56e92ce.jpg',
-        frontCaption: 'Les Rocheuses ! 🏔️',
-        location: 'Banff, Canada',
-        message:
-          "On a vu des ours aujourd'hui ! (De loin, rassurez-vous). Les lacs sont d'un bleu turquoise qu'on ne voit nulle part ailleurs. On explore les Rocheuses en van.",
-        recipientName: 'Julie',
-        senderName: 'Thomas',
-        stampStyle: 'airmail',
-        date: '10 Août 2024',
-        isPremium: true,
-        coords: { lat: 51.1784, lng: -115.5708 },
-        mediaItems: [
-          { id: 'c1', type: 'image', url: '/images/demo/photo-1439396087961-99bc12bd8959.jpg' },
-        ],
-      },
-      {
-        id: 'demo-anniv',
-        frontImage: '/images/demo/photo-1530103043960-ef38714abb15.jpg',
-        frontCaption: 'Joyeux anniversaire ! 🎂',
-        location: 'Votre Cœur, Partout',
-        message:
-          'Joyeux Anniversaire ! 🎂 Une petite carte pour marquer le coup et te souhaiter le meilleur pour cette nouvelle année. Profite bien de ta journée !',
-        recipientName: 'Manon',
-        senderName: 'Maxime',
-        stampStyle: 'modern',
-        date: '20 Fév 2025',
-        isPremium: false,
-        coords: { lat: 48.8566, lng: 2.3522 },
-      },
-      {
-        id: 'demo-safari',
-        frontImage: '/images/demo/photo-1516426122078-c23e76319801.jpg',
-        frontCaption: 'Safari inoubliable ! 🦁',
-        location: 'Kruger Park, Afrique du Sud',
-        message:
-          "Réveil à 5h pour le game drive ce matin. On a croisé des éléphants et une lionne avec ses petits. L'aventure est exceptionnelle !",
-        recipientName: 'Les collègues',
-        senderName: 'Émilie',
-        stampStyle: 'classic',
-        date: '05 Nov 2024',
-        isPremium: true,
-        coords: { lat: -23.9884, lng: 31.5594 },
-        mediaItems: [
-          { id: 'sa1', type: 'image', url: '/images/demo/photo-1549366021-9f761d450615.jpg' },
-        ],
-      },
-    ])
-  }, [])
 
   const demoCard: Postcard = {
     id: 'demo-rv',

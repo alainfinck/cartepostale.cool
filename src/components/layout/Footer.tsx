@@ -60,6 +60,9 @@ export const Footer = () => {
           <Link href="/" className="hover:text-teal-600 transition-colors">
             Accueil
           </Link>
+          <Link href="/idees" className="hover:text-teal-600 transition-colors">
+            Fonctionnalités
+          </Link>
           <Link href="/galerie" className="hover:text-teal-600 transition-colors">
             Découvrir
           </Link>
