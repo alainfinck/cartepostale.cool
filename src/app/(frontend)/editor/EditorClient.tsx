@@ -640,6 +640,7 @@ const ALBUM_TIERS = {
 export default function EditorPage() {
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
 
+  const router = useRouter()
   const searchParams = useSearchParams()
   const [currentStep, setCurrentStep] = useState<StepId>('photo')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -771,6 +772,37 @@ export default function EditorPage() {
   const audioChunksRef = useRef<Blob[]>([])
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null)
   const [recordingTime, setRecordingTime] = useState(0)
+
+  const handleGoogleSuccess = useCallback(
+    async (result: { success: boolean; role: string; email?: string }) => {
+      if (result.success && result.email) {
+        setSenderEmail(result.email)
+        // Check if we have a postcard to link
+        if (createdPostcardId) {
+          setIsSendingEmail(true)
+          const linkRes = await linkPostcardToUser(createdPostcardId, result.email)
+          setIsSendingEmail(false)
+          if (linkRes.success) {
+            setIsEmailSent(true)
+            // Update currentUser state
+            setCurrentUser({
+              id: 0,
+              email: result.email,
+              role: result.role,
+            })
+            router.refresh()
+            // Hide modal if open
+            setTimeout(() => {
+              setShowEmailPromptModal(false)
+            }, 1000)
+          }
+        } else {
+          router.refresh()
+        }
+      }
+    },
+    [createdPostcardId, router],
+  )
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
   const [showBack, setShowBack] = useState(currentStep === 'redaction')
@@ -1951,7 +1983,7 @@ export default function EditorPage() {
     // toast ?
   }
 
-  return (
+  const content = (
     <div className="min-h-screen bg-[#fdfbf7]">
       {/* Step Progress Bar — collé sous la topbar ; top suit la hauteur navbar (réduite au scroll) */}
       <div
@@ -3687,6 +3719,22 @@ export default function EditorPage() {
                                 <span>ENREGISTRER MA CARTE</span>
                               )}
                             </Button>
+
+                            {googleClientId && !currentUser && (
+                              <>
+                                <div className="relative my-2">
+                                  <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-stone-200"></div>
+                                  </div>
+                                  <div className="relative flex justify-center text-[10px]">
+                                    <span className="px-2 bg-stone-50 text-stone-400 font-bold uppercase tracking-widest">
+                                      Ou continuez avec
+                                    </span>
+                                  </div>
+                                </div>
+                                <GoogleLoginButton onSuccess={handleGoogleSuccess} />
+                              </>
+                            )}
                           </div>
                         )}
                       </div>
@@ -4390,6 +4438,23 @@ export default function EditorPage() {
                   'Sauvegarder et Envoyer'
                 )}
               </Button>
+
+              {googleClientId && (
+                <>
+                  <div className="relative my-2">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-stone-100"></div>
+                    </div>
+                    <div className="relative flex justify-center text-[10px]">
+                      <span className="px-2 bg-white text-stone-400 font-bold uppercase tracking-widest">
+                        Ou
+                      </span>
+                    </div>
+                  </div>
+                  <GoogleLoginButton onSuccess={handleGoogleSuccess} className="!h-14" />
+                </>
+              )}
+
               <button
                 onClick={() => setShowEmailPromptModal(false)}
                 className="w-full text-stone-400 hover:text-stone-600 text-[10px] sm:text-xs uppercase tracking-widest font-black transition-colors"
@@ -4629,4 +4694,8 @@ export default function EditorPage() {
       />
     </div>
   )
+
+  if (!googleClientId) return content
+
+  return <GoogleOAuthProvider clientId={googleClientId}>{content}</GoogleOAuthProvider>
 }

@@ -307,8 +307,8 @@ export default function BusinessClient() {
                       {/* Left Side - Message */}
                       <div className="flex flex-col pt-4">
                         <div className="font-handwriting text-stone-700 text-xl leading-relaxed mb-6">
-                          "Un moment magique dans ce lieu incroyable ! Merci pour l'accueil
-                          chaleureux, on reviendra c'est certain."
+                          &quot;Un moment magique dans ce lieu incroyable ! Merci pour
+                          l&apos;accueil chaleureux, on reviendra c&apos;est certain.&quot;
                         </div>
 
                         {/* Brand Footer Small */}
