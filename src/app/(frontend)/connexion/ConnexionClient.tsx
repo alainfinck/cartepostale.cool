@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { LogIn, Mail, Lock, AlertCircle, UserPlus, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { GoogleOAuthProvider } from '@react-oauth/google'
+import { GoogleLoginButton } from '@/components/auth/GoogleLoginButton'
 
 export default function ConnexionClient() {
   const router = useRouter()
@@ -13,6 +15,7 @@ export default function ConnexionClient() {
   const initialFlipped = useMemo(() => searchParams.get('inscription') === '1', [searchParams])
 
   const [flipped, setFlipped] = useState(initialFlipped)
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
 
   // Connexion
   const [email, setEmail] = useState('')
@@ -100,7 +103,7 @@ export default function ConnexionClient() {
     }
   }
 
-  return (
+  const content = (
     <div className="bg-[#fdfbf7] min-h-screen">
       <section className="relative py-16 md:py-24 px-4 overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-teal-200 rounded-full blur-3xl opacity-20 -translate-y-1/2" />
@@ -118,7 +121,6 @@ export default function ConnexionClient() {
             </p>
           </div>
 
-          {/* Carte recto-verso — hauteur unique pour le verso (inscription plus haut) */}
           <div className="perspective-1000 min-h-[600px]">
             <div
               className="relative w-full min-h-[600px] transform-style-3d"
@@ -200,6 +202,21 @@ export default function ConnexionClient() {
                       </span>
                     )}
                   </Button>
+
+                  {googleClientId && (
+                    <>
+                      <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-stone-200"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                          <span className="px-2 bg-white text-stone-400">Ou</span>
+                        </div>
+                      </div>
+                      <GoogleLoginButton />
+                    </>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => setFlipped(true)}
@@ -297,6 +314,21 @@ export default function ConnexionClient() {
                       </span>
                     )}
                   </Button>
+
+                  {googleClientId && (
+                    <>
+                      <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-stone-200"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                          <span className="px-2 bg-white text-stone-400">Ou</span>
+                        </div>
+                      </div>
+                      <GoogleLoginButton />
+                    </>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => setFlipped(false)}
@@ -312,4 +344,8 @@ export default function ConnexionClient() {
       </section>
     </div>
   )
+
+  if (!googleClientId) return content
+
+  return <GoogleOAuthProvider clientId={googleClientId}>{content}</GoogleOAuthProvider>
 }
