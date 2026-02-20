@@ -84,5 +84,39 @@ export const Users: CollectionConfig = {
       type: 'date',
       hidden: true,
     },
+    {
+      name: 'sessions',
+      type: 'array',
+      label: 'Sessions',
+      fields: [
+        {
+          name: 'id',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'createdAt',
+          type: 'date',
+          required: true,
+        },
+        {
+          name: 'expiresAt',
+          type: 'date',
+          required: true,
+        },
+        {
+          name: 'userAgent',
+          type: 'text',
+        },
+        {
+          name: 'ip',
+          type: 'text',
+        },
+      ],
+      admin: {
+        readOnly: true,
+        condition: (data) => Boolean(data?.sessions),
+      },
+    },
   ],
 }
