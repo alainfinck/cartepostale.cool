@@ -61,10 +61,8 @@ export async function loginWithGoogle(accessToken: string) {
     const secret = process.env.PAYLOAD_SECRET || ''
     const token = jwt.sign(
       {
-        email: user.email,
-        id: user.id,
+        ...safeUser,
         collection: 'users',
-        iat: Math.floor(Date.now() / 1000),
       },
       secret,
       {
