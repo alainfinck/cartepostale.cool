@@ -94,6 +94,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
+import { GoogleOAuthProvider } from '@react-oauth/google'
+import { GoogleLoginButton } from '@/components/auth/GoogleLoginButton'
 
 const POSTCARD_ASPECT = 3 / 2
 const DEFAULT_FRONT_FILTER: FrontImageFilter = {
@@ -636,6 +638,8 @@ const ALBUM_TIERS = {
 } as const
 
 export default function EditorPage() {
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+
   const searchParams = useSearchParams()
   const [currentStep, setCurrentStep] = useState<StepId>('photo')
   const fileInputRef = useRef<HTMLInputElement>(null)

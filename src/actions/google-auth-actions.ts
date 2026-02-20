@@ -47,7 +47,7 @@ export async function loginWithGoogle(accessToken: string) {
           email,
           name: name || undefined,
           password: randomPassword,
-          role: 'user', // Default role for new users
+          role: 'user', // Match schema defaultValue
         },
       })
     }
@@ -58,19 +58,23 @@ export async function loginWithGoogle(accessToken: string) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, hash, salt, ...safeUser } = user
 
+    const secret = process.env.PAYLOAD_SECRET || ''
     const token = jwt.sign(
       {
-        ...safeUser,
+        email: user.email,
+        id: user.id,
         collection: 'users',
+        iat: Math.floor(Date.now() / 1000),
       },
-      process.env.PAYLOAD_SECRET || '',
+      secret,
       {
         expiresIn: '7d', // Session duration
       },
     )
 
     // 4. Set Cookie
-    ;(await cookies()).set('payload-token', token, {
+    const cookieStore = await cookies()
+    cookieStore.set('payload-token', token, {
       path: '/',
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -78,7 +82,7 @@ export async function loginWithGoogle(accessToken: string) {
       maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
     })
 
-    return { success: true, role: user.role }
+    return { success: true, role: user.role || 'user', email: user.email }
   } catch (error) {
     console.error('Google Login Error:', error)
     return { error: 'Une erreur interne est survenue.' }

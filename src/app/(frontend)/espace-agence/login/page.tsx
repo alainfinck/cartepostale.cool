@@ -68,6 +68,22 @@ export default function AgencyLoginPage() {
               <span>{error}</span>
             </div>
           )}
+
+          {googleClientId && (
+            <div className="space-y-6">
+              <GoogleLoginButton />
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-stone-200"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white text-stone-500 font-medium whitespace-nowrap">
+                    Ou connectez-vous par email
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="space-y-2">
             <label
               htmlFor="email"
@@ -125,21 +141,6 @@ export default function AgencyLoginPage() {
           >
             {loading ? 'Connexion en cours...' : 'Accéder à mon espace'}
           </Button>
-
-          {googleClientId && (
-            <>
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Ou</span>
-                </div>
-              </div>
-
-              <GoogleLoginButton />
-            </>
-          )}
         </form>
 
         <div className="mt-8 text-center pt-8 border-t border-stone-100">

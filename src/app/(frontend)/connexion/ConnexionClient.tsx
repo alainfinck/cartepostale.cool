@@ -144,6 +144,22 @@ export default function ConnexionClient() {
                       <span>{error}</span>
                     </div>
                   )}
+
+                  {googleClientId && (
+                    <div className="space-y-6">
+                      <GoogleLoginButton />
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-stone-200"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                          <span className="px-4 bg-white text-stone-500 font-medium">
+                            Ou connectez-vous par email
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div className="space-y-3">
                     <label htmlFor="email" className="text-base font-medium text-stone-700">
                       Email
@@ -203,20 +219,6 @@ export default function ConnexionClient() {
                     )}
                   </Button>
 
-                  {googleClientId && (
-                    <>
-                      <div className="relative my-4">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-stone-200"></div>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                          <span className="px-2 bg-white text-stone-400">Ou</span>
-                        </div>
-                      </div>
-                      <GoogleLoginButton />
-                    </>
-                  )}
-
                   <button
                     type="button"
                     onClick={() => setFlipped(true)}
@@ -241,6 +243,22 @@ export default function ConnexionClient() {
                     <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-base">
                       <AlertCircle size={22} className="shrink-0" />
                       <span>{signupError}</span>
+                    </div>
+                  )}
+
+                  {googleClientId && (
+                    <div className="space-y-6">
+                      <GoogleLoginButton />
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-stone-200"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                          <span className="px-4 bg-white text-stone-500 font-medium">
+                            Ou avec votre email
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   )}
                   <div className="space-y-3">
@@ -314,20 +332,6 @@ export default function ConnexionClient() {
                       </span>
                     )}
                   </Button>
-
-                  {googleClientId && (
-                    <>
-                      <div className="relative my-4">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-stone-200"></div>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                          <span className="px-2 bg-white text-stone-400">Ou</span>
-                        </div>
-                      </div>
-                      <GoogleLoginButton />
-                    </>
-                  )}
 
                   <button
                     type="button"

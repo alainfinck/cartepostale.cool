@@ -55,11 +55,11 @@ export default function BusinessClient() {
       <section className="relative bg-[#061e1e] min-h-[85vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
-            src={getOptimizedImageUrl('/images/demo/photo-1486406146926-c627a92ad1ab.jpg', {
+            src={getOptimizedImageUrl('/images/demo/photo-1507525428034-b723cf961d3e.jpg', {
               width: 1920,
             })}
-            alt="Business Background"
-            className="w-full h-full object-cover opacity-30 mix-blend-overlay scale-105"
+            alt="Vacation Background"
+            className="w-full h-full object-cover opacity-40 mix-blend-overlay scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-teal-950/40 via-teal-950/80 to-[#061e1e]"></div>
         </div>
@@ -80,7 +80,7 @@ export default function BusinessClient() {
 
             <motion.h1
               variants={itemVariants}
-              className="text-5xl md:text-8xl font-serif font-bold text-white mb-8 leading-[1.1] tracking-tight"
+              className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-8 leading-[1.1] tracking-tight"
             >
               Faites rayonner <br />
               <WordRotate
@@ -100,7 +100,7 @@ export default function BusinessClient() {
 
             <motion.p
               variants={itemVariants}
-              className="text-teal-50/80 text-xl md:text-2xl mb-12 leading-relaxed max-w-2xl font-light"
+              className="text-teal-50/80 text-lg md:text-xl mb-12 leading-relaxed max-w-2xl font-light"
             >
               Offrez à vos visiteurs une expérience mémorable. Une banque d&apos;images pro, votre
               branding sur chaque carte, et des statistiques en temps réel. Simple, puissant,
@@ -242,68 +242,131 @@ export default function BusinessClient() {
 
           <div className="relative max-w-4xl mx-auto">
             {/* Mockup Container */}
-            <div className="relative bg-stone-800 rounded-[40px] p-4 md:p-8 border border-white/10 shadow-2xl">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Recto */}
-                <div className="space-y-4">
-                  <div className="text-center text-sm font-bold text-stone-500 uppercase tracking-widest">
-                    Recto (Photo)
-                  </div>
-                  <div className="aspect-[3/2] bg-stone-900 rounded-2xl relative overflow-hidden group">
-                    <img
-                      src={getOptimizedImageUrl('/images/demo/photo-1544985361-b663b36a7edc.jpg', {
-                        width: 800,
-                      })}
-                      alt="Exemple Recto"
-                      className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
-                    />
-                    {/* Logo Overlay Mockup */}
-                    <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg shadow-lg">
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-teal-500 rounded-full"></div>
-                        <span className="text-xs font-bold text-stone-900">VOTRE MARQUE</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Verso */}
-                <div className="space-y-4">
-                  <div className="text-center text-sm font-bold text-stone-500 uppercase tracking-widest">
-                    Verso (Message)
-                  </div>
-                  <div className="aspect-[3/2] bg-[#faf8f5] rounded-2xl relative overflow-hidden p-6 flex flex-col shadow-inner">
-                    <div className="flex-1 border-r border-stone-200 pr-4">
-                      <div className="font-handwriting text-stone-600 text-lg leading-relaxed">
-                        &quot;Un petit coucou de nos vacances incroyables ! L&apos;hôtel est superbe
-                        et on profite à fond.&quot;
-                      </div>
-                    </div>
-
-                    {/* Stamp Area */}
-                    <div className="absolute top-6 right-6 w-20 h-24 border-2 border-dashed border-stone-300 rounded bg-stone-100 flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="w-8 h-8 bg-stone-300 rounded-full mx-auto mb-1"></div>
-                        <div className="text-[10px] text-stone-400 font-bold">TIMBRE</div>
-                      </div>
-                    </div>
-
-                    {/* Branded Footer Mockup */}
-                    <div className="mt-auto pt-4 border-t border-stone-200 flex items-center justify-between">
-                      <div className="flex items-center gap-2 opacity-70">
-                        <div className="w-6 h-6 bg-teal-500 rounded-lg"></div>
-                        <div className="text-[10px] font-bold text-stone-400 uppercase">
-                          Offert par
-                          <br />
-                          <span className="text-teal-600">VOTRE MARQUE</span>
+            <div className="relative max-w-5xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                {/* Recto - Real Card Look */}
+                <motion.div
+                  initial={{ opacity: 0, rotateY: -10, x: -20 }}
+                  whileInView={{ opacity: 1, rotateY: 0, x: 0 }}
+                  viewport={{ once: true }}
+                  className="perspective-1000"
+                >
+                  <div className="relative aspect-[3/2] bg-white p-3 rounded-sm shadow-[0_20px_50px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.1)] transform-gpu hover:shadow-[0_40px_80px_rgba(0,0,0,0.5)] transition-all duration-500">
+                    <div className="absolute inset-0 bg-[url('/images/ui/paper-texture.png')] opacity-20 pointer-events-none rounded-sm"></div>
+                    <div className="w-full h-full overflow-hidden rounded-sm relative group">
+                      <img
+                        src={getOptimizedImageUrl(
+                          '/images/demo/photo-1501785888041-af3ef285b470.jpg',
+                          {
+                            width: 800,
+                          },
+                        )}
+                        alt="Exemple Recto"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                      {/* Brand Overlay */}
+                      <div className="absolute bottom-6 right-6 flex items-center gap-3 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-xl shadow-lg border border-white/20">
+                        <div className="w-6 h-6 bg-teal-600 rounded-lg shadow-inner flex items-center justify-center">
+                          <span className="text-[10px] text-white font-bold">CP</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] uppercase tracking-widest font-black text-stone-900 leading-none">
+                            VOTRE MARQUE
+                          </span>
+                          <span className="text-[8px] text-stone-400 font-bold">
+                            PARTENAIRE OFFICIEL
+                          </span>
                         </div>
                       </div>
-                      <div className="bg-stone-900 text-white text-[10px] font-bold px-2 py-1 rounded">
-                        -20% PROCHAIN SÉJOUR
+                    </div>
+                    {/* Card Edge Highlights */}
+                    <div className="absolute inset-0 pointer-events-none border border-white/10 rounded-sm"></div>
+                  </div>
+                  <div className="mt-6 text-center">
+                    <span className="text-stone-500 font-bold uppercase tracking-[0.2em] text-xs">
+                      Vue de face (Recto)
+                    </span>
+                  </div>
+                </motion.div>
+
+                {/* Verso - Real Card Look */}
+                <motion.div
+                  initial={{ opacity: 0, rotateY: 10, x: 20 }}
+                  whileInView={{ opacity: 1, rotateY: 0, x: 0 }}
+                  viewport={{ once: true }}
+                  className="perspective-1000"
+                >
+                  <div className="relative aspect-[3/2] bg-[#fcfaf7] p-8 rounded-sm shadow-[20px_20px_60px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.05)] flex flex-col transform-gpu hover:shadow-[30px_30px_80px_rgba(0,0,0,0.5)] transition-all duration-500">
+                    {/* Paper Texture and Grain */}
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-30 pointer-events-none"></div>
+
+                    {/* Center Vertical Line */}
+                    <div className="absolute left-1/2 top-10 bottom-10 w-[1px] bg-stone-200/60 hidden md:block"></div>
+
+                    <div className="flex-1 grid grid-cols-2 gap-8 relative z-10">
+                      {/* Left Side - Message */}
+                      <div className="flex flex-col pt-4">
+                        <div className="font-handwriting text-stone-700 text-xl leading-relaxed mb-6">
+                          "Un moment magique dans ce lieu incroyable ! Merci pour l'accueil
+                          chaleureux, on reviendra c'est certain."
+                        </div>
+
+                        {/* Brand Footer Small */}
+                        <div className="mt-auto flex items-center gap-3 py-4 border-t border-stone-100">
+                          <div className="w-8 h-8 bg-stone-100 rounded-lg flex items-center justify-center border border-stone-200">
+                            <div className="w-4 h-4 bg-teal-600 rounded-sm"></div>
+                          </div>
+                          <div className="text-[9px] font-bold text-stone-400 uppercase leading-tight">
+                            Posté avec <br />
+                            <span className="text-teal-600">VOTRE MARQUE</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Side - Stamp & Address */}
+                      <div className="flex flex-col items-center pt-2">
+                        {/* Stamp Area */}
+                        <div className="w-24 h-28 border-[3px] border-stone-200/40 rounded bg-stone-50/50 flex flex-col items-center justify-center relative mb-12 self-end mr-4 group">
+                          <div className="absolute inset-1 border border-stone-200/20 rounded-sm"></div>
+                          <div className="w-12 h-12 bg-stone-200/30 rounded-full flex items-center justify-center mb-2">
+                            <Compass size={24} className="text-stone-300" />
+                          </div>
+                          <span className="text-[8px] font-black text-stone-300 tracking-widest">
+                            TIMBRE
+                          </span>
+                        </div>
+
+                        {/* Address Lines */}
+                        <div className="w-full space-y-4 px-4 pt-4">
+                          <div className="h-[1px] bg-stone-200/60 w-full"></div>
+                          <div className="h-[1px] bg-stone-200/60 w-full"></div>
+                          <div className="h-[1px] bg-stone-200/60 w-full"></div>
+                          <div className="h-[1px] bg-stone-200/60 w-3/4"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* QR/Promo Code Area - Floating Look */}
+                    <div className="absolute bottom-6 left-6 bg-white shadow-xl border border-stone-100 p-2 rounded-xl flex items-center gap-3 scale-90 origin-bottom-left">
+                      <div className="w-10 h-10 bg-stone-900 rounded-lg flex items-center justify-center">
+                        <QrCode size={20} className="text-white" />
+                      </div>
+                      <div className="pr-4">
+                        <div className="text-[8px] font-bold text-stone-400 uppercase">
+                          Offre Partenaire
+                        </div>
+                        <div className="text-xs font-black text-stone-900 leading-none">
+                          LUNCH25
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                  <div className="mt-6 text-center">
+                    <span className="text-stone-500 font-bold uppercase tracking-[0.2em] text-xs">
+                      Vue de dos (Verso)
+                    </span>
+                  </div>
+                </motion.div>
               </div>
             </div>
           </div>

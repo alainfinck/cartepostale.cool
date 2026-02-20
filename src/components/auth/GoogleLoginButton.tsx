@@ -10,9 +10,10 @@ import { loginWithGoogle } from '@/actions/google-auth-actions'
 interface GoogleLoginButtonProps {
   redirectPath?: string
   className?: string
+  onSuccess?: (result: { success: boolean; role: string; email?: string }) => void
 }
 
-export function GoogleLoginButton({ redirectPath, className }: GoogleLoginButtonProps) {
+export function GoogleLoginButton({ redirectPath, className, onSuccess }: GoogleLoginButtonProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -26,17 +27,22 @@ export function GoogleLoginButton({ redirectPath, className }: GoogleLoginButton
         if (result.error) {
           setError(result.error)
         } else {
-          if (redirectPath) {
+          if (onSuccess) {
+            onSuccess({
+              success: true,
+              role: result.role!,
+              email: result.email,
+            })
+          } else if (redirectPath) {
             router.push(redirectPath)
           } else {
             // Default redirects based on role
             if (result.role === 'agence' || result.role === 'admin') {
-              router.push('/espace-agence')
+              window.location.href = '/espace-agence'
             } else {
-              router.push('/espace-client')
+              window.location.href = '/espace-client'
             }
           }
-          router.refresh()
         }
       } catch (_err) {
         setError('Erreur lors de la connexion Google.')
@@ -56,7 +62,7 @@ export function GoogleLoginButton({ redirectPath, className }: GoogleLoginButton
         variant="outline"
         disabled={loading}
         onClick={() => login()}
-        className={`w-full h-12 rounded-xl font-bold text-lg border-teal-200 text-teal-700 hover:bg-teal-50 hover:text-teal-800 transition-all flex items-center justify-center gap-3 relative overflow-hidden ${className}`}
+        className={`w-full h-14 rounded-xl font-bold text-lg border-stone-300 bg-white text-stone-700 hover:bg-stone-50 hover:border-stone-400 shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-3 relative overflow-hidden ${className}`}
       >
         {loading ? (
           <Loader2 className="animate-spin" />
@@ -76,7 +82,7 @@ export function GoogleLoginButton({ redirectPath, className }: GoogleLoginButton
                 fill="#FBBC05"
               />
               <path
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1c-2.4 0-4.52 1.25-5.76 3.16l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 fill="#EA4335"
               />
             </svg>
