@@ -20,9 +20,7 @@ async function getBaseUrl(): Promise<string> {
     const protocol = host.includes('localhost') ? 'http' : 'https'
     return `${protocol}://${host}`
   } catch {
-    return process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000'
+    return process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'
   }
 }
 
@@ -34,13 +32,13 @@ async function getBaseUrl(): Promise<string> {
 export async function sendPostcardToRecipientsFromEditor(
   publicId: string,
   recipients: EditorRecipient[],
-  senderEmail?: string | null
+  senderEmail?: string | null,
 ): Promise<{ success: boolean; sentCount?: number; error?: string }> {
   try {
     const payload = await getPayload({ config })
 
     // 1. Resolve author: logged-in user or find/create by senderEmail
-    let userId: number
+    let userId: string
     const currentUser = await getCurrentUser()
     if (currentUser?.id) {
       userId = currentUser.id
@@ -62,7 +60,7 @@ export async function sendPostcardToRecipientsFromEditor(
             email,
             password: randomBytes(16).toString('hex'),
             role: 'client',
-          },
+          } as any,
         })
         userId = newUser.id
       }
@@ -89,17 +87,17 @@ export async function sendPostcardToRecipientsFromEditor(
 
     // 4. Filter valid recipients
     const valid = recipients.filter(
-      (r) =>
-        (r.email || '').trim() &&
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((r.email || '').trim())
+      (r) => (r.email || '').trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((r.email || '').trim()),
     )
     if (valid.length === 0) {
-      return { success: false, error: 'Ajoutez au moins un destinataire avec une adresse e-mail valide.' }
+      return {
+        success: false,
+        error: 'Ajoutez au moins un destinataire avec une adresse e-mail valide.',
+      }
     }
 
     const baseUrl = await getBaseUrl()
-    const senderName =
-      (postcard as { senderName?: string | null }).senderName ?? undefined
+    const senderName = (postcard as { senderName?: string | null }).senderName ?? undefined
     let sentCount = 0
 
     for (const r of valid) {
@@ -119,11 +117,7 @@ export async function sendPostcardToRecipientsFromEditor(
       } as Parameters<typeof payload.create>[0])
 
       const trackingUrl = `${baseUrl}/v/${(tracking as { token: string }).token}`
-      const html = generateTrackingLinkEmail(
-        trackingUrl,
-        firstName || undefined,
-        senderName
-      )
+      const html = generateTrackingLinkEmail(trackingUrl, firstName || undefined, senderName)
       const ok = await sendEmail({
         to: email,
         subject: 'Une carte postale pour vous',
@@ -146,7 +140,7 @@ export async function sendPostcardToRecipientsFromEditor(
     return { success: true, sentCount }
   } catch (err) {
     console.error('sendPostcardToRecipientsFromEditor:', err)
-    const msg = err instanceof Error ? err.message : 'Erreur lors de l\'envoi.'
+    const msg = err instanceof Error ? err.message : "Erreur lors de l'envoi."
     return { success: false, error: msg }
   }
 }

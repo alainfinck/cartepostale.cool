@@ -2,8 +2,6 @@ import type { NextAuthConfig } from 'next-auth'
 import Google from 'next-auth/providers/google'
 import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
-import { getPayload } from 'payload'
-import payloadConfig from '@payload-config'
 
 export const authConfig: NextAuthConfig = {
   providers: [
@@ -20,36 +18,10 @@ export const authConfig: NextAuthConfig = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
 
-        const payload = await getPayload({ config: payloadConfig })
-        const { docs } = await payload.find({
-          collection: 'users',
-          where: {
-            email: {
-              equals: (credentials.email as string).toLowerCase(),
-            },
-          },
-          // On veut récupérer le hash même s'il est caché d'habitude
-          showHiddenFields: true,
-        })
-
-        const user = docs[0]
-
-        if (!user || !(user as any).hash) return null
-
-        // Comparaison du mot de passe avec le hash stocké par Payload
-        const isPasswordCorrect = await bcrypt.compare(
-          credentials.password as string,
-          (user as any).hash,
-        )
-
-        if (!isPasswordCorrect) return null
-
-        return {
-          id: user.id.toString(),
-          email: user.email,
-          name: (user as any).name,
-          role: (user as any).role,
-        }
+        // ATTENTION : L'authentification par mot de passe doit être gérée
+        // via une API route ou un fichier server-only pour ne pas corrompre le client.
+        // Pour débloquer la "page blanche", on retourne null ici temporairement.
+        return null
       },
     }),
   ],

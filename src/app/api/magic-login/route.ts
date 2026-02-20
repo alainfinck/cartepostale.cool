@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
     const secret = process.env.PAYLOAD_SECRET || ''
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, hash, salt, ...safeUser } = user
+    const { password, hash, salt, ...safeUser } = user as any
     const fieldsToSign = {
       ...safeUser,
       collection: 'users',

@@ -29,7 +29,7 @@ async function main() {
   await payload.update({
     collection: 'users',
     id: user.id,
-    data: { password: NEW_PASSWORD },
+    data: { password: NEW_PASSWORD } as any,
     overrideAccess: true,
   })
 

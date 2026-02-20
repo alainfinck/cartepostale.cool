@@ -9,7 +9,7 @@ import { headers } from 'next/headers'
 
 // --- Auth helper ---
 
-async function requireAgence(): Promise<{ userId: number; agencyId: number } | null> {
+async function requireAgence(): Promise<{ userId: string; agencyId: number } | null> {
   const user = await getCurrentUser()
   if (!user || (user.role !== 'agence' && user.role !== 'admin')) {
     return null

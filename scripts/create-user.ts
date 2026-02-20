@@ -32,11 +32,13 @@ async function main() {
       password: PASSWORD,
       name: 'Alain',
       role: 'user',
-    },
+    } as any,
   })
 
   console.log(`Compte créé : ${EMAIL}`)
-  console.log('Connectez-vous sur http://localhost:3000/connexion puis accédez au tableau de bord : http://localhost:3000/espace-client')
+  console.log(
+    'Connectez-vous sur http://localhost:3000/connexion puis accédez au tableau de bord : http://localhost:3000/espace-client',
+  )
   process.exit(0)
 }
 

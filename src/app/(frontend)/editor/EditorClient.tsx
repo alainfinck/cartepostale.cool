@@ -1982,7 +1982,7 @@ export default function EditorPage() {
     // toast ?
   }
 
-  const content = (
+  return (
     <div className="min-h-screen bg-[#fdfbf7]">
       {/* Step Progress Bar — collé sous la topbar ; top suit la hauteur navbar (réduite au scroll) */}
       <div

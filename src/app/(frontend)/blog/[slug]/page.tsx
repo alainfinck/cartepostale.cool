@@ -110,7 +110,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight max-w-3xl">
               {post.title}
             </h1>
-            {post.author && typeof post.author !== 'number' && (
+            {post.author && typeof post.author === 'object' && (
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl">
                   👤

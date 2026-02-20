@@ -68,7 +68,7 @@ export async function loginWithGoogle(accessToken: string) {
     // Payload 3.0 uses 'payload-token' cookie by default.
     // We sign the user data with the Payload Secret.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, hash, salt, ...safeUser } = user
+    const { password, hash, salt, ...safeUser } = user as any
 
     const token = jwt.sign(
       {

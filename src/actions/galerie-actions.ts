@@ -5,7 +5,7 @@ import config from '@payload-config'
 import type { Gallery, GalleryCategory, GalleryTag } from '@/payload-types'
 import { getCurrentUser } from '@/lib/auth'
 
-async function requireAgence(): Promise<{ userId: number; agencyId: number }> {
+async function requireAgence(): Promise<{ userId: string; agencyId: number }> {
   const user = await getCurrentUser()
   if (!user || (user.role !== 'agence' && user.role !== 'admin')) {
     throw new Error('Non autorisé')
