@@ -3644,7 +3644,7 @@ export default function EditorPage() {
                           <p className="text-stone-500 text-sm mt-1 leading-relaxed max-w-md">
                             {currentUser
                               ? 'Retrouvez cette création à tout moment dans votre espace personnel.'
-                              : 'Indiquez votre e-mail pour accéder aux statistiques de votre carte ou la modifier plus tard.'}
+                              : "Indiquez votre e-mail pour sauvegarder cette carte. Vous pourrez ensuite la modifier (textes, images...) ou la dupliquer pour personnaliser vos messages pour d'autres destinataires."}
                           </p>
                         </div>
                       </div>
@@ -4398,7 +4398,9 @@ export default function EditorPage() {
                 Recevez votre carte !
               </DialogTitle>
               <DialogDescription className="text-stone-500 text-sm font-medium">
-                Saisissez votre email pour sauvegarder cette carte et recevoir votre lien magique.
+                Créez un compte pour sauvegarder cette carte. Vous pourrez la modifier (images,
+                textes...) à tout moment ou la dupliquer pour envoyer des variantes personnalisées à
+                vos proches.
               </DialogDescription>
             </div>
             <div className="p-8 space-y-4">
