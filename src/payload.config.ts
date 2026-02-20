@@ -20,6 +20,7 @@ import { GalleryTag } from './collections/GalleryTag'
 import { Gallery } from './collections/Gallery'
 import { Stickers } from './collections/Stickers'
 import { Posts } from './collections/Posts'
+import { EmailTemplates } from './collections/EmailTemplates'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -107,6 +108,7 @@ export default buildConfig({
     Stickers,
     Leads,
     Posts,
+    EmailTemplates,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
