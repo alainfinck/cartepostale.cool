@@ -27,14 +27,17 @@ export function ServiceWorkerRegistration() {
     }
     navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
 
-    navigator.serviceWorker.register('/sw.js').then((registration) => {
-      reg = registration
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[SW] Registered:', registration.scope)
-      }
-    }).catch((err) => {
-      console.warn('[SW] Registration failed:', err)
-    })
+    navigator.serviceWorker
+      .register('/sw.js')
+      .then((registration) => {
+        reg = registration
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[SW] Registered:', registration.scope)
+        }
+      })
+      .catch((err) => {
+        console.warn('[SW] Registration failed:', err)
+      })
 
     return () => {
       document.removeEventListener('visibilitychange', onVisibilityChange)

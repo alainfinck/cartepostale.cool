@@ -13,7 +13,6 @@ import { getPayload } from 'payload'
 import pg from 'pg'
 import path from 'path'
 import { fileURLToPath } from 'url'
-// @ts-expect-error sql.js has no types
 import initSqlJs from 'sql.js'
 
 import config from '../src/payload.config'
@@ -77,9 +76,7 @@ async function migrateUsersFromSqliteToPostgres(): Promise<void> {
       await client.query(insertSql, rowValues)
     }
 
-    const maxIdResult = await client.query(
-      'SELECT COALESCE(MAX(id), 0)::int AS max_id FROM users',
-    )
+    const maxIdResult = await client.query('SELECT COALESCE(MAX(id), 0)::int AS max_id FROM users')
     const maxId = maxIdResult.rows[0]?.max_id ?? 0
     await client.query(`SELECT setval(pg_get_serial_sequence('users', 'id'), $1)`, [maxId])
 

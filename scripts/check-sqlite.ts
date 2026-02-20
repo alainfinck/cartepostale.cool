@@ -20,14 +20,21 @@ async function checkSqlite() {
 
   try {
     const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table'")
-    console.log('Tables in SQLite:', tables[0]?.values.flat())
+    if (tables.length > 0) {
+      console.log('Tables in SQLite:', tables[0].values.flat())
+    }
 
     const posts = db.exec('SELECT count(*) FROM posts')
-    console.log('Posts in SQLite:', posts[0]?.values[0][0])
+    if (posts.length > 0 && posts[0].values.length > 0) {
+      const count = posts[0].values[0][0] as number
+      console.log('Posts in SQLite:', count)
 
-    if (posts[0]?.values[0][0] > 0) {
-      const postTitles = db.exec('SELECT title FROM posts LIMIT 5')
-      console.log('Sample post titles:', postTitles[0]?.values.flat())
+      if (count > 0) {
+        const postTitles = db.exec('SELECT title FROM posts LIMIT 5')
+        if (postTitles.length > 0) {
+          console.log('Sample post titles:', postTitles[0].values.flat())
+        }
+      }
     }
   } catch (e) {
     console.error('Error reading SQLite:', e)

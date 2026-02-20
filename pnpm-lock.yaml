@@ -19,7 +19,7 @@ importers:
         version: 0.17.0
       '@payloadcms/db-postgres':
         specifier: ^3.76.1
-        version: 3.76.1(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.6.2)(payload@3.76.1(graphql@16.12.0)(typescript@5.7.3))(sql.js@1.13.0)
+        version: 3.76.1(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(@types/sql.js@1.4.9)(better-sqlite3@12.6.2)(payload@3.76.1(graphql@16.12.0)(typescript@5.7.3))(sql.js@1.13.0)
       '@payloadcms/next':
         specifier: 3.76.1
         version: 3.76.1(@types/react@19.2.9)(graphql@16.12.0)(monaco-editor@0.55.1)(next@15.4.11(@babel/core@7.29.0)(@playwright/test@1.56.1)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(sass@1.77.4))(payload@3.76.1(graphql@16.12.0)(typescript@5.7.3))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.3)
@@ -180,6 +180,9 @@ importers:
       '@types/react-dom':
         specifier: 19.2.3
         version: 19.2.3(@types/react@19.2.9)
+      '@types/sql.js':
+        specifier: ^1.4.9
+        version: 1.4.9
       '@vitejs/plugin-react':
         specifier: 4.5.2
         version: 4.5.2(vite@7.3.1(@types/node@22.19.9)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.77.4)(tsx@4.21.0))
@@ -2694,6 +2697,9 @@ packages:
   '@types/deep-eql@4.0.2':
     resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
 
+  '@types/emscripten@1.41.5':
+    resolution: {integrity: sha512-cMQm7pxu6BxtHyqJ7mQZ2kXWV5SLmugybFdHCBbJ5eHzOo6VhBckEgAT3//rP5FwPHNPeEiq4SmQ5ucBwsOo4Q==}
+
   '@types/estree-jsx@1.0.5':
     resolution: {integrity: sha512-52CcUVNFyfb1A2ALocQw/Dd1BQFNmSdkuC3BkZ6iqhdMfQz7JWOFRuJFloOzjk+6WijU56m9oKXFAXc7o3Towg==}
 
@@ -2754,6 +2760,9 @@ packages:
 
   '@types/react@19.2.9':
     resolution: {integrity: sha512-Lpo8kgb/igvMIPeNV2rsYKTgaORYdO1XGVZ4Qz3akwOj0ySGYMPlQWa8BaLn0G63D1aSaAQ5ldR06wCpChQCjA==}
+
+  '@types/sql.js@1.4.9':
+    resolution: {integrity: sha512-ep8b36RKHlgWPqjNG9ToUrPiwkhwh0AEzy883mO5Xnd+cL6VBH1EvSjBAAuxLUFF2Vn/moE3Me6v9E1Lo+48GQ==}
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
@@ -7683,13 +7692,13 @@ snapshots:
 
   '@panva/hkdf@1.2.1': {}
 
-  '@payloadcms/db-postgres@3.76.1(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.6.2)(payload@3.76.1(graphql@16.12.0)(typescript@5.7.3))(sql.js@1.13.0)':
+  '@payloadcms/db-postgres@3.76.1(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(@types/sql.js@1.4.9)(better-sqlite3@12.6.2)(payload@3.76.1(graphql@16.12.0)(typescript@5.7.3))(sql.js@1.13.0)':
     dependencies:
-      '@payloadcms/drizzle': 3.76.1(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.10.2)(better-sqlite3@12.6.2)(payload@3.76.1(graphql@16.12.0)(typescript@5.7.3))(pg@8.16.3)(sql.js@1.13.0)
+      '@payloadcms/drizzle': 3.76.1(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.10.2)(@types/sql.js@1.4.9)(better-sqlite3@12.6.2)(payload@3.76.1(graphql@16.12.0)(typescript@5.7.3))(pg@8.16.3)(sql.js@1.13.0)
       '@types/pg': 8.10.2
       console-table-printer: 2.12.1
       drizzle-kit: 0.31.7
-      drizzle-orm: 0.44.7(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.10.2)(better-sqlite3@12.6.2)(pg@8.16.3)(sql.js@1.13.0)
+      drizzle-orm: 0.44.7(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.10.2)(@types/sql.js@1.4.9)(better-sqlite3@12.6.2)(pg@8.16.3)(sql.js@1.13.0)
       payload: 3.76.1(graphql@16.12.0)(typescript@5.7.3)
       pg: 8.16.3
       prompts: 2.4.2
@@ -7726,11 +7735,11 @@ snapshots:
       - sqlite3
       - supports-color
 
-  '@payloadcms/drizzle@3.76.1(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.10.2)(better-sqlite3@12.6.2)(payload@3.76.1(graphql@16.12.0)(typescript@5.7.3))(pg@8.16.3)(sql.js@1.13.0)':
+  '@payloadcms/drizzle@3.76.1(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.10.2)(@types/sql.js@1.4.9)(better-sqlite3@12.6.2)(payload@3.76.1(graphql@16.12.0)(typescript@5.7.3))(pg@8.16.3)(sql.js@1.13.0)':
     dependencies:
       console-table-printer: 2.12.1
       dequal: 2.0.3
-      drizzle-orm: 0.44.7(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.10.2)(better-sqlite3@12.6.2)(pg@8.16.3)(sql.js@1.13.0)
+      drizzle-orm: 0.44.7(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.10.2)(@types/sql.js@1.4.9)(better-sqlite3@12.6.2)(pg@8.16.3)(sql.js@1.13.0)
       payload: 3.76.1(graphql@16.12.0)(typescript@5.7.3)
       prompts: 2.4.2
       to-snake-case: 1.0.0
@@ -8832,6 +8841,8 @@ snapshots:
 
   '@types/deep-eql@4.0.2': {}
 
+  '@types/emscripten@1.41.5': {}
+
   '@types/estree-jsx@1.0.5':
     dependencies:
       '@types/estree': 1.0.8
@@ -8898,6 +8909,11 @@ snapshots:
   '@types/react@19.2.9':
     dependencies:
       csstype: 3.2.3
+
+  '@types/sql.js@1.4.9':
+    dependencies:
+      '@types/emscripten': 1.41.5
+      '@types/node': 22.19.9
 
   '@types/trusted-types@2.0.7':
     optional: true
@@ -9610,11 +9626,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.44.7(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.10.2)(better-sqlite3@12.6.2)(pg@8.16.3)(sql.js@1.13.0):
+  drizzle-orm@0.44.7(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.10.2)(@types/sql.js@1.4.9)(better-sqlite3@12.6.2)(pg@8.16.3)(sql.js@1.13.0):
     optionalDependencies:
       '@libsql/client': 0.17.0
       '@types/better-sqlite3': 7.6.13
       '@types/pg': 8.10.2
+      '@types/sql.js': 1.4.9
       better-sqlite3: 12.6.2
       pg: 8.16.3
       sql.js: 1.13.0
