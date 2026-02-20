@@ -1,3 +1,5 @@
+import dotenv from 'dotenv'
+dotenv.config()
 import { getPayload } from 'payload'
 import type { PayloadRequest } from 'payload'
 import config from '../src/payload.config'
@@ -18,7 +20,7 @@ const seedMediaAlts = [
 
 const adminRequestStub: Partial<PayloadRequest> = {
   user: {
-    id: 1,
+    id: '1',
     email: 'admin@cartepostale.local',
     role: 'admin',
     createdAt: new Date().toISOString(),
@@ -104,8 +106,8 @@ async function createMediaAssets(payload: PayloadClient) {
     mediaInputs.map(async (input) => {
       const buffer = Buffer.from(`${input.alt} placeholder`, 'utf8')
       const fileData = {
-        buffer,
-        originalname: input.filename,
+        data: buffer,
+        name: input.filename,
         mimetype: input.mimeType,
         size: buffer.byteLength,
       } as unknown as MediaFileInput
@@ -120,7 +122,7 @@ async function createMediaAssets(payload: PayloadClient) {
     }),
   )
 
-  return mediaInputs.reduce<Record<string, typeof created[number]>>((acc, input, index) => {
+  return mediaInputs.reduce<Record<string, (typeof created)[number]>>((acc, input, index) => {
     acc[input.key] = created[index]
     return acc
   }, {})
@@ -175,10 +177,9 @@ async function main() {
       collection: 'postcards',
       data: {
         publicId: 'seed-card-001',
-        frontImageURL:
-          '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
-      message:
-        "Salut de la Cote d'Azur ! Voici un apercu du nouveau template et des possibilites de la plateforme.",
+        frontImageURL: '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
+        message:
+          "Salut de la Cote d'Azur ! Voici un apercu du nouveau template et des possibilites de la plateforme.",
         recipients: [
           { email: 'marie@clients.example', name: 'Marie Dupont' },
           { email: 'gloria@clients.example', phone: '+33123456789', name: 'Gloria Martin' },
@@ -220,7 +221,7 @@ async function main() {
         role: 'admin',
         plan: 'enterprise',
         cardsCreated: 12,
-      },
+      } as any,
       req: adminRequestStub,
     }),
     payload.create({
@@ -233,7 +234,7 @@ async function main() {
         plan: 'pro',
         company: 'Studio Lumiere',
         cardsCreated: 58,
-      },
+      } as any,
       req: adminRequestStub,
     }),
   ])

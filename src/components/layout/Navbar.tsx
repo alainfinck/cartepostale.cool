@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const dropdownPro = [
   {
@@ -97,11 +98,23 @@ export const Navbar = () => {
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const [openMobileSection, setOpenMobileSection] = useState<string | null>(null)
   const [user, setUser] = useState<{ name?: string | null; email?: string; role?: string } | null>(
     null,
   )
   const [scrolled, setScrolled] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isMobileMenuOpen])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -187,6 +200,53 @@ export const Navbar = () => {
     </div>
   )
 
+  const MobileSection = ({
+    title,
+    isOpen,
+    onToggle,
+    children,
+  }: {
+    title: string
+    isOpen: boolean
+    onToggle: () => void
+    children: React.ReactNode
+  }) => (
+    <div className="border-b border-stone-100 last:border-0">
+      <button
+        onClick={onToggle}
+        className="flex items-center justify-between w-full py-4 px-2 text-left group"
+      >
+        <span
+          className={cn(
+            'text-[15px] font-bold uppercase tracking-wider transition-colors',
+            isOpen ? 'text-pink-600' : 'text-stone-400 group-hover:text-stone-600',
+          )}
+        >
+          {title}
+        </span>
+        <ChevronDown
+          className={cn(
+            'w-5 h-5 transition-transform duration-300',
+            isOpen ? 'rotate-180 text-pink-500' : 'text-stone-300',
+          )}
+        />
+      </button>
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
+            className="overflow-hidden"
+          >
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+
   // Minimalist Navbar for View Page and Carte Page
   if (
     pathname?.startsWith('/view/') ||
@@ -251,6 +311,27 @@ export const Navbar = () => {
       </nav>
     )
   }
+
+  const GoogleIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24">
+      <path
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+        fill="#4285F4"
+      />
+      <path
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+        fill="#34A853"
+      />
+      <path
+        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+        fill="#FBBC05"
+      />
+      <path
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1c-2.4 0-4.52 1.25-5.76 3.16l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+        fill="#EA4335"
+      />
+    </svg>
+  )
 
   return (
     <nav
@@ -467,9 +548,9 @@ export const Navbar = () => {
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-stone-200 shadow-xl">
-          <div className="px-4 pt-4 pb-6 space-y-3">
-            <div className="px-2">
+        <div className="lg:hidden absolute top-full left-0 right-0 bg-white border-b border-stone-200 shadow-2xl overflow-y-auto z-50 h-[calc(100vh-100%)] min-h-[calc(100vh-100%)]">
+          <div className="px-4 pt-4 pb-12 space-y-6">
+            <div className="px-2 space-y-3">
               <Link
                 href="/editor"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -478,97 +559,7 @@ export const Navbar = () => {
                 <Plus size={20} strokeWidth={3} />
                 Créer ma carte postale <span className="opacity-90">✨</span>
               </Link>
-            </div>
 
-            <div className="text-xs font-bold text-stone-400 uppercase tracking-widest px-4 py-1">
-              Découvrir
-            </div>
-            <div className="space-y-1">
-              <Link
-                href="/#fonctionnalites"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-4 px-4 py-2.5 rounded-2xl hover:bg-pink-50/80 text-stone-700 font-semibold text-[15px] transition-colors"
-              >
-                <Star className="w-6 h-6 text-pink-500 flex-shrink-0" />
-                Fonctionnalités
-              </Link>
-              <Link
-                href="/pricing"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={cn(
-                  'flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-colors font-semibold text-[15px]',
-                  pathname === '/pricing'
-                    ? 'bg-pink-50 text-pink-700'
-                    : 'hover:bg-pink-50/80 text-stone-700',
-                )}
-              >
-                <CreditCard className="w-6 h-6 text-pink-500 flex-shrink-0" />
-                Tarifs
-              </Link>
-              <Link
-                href="/galerie"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={cn(
-                  'flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-colors font-semibold text-[15px]',
-                  pathname === '/galerie'
-                    ? 'bg-pink-50 text-pink-700'
-                    : 'hover:bg-pink-50/80 text-stone-700',
-                )}
-              >
-                <ImageIcon className="w-6 h-6 text-pink-500 flex-shrink-0" />
-                Galerie
-              </Link>
-              <Link
-                href="/a-propos"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={cn(
-                  'flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-colors font-semibold text-[15px]',
-                  pathname === '/a-propos'
-                    ? 'bg-pink-50 text-pink-700'
-                    : 'hover:bg-pink-50/80 text-stone-700',
-                )}
-              >
-                <Info className="w-6 h-6 text-pink-500 flex-shrink-0" />À propos
-              </Link>
-            </div>
-            <div className="text-xs font-bold text-stone-400 uppercase tracking-widest px-4 py-1">
-              Agences & Pro
-            </div>
-            <div className="space-y-1">
-              {dropdownPro.map((item) => (
-                <Link
-                  key={item.href + item.title}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex gap-4 px-4 py-2.5 rounded-2xl hover:bg-orange-50/80 active:bg-orange-50 text-stone-700 transition-colors"
-                >
-                  <item.icon className="w-6 h-6 text-orange-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-semibold text-[15px]">{item.title}</div>
-                    <div className="text-sm text-stone-500 mt-0.5">{item.description}</div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-            <div className="text-xs font-bold text-stone-400 uppercase tracking-widest px-4 py-1">
-              Tarifs
-            </div>
-            <div className="space-y-1">
-              {dropdownTarifs.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-4 px-4 py-2.5 rounded-2xl hover:bg-stone-50 active:bg-stone-100 text-stone-700 transition-colors"
-                >
-                  <item.icon className="w-6 h-6 text-pink-500 flex-shrink-0" />
-                  <span className="font-medium flex-1 text-[15px]">{item.label}</span>
-                  <span className="text-sm font-bold text-pink-600 tabular-nums">{item.price}</span>
-                </Link>
-              ))}
-            </div>
-            <div className="h-px bg-stone-100 my-2" />
-            <div className="space-y-2">
               {user ? (
                 <Link
                   href={
@@ -579,27 +570,169 @@ export const Navbar = () => {
                         : '/espace-client'
                   }
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-4 px-4 py-2.5 rounded-2xl bg-pink-50 text-pink-700 font-semibold text-[15px]"
+                  className="flex items-center justify-center gap-3 w-full py-3 rounded-2xl bg-stone-100 text-stone-800 font-bold text-base border border-stone-200"
                 >
-                  <LayoutDashboard size={22} />
-                  <span className="truncate">{user.name?.trim() || user.email}</span>
-                  <span className="text-stone-500 font-normal text-sm">
-                    (
-                    {user.role === 'admin'
-                      ? 'Manager'
-                      : user.role === 'agence'
-                        ? 'Espace Agence'
-                        : 'Mon espace'}
-                    )
-                  </span>
+                  <LayoutDashboard size={20} />
+                  <span>Tableau de bord</span>
                 </Link>
               ) : (
                 <Link
                   href="/connexion"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-4 px-4 py-2.5 rounded-2xl hover:bg-stone-50 text-stone-700 font-semibold text-[15px]"
+                  className="flex items-center justify-center gap-3 w-full py-3 rounded-2xl bg-white text-stone-800 font-bold text-base border border-stone-200 shadow-sm"
                 >
-                  <LogIn size={22} /> Connexion
+                  <GoogleIcon className="w-5 h-5" />
+                  <span>Connexion / Inscription</span>
+                </Link>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <MobileSection
+                title="Découvrir"
+                isOpen={openMobileSection === 'decouvrir'}
+                onToggle={() =>
+                  setOpenMobileSection(openMobileSection === 'decouvrir' ? null : 'decouvrir')
+                }
+              >
+                <div className="space-y-1 pt-1 pb-2">
+                  <Link
+                    href="/#fonctionnalites"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-50/80 text-stone-700 font-semibold text-[15px] transition-colors"
+                  >
+                    <Star className="w-6 h-6 text-pink-500 flex-shrink-0" />
+                    Fonctionnalités
+                  </Link>
+                  <Link
+                    href="/pricing"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      'flex items-center gap-4 px-4 py-3 rounded-2xl transition-colors font-semibold text-[15px]',
+                      pathname === '/pricing'
+                        ? 'bg-pink-50 text-pink-700'
+                        : 'hover:bg-pink-50/80 text-stone-700',
+                    )}
+                  >
+                    <CreditCard className="w-6 h-6 text-pink-500 flex-shrink-0" />
+                    Tarifs
+                  </Link>
+                  <Link
+                    href="/galerie"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      'flex items-center gap-4 px-4 py-3 rounded-2xl transition-colors font-semibold text-[15px]',
+                      pathname === '/galerie'
+                        ? 'bg-pink-50 text-pink-700'
+                        : 'hover:bg-pink-50/80 text-stone-700',
+                    )}
+                  >
+                    <ImageIcon className="w-6 h-6 text-pink-500 flex-shrink-0" />
+                    Galerie
+                  </Link>
+                  <Link
+                    href="/a-propos"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      'flex items-center gap-4 px-4 py-3 rounded-2xl transition-colors font-semibold text-[15px]',
+                      pathname === '/a-propos'
+                        ? 'bg-pink-50 text-pink-700'
+                        : 'hover:bg-pink-50/80 text-stone-700',
+                    )}
+                  >
+                    <Info className="w-6 h-6 text-pink-500 flex-shrink-0" />À propos
+                  </Link>
+                </div>
+              </MobileSection>
+
+              <MobileSection
+                title="Agences & Pro"
+                isOpen={openMobileSection === 'pro'}
+                onToggle={() => setOpenMobileSection(openMobileSection === 'pro' ? null : 'pro')}
+              >
+                <div className="space-y-1 pt-1 pb-2">
+                  {dropdownPro.map((item) => (
+                    <Link
+                      key={item.href + item.title}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex gap-4 px-4 py-3 rounded-2xl hover:bg-orange-50/80 active:bg-orange-50 text-stone-700 transition-colors"
+                    >
+                      <item.icon className="w-6 h-6 text-orange-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-semibold text-[15px]">{item.title}</div>
+                        <div className="text-sm text-stone-500 mt-0.5">{item.description}</div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </MobileSection>
+
+              <MobileSection
+                title="Tarifs"
+                isOpen={openMobileSection === 'tarifs'}
+                onToggle={() =>
+                  setOpenMobileSection(openMobileSection === 'tarifs' ? null : 'tarifs')
+                }
+              >
+                <div className="space-y-1 pt-1 pb-2">
+                  {dropdownTarifs.map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-stone-50 active:bg-stone-100 text-stone-700 transition-colors"
+                    >
+                      <item.icon className="w-6 h-6 text-pink-500 flex-shrink-0" />
+                      <span className="font-medium flex-1 text-[15px]">{item.label}</span>
+                      <span className="text-sm font-bold text-pink-600 tabular-nums">
+                        {item.price}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </MobileSection>
+            </div>
+
+            <div className="h-px bg-stone-100 my-4" />
+
+            <div className="space-y-2 pb-6">
+              {user ? (
+                <Link
+                  href={
+                    user.role === 'admin'
+                      ? '/manager'
+                      : user.role === 'agence'
+                        ? '/espace-agence'
+                        : '/espace-client'
+                  }
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-4 px-4 py-4 rounded-2xl bg-pink-50 text-pink-700 font-semibold text-[15px] shadow-sm shadow-pink-100"
+                >
+                  <LayoutDashboard size={22} />
+                  <div className="flex flex-col min-w-0">
+                    <span className="truncate font-bold">
+                      {user.name?.trim() || user.email?.split('@')[0]}
+                    </span>
+                    <span className="text-pink-500 font-medium text-xs">
+                      {user.role === 'admin'
+                        ? 'Administrateur'
+                        : user.role === 'agence'
+                          ? 'Espace Agence'
+                          : 'Tableau de bord'}
+                    </span>
+                  </div>
+                </Link>
+              ) : (
+                <Link
+                  href="/connexion"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-stone-50 text-stone-700 font-semibold text-[15px] border border-stone-100"
+                >
+                  <div className="flex items-center justify-center w-6 h-6">
+                    <GoogleIcon className="w-5 h-5" />
+                  </div>
+                  Connexion
                 </Link>
               )}
             </div>

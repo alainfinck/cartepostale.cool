@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { LogIn, Mail, Lock, AlertCircle, UserPlus, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { GoogleOAuthProvider } from '@react-oauth/google'
 import { GoogleLoginButton } from '@/components/auth/GoogleLoginButton'
 
 export default function ConnexionClient() {
@@ -103,7 +102,7 @@ export default function ConnexionClient() {
     }
   }
 
-  const content = (
+  return (
     <div className="bg-[#fdfbf7] min-h-screen">
       <section className="relative py-16 md:py-24 px-4 overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-teal-200 rounded-full blur-3xl opacity-20 -translate-y-1/2" />
@@ -348,8 +347,4 @@ export default function ConnexionClient() {
       </section>
     </div>
   )
-
-  if (!googleClientId) return content
-
-  return <GoogleOAuthProvider clientId={googleClientId}>{content}</GoogleOAuthProvider>
 }

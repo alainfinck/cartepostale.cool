@@ -31,6 +31,52 @@ export const Users: CollectionConfig = {
   },
   fields: [
     {
+      name: 'hash',
+      type: 'text',
+      hidden: true,
+      admin: {
+        readOnly: true,
+      },
+    },
+    {
+      name: 'salt',
+      type: 'text',
+      hidden: true,
+      admin: {
+        readOnly: true,
+      },
+    },
+    {
+      name: 'resetPasswordToken',
+      type: 'text',
+      hidden: true,
+    },
+    {
+      name: 'resetPasswordExpiration',
+      type: 'date',
+      hidden: true,
+    },
+    {
+      name: 'loginAttempts',
+      type: 'number',
+      hidden: true,
+      defaultValue: 0,
+    },
+    {
+      name: 'lockUntil',
+      type: 'date',
+      hidden: true,
+    },
+    // Champs requis par authjs / NextAuth
+    {
+      name: 'emailVerified',
+      type: 'date',
+    },
+    {
+      name: 'image',
+      type: 'text',
+    },
+    {
       name: 'name',
       type: 'text',
     },

@@ -147,8 +147,17 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: number;
+  id: string;
+  email: string;
+  emailVerified?: string | null;
   name?: string | null;
+  image?: string | null;
+  hash?: string | null;
+  salt?: string | null;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
   role: 'admin' | 'agence' | 'client' | 'user';
   /**
    * Agence liée au compte (pour rôle Agence ou Client).
@@ -159,23 +168,25 @@ export interface User {
   plan?: ('free' | 'pro' | 'enterprise') | null;
   magicLinkToken?: string | null;
   magicLinkExpires?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
   sessions?:
     | {
         id: string;
-        createdAt?: string | null;
+        createdAt: string;
         expiresAt: string;
+        userAgent?: string | null;
+        ip?: string | null;
       }[]
     | null;
-  password?: string | null;
+  accounts?:
+    | {
+        provider: string;
+        providerAccountId: string;
+        type: 'oidc' | 'oauth' | 'email' | 'webauthn';
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
   collection: 'users';
 }
 /**
@@ -314,7 +325,7 @@ export interface Postcard {
   isPremium?: boolean | null;
   agency?: (number | null) | Agency;
   brandLogo?: (number | null) | Media;
-  author?: (number | null) | User;
+  author?: (string | null) | User;
   /**
    * Liste des autocollants placés sur la carte (ID, x, y, scale, rotation)
    */
@@ -469,7 +480,7 @@ export interface PostcardTrackingLink {
    */
   sentAt?: string | null;
   views?: number | null;
-  author: number | User;
+  author: string | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -587,7 +598,7 @@ export interface Post {
   title: string;
   slug: string;
   publishedDate?: string | null;
-  author?: (number | null) | User;
+  author?: (string | null) | User;
   category?: ('travel' | 'lifestyle' | 'tips' | 'news') | null;
   /**
    * Un court résumé pour les cartes et le SEO
@@ -652,7 +663,7 @@ export interface PayloadLockedDocument {
   document?:
     | ({
         relationTo: 'users';
-        value: number | User;
+        value: string | User;
       } | null)
     | ({
         relationTo: 'media';
@@ -717,7 +728,7 @@ export interface PayloadLockedDocument {
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -730,7 +741,7 @@ export interface PayloadPreference {
   id: number;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   key?: string | null;
   value?:
@@ -761,7 +772,17 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  id?: T;
+  email?: T;
+  emailVerified?: T;
   name?: T;
+  image?: T;
+  hash?: T;
+  salt?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
   role?: T;
   agency?: T;
   company?: T;
@@ -769,22 +790,25 @@ export interface UsersSelect<T extends boolean = true> {
   plan?: T;
   magicLinkToken?: T;
   magicLinkExpires?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
   sessions?:
     | T
     | {
         id?: T;
         createdAt?: T;
         expiresAt?: T;
+        userAgent?: T;
+        ip?: T;
       };
+  accounts?:
+    | T
+    | {
+        provider?: T;
+        providerAccountId?: T;
+        type?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

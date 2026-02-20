@@ -6,7 +6,6 @@ import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
-import { GoogleOAuthProvider } from '@react-oauth/google'
 import { GoogleLoginButton } from '@/components/auth/GoogleLoginButton'
 
 export default function AgencyLoginPage() {
@@ -48,7 +47,7 @@ export default function AgencyLoginPage() {
 
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
 
-  const formContent = (
+  return (
     <div className="bg-[#f0fdfa] min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-teal-100 rounded-full blur-[100px] opacity-40 -translate-y-1/2" />
 
@@ -71,7 +70,7 @@ export default function AgencyLoginPage() {
 
           {googleClientId && (
             <div className="space-y-6">
-              <GoogleLoginButton />
+              <GoogleLoginButton redirectPath="/espace-agence" />
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-stone-200"></div>
@@ -152,8 +151,4 @@ export default function AgencyLoginPage() {
       </div>
     </div>
   )
-
-  if (!googleClientId) return formContent
-
-  return <GoogleOAuthProvider clientId={googleClientId}>{formContent}</GoogleOAuthProvider>
 }

@@ -24,6 +24,7 @@ import {
   BookOpen,
   Mic,
   Volume2,
+  MoreHorizontal,
 } from 'lucide-react'
 import { cn, isCoordinate } from '@/lib/utils'
 import { AnimatePresence, motion, useSpring, useMotionValue, useTransform } from 'framer-motion'
@@ -228,6 +229,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [isTopMenuOpen, setIsTopMenuOpen] = useState(false)
 
   const handleUploadClick = () => {
     fileInputRef.current?.click()
@@ -483,7 +485,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const hasMedia = postcard.mediaItems && postcard.mediaItems.length > 0
 
   const actionButtonBase =
-    'inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-2 rounded-lg text-[7px] min-[375px]:text-[8px] sm:text-[9px] md:text-[10px] font-bold uppercase active:scale-95 transition-all shadow-sm text-center whitespace-normal sm:whitespace-nowrap text-stone-800'
+    'flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 px-0.5 sm:px-3 py-0.5 rounded-lg text-[6px] min-[375px]:text-[7px] sm:text-[8px] md:text-[9px] font-bold uppercase active:scale-95 transition-all shadow-sm text-center whitespace-normal sm:whitespace-nowrap text-stone-800 min-h-[32px] sm:min-h-0'
 
   useEffect(() => {
     setPortalRoot(document.body)
@@ -503,7 +505,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         <motion.div
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
-          className="w-full max-w-[95vw] md:max-w-2xl h-[90vh] md:max-h-[75vh] md:h-auto min-h-0 bg-[#fafaf9] rounded-3xl shadow-2xl p-6 md:p-10 relative overflow-hidden flex flex-col items-center text-center border-8 border-white/50"
+          className="w-full max-w-[95vw] md:max-w-2xl max-h-[85dvh] md:max-h-[75vh] md:h-auto min-h-0 bg-[#fafaf9] rounded-3xl shadow-2xl p-6 md:p-10 relative overflow-hidden flex flex-col items-center text-center border-8 border-white/50"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Background decorations */}
@@ -652,7 +654,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
           <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden shadow-2xl flex items-center justify-center mb-6">
             {postcard.mediaItems![currentMediaIndex].type === 'video' ? (
-              <video controls autoPlay className="max-w-full max-h-[70vh]">
+              <video controls autoPlay className="max-w-full max-h-[70dvh]">
                 <source src={postcard.mediaItems![currentMediaIndex].url} />
               </video>
             ) : (
@@ -660,7 +662,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 src={getOptimizedImageUrl(postcard.mediaItems![currentMediaIndex].url, {
                   width: 1200,
                 })}
-                className="max-w-full max-h-[70vh] object-contain"
+                className="max-w-full max-h-[70dvh] object-contain"
                 alt="Album item"
               />
             )}
@@ -1036,116 +1038,181 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {/* Top Controls Bar — boutons plats, larges, icônes plus grandes */}
               <div
                 className={cn(
-                  'absolute top-2 sm:top-4 z-20 flex flex-wrap items-center justify-start gap-1.5 h-8',
-                  isLarge
-                    ? 'left-2 right-4 sm:left-4 sm:right-auto sm:pl-8'
-                    : 'left-2 right-4 sm:left-3 sm:right-auto sm:pl-3',
+                  'absolute top-2 sm:top-4 z-20 flex items-center justify-start gap-2 w-full px-2 sm:px-4',
                 )}
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Font size (zoom texte) — plat, large, icônes plus grandes */}
-                <div className="h-5 sm:h-6 min-w-[2.25rem] sm:min-w-[2.5rem] flex items-center gap-0.5 bg-white/50 backdrop-blur-[2px] rounded-md border border-stone-200/50 px-1.5 shadow-sm">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setBackTextScale((s) => Math.max(0.7, Number((s - 0.05).toFixed(2))))
-                    }}
-                    className="w-5 h-full flex items-center justify-center rounded hover:bg-white text-stone-500 hover:text-teal-600 transition-colors"
-                    title="Réduire"
-                  >
-                    <Minus size={14} strokeWidth={2} />
-                  </button>
-                  <span className="text-[9px] font-bold text-stone-400 min-w-[12px] text-center select-none">
-                    A
-                  </span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setBackTextScale((s) => Math.min(2.2, Number((s + 0.05).toFixed(2))))
-                    }}
-                    className="w-5 h-full flex items-center justify-center rounded hover:bg-white text-stone-500 hover:text-teal-600 transition-colors"
-                    title="Agrandir"
-                  >
-                    <Plus size={14} strokeWidth={2} />
-                  </button>
+                {/* All Controls grouped to the left */}
+                <div className="flex items-center gap-2">
+                  {/* Zoom Controls */}
+                  <div className="h-7 sm:h-9 flex items-center bg-white/80 backdrop-blur-md rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setBackTextScale((s) => Math.max(0.7, Number((s - 0.05).toFixed(2))))
+                      }}
+                      className="w-8 sm:w-10 h-full flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-r border-stone-100"
+                      title="Réduire la taille du texte"
+                    >
+                      <Minus size={16} strokeWidth={2.5} />
+                    </button>
+                    <div className="w-8 sm:w-10 h-full flex items-center justify-center bg-white/50">
+                      <span className="text-sm sm:text-base font-bold text-stone-600 select-none">
+                        A
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setBackTextScale((s) => Math.min(2.2, Number((s + 0.05).toFixed(2))))
+                      }}
+                      className="w-8 sm:w-10 h-full flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-l border-stone-100"
+                      title="Agrandir la taille du texte"
+                    >
+                      <Plus size={16} strokeWidth={2.5} />
+                    </button>
+                  </div>
+
+                  {/* Album Button */}
+                  {hasMedia && (
+                    <button
+                      type="button"
+                      onClick={openAlbum}
+                      className="h-7 sm:h-9 px-3 sm:px-4 flex items-center gap-2 rounded-xl bg-white/80 backdrop-blur-md border border-stone-200 text-stone-600 hover:text-teal-600 hover:border-teal-300 transition-all shadow-sm"
+                      title="Album photos"
+                    >
+                      <Camera size={16} strokeWidth={2} />
+                      <span className="hidden sm:inline text-xs font-bold uppercase tracking-wider">
+                        Album
+                      </span>
+                    </button>
+                  )}
+
+                  {/* Actions Dropdown */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIsTopMenuOpen(!isTopMenuOpen)
+                      }}
+                      className={cn(
+                        'h-7 sm:h-9 w-7 sm:w-9 flex items-center justify-center rounded-xl backdrop-blur-md border transition-all shadow-sm',
+                        isTopMenuOpen
+                          ? 'bg-teal-50 border-teal-300 text-teal-600 shadow-inner'
+                          : 'bg-white/80 border-stone-200 text-stone-600 hover:text-teal-600',
+                      )}
+                      title="Plus d'actions"
+                    >
+                      <MoreHorizontal size={18} strokeWidth={2} />
+                    </button>
+
+                    <AnimatePresence>
+                      {isTopMenuOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                          className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-stone-200 overflow-hidden z-[70] p-1.5"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {/* Fullscreen Option */}
+                          {!hideFullscreenButton && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                setIsTopMenuOpen(false)
+                                if (isInsideFullscreen && onExitFullscreen) onExitFullscreen()
+                                else toggleFullscreen(e)
+                              }}
+                              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-50 text-stone-600 hover:text-teal-600 transition-colors text-left"
+                            >
+                              {isFullscreen || isInsideFullscreen ? (
+                                <>
+                                  <Minimize2 size={16} />
+                                  <span className="text-xs font-bold uppercase tracking-wider">
+                                    Quitter plein écran
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <Maximize2 size={16} />
+                                  <span className="text-xs font-bold uppercase tracking-wider">
+                                    Plein écran
+                                  </span>
+                                </>
+                              )}
+                            </button>
+                          )}
+
+                          {/* Flip Option */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsTopMenuOpen(false)
+                              handleFlip()
+                            }}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-50 text-stone-600 hover:text-teal-600 transition-colors text-left"
+                          >
+                            <RotateCw size={16} />
+                            <span className="text-xs font-bold uppercase tracking-wider">
+                              Retourner
+                            </span>
+                          </button>
+
+                          {/* Journal Option */}
+                          {hasMedia && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                setIsTopMenuOpen(false)
+                                openJournal(e)
+                              }}
+                              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-50 text-stone-600 hover:text-amber-600 transition-colors text-left"
+                            >
+                              <BookOpen size={16} />
+                              <span className="text-xs font-bold uppercase tracking-wider">
+                                Carnet de voyage
+                              </span>
+                            </button>
+                          )}
+
+                          {/* Audio Option */}
+                          {postcard.audioMessage && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                setIsTopMenuOpen(false)
+                                toggleAudio(e)
+                              }}
+                              className={cn(
+                                'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-left',
+                                isPlayingAudio
+                                  ? 'bg-rose-50 text-rose-600'
+                                  : 'hover:bg-stone-50 text-stone-600 hover:text-rose-600',
+                              )}
+                            >
+                              {isPlayingAudio ? (
+                                <Volume2 size={16} className="animate-pulse" />
+                              ) : (
+                                <Mic size={16} />
+                              )}
+                              <span className="text-xs font-bold uppercase tracking-wider">
+                                {isPlayingAudio ? "Arrêter l'audio" : 'Message vocal'}
+                              </span>
+                            </button>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
 
-                {/* Fullscreen */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    if (isInsideFullscreen && onExitFullscreen) onExitFullscreen()
-                    else toggleFullscreen(e)
-                  }}
-                  className="h-5 min-w-[2.25rem] sm:min-w-[2.5rem] sm:h-6 px-2 flex items-center justify-center rounded-md bg-white/50 backdrop-blur-[2px] border border-stone-200/50 text-stone-500 hover:text-teal-600 hover:bg-white transition-all shadow-sm"
-                  title={isFullscreen || isInsideFullscreen ? 'Quitter plein écran' : 'Plein écran'}
-                >
-                  {isFullscreen || isInsideFullscreen ? (
-                    <Minimize2 size={18} strokeWidth={2} />
-                  ) : (
-                    <Maximize2 size={18} strokeWidth={2} />
-                  )}
-                </button>
-
-                {/* Retourner */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleFlip()
-                  }}
-                  className="h-5 min-w-[2.25rem] sm:min-w-[2.5rem] sm:h-6 px-2 flex items-center justify-center rounded-md bg-white/50 backdrop-blur-[2px] border border-stone-200/50 text-stone-500 hover:text-teal-600 hover:bg-white transition-all shadow-sm"
-                  title="Retourner"
-                >
-                  <RotateCw size={18} strokeWidth={2} />
-                </button>
-
-                {/* Album */}
-                {hasMedia && (
-                  <button
-                    type="button"
-                    onClick={openAlbum}
-                    className="h-5 min-w-[2.25rem] sm:min-w-[2.5rem] sm:h-6 px-2 flex items-center justify-center rounded-md bg-white/50 backdrop-blur-[2px] border border-stone-200/50 text-stone-500 hover:text-teal-600 hover:bg-teal-50 hover:border-teal-200 transition-all shadow-sm"
-                    title="Album photos"
-                  >
-                    <Camera size={18} strokeWidth={2} />
-                  </button>
-                )}
-
-                {/* Carnet */}
-                {hasMedia && (
-                  <button
-                    type="button"
-                    onClick={openJournal}
-                    className="h-5 min-w-[2.25rem] sm:min-w-[2.5rem] sm:h-6 px-2 flex items-center justify-center rounded-md bg-white/50 backdrop-blur-[2px] border border-stone-200/50 text-stone-500 hover:text-amber-600 hover:bg-amber-50 hover:border-amber-200 transition-all shadow-sm"
-                    title="Carnet de voyage"
-                  >
-                    <BookOpen size={18} strokeWidth={2} />
-                  </button>
-                )}
-
-                {/* Audio */}
-                {postcard.audioMessage && (
-                  <button
-                    type="button"
-                    onClick={toggleAudio}
-                    className={cn(
-                      'h-5 min-w-[2.25rem] sm:min-w-[2.5rem] sm:h-6 px-2 flex items-center justify-center rounded-md backdrop-blur-[2px] border transition-all shadow-sm',
-                      isPlayingAudio
-                        ? 'bg-rose-50 border-rose-200 text-rose-600'
-                        : 'bg-white/50 border-stone-200/50 text-stone-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200',
-                    )}
-                    title="Message Vocal"
-                  >
-                    {isPlayingAudio ? (
-                      <Volume2 size={18} strokeWidth={2} className="animate-pulse" />
-                    ) : (
-                      <Mic size={18} strokeWidth={2} />
-                    )}
-                  </button>
+                {/* Global Click Handler to close menu */}
+                {isTopMenuOpen && (
+                  <div className="fixed inset-0 z-[65]" onClick={() => setIsTopMenuOpen(false)} />
                 )}
               </div>
 
@@ -1464,7 +1531,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           </div>
                           {/* Boutons zoom + / - au-dessus de la carte, cliquables sans déclencher flip ni ouverture modal */}
                           <div
-                            className="absolute top-1.5 right-1.5 z-10 flex flex-col gap-0.5 shadow-md rounded-md overflow-hidden"
+                            className="absolute top-1.5 right-1.5 z-10 flex flex-col gap-0 shadow-md rounded-md overflow-hidden"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <button
@@ -1473,10 +1540,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 e.stopPropagation()
                                 setBackMapZoom((z) => Math.min(18, z + 1))
                               }}
-                              className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-white/95 hover:bg-white text-stone-600 hover:text-teal-600 border border-stone-200/80 transition-colors"
+                              className="w-[14px] h-[14px] sm:w-5 sm:h-5 flex items-center justify-center bg-white/95 hover:bg-white text-stone-600 hover:text-teal-600 border border-stone-200/80 transition-colors"
                               aria-label="Zoom avant"
                             >
-                              <span className="text-lg font-bold leading-none">+</span>
+                              <span className="text-[8px] sm:text-xs font-bold leading-none">
+                                +
+                              </span>
                             </button>
                             <button
                               type="button"
@@ -1484,14 +1553,16 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 e.stopPropagation()
                                 setBackMapZoom((z) => Math.max(5, z - 1))
                               }}
-                              className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-white/95 hover:bg-white text-stone-600 hover:text-teal-600 border border-stone-200/80 transition-colors"
+                              className="w-[14px] h-[14px] sm:w-5 sm:h-5 flex items-center justify-center bg-white/95 hover:bg-white text-stone-600 hover:text-teal-600 border border-stone-200/80 transition-colors"
                               aria-label="Zoom arrière"
                             >
-                              <span className="text-lg font-bold leading-none">−</span>
+                              <span className="text-[8px] sm:text-xs font-bold leading-none">
+                                −
+                              </span>
                             </button>
                           </div>
                           {/* Loupe dans un coin sans overlay au hover */}
-                          <div className="absolute bottom-2 right-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+                          <div className="absolute bottom-2 left-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
                             <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/95 shadow-lg text-teal-600 border border-stone-100">
                               <Search size={isLarge ? 20 : 16} strokeWidth={2.5} />
                             </div>
@@ -1513,7 +1584,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             Voir la carte
                           </span>
                           {/* Loupe dans un coin sans overlay au hover */}
-                          <div className="absolute bottom-2 right-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+                          <div className="absolute bottom-2 left-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
                             <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/95 shadow-lg text-teal-600 border border-stone-100">
                               <Search size={isLarge ? 20 : 16} strokeWidth={2.5} />
                             </div>
@@ -1530,7 +1601,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
         <div
           className={cn(
-            'flex flex-col items-center relative z-0 transition-all duration-500 ease-spring',
+            'flex flex-col items-center relative z-0',
             !width &&
               !height &&
               (isLarge
@@ -1538,24 +1609,27 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 : 'w-full max-w-full sm:w-[552px]'),
           )}
           style={{
-            // Coller au bas de la carte : annule gap-2 (8px) du parent
-            marginTop: isActionsOpen ? -12 : -8,
+            marginTop: -8, // On colle au bas de la carte
           }}
         >
           <motion.div
             initial={false}
             animate={{
-              y: isActionsOpen ? 0 : -20,
+              height: isActionsOpen ? 'auto' : 0,
+              rotateX: isActionsOpen ? 0 : -100,
               opacity: isActionsOpen ? 1 : 0,
               pointerEvents: isActionsOpen ? 'auto' : 'none',
             }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className={cn(
-              'w-full flex justify-center',
-              !isActionsOpen && 'h-0 min-h-0 overflow-hidden',
-            )}
+            transition={{
+              type: 'spring',
+              stiffness: 400,
+              damping: 35,
+              opacity: { duration: 0.2 },
+            }}
+            className="w-full flex justify-center overflow-hidden"
+            style={{ transformOrigin: 'top', transformStyle: 'preserve-3d' }}
           >
-            <div className="flex items-center justify-center w-[95%] sm:w-[90%] flex-nowrap gap-1.5 sm:gap-3 rounded-b-xl border-x border-b border-stone-300 bg-stone-50 shadow-[0_6px_20px_rgba(0,0,0,0.1)] px-2 py-2.5 sm:px-4 sm:py-3 min-h-[48px]">
+            <div className="flex items-stretch justify-center w-[98%] sm:w-[90%] flex-nowrap gap-1 sm:gap-3 rounded-b-xl border-x border-b border-stone-300 bg-stone-50 shadow-[0_6px_20px_rgba(0,0,0,0.1)] px-1 sm:px-4 py-1 sm:py-2 min-h-[36px]">
               {hasMedia && (
                 <button
                   onClick={openAlbum}
@@ -1565,11 +1639,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     'bg-amber-50 border border-amber-200/90 text-amber-800 hover:bg-amber-100 hover:border-amber-300 hover:shadow',
                   )}
                 >
-                  <Camera size={14} className="text-amber-600 shrink-0" />
-                  <span>Album</span>
-                  <span className="inline-flex items-center justify-center min-w-[1.125rem] h-3.5 px-1 rounded bg-amber-200/50 text-amber-900 text-[8px] font-bold leading-none mt-1 sm:mt-0 sm:ml-1">
-                    {postcard.mediaItems!.length}
-                  </span>
+                  <Camera size={10} className="text-amber-600 shrink-0" />
+                  <span>ALBUM</span>
                 </button>
               )}
 
@@ -1582,8 +1653,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   )}
                   title="Localiser le lieu sur la carte"
                 >
-                  <MapPin size={14} className="text-teal-600 shrink-0" />
-                  <span>Carte</span>
+                  <MapPin size={10} className="text-teal-600 shrink-0" />
+                  <span>CARTE</span>
                 </button>
               )}
 
@@ -1596,10 +1667,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   )}
                 >
                   <Maximize2
-                    size={14}
+                    size={10}
                     className="group-hover:scale-105 transition-transform shrink-0"
                   />
-                  <span>Plein écran</span>
+                  <span>PLEIN ÉCRAN</span>
                 </button>
               )}
 
@@ -1614,8 +1685,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 )}
                 title="Retourner la carte"
               >
-                <RotateCw size={14} className="shrink-0" />
-                <span>Retourner</span>
+                <RotateCw size={10} className="shrink-0" />
+                <span>RETOURNER</span>
               </button>
 
               {/* Close Button Integration */}
@@ -1624,10 +1695,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   e.stopPropagation()
                   setIsActionsOpen(false)
                 }}
-                className="inline-flex items-center justify-center w-7 h-7 rounded-full hover:bg-stone-200/80 text-stone-500 hover:text-stone-700 transition-colors ml-1"
+                className="inline-flex items-center justify-center w-6 h-6 rounded-full hover:bg-stone-200/80 text-stone-500 hover:text-stone-700 transition-colors ml-1"
                 title="Masquer la barre"
               >
-                <ChevronUp size={16} />
+                <ChevronUp size={14} />
               </button>
             </div>
           </motion.div>

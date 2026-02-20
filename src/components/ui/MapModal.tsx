@@ -91,8 +91,8 @@ const MapModal: React.FC<MapModalProps> = ({
         className={cn(
           'bg-white rounded-3xl overflow-hidden shadow-2xl relative flex flex-col transition-all duration-300 border-4 border-white/50',
           isLarge
-            ? 'w-[95vw] h-[75vh] md:w-[85vw] md:h-[80vh] max-w-6xl'
-            : 'w-[340px] h-[400px] sm:w-[600px] sm:h-[450px]',
+            ? 'w-[95vw] max-h-[75dvh] h-auto md:w-[85vw] md:max-h-[80dvh] max-w-6xl'
+            : 'w-[340px] max-h-[80dvh] h-auto sm:w-[600px] sm:h-[450px]',
         )}
         onClick={(e) => e.stopPropagation()}
       >

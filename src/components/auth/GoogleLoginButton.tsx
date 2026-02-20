@@ -1,11 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useGoogleLogin } from '@react-oauth/google'
-import { loginWithGoogle } from '@/actions/google-auth-actions'
+import { signIn } from 'next-auth/react'
 
 interface GoogleLoginButtonProps {
   redirectPath?: string
@@ -14,46 +12,23 @@ interface GoogleLoginButtonProps {
 }
 
 export function GoogleLoginButton({ redirectPath, className, onSuccess }: GoogleLoginButtonProps) {
-  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const login = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      setLoading(true)
-      setError(null)
-      try {
-        const result = await loginWithGoogle(tokenResponse.access_token)
-        if (result.error) {
-          setError(result.error)
-        } else {
-          if (onSuccess) {
-            onSuccess({
-              success: true,
-              role: result.role!,
-              email: result.email,
-            })
-          } else if (redirectPath) {
-            router.push(redirectPath)
-          } else {
-            // Default redirects based on role
-            if (result.role === 'agence' || result.role === 'admin') {
-              window.location.href = '/espace-agence'
-            } else {
-              window.location.href = '/espace-client'
-            }
-          }
-        }
-      } catch (_err) {
-        setError('Erreur lors de la connexion Google.')
-      } finally {
-        setLoading(false)
+  const login = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      await signIn('google', { callbackUrl: redirectPath || '/espace-client' })
+      if (onSuccess) {
+        // Just in case, Next.js page will redirect anyway
+        onSuccess({ success: true, role: 'user' })
       }
-    },
-    onError: () => {
-      setError('La connexion Google a échoué.')
-    },
-  })
+    } catch (_err) {
+      setError('Erreur lors de la connexion Google.')
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="w-full">

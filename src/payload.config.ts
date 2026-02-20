@@ -6,6 +6,9 @@ import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 import { s3Storage } from '@payloadcms/storage-s3'
 
+import { authjsPlugin } from 'payload-authjs'
+import { authConfig } from './auth.config'
+
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Agencies } from './collections/Agencies'
@@ -49,6 +52,9 @@ const isR2 = process.env.S3_ENDPOINT?.includes('r2.cloudflarestorage.com')
 const defaultRegion = 'us-east-1'
 
 const plugins = [
+  authjsPlugin({
+    authjsConfig: authConfig,
+  }),
   ...(useS3
     ? [
         s3Storage({
