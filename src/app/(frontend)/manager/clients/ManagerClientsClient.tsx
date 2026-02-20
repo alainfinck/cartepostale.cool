@@ -2,9 +2,19 @@
 
 import { useState, useTransition, useCallback } from 'react'
 import {
-  Search, Plus, User as UserIcon, Building2, Mail,
-  Calendar, Shield, CreditCard, Trash2, Edit2, X,
-  ExternalLink, ArrowUpDown
+  Search,
+  Plus,
+  User as UserIcon,
+  Building2,
+  Mail,
+  Calendar,
+  Shield,
+  CreditCard,
+  Trash2,
+  Edit2,
+  X,
+  ExternalLink,
+  ArrowUpDown,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
@@ -40,8 +50,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { getAllUsers, createUser, updateUser, deleteUser, type UsersResult } from '@/actions/manager-actions'
+import {
+  getAllUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  type UsersResult,
+} from '@/actions/manager-actions'
 import type { User, Agency } from '@/payload-types'
+import { SendEmailModal } from '../SendEmailModal'
 
 const roleConfig: Record<string, { label: string; className: string }> = {
   admin: { label: 'Admin', className: 'bg-amber-50 text-amber-700 border-amber-200' },
@@ -53,27 +70,40 @@ const roleConfig: Record<string, { label: string; className: string }> = {
 function RoleBadge({ role }: { role?: string | null }) {
   const config = roleConfig[role ?? 'user'] ?? roleConfig.user
   return (
-    <Badge variant="outline" className={cn('font-medium shadow-none border px-2', config.className)}>
+    <Badge
+      variant="outline"
+      className={cn('font-medium shadow-none border px-2', config.className)}
+    >
       {config.label}
     </Badge>
   )
 }
 
-export function ManagerClientsClient({ initialData, agencies }: { initialData: UsersResult; agencies: Agency[] }) {
+export function ManagerClientsClient({
+  initialData,
+  agencies,
+}: {
+  initialData: UsersResult
+  agencies: Agency[]
+}) {
   const [data, setData] = useState(initialData)
   const [search, setSearch] = useState('')
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [deleteConfirm, setDeleteConfirm] = useState<number | string | null>(null)
+  const [emailUser, setEmailUser] = useState<User | null>(null)
 
-  const refreshData = useCallback((searchQ?: string) => {
-    startTransition(async () => {
-      const q = searchQ ?? search
-      const result = await getAllUsers({ search: q.trim() || undefined, limit: 50 })
-      setData(result)
-    })
-  }, [search])
+  const refreshData = useCallback(
+    (searchQ?: string) => {
+      startTransition(async () => {
+        const q = searchQ ?? search
+        const result = await getAllUsers({ search: q.trim() || undefined, limit: 50 })
+        setData(result)
+      })
+    },
+    [search],
+  )
 
   const handleSearch = (value: string) => {
     setSearch(value)
@@ -116,7 +146,10 @@ export function ManagerClientsClient({ initialData, agencies }: { initialData: U
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center bg-card/50 backdrop-blur-md p-4 rounded-xl border border-border/50 shadow-sm">
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
           <Input
             placeholder="Rechercher par email, nom, société..."
             value={search}
@@ -125,7 +158,10 @@ export function ManagerClientsClient({ initialData, agencies }: { initialData: U
           />
         </div>
 
-        <Button onClick={handleCreateUser} className="gap-2 bg-teal-600 hover:bg-teal-700 shadow-teal-500/20 shadow-lg rounded-xl h-11 px-6 transition-all active:scale-[0.98]">
+        <Button
+          onClick={handleCreateUser}
+          className="gap-2 bg-teal-600 hover:bg-teal-700 shadow-teal-500/20 shadow-lg rounded-xl h-11 px-6 transition-all active:scale-[0.98]"
+        >
           <Plus size={18} />
           Nouveau Client
         </Button>
@@ -165,14 +201,20 @@ export function ManagerClientsClient({ initialData, agencies }: { initialData: U
                 </TableRow>
               ) : (
                 data.docs.map((user: User) => (
-                  <TableRow key={user.id} className="group cursor-pointer hover:bg-muted/30 transition-colors border-border/50" onClick={() => handleEditUser(user)}>
+                  <TableRow
+                    key={user.id}
+                    className="group cursor-pointer hover:bg-muted/30 transition-colors border-border/50"
+                    onClick={() => handleEditUser(user)}
+                  >
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xs ring-2 ring-background">
                           {(user.name || user.email).charAt(0).toUpperCase()}
                         </div>
                         <div className="flex flex-col min-w-0">
-                          <span className="font-semibold text-stone-800 truncate">{user.name || 'Sans Nom'}</span>
+                          <span className="font-semibold text-stone-800 truncate">
+                            {user.name || 'Sans Nom'}
+                          </span>
                           <span className="text-xs text-stone-400 truncate">{user.email}</span>
                         </div>
                       </div>
@@ -188,22 +230,36 @@ export function ManagerClientsClient({ initialData, agencies }: { initialData: U
                     </TableCell>
                     <TableCell>
                       <span className="text-sm text-stone-600 truncate block max-w-[140px]">
-                        {typeof user.agency === 'object' && user.agency?.name ? user.agency.name : user.agency ? String(user.agency) : '—'}
+                        {typeof user.agency === 'object' && user.agency?.name
+                          ? user.agency.name
+                          : user.agency
+                            ? String(user.agency)
+                            : '—'}
                       </span>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={cn(
-                        "font-medium shadow-none border px-2 uppercase text-[10px]",
-                        (user.plan as string) === 'starter' ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
-                          (user.plan as string) === 'pro' ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-stone-100/50 text-stone-500 border-stone-200"
-                      )}>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'font-medium shadow-none border px-2 uppercase text-[10px]',
+                          (user.plan as string) === 'starter'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : (user.plan as string) === 'pro'
+                              ? 'bg-blue-50 text-blue-700 border-blue-200'
+                              : 'bg-stone-100/50 text-stone-500 border-stone-200',
+                        )}
+                      >
                         {user.plan || 'Free'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex flex-col items-end">
-                        <span className="text-sm font-bold text-stone-700">{user.cardsCreated ?? 0}</span>
-                        <span className="text-[10px] text-stone-400 font-medium tracking-tight uppercase">Cartes</span>
+                        <span className="text-sm font-bold text-stone-700">
+                          {user.cardsCreated ?? 0}
+                        </span>
+                        <span className="text-[10px] text-stone-400 font-medium tracking-tight uppercase">
+                          Cartes
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-stone-400 text-xs font-medium uppercase min-w-[120px]">
@@ -211,7 +267,20 @@ export function ManagerClientsClient({ initialData, agencies }: { initialData: U
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-stone-400 hover:text-teal-600 transition-colors rounded-full" onClick={() => handleEditUser(user)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-stone-400 hover:text-teal-600 transition-colors rounded-full"
+                          onClick={() => setEmailUser(user)}
+                        >
+                          <Mail size={14} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-stone-400 hover:text-teal-600 transition-colors rounded-full"
+                          onClick={() => handleEditUser(user)}
+                        >
                           <Edit2 size={14} />
                         </Button>
                         <Button
@@ -248,12 +317,16 @@ export function ManagerClientsClient({ initialData, agencies }: { initialData: U
       />
 
       {/* Delete confirmation */}
-      <Dialog open={deleteConfirm !== null} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+      <Dialog
+        open={deleteConfirm !== null}
+        onOpenChange={(open) => !open && setDeleteConfirm(null)}
+      >
         <DialogContent className="sm:max-w-sm" onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
             <DialogTitle>Supprimer le client</DialogTitle>
             <DialogDescription>
-              Cette action est irréversible. L&apos;utilisateur et toutes ses données seront définitivement supprimés.
+              Cette action est irréversible. L&apos;utilisateur et toutes ses données seront
+              définitivement supprimés.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0 mt-4">
@@ -271,11 +344,24 @@ export function ManagerClientsClient({ initialData, agencies }: { initialData: U
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <SendEmailModal
+        isOpen={emailUser !== null}
+        onClose={() => setEmailUser(null)}
+        selectedUsers={emailUser ? [emailUser] : []}
+        targetRole="client"
+      />
     </div>
   )
 }
 
-function UserSheet({ user, agencies, isOpen, onClose, onRefresh }: {
+function UserSheet({
+  user,
+  agencies,
+  isOpen,
+  onClose,
+  onRefresh,
+}: {
   user: User | null
   agencies: Agency[]
   isOpen: boolean
@@ -286,7 +372,9 @@ function UserSheet({ user, agencies, isOpen, onClose, onRefresh }: {
   const [error, setError] = useState<string | null>(null)
 
   const agencyId = user?.agency
-    ? (typeof user.agency === 'object' ? (user.agency as Agency)?.id : user.agency)
+    ? typeof user.agency === 'object'
+      ? (user.agency as Agency)?.id
+      : user.agency
     : ''
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -296,9 +384,7 @@ function UserSheet({ user, agencies, isOpen, onClose, onRefresh }: {
     const data = Object.fromEntries(formData.entries())
 
     startTransition(async () => {
-      const result = user
-        ? await updateUser(user.id, data)
-        : await createUser(data)
+      const result = user ? await updateUser(user.id, data) : await createUser(data)
 
       if (result.success) {
         onRefresh()
@@ -330,7 +416,10 @@ function UserSheet({ user, agencies, isOpen, onClose, onRefresh }: {
           </div>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+        <form
+          onSubmit={handleSubmit}
+          className="flex-1 overflow-y-auto custom-scrollbar flex flex-col"
+        >
           <div className="p-6 space-y-6 flex-1">
             {error && (
               <div className="p-3 bg-red-50 text-red-600 text-xs rounded-lg border border-red-200">
@@ -339,41 +428,78 @@ function UserSheet({ user, agencies, isOpen, onClose, onRefresh }: {
             )}
 
             <div className="space-y-4">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">Informations de base</h4>
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">
+                Informations de base
+              </h4>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">Nom Complet</label>
-                  <Input name="name" defaultValue={user?.name || ''} placeholder="Ex: Jean Dupont" className="bg-background/50 border-border/50" />
+                  <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">
+                    Nom Complet
+                  </label>
+                  <Input
+                    name="name"
+                    defaultValue={user?.name || ''}
+                    placeholder="Ex: Jean Dupont"
+                    className="bg-background/50 border-border/50"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">Société</label>
-                  <Input name="company" defaultValue={user?.company || ''} placeholder="Ex: Acme Corp" className="bg-background/50 border-border/50" />
+                  <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">
+                    Société
+                  </label>
+                  <Input
+                    name="company"
+                    defaultValue={user?.company || ''}
+                    placeholder="Ex: Acme Corp"
+                    className="bg-background/50 border-border/50"
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">Adresse Email</label>
+                <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">
+                  Adresse Email
+                </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-stone-300" />
-                  <Input name="email" type="email" required defaultValue={user?.email || ''} placeholder="jean@exemple.com" className="pl-10 bg-background/50 border-border/50" />
+                  <Input
+                    name="email"
+                    type="email"
+                    required
+                    defaultValue={user?.email || ''}
+                    placeholder="jean@exemple.com"
+                    className="pl-10 bg-background/50 border-border/50"
+                  />
                 </div>
               </div>
 
               {!user && (
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">Mot de passe</label>
-                  <Input name="password" type="password" required={!user} placeholder="Minimum 8 caractères" className="bg-background/50 border-border/50" />
+                  <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">
+                    Mot de passe
+                  </label>
+                  <Input
+                    name="password"
+                    type="password"
+                    required={!user}
+                    placeholder="Minimum 8 caractères"
+                    className="bg-background/50 border-border/50"
+                  />
                 </div>
               )}
             </div>
 
             <div className="space-y-4 pt-4 border-t border-border/30">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">Configuration du compte</h4>
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">
+                Configuration du compte
+              </h4>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">Rôle</label>
+                  <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">
+                    Rôle
+                  </label>
                   <select
                     name="role"
                     defaultValue={user?.role || 'user'}
@@ -386,7 +512,9 @@ function UserSheet({ user, agencies, isOpen, onClose, onRefresh }: {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">Forfait</label>
+                  <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">
+                    Forfait
+                  </label>
                   <select
                     name="plan"
                     defaultValue={user?.plan || 'free'}
@@ -398,7 +526,9 @@ function UserSheet({ user, agencies, isOpen, onClose, onRefresh }: {
                   </select>
                 </div>
                 <div className="space-y-2 col-span-2">
-                  <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">Agence (pour rôle Client ou Agence)</label>
+                  <label className="text-[11px] font-bold uppercase tracking-tight text-stone-500">
+                    Agence (pour rôle Client ou Agence)
+                  </label>
                   <select
                     name="agency"
                     defaultValue={agencyId}
@@ -419,11 +549,17 @@ function UserSheet({ user, agencies, isOpen, onClose, onRefresh }: {
             {user && (
               <div className="p-4 bg-muted/30 rounded-xl border border-border/30 mt-6 grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-tight mb-1">Inscrit le</p>
-                  <p className="text-sm font-semibold text-stone-700">{new Date(user.createdAt).toLocaleDateString('fr-FR')}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-tight mb-1">
+                    Inscrit le
+                  </p>
+                  <p className="text-sm font-semibold text-stone-700">
+                    {new Date(user.createdAt).toLocaleDateString('fr-FR')}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-tight mb-1">Total Cartes</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-tight mb-1">
+                    Total Cartes
+                  </p>
                   <p className="text-sm font-semibold text-stone-700">{user.cardsCreated || 0}</p>
                 </div>
               </div>
@@ -436,7 +572,7 @@ function UserSheet({ user, agencies, isOpen, onClose, onRefresh }: {
               disabled={isPending}
               className="w-full h-12 bg-teal-600 hover:bg-teal-700 shadow-teal-500/20 shadow-lg rounded-xl font-bold transition-all active:scale-[0.98]"
             >
-              {isPending ? 'Enregistrement...' : (user ? 'Mettre à jour' : 'Créer le client')}
+              {isPending ? 'Enregistrement...' : user ? 'Mettre à jour' : 'Créer le client'}
             </Button>
           </div>
         </form>

@@ -82,6 +82,7 @@ export interface Config {
     stickers: Sticker;
     leads: Lead;
     posts: Post;
+    'email-templates': EmailTemplate;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -104,6 +105,7 @@ export interface Config {
     stickers: StickersSelect<false> | StickersSelect<true>;
     leads: LeadsSelect<false> | LeadsSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    'email-templates': EmailTemplatesSelect<false> | EmailTemplatesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -613,6 +615,19 @@ export interface Post {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-templates".
+ */
+export interface EmailTemplate {
+  id: number;
+  name: string;
+  subject: string;
+  body: string;
+  targetRole?: ('all' | 'client' | 'agence') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -694,6 +709,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'email-templates';
+        value: number | EmailTemplate;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1042,6 +1061,18 @@ export interface PostsSelect<T extends boolean = true> {
   content?: T;
   image?: T;
   status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-templates_select".
+ */
+export interface EmailTemplatesSelect<T extends boolean = true> {
+  name?: T;
+  subject?: T;
+  body?: T;
+  targetRole?: T;
   updatedAt?: T;
   createdAt?: T;
 }

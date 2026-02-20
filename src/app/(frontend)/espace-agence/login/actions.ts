@@ -5,6 +5,8 @@ import configPromise from '@payload-config'
 import jwt from 'jsonwebtoken'
 import { cookies } from 'next/headers'
 
+import { randomUUID } from 'crypto'
+
 export async function loginWithGoogle(accessToken: string) {
   try {
     // 1. Verify the access token by fetching user info from Google
@@ -41,6 +43,28 @@ export async function loginWithGoogle(accessToken: string) {
     }
 
     // 3. Generate Session Token (JWT)
+    const sid = randomUUID()
+    const now = new Date()
+    const tokenExpInMs = 7 * 24 * 60 * 60 * 1000
+    const expiresAt = new Date(now.getTime() + tokenExpInMs)
+
+    const session = {
+      id: sid,
+      createdAt: now.toISOString(),
+      expiresAt: expiresAt.toISOString(),
+    }
+
+    let updatedSessions = user.sessions || []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    updatedSessions = updatedSessions.filter((s: any) => new Date(s.expiresAt) > now)
+    updatedSessions.push(session)
+
+    await payload.update({
+      collection: 'users',
+      id: user.id,
+      data: { sessions: updatedSessions },
+    })
+
     // Payload 3.0 uses 'payload-token' cookie by default.
     // We sign the user data with the Payload Secret.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -50,6 +74,7 @@ export async function loginWithGoogle(accessToken: string) {
       {
         ...safeUser,
         collection: 'users',
+        sid: sid,
       },
       process.env.PAYLOAD_SECRET || '',
       {

@@ -4,7 +4,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import jwt from 'jsonwebtoken'
 import { cookies } from 'next/headers'
-import { randomBytes } from 'crypto'
+import { randomBytes, randomUUID } from 'crypto'
 
 export async function loginWithGoogle(accessToken: string) {
   try {
@@ -52,9 +52,36 @@ export async function loginWithGoogle(accessToken: string) {
       })
     }
 
-    // 3. Generate Session Token (JWT)
-    // Payload 3.0 uses 'payload-token' cookie by default.
-    // We sign the user data with the Payload Secret.
+    // 3. Generate Session Token (JWT) mapping for Payload 3.x
+    // Payload 3 requires an active session matching the session ID in the token.
+    const sid = randomUUID()
+    const now = new Date()
+    // Session length: 7 days
+    const tokenExpInMs = 7 * 24 * 60 * 60 * 1000
+    const expiresAt = new Date(now.getTime() + tokenExpInMs)
+
+    const session = {
+      id: sid,
+      createdAt: now.toISOString(),
+      expiresAt: expiresAt.toISOString(),
+    }
+
+    let updatedSessions = user.sessions || []
+    // Remove expired
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    updatedSessions = updatedSessions.filter((s: any) => new Date(s.expiresAt) > now)
+    updatedSessions.push(session)
+
+    // Save session in db
+    await payload.update({
+      collection: 'users',
+      id: user.id,
+      data: {
+        sessions: updatedSessions,
+      },
+    })
+
+    // Prepare token fields explicitly avoiding passwords
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, hash, salt, ...safeUser } = user
 
@@ -63,6 +90,7 @@ export async function loginWithGoogle(accessToken: string) {
       {
         ...safeUser,
         collection: 'users',
+        sid: sid, // Vital for Payload autologin
       },
       secret,
       {

@@ -3,6 +3,8 @@ import config from '@payload-config'
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 
+import { randomUUID } from 'crypto'
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const token = searchParams.get('token')
@@ -33,26 +35,37 @@ export async function GET(request: NextRequest) {
 
     const user = result.docs[0]
 
-    // Invalidate token
+    // Create session for user
+    const sid = randomUUID()
+    const now = new Date()
+    const tokenExpInMs = 7 * 24 * 60 * 60 * 1000
+    const expiresAt = new Date(now.getTime() + tokenExpInMs)
+
+    const session = {
+      id: sid,
+      createdAt: now.toISOString(),
+      expiresAt: expiresAt.toISOString(),
+    }
+
+    let updatedSessions = user.sessions || []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    updatedSessions = updatedSessions.filter((s: any) => new Date(s.expiresAt) > now)
+    updatedSessions.push(session)
+
+    // Invalidate token & update session
     await payload.update({
       collection: 'users',
       id: user.id,
       data: {
         magicLinkToken: null,
         magicLinkExpires: null,
+        sessions: updatedSessions,
       },
     })
 
     // Generate Payload JWT
     // Note: In detailed implementations, we might use payload.login() but that usually requires password.
     // We can manually sign a JWT compatible with Payload's strategy if we know the secret.
-    // Or we can use `payload.login` if we had a password, but we don't know it.
-    // Payload 3.x exposes more auth helpers.
-    // A common workaround for passwordless login in Payload:
-    // 1. Generate a token
-    // 2. Set the cookie 'payload-token'
-
-    // We need the secret from config
     const secret = process.env.PAYLOAD_SECRET || ''
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -60,6 +73,7 @@ export async function GET(request: NextRequest) {
     const fieldsToSign = {
       ...safeUser,
       collection: 'users',
+      sid: sid,
     }
 
     const jwtToken = jwt.sign(fieldsToSign, secret, {
