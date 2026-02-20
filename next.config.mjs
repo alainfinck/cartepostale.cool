@@ -6,9 +6,21 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: 'img.cartepostale.cool', pathname: '/**' },
-    ],
+    remotePatterns: [{ protocol: 'https', hostname: 'img.cartepostale.cool', pathname: '/**' }],
+  },
+  async redirects() {
+    return [
+      {
+        source: '/dashboard',
+        destination: '/espace-client',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/:path*',
+        destination: '/espace-client/:path*',
+        permanent: true,
+      },
+    ]
   },
   // Demo images are now in public/images/demo (no remote Unsplash)
   webpack: (webpackConfig) => {

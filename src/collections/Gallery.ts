@@ -51,7 +51,32 @@ export const Gallery: CollectionConfig = {
       type: 'number',
       defaultValue: 0,
       admin: {
-        description: 'Ordre d\'affichage (plus petit = en premier)',
+        description: "Ordre d'affichage (plus petit = en premier)",
+      },
+    },
+    {
+      name: 'agency',
+      type: 'relationship',
+      relationTo: 'agencies',
+      admin: {
+        description: 'Agence propriétaire de cette image (laisser vide pour les images globales)',
+      },
+    },
+    {
+      name: 'views',
+      type: 'number',
+      defaultValue: 0,
+      admin: {
+        readOnly: true,
+      },
+    },
+    {
+      name: 'usages',
+      type: 'number',
+      defaultValue: 0,
+      admin: {
+        description: 'Nombre de fois où cette image a été utilisée sur une carte postale',
+        readOnly: true,
       },
     },
   ],

@@ -3,14 +3,25 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Mail, Building2, User, LogOut, Menu, Plus, ArrowLeft } from 'lucide-react'
+import {
+  LayoutDashboard,
+  Mail,
+  Building2,
+  User,
+  LogOut,
+  Menu,
+  Plus,
+  ArrowLeft,
+  Image as ImageIcon,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 
 const nav = [
   { href: '/espace-agence', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { href: '/espace-agence/cartes', label: 'Cartes de l\'agence', icon: Mail },
+  { href: '/espace-agence/cartes', label: "Cartes de l'agence", icon: Mail },
+  { href: '/espace-agence/galerie', label: "Galerie d'images", icon: ImageIcon },
   { href: '/espace-agence/agence', label: 'Mon agence', icon: Building2 },
   { href: '/espace-agence/compte', label: 'Mon compte', icon: User },
 ]
@@ -28,7 +39,7 @@ export function AgenceShell({ children, agencyId }: Props) {
   useEffect(() => {
     if (!agencyId) return
     fetch(`/api/agencies/${agencyId}?depth=0`, { credentials: 'include' })
-      .then((res) => res.ok ? res.json() : null)
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.name) setAgencyName(data.name)
       })
@@ -37,7 +48,7 @@ export function AgenceShell({ children, agencyId }: Props) {
 
   const handleLogout = async () => {
     await fetch('/api/users/logout', { method: 'POST', credentials: 'include' })
-    router.push('/connexion')
+    router.push('/espace-agence/login')
     router.refresh()
   }
 
@@ -46,7 +57,9 @@ export function AgenceShell({ children, agencyId }: Props) {
       <div className="flex h-14 items-center border-b border-border px-4">
         <div className="min-w-0">
           <span className="font-semibold text-foreground block truncate">{agencyName}</span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Espace Agence</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+            Espace Agence
+          </span>
         </div>
       </div>
       <nav className="flex-1 space-y-1 p-3">
@@ -60,7 +73,9 @@ export function AgenceShell({ children, agencyId }: Props) {
               href={item.href}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive ? 'bg-teal-600 text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                isActive
+                  ? 'bg-teal-600 text-white'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
               )}
             >
               <item.icon className="h-4 w-4 shrink-0" />
@@ -71,7 +86,11 @@ export function AgenceShell({ children, agencyId }: Props) {
       </nav>
       <div className="border-t border-border p-3 space-y-1">
         <Link href="/editor">
-          <Button variant="default" size="sm" className="w-full justify-start gap-3 bg-teal-600 hover:bg-teal-700">
+          <Button
+            variant="default"
+            size="sm"
+            className="w-full justify-start gap-3 bg-teal-600 hover:bg-teal-700"
+          >
             <Plus className="h-4 w-4" />
             Créer une carte
           </Button>

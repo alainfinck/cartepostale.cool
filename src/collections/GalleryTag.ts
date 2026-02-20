@@ -17,5 +17,13 @@ export const GalleryTag: CollectionConfig = {
       required: true,
     },
     slugField({ fieldToUse: 'name' }),
+    {
+      name: 'agency',
+      type: 'relationship',
+      relationTo: 'agencies',
+      admin: {
+        description: 'Agence propriétaire de ce tag (laisser vide pour les tags globaux)',
+      },
+    },
   ],
 }

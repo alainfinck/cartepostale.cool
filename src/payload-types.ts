@@ -484,6 +484,10 @@ export interface GalleryCategory {
   generateSlug?: boolean | null;
   slug: string;
   description?: string | null;
+  /**
+   * Agence propriétaire de cette catégorie (laisser vide pour les catégories globales)
+   */
+  agency?: (number | null) | Agency;
   updatedAt: string;
   createdAt: string;
 }
@@ -499,6 +503,10 @@ export interface GalleryTag {
    */
   generateSlug?: boolean | null;
   slug: string;
+  /**
+   * Agence propriétaire de ce tag (laisser vide pour les tags globaux)
+   */
+  agency?: (number | null) | Agency;
   updatedAt: string;
   createdAt: string;
 }
@@ -523,6 +531,15 @@ export interface Gallery {
    * Ordre d'affichage (plus petit = en premier)
    */
   order?: number | null;
+  /**
+   * Agence propriétaire de cette image (laisser vide pour les images globales)
+   */
+  agency?: (number | null) | Agency;
+  views?: number | null;
+  /**
+   * Nombre de fois où cette image a été utilisée sur une carte postale
+   */
+  usages?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -953,6 +970,7 @@ export interface GalleryCategoriesSelect<T extends boolean = true> {
   generateSlug?: T;
   slug?: T;
   description?: T;
+  agency?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -964,6 +982,7 @@ export interface GalleryTagsSelect<T extends boolean = true> {
   name?: T;
   generateSlug?: T;
   slug?: T;
+  agency?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -978,6 +997,9 @@ export interface GallerySelect<T extends boolean = true> {
   category?: T;
   tags?: T;
   order?: T;
+  agency?: T;
+  views?: T;
+  usages?: T;
   updatedAt?: T;
   createdAt?: T;
 }

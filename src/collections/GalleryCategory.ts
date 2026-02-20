@@ -21,5 +21,14 @@ export const GalleryCategory: CollectionConfig = {
       name: 'description',
       type: 'textarea',
     },
+    {
+      name: 'agency',
+      type: 'relationship',
+      relationTo: 'agencies',
+      admin: {
+        description:
+          'Agence propriétaire de cette catégorie (laisser vide pour les catégories globales)',
+      },
+    },
   ],
 }
