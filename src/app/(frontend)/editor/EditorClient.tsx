@@ -82,6 +82,7 @@ import {
 } from '@/lib/image-processing'
 import { extractExifData, ExifData } from '@/lib/extract-exif'
 import { UnsplashSearchModal } from '@/components/UnsplashSearchModal'
+import UserGalleryModal from '@/components/editor/UserGalleryModal'
 import StickerGallery from '@/components/editor/StickerGallery'
 import StickerLayer from '@/components/editor/StickerLayer'
 import RealTimeViewStats from '@/components/stats/RealTimeViewStats'
@@ -725,6 +726,7 @@ export default function EditorPage() {
   const [recipientsSentCount, setRecipientsSentCount] = useState<number | null>(null)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [showUnsplashModal, setShowUnsplashModal] = useState(false)
+  const [showUserGalleryModal, setShowUserGalleryModal] = useState<'front' | 'back' | null>(null)
   const [showStickerGallery, setShowStickerGallery] = useState(false)
   const [stickers, setStickers] = useState<StickerPlacement[]>([])
   const [selectedEmojiCategory, setSelectedEmojiCategory] = useState<EmojiCategoryKey>(
@@ -2135,6 +2137,17 @@ export default function EditorPage() {
                   )}
                 </div>
 
+                {currentUser && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowUserGalleryModal('front')}
+                    className="w-full mt-3 rounded-xl border-dashed border-stone-300 text-stone-600 hover:text-teal-600 hover:border-teal-300 hover:bg-teal-50 gap-2 mb-8"
+                  >
+                    <ImageIcon size={18} /> Choisir depuis ma galerie
+                  </Button>
+                )}
+
                 {/* Mobile-friendly: Collapsible Template Section */}
                 <div className="mb-8">
                   <button
@@ -3257,7 +3270,7 @@ export default function EditorPage() {
                         </div>
                       ))}
 
-                      <div className="relative aspect-square">
+                      <div className="flex flex-col gap-2 relative aspect-square">
                         <input
                           type="file"
                           id="album-upload"
@@ -3268,11 +3281,30 @@ export default function EditorPage() {
                         />
                         <label
                           htmlFor="album-upload"
-                          className="w-full h-full flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-stone-300 bg-stone-50 hover:bg-stone-100 hover:border-stone-400 transition-colors cursor-pointer text-stone-400 hover:text-stone-600"
+                          className="flex-1 w-full flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-stone-300 bg-stone-50 hover:bg-stone-100 hover:border-stone-400 transition-colors cursor-pointer text-stone-400 hover:text-stone-600"
                         >
                           <Camera size={24} className="mb-2" />
-                          <span className="text-xs font-bold">Ajouter</span>
+                          <span className="text-xs font-bold text-center px-2">
+                            Ajouter depuis l&apos;appareil
+                          </span>
                         </label>
+                        {currentUser && (
+                          <button
+                            type="button"
+                            onClick={() => setShowUserGalleryModal('back')}
+                            className="flex-1 w-full flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-teal-200 bg-teal-50 hover:bg-teal-100 hover:border-teal-400 transition-colors cursor-pointer text-teal-600 font-bold px-2 group"
+                          >
+                            <ImageIcon
+                              size={20}
+                              className="mb-1 text-teal-500 group-hover:scale-110 transition-transform"
+                            />
+                            <span className="text-[10px] text-center leading-tight">
+                              Depuis ma
+                              <br />
+                              galerie
+                            </span>
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -4512,7 +4544,7 @@ export default function EditorPage() {
               </span>
             </div>
             <iframe
-              src={shareUrl}
+              src={shareUrl || undefined}
               title="Page destinataire"
               className="w-full h-full border-0"
               loading="lazy"
@@ -4558,6 +4590,39 @@ export default function EditorPage() {
           </div>
         </div>
       )}
+
+      <UserGalleryModal
+        open={showUserGalleryModal !== null}
+        onOpenChange={(open) => !open && setShowUserGalleryModal(null)}
+        onSelect={(url) => {
+          if (showUserGalleryModal === 'front') {
+            setFrontImage(url)
+            setFrontImageKey(null)
+            setFrontImageMimeType(null)
+            setFrontImageFilesize(null)
+            setFrontImageCrop({ scale: 1, x: 50, y: 50 })
+            setFrontImageFilter(DEFAULT_FRONT_FILTER)
+          } else if (showUserGalleryModal === 'back') {
+            const newItem = {
+              id: Date.now() + Math.random().toString(),
+              type: 'image' as const,
+              url,
+            }
+            setMediaItems((prev) => {
+              const images = (prev || []).filter((i) => i.type === 'image').length
+              if (images >= (isPremium ? ALBUM_TIERS.tier2.photos : ALBUM_TIERS.tier1.photos)) {
+                alert(
+                  `La limite est atteinte (${
+                    isPremium ? ALBUM_TIERS.tier2.photos : ALBUM_TIERS.tier1.photos
+                  } photos max).`,
+                )
+                return prev || []
+              }
+              return [...(prev || []), newItem]
+            })
+          }
+        }}
+      />
     </div>
   )
 }

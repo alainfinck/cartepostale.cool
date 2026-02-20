@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Plus,
   Globe,
+  Image as ImageIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -23,6 +24,7 @@ interface Props {
 const navItems = [
   { href: '/espace-client', label: 'Tableau de bord', icon: LayoutDashboard },
   { href: '/espace-client/cartes', label: 'Mes cartes', icon: Mail },
+  { href: '/espace-client/galerie', label: 'Ma galerie', icon: ImageIcon },
   { href: '/espace-client/carte-du-monde', label: 'Carte du monde', icon: Globe },
   { href: '/espace-client/compte', label: 'Mon compte', icon: User },
 ]
@@ -53,7 +55,8 @@ export default function EspaceClientNav({ user }: Props) {
 
       <nav className="flex-1 p-3 space-y-1">
         {navItems.map(({ href, label, icon: Icon }) => {
-          const isActive = pathname === href || (href !== '/espace-client' && pathname.startsWith(href))
+          const isActive =
+            pathname === href || (href !== '/espace-client' && pathname.startsWith(href))
           return (
             <Link
               key={href}
@@ -62,12 +65,15 @@ export default function EspaceClientNav({ user }: Props) {
                 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
                 isActive
                   ? 'bg-teal-50 text-teal-700 border border-teal-100'
-                  : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+                  : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800',
               )}
             >
               <Icon size={20} className="shrink-0" />
               {label}
-              <ChevronRight size={16} className={cn('ml-auto shrink-0', !isActive && 'opacity-0')} />
+              <ChevronRight
+                size={16}
+                className={cn('ml-auto shrink-0', !isActive && 'opacity-0')}
+              />
             </Link>
           )
         })}
