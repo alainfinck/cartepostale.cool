@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import confetti from 'canvas-confetti'
 import {
   Upload,
@@ -3299,7 +3299,7 @@ export default function EditorPage() {
                                 <X size={14} />
                               </button>
                               <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 px-2 py-1 text-[10px] font-medium text-white bg-stone-800 rounded-md opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20 shadow-lg">
-                                Retirer de l'album
+                                Retirer de l&apos;album
                               </span>
                             </div>
                           </div>
