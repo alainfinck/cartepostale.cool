@@ -18,12 +18,14 @@ export default async function DebugPostcards() {
           type="submit"
           style={{
             padding: '10px 20px',
-            backgroundColor: '#teal',
+            backgroundColor: '#0d9488',
             color: 'white',
             border: 'none',
-            borderRadius: '5px',
+            borderRadius: '6px',
             cursor: 'pointer',
             marginBottom: '20px',
+            fontWeight: '600',
+            transition: 'opacity 0.2s',
           }}
         >
           Fix Private Postcards (Make All Public)

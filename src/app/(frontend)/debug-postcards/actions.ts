@@ -4,10 +4,10 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { revalidatePath } from 'next/cache'
 
-export async function fixPrivatePostcards() {
+export async function fixPrivatePostcards(_formData: FormData) {
   const payload = await getPayload({ config })
 
-  const result = await payload.update({
+  await payload.update({
     collection: 'postcards',
     where: {
       isPublic: {
@@ -22,6 +22,4 @@ export async function fixPrivatePostcards() {
 
   revalidatePath('/debug-postcards')
   revalidatePath('/carte/syno')
-
-  return { updated: result.docs.length }
 }
