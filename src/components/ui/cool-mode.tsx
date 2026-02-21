@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import React, { ReactNode, useEffect, useRef } from "react"
+import React, { ReactNode, useEffect, useRef } from 'react'
 
 export interface BaseParticle {
   element: HTMLElement | SVGSVGElement
@@ -12,7 +12,7 @@ export interface BaseParticle {
 export interface BaseParticleOptions {
   particle?: string
   size?: number
-  effect?: "fountain" | "balloon"
+  effect?: 'fountain' | 'balloon'
 }
 
 export interface CoolParticle extends BaseParticle {
@@ -29,21 +29,24 @@ export interface CoolParticleOptions extends BaseParticleOptions {
   particleCount?: number
   speedHorz?: number
   speedUp?: number
+  loop?: boolean
+  speed?: number
+  gravity?: number
 }
 
 const getContainer = () => {
-  const id = "_coolMode_effect"
+  const id = '_coolMode_effect'
   const existingContainer = document.getElementById(id)
 
   if (existingContainer) {
     return existingContainer
   }
 
-  const container = document.createElement("div")
-  container.setAttribute("id", id)
+  const container = document.createElement('div')
+  container.setAttribute('id', id)
   container.setAttribute(
-    "style",
-    "overflow:hidden; position:fixed; height:100%; top:0; left:0; right:0; bottom:0; pointer-events:none; z-index:2147483647"
+    'style',
+    'overflow:hidden; position:fixed; height:100%; top:0; left:0; right:0; bottom:0; pointer-events:none; z-index:2147483647',
   )
 
   document.body.appendChild(container)
@@ -53,17 +56,14 @@ const getContainer = () => {
 
 let instanceCounter = 0
 
-const applyParticleEffect = (
-  element: HTMLElement,
-  options?: CoolParticleOptions
-): (() => void) => {
+const applyParticleEffect = (element: HTMLElement, options?: CoolParticleOptions): (() => void) => {
   instanceCounter++
 
-  const defaultParticle = "circle"
+  const defaultParticle = 'circle'
   const particleType = options?.particle || defaultParticle
   const sizes = [15, 20, 25, 35, 45]
   const limit = 45
-  const effect = options?.effect || "fountain"
+  const effect = options?.effect || 'fountain'
 
   let particles: CoolParticle[] = []
   let autoAddParticle = false
@@ -73,12 +73,11 @@ const applyParticleEffect = (
   const container = getContainer()
 
   function generateParticle() {
-    const size =
-      options?.size || sizes[Math.floor(Math.random() * sizes.length)]
+    const size = options?.size || sizes[Math.floor(Math.random() * sizes.length)]
 
     // Default fountain values
-    let speedHorz = options?.speedHorz || Math.random() * 10
-    let speedUp = options?.speedUp || Math.random() * 25
+    let speedHorz = (options?.speedHorz || Math.random() * 10) * (options?.speed || 1)
+    let speedUp = (options?.speedUp || Math.random() * 25) * (options?.speed || 1)
     const spinVal = Math.random() * 360
     const spinSpeed = Math.random() * 35 * (Math.random() <= 0.5 ? -1 : 1)
     const top = mouseY - size / 2
@@ -86,49 +85,42 @@ const applyParticleEffect = (
     const direction = Math.random() <= 0.5 ? -1 : 1
 
     // Balloon overrides
-    if (effect === "balloon") {
-      speedHorz = (Math.random() * 2) + 0.5 // Slower horizontal drift
-      speedUp = (Math.random() * 3) + 2     // Slow steady upward rise
+    if (effect === 'balloon') {
+      speedHorz = (Math.random() * 2 + 0.5) * (options?.speed || 1)
+      speedUp = (Math.random() * 3 + 2) * (options?.speed || 1)
     }
 
-    const particle = document.createElement("div")
+    const particle = document.createElement('div')
 
-    if (particleType === "circle") {
-      const svgNS = "http://www.w3.org/2000/svg"
-      const circleSVG = document.createElementNS(svgNS, "svg")
-      const circle = document.createElementNS(svgNS, "circle")
-      circle.setAttributeNS(null, "cx", (size / 2).toString())
-      circle.setAttributeNS(null, "cy", (size / 2).toString())
-      circle.setAttributeNS(null, "r", (size / 2).toString())
-      circle.setAttributeNS(
-        null,
-        "fill",
-        `hsl(${Math.random() * 360}, 70%, 50%)`
-      )
+    if (particleType === 'circle') {
+      const svgNS = 'http://www.w3.org/2000/svg'
+      const circleSVG = document.createElementNS(svgNS, 'svg')
+      const circle = document.createElementNS(svgNS, 'circle')
+      circle.setAttributeNS(null, 'cx', (size / 2).toString())
+      circle.setAttributeNS(null, 'cy', (size / 2).toString())
+      circle.setAttributeNS(null, 'r', (size / 2).toString())
+      circle.setAttributeNS(null, 'fill', `hsl(${Math.random() * 360}, 70%, 50%)`)
 
       circleSVG.appendChild(circle)
-      circleSVG.setAttribute("width", size.toString())
-      circleSVG.setAttribute("height", size.toString())
+      circleSVG.setAttribute('width', size.toString())
+      circleSVG.setAttribute('height', size.toString())
 
       particle.appendChild(circleSVG)
-    } else if (
-      particleType.startsWith("http") ||
-      particleType.startsWith("/")
-    ) {
+    } else if (particleType.startsWith('http') || particleType.startsWith('/')) {
       // Handle URL-based images
       particle.innerHTML = `<img src="${particleType}" width="${size}" height="${size}" style="border-radius: 50%">`
     } else {
       // Handle emoji or text characters
-      const fontSizeMultiplier = effect === "balloon" ? 1.5 : 3
+      const fontSizeMultiplier = effect === 'balloon' ? 1.5 : 3
       const emojiSize = size * fontSizeMultiplier
       particle.innerHTML = `<div style="font-size: ${emojiSize}px; line-height: 1; text-align: center; width: ${size}px; height: ${size}px; display: flex; align-items: center; justify-content: center; transform: scale(${fontSizeMultiplier}); transform-origin: center;">${particleType}</div>`
     }
 
-    particle.style.position = "absolute"
+    particle.style.position = 'absolute'
     particle.style.transform = `translate3d(${left}px, ${top}px, 0px) rotate(${spinVal}deg)`
-    if (effect === "balloon") {
-      particle.style.opacity = "1";
-      particle.style.transition = "transform 0.1s linear"; // Smooth movement
+    if (effect === 'balloon') {
+      particle.style.opacity = '1'
+      particle.style.transition = 'transform 0.1s linear' // Smooth movement
     }
 
     container.appendChild(particle)
@@ -150,7 +142,7 @@ const applyParticleEffect = (
 
   function refreshParticles() {
     particles.forEach((p) => {
-      if (effect === "balloon") {
+      if (effect === 'balloon') {
         // Balloon physics
         p.left = p.left - p.speedHorz * p.direction + Math.sin(p.top / 50) * 1 // Add waviness
         p.top = p.top - p.speedUp
@@ -165,41 +157,37 @@ const applyParticleEffect = (
         }
 
         p.element.setAttribute(
-          "style",
+          'style',
           [
-            "position:absolute",
-            "will-change:transform, opacity",
+            'position:absolute',
+            'will-change:transform, opacity',
             `top:${p.top}px`,
             `left:${p.left}px`,
             `opacity:${p.alpha}`,
             `transform:rotate(${p.spinVal}deg) scale(${p.scale})`,
-          ].join(";")
+          ].join(';'),
         )
-
       } else {
         // Default Fountain physics
         p.left = p.left - p.speedHorz * p.direction
         p.top = p.top - p.speedUp
-        p.speedUp = Math.min(p.size, p.speedUp - 1)
+        p.speedUp = Math.min(p.size, p.speedUp - (options?.gravity || 1))
         p.spinVal = p.spinVal + p.spinSpeed
 
-        if (
-          p.top >=
-          Math.max(window.innerHeight, document.body.clientHeight) + p.size
-        ) {
+        if (p.top >= Math.max(window.innerHeight, document.body.clientHeight) + p.size) {
           particles = particles.filter((o) => o !== p)
           p.element.remove()
         }
 
         p.element.setAttribute(
-          "style",
+          'style',
           [
-            "position:absolute",
-            "will-change:transform",
+            'position:absolute',
+            'will-change:transform',
             `top:${p.top}px`,
             `left:${p.left}px`,
             `transform:rotate(${p.spinVal}deg)`,
-          ].join(";")
+          ].join(';'),
         )
       }
     })
@@ -227,14 +215,14 @@ const applyParticleEffect = (
 
   loop()
 
-  const isTouchInteraction = "ontouchstart" in window
+  const isTouchInteraction = 'ontouchstart' in window
 
-  const tap = isTouchInteraction ? "touchstart" : "mousedown"
-  const tapEnd = isTouchInteraction ? "touchend" : "mouseup"
-  const move = isTouchInteraction ? "touchmove" : "mousemove"
+  const tap = isTouchInteraction ? 'touchstart' : 'mousedown'
+  const tapEnd = isTouchInteraction ? 'touchend' : 'mouseup'
+  const move = isTouchInteraction ? 'touchmove' : 'mousemove'
 
   const updateMousePosition = (e: MouseEvent | TouchEvent) => {
-    if ("touches" in e) {
+    if ('touches' in e) {
       mouseX = e.touches?.[0].clientX
       mouseY = e.touches?.[0].clientY
     } else {
@@ -245,7 +233,13 @@ const applyParticleEffect = (
 
   const tapHandler = (e: MouseEvent | TouchEvent) => {
     updateMousePosition(e)
-    autoAddParticle = true
+    if (options?.loop === false) {
+      for (let i = 0; i < (options.particleCount || 1); i++) {
+        generateParticle()
+      }
+    } else {
+      autoAddParticle = true
+    }
   }
 
   const disableAutoAddParticle = () => {
@@ -255,7 +249,7 @@ const applyParticleEffect = (
   element.addEventListener(move, updateMousePosition, { passive: true })
   element.addEventListener(tap, tapHandler, { passive: true })
   element.addEventListener(tapEnd, disableAutoAddParticle, { passive: true })
-  element.addEventListener("mouseleave", disableAutoAddParticle, {
+  element.addEventListener('mouseleave', disableAutoAddParticle, {
     passive: true,
   })
 
@@ -263,7 +257,7 @@ const applyParticleEffect = (
     element.removeEventListener(move, updateMousePosition)
     element.removeEventListener(tap, tapHandler)
     element.removeEventListener(tapEnd, disableAutoAddParticle)
-    element.removeEventListener("mouseleave", disableAutoAddParticle)
+    element.removeEventListener('mouseleave', disableAutoAddParticle)
 
     const interval = setInterval(() => {
       if (animationFrame && particles.length === 0) {

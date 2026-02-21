@@ -83,6 +83,7 @@ export interface Config {
     leads: Lead;
     posts: Post;
     'email-templates': EmailTemplate;
+    feedback: Feedback;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -106,6 +107,7 @@ export interface Config {
     leads: LeadsSelect<false> | LeadsSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     'email-templates': EmailTemplatesSelect<false> | EmailTemplatesSelect<true>;
+    feedback: FeedbackSelect<false> | FeedbackSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -148,16 +150,9 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: string;
-  email: string;
   emailVerified?: string | null;
   name?: string | null;
   image?: string | null;
-  hash?: string | null;
-  salt?: string | null;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
   role: 'admin' | 'agence' | 'client' | 'user';
   /**
    * Agence liée au compte (pour rôle Agence ou Client).
@@ -187,6 +182,14 @@ export interface User {
     | null;
   updatedAt: string;
   createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  password?: string | null;
   collection: 'users';
 }
 /**
@@ -639,6 +642,23 @@ export interface EmailTemplate {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feedback".
+ */
+export interface Feedback {
+  id: number;
+  /**
+   * Note de 1 à 5
+   */
+  rating?: number | null;
+  message: string;
+  pageUrl?: string | null;
+  user?: (string | null) | User;
+  status?: ('new' | 'read' | 'processed') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -724,6 +744,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'email-templates';
         value: number | EmailTemplate;
+      } | null)
+    | ({
+        relationTo: 'feedback';
+        value: number | Feedback;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -773,16 +797,9 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   id?: T;
-  email?: T;
   emailVerified?: T;
   name?: T;
   image?: T;
-  hash?: T;
-  salt?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
   role?: T;
   agency?: T;
   company?: T;
@@ -809,6 +826,13 @@ export interface UsersSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1097,6 +1121,19 @@ export interface EmailTemplatesSelect<T extends boolean = true> {
   subject?: T;
   body?: T;
   targetRole?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feedback_select".
+ */
+export interface FeedbackSelect<T extends boolean = true> {
+  rating?: T;
+  message?: T;
+  pageUrl?: T;
+  user?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

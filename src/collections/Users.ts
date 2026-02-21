@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { sendEmail, generateWelcomeEmail } from '@/lib/email-service'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -13,16 +14,37 @@ export const Users: CollectionConfig = {
     delete: ({ req: { user } }) => Boolean(user?.role === 'admin'),
   },
   hooks: {
+    afterChange: [
+      async ({ doc, operation }) => {
+        if (operation === 'create' && doc.email) {
+          try {
+            await sendEmail({
+              to: doc.email,
+              subject: 'Bienvenue sur CartePostale.cool ! 💌',
+              html: generateWelcomeEmail(doc.name || doc.email.split('@')[0]),
+            })
+          } catch (error) {
+            console.error('Erreur lors de l’envoi de l’email de bienvenue:', error)
+          }
+        }
+      },
+    ],
     beforeChange: [
       ({ data, req, operation }) => {
-        // À la création, forcer le rôle 'user' si l'utilisateur n'est pas admin (éviter inscription en admin/agence)
-        if (operation === 'create' && data && req.user?.role !== 'admin') {
-          data.role = 'user'
-        }
-        // En modification, empêcher l'auto-attribution du rôle admin ou agence
-        if (operation === 'update' && data && req.user?.role !== 'admin') {
-          if (data.role === 'admin' || data.role === 'agence') {
-            data.role = req.user?.role ?? 'user'
+        const isAdmin = req.user?.role === 'admin'
+        // Si ce n'est pas un admin qui fait la modif
+        if (!isAdmin) {
+          // À l'inscription publique (create), on force toujours le rôle 'user'
+          if (operation === 'create') {
+            if (data) data.role = 'user'
+          }
+          // En modification (update), si l'utilisateur est connecté (donc via API/UI),
+          // on l'empêche de s'auto-attribuer un rôle sensible.
+          // Si pas de req.user, on considère que c'est une opération système/script (Local API).
+          if (operation === 'update' && req.user && data) {
+            if (data.role === 'admin' || data.role === 'agence') {
+              data.role = req.user.role ?? 'user'
+            }
           }
         }
         return data
@@ -30,43 +52,6 @@ export const Users: CollectionConfig = {
     ],
   },
   fields: [
-    {
-      name: 'hash',
-      type: 'text',
-      hidden: true,
-      admin: {
-        readOnly: true,
-      },
-    },
-    {
-      name: 'salt',
-      type: 'text',
-      hidden: true,
-      admin: {
-        readOnly: true,
-      },
-    },
-    {
-      name: 'resetPasswordToken',
-      type: 'text',
-      hidden: true,
-    },
-    {
-      name: 'resetPasswordExpiration',
-      type: 'date',
-      hidden: true,
-    },
-    {
-      name: 'loginAttempts',
-      type: 'number',
-      hidden: true,
-      defaultValue: 0,
-    },
-    {
-      name: 'lockUntil',
-      type: 'date',
-      hidden: true,
-    },
     // Champs requis par authjs / NextAuth
     {
       name: 'emailVerified',

@@ -83,6 +83,7 @@ export interface Postcard {
   audioDuration?: number
   allowComments?: boolean
   isPublic?: boolean
+  password?: string
   contributionToken?: string
   isContributionEnabled?: boolean
 }

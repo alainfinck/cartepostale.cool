@@ -666,7 +666,7 @@ export default function EditorPage() {
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [allowComments, setAllowComments] = useState(true)
-  const [isPublic, setIsPublic] = useState(true)
+  const [isPublic, setIsPublic] = useState(false)
 
   const [stampStyle, setStampStyle] = useState<Postcard['stampStyle']>('classic')
   const [stampLabel, setStampLabel] = useState('Digital Poste')
@@ -746,6 +746,9 @@ export default function EditorPage() {
   } | null>(null)
   const [isRevolutRedirecting, setIsRevolutRedirecting] = useState(false)
   const [revolutError, setRevolutError] = useState<string | null>(null)
+
+  const [password, setPassword] = useState('')
+  const [isPasswordProtected, setIsPasswordProtected] = useState(false)
 
   // Note editing state
   const [editingMediaNoteId, setEditingMediaNoteId] = useState<string | null>(null)
@@ -1708,9 +1711,9 @@ export default function EditorPage() {
     return undefined // Fail silently or handle error?
   }
 
-  const handleAutoLocate = () => {
+  const handleAutoLocate = useCallback((silent = false) => {
     if (!navigator.geolocation) {
-      alert('Votre navigateur ne supporte pas la géolocalisation.')
+      if (!silent) alert('Votre navigateur ne supporte pas la géolocalisation.')
       return
     }
 
@@ -1739,10 +1742,21 @@ export default function EditorPage() {
       (error) => {
         console.error('Geolocation error:', error)
         setIsLocating(false)
-        alert('Impossible de vous localiser. Vérifiez vos permissions.')
+        if (!silent) alert('Impossible de vous localiser. Vérifiez vos permissions.')
       },
     )
-  }
+  }, [])
+
+  // Géolocalisation automatique au chargement si déjà autorisée
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && navigator.permissions) {
+      navigator.permissions.query({ name: 'geolocation' as PermissionName }).then((res) => {
+        if (res.state === 'granted') {
+          handleAutoLocate(true)
+        }
+      })
+    }
+  }, [handleAutoLocate])
 
   const handlePublish = async () => {
     setIsPublishing(true)
@@ -1803,6 +1817,7 @@ export default function EditorPage() {
         recipients: [],
         allowComments,
         isPublic,
+        password: isPasswordProtected ? password : undefined,
         ...(audioUrl && {
           audioMessage: await uploadAudio(), // Upload and get key
           audioDuration: Math.round(audioDuration),
@@ -2543,7 +2558,7 @@ export default function EditorPage() {
                     {/* Bouton de géolocalisation automatique */}
                     <button
                       type="button"
-                      onClick={handleAutoLocate}
+                      onClick={() => handleAutoLocate()}
                       className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-colors"
                       title="Me géolocaliser"
                     >
@@ -2809,27 +2824,37 @@ export default function EditorPage() {
 
                     <div
                       className="flex items-center gap-3 cursor-pointer group"
-                      onClick={() => setIsPublic(!isPublic)}
+                      onClick={() => setIsPasswordProtected(!isPasswordProtected)}
                     >
                       <div
                         className={cn(
                           'w-5 h-5 rounded border transition-all flex items-center justify-center',
-                          isPublic
-                            ? 'bg-amber-500 border-amber-500 text-white'
-                            : 'border-stone-300 bg-white group-hover:border-amber-300',
+                          isPasswordProtected
+                            ? 'bg-purple-500 border-purple-500 text-white'
+                            : 'border-stone-300 bg-white group-hover:border-purple-300',
                         )}
                       >
-                        {isPublic && <Check size={14} strokeWidth={3} />}
+                        {isPasswordProtected && <Check size={14} strokeWidth={3} />}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-stone-700">Carte Publique</span>
+                        <span className="text-sm font-bold text-stone-700">Mot de passe</span>
                         <span className="text-[10px] text-stone-400 uppercase tracking-wider font-medium">
-                          {isPublic
-                            ? 'Visible dans la galerie publique'
-                            : 'Privée, accessible via le lien uniquement'}
+                          {isPasswordProtected ? 'Accès sécurisé' : 'Accès libre'}
                         </span>
                       </div>
                     </div>
+
+                    {isPasswordProtected && (
+                      <div className="flex-1 min-w-[150px]">
+                        <input
+                          type="text"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="Définir un secret..."
+                          className="w-full rounded-xl border border-stone-200 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-xs py-2 px-3 bg-white transition-colors"
+                        />
+                      </div>
+                    )}
                   </section>
 
                   {/* SECTION MESSAGE VOCAL */}
@@ -2988,7 +3013,7 @@ export default function EditorPage() {
                       {/* Bouton de géolocalisation automatique */}
                       <button
                         type="button"
-                        onClick={handleAutoLocate}
+                        onClick={() => handleAutoLocate()}
                         className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-colors"
                         title="Me géolocaliser"
                       >
@@ -4360,9 +4385,8 @@ export default function EditorPage() {
                 Objectif : créer une vraie émotion (cadeau numérique).
               </p>
               <ul className="text-xs text-stone-600 space-y-1 list-disc list-inside">
-                <li>Carte postale vidéo (30 s) qui se lance au retournement</li>
                 <li>Audio souvenir : message vocal ou musique d&apos;ambiance</li>
-                <li>Le &quot;Secret&quot; : mot de passe ou question secrète</li>
+                <li>Le &quot;Secret&quot; : sécurité par mot de passe</li>
                 <li>Livre d&apos;or interactif (réponse du destinataire)</li>
                 <li>Notification de lecture par email</li>
                 <li>Effets visuels : confettis ou neige à l&apos;ouverture</li>

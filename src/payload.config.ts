@@ -24,6 +24,7 @@ import { Gallery } from './collections/Gallery'
 import { Stickers } from './collections/Stickers'
 import { Posts } from './collections/Posts'
 import { EmailTemplates } from './collections/EmailTemplates'
+import { Feedback } from './collections/Feedback'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -54,6 +55,7 @@ const defaultRegion = 'us-east-1'
 const plugins = [
   authjsPlugin({
     authjsConfig: authConfig,
+    enableLocalStrategy: true,
   }),
   ...(useS3
     ? [
@@ -115,6 +117,7 @@ export default buildConfig({
     Leads,
     Posts,
     EmailTemplates,
+    Feedback,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

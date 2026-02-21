@@ -222,7 +222,16 @@ const InstaCard = ({
       <div className="px-3 pt-3 pb-2">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3 flex-wrap">
-            <CoolMode options={{ particle: '❤️', size: 30 }}>
+            <CoolMode
+              options={{
+                particle: '❤️',
+                size: 30,
+                loop: false,
+                speed: 0.6,
+                gravity: 0.3,
+                particleCount: 1,
+              }}
+            >
               <button
                 onClick={() => handleToggleReaction('❤️')}
                 className="flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-transform"
@@ -242,14 +251,27 @@ const InstaCard = ({
                 )}
               </button>
             </CoolMode>
-            <button className="hover:text-stone-600 transition-colors" type="button" aria-label="Envoyer">
+            <button
+              className="hover:text-stone-600 transition-colors"
+              type="button"
+              aria-label="Envoyer"
+            >
               <Send size={24} className="text-stone-900 -mt-1 rotate-12" />
             </button>
             {canShowReactions &&
               ['🔥', '😂', '😮'].map((emoji) => {
                 const n = counts[emoji] ?? 0
                 return (
-                  <CoolMode key={emoji} options={{ particle: emoji }}>
+                  <CoolMode
+                    key={emoji}
+                    options={{
+                      particle: emoji,
+                      loop: false,
+                      speed: 0.6,
+                      gravity: 0.3,
+                      particleCount: 1,
+                    }}
+                  >
                     <button
                       type="button"
                       onClick={() => handleToggleReaction(emoji)}
@@ -269,7 +291,11 @@ const InstaCard = ({
                 )
               })}
           </div>
-          <button type="button" className="hover:text-stone-600 transition-colors" aria-label="Enregistrer">
+          <button
+            type="button"
+            className="hover:text-stone-600 transition-colors"
+            aria-label="Enregistrer"
+          >
             <Bookmark size={24} className="text-stone-900" />
           </button>
         </div>
@@ -458,13 +484,13 @@ export default function PhotoFeed({ mediaItems, senderName, postcardId }: PhotoF
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center"
+            className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex items-center justify-center"
             onClick={() => setSelectedIndex(null)}
           >
             <button
               type="button"
               aria-label="Fermer (Échap)"
-              className="absolute top-4 right-4 z-[110] p-2.5 rounded-full bg-black/50 hover:bg-black/70 text-white/90 hover:text-white border border-white/20 transition-colors"
+              className="absolute top-6 right-6 md:top-8 md:right-8 z-[10000] p-2.5 rounded-full bg-black/50 hover:bg-black/70 text-white/90 hover:text-white border border-white/20 transition-colors"
               onClick={(e) => {
                 e.stopPropagation()
                 setSelectedIndex(null)
@@ -496,21 +522,22 @@ export default function PhotoFeed({ mediaItems, senderName, postcardId }: PhotoF
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-4xl mx-4 flex flex-col items-center justify-center"
-              style={{ perspective: '1200px', maxHeight: '85vh' }}
+              className="relative w-full max-w-md md:max-w-lg lg:max-w-xl mx-auto px-4 flex flex-col items-center justify-center"
+              style={{ perspective: '1200px', maxHeight: '90vh' }}
               onClick={(e) => e.stopPropagation()}
             >
               <div
-                className="relative w-full transition-transform duration-700 ease-in-out"
+                className="relative w-full transition-transform duration-700 ease-in-out bg-white p-3 sm:p-4 pb-16 sm:pb-20 shadow-2xl rounded-sm"
                 style={{
                   transformStyle: 'preserve-3d',
                   transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                  maxHeight: '80vh',
-                  aspectRatio: mediaItems[selectedIndex].type === 'video' ? undefined : '4/5',
+                  maxHeight: '85vh',
+                  aspectRatio: '4/5',
                 }}
               >
+                {/* FRONT FACE BORDER */}
                 <div
-                  className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
+                  className="absolute top-3 left-3 right-3 bottom-16 sm:top-4 sm:left-4 sm:right-4 sm:bottom-20 bg-stone-100 overflow-hidden"
                   style={{ backfaceVisibility: 'hidden' }}
                 >
                   {mediaItems[selectedIndex].type === 'video' ? (
@@ -518,7 +545,7 @@ export default function PhotoFeed({ mediaItems, senderName, postcardId }: PhotoF
                       src={mediaItems[selectedIndex].url}
                       controls
                       autoPlay
-                      className="w-full h-full object-contain bg-black rounded-2xl"
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     <Image
@@ -526,14 +553,34 @@ export default function PhotoFeed({ mediaItems, senderName, postcardId }: PhotoF
                       alt={`Full photo ${selectedIndex + 1}`}
                       fill
                       unoptimized
-                      className="object-contain bg-black"
+                      className="object-cover"
                       priority
                     />
                   )}
                 </div>
 
+                {/* FRONT BOTTOM CONTROLS */}
                 <div
-                  className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center justify-center p-8"
+                  className="absolute bottom-0 left-0 right-0 h-16 sm:h-20 flex items-center justify-between px-4 sm:px-6 z-10"
+                  style={{ backfaceVisibility: 'hidden' }}
+                >
+                  <span className="text-stone-400 font-bold text-sm">
+                    {selectedIndex + 1} / {mediaItems.length}
+                  </span>
+                  {mediaItems[selectedIndex].note && (
+                    <button
+                      onClick={() => setIsFlipped(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-full text-xs font-bold transition-all shadow-sm hover:scale-105 active:scale-95"
+                    >
+                      <StickyNote size={14} />
+                      <span>Lire la note</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* BACK FACE */}
+                <div
+                  className="absolute inset-0 rounded-sm overflow-hidden flex flex-col items-center justify-center p-8 shadow-inner"
                   style={{
                     backfaceVisibility: 'hidden',
                     transform: 'rotateY(180deg)',
@@ -549,7 +596,7 @@ export default function PhotoFeed({ mediaItems, senderName, postcardId }: PhotoF
                     }}
                   />
                   <div className="relative z-10 max-w-md text-center">
-                    <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 text-amber-600 rounded-full mb-6">
+                    <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 text-amber-600 rounded-full mb-6 shadow-sm">
                       <StickyNote size={24} />
                     </div>
                     <p className="text-xl md:text-2xl font-serif text-stone-800 leading-relaxed italic">
@@ -565,22 +612,17 @@ export default function PhotoFeed({ mediaItems, senderName, postcardId }: PhotoF
                       <span className="text-2xl">📮</span>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="mt-6 flex items-center gap-4">
-                <span className="text-white/50 text-sm font-medium">
-                  {selectedIndex + 1} / {mediaItems.length}
-                </span>
-                {mediaItems[selectedIndex].note && (
-                  <button
-                    onClick={() => setIsFlipped(!isFlipped)}
-                    className="flex items-center gap-2 px-4 py-2 bg-amber-500/90 hover:bg-amber-500 text-white rounded-full text-sm font-bold shadow-lg transition-all hover:scale-105 active:scale-95"
-                  >
-                    <StickyNote size={14} />
-                    <span>{isFlipped ? 'Voir la photo' : 'Lire la note'}</span>
-                  </button>
-                )}
+                  <div className="absolute bottom-4 sm:bottom-6 left-0 right-0 flex justify-center z-20">
+                    <button
+                      onClick={() => setIsFlipped(false)}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-sm font-bold shadow-lg transition-all hover:scale-105 active:scale-95"
+                    >
+                      <StickyNote size={14} />
+                      <span>Voir la photo</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </motion.div>

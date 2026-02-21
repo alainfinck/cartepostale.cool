@@ -70,6 +70,8 @@ export const metadata: Metadata = {
   },
 }
 
+import { FeedbackButton } from '@/components/FeedbackButton'
+
 export default function FrontendLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
@@ -77,6 +79,7 @@ export default function FrontendLayout({ children }: { children: React.ReactNode
         <NextAuthProvider>
           <FrontendLayoutWrapper>{children}</FrontendLayoutWrapper>
           <InstallPrompt />
+          <FeedbackButton />
           <Toaster position="top-right" richColors />
         </NextAuthProvider>
       </div>

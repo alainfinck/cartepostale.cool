@@ -363,12 +363,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     let high = isLarge ? 80 : 60 // Réduit encore pour laisser de la place aux autres éléments (signature, etc)
     let best = 16
 
-    const currentScale = backTextScale || 1
+    const currentScale = 1 // On mesure toujours à l'échelle 1 pour calculer la base, le zoom s'appliquera après
 
     // Recherche binaire précise en pixels
     for (let i = 0; i < 12; i++) {
       const mid = (low + high) / 2
-      const scaledMid = mid * currentScale // On mesure avec l'échelle appliquée
+      const scaledMid = mid * currentScale // On mesure avec l'échelle 1
       text.style.fontSize = `${scaledMid}px`
 
       if (text.scrollHeight <= targetHeight && text.scrollWidth <= targetWidth) {
@@ -941,7 +941,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {/* Message démo au-dessus de la localisation (frontCaption sans frontEmoji) */}
               {postcard.frontCaption?.trim() && !postcard.frontEmoji && (
                 <div
-                  className="absolute left-4 sm:left-6 z-10 bottom-14 sm:bottom-16 w-fit max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-3rem)] px-3 py-2 sm:px-4 sm:py-2.5 rounded-md border border-white/50 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300"
+                  className="absolute left-4 sm:left-6 z-10 bottom-14 sm:bottom-16 w-fit max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-3rem)] px-3 py-2 sm:px-4 sm:py-2.5 rounded-md border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300"
                   style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}
                 >
                   <p className="m-0 text-base sm:text-lg font-bold leading-tight tracking-tight text-stone-900 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] break-words">
@@ -970,7 +970,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {postcard.frontCaption?.trim() && postcard.frontEmoji && (
                 <div
                   className={cn(
-                    'z-20 flex items-center gap-3 rounded-2xl sm:rounded-3xl border border-white/50 backdrop-blur-xl px-5 py-3.5 sm:px-6 sm:py-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 w-fit max-w-[calc(100%-2rem)]',
+                    'z-20 flex items-center gap-3 rounded-2xl sm:rounded-3xl border border-white/50 px-5 py-3.5 sm:px-6 sm:py-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 w-fit max-w-[calc(100%-2rem)]',
                     usePositionedCaption
                       ? 'absolute'
                       : 'absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6',

@@ -18,9 +18,28 @@ export const authConfig: NextAuthConfig = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
 
-        // ATTENTION : L'authentification par mot de passe doit être gérée
-        // via une API route ou un fichier server-only pour ne pas corrompre le client.
-        // Pour débloquer la "page blanche", on retourne null ici temporairement.
+        try {
+          // Utilisation d'un import dynamique pour éviter les cycles au build (si nécessaire)
+          // et s'assurer que Payload est chargé côté serveur uniquement.
+          const { getPayload } = await import('payload')
+          const { default: config } = await import('@payload-config')
+          const payload = await getPayload({ config })
+
+          const result = await payload.login({
+            collection: 'users',
+            data: {
+              email: credentials.email as string,
+              password: credentials.password as string,
+            },
+          })
+
+          if (result.user) {
+            return result.user as any
+          }
+        } catch (error) {
+          console.error('Erreur Credentials Authorize:', error)
+          return null
+        }
         return null
       },
     }),
