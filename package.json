@@ -85,6 +85,7 @@
     "@types/node": "22.19.9",
     "@types/nodemailer": "^7.0.9",
     "@types/pg": "^8.16.0",
+    "@types/qrcode.react": "^1.0.5",
     "@types/react": "19.2.9",
     "@types/react-dom": "19.2.3",
     "@types/sql.js": "^1.4.9",

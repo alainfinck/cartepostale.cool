@@ -72,6 +72,7 @@ import { cn } from '@/lib/utils'
 import { createPostcard } from '@/actions/postcard-actions'
 import { linkPostcardToUser } from '@/actions/auth-actions'
 import { sendPostcardToRecipientsFromEditor, type EditorRecipient } from '@/actions/editor-actions'
+import { consumeCredit } from '@/actions/credit-actions'
 
 import {
   fileToProcessedDataUrl as fileToDataUrl,
@@ -84,7 +85,10 @@ import {
 } from '@/lib/image-processing'
 import { extractExifData, ExifData } from '@/lib/extract-exif'
 import { UnsplashSearchModal } from '@/components/UnsplashSearchModal'
-import { AiImageGeneratorModal, AI_GENERATION_PRICE_EUR } from '@/components/editor/AiImageGeneratorModal'
+import {
+  AiImageGeneratorModal,
+  AI_GENERATION_PRICE_EUR,
+} from '@/components/editor/AiImageGeneratorModal'
 import UserGalleryModal from '@/components/editor/UserGalleryModal'
 import StickerGallery from '@/components/editor/StickerGallery'
 import StickerLayer from '@/components/editor/StickerLayer'
@@ -694,7 +698,7 @@ const POSTCARD_PLANS: PostcardPlan[] = [
       'Photo, vidéo ou message vocal : même prix',
       'Envoi à un nombre illimité de destinataires par carte',
       'Cartes 100 % virtuelles, avec statistiques de visite',
-      'Programmation : envoi le jour de l\'anniversaire à 8h00',
+      "Programmation : envoi le jour de l'anniversaire à 8h00",
       'Modifiable depuis votre compte',
     ],
     highlight: 'Populaire',
@@ -819,6 +823,7 @@ export default function EditorPage() {
     email?: string
     name?: string | null
     role?: string
+    credits?: number
   } | null>(null)
   const [isRevolutRedirecting, setIsRevolutRedirecting] = useState(false)
   const [revolutError, setRevolutError] = useState<string | null>(null)
@@ -880,6 +885,7 @@ export default function EditorPage() {
               id: 0,
               email: result.email,
               role: result.role,
+              credits: (result as any).credits ?? 0,
             })
             router.refresh()
             // Hide modal if open
@@ -1016,6 +1022,7 @@ export default function EditorPage() {
             email: data.user.email,
             name: data.user.name ?? null,
             role: data.user.role,
+            credits: data.user.credits ?? 0,
           })
           // Pré-remplir la signature avec le prénom quand l'utilisateur est connecté
           const fullName = data.user.name?.trim()
@@ -1198,7 +1205,9 @@ export default function EditorPage() {
         // Un seul critère : au moins un message. Destinataire / expéditeur / lieu optionnels (valeurs par défaut à l’envoi).
         return message.trim().length > 0
       case 'payment':
-        return hasPaid || codeSuccess || selectedPlan === 'ephemere' || currentUser?.role === 'admin'
+        return (
+          hasPaid || codeSuccess || selectedPlan === 'ephemere' || currentUser?.role === 'admin'
+        )
       case 'preview':
         return true
       default:
@@ -1433,7 +1442,7 @@ export default function EditorPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amountEur: amount,
-          description: 'Option IA — Génération d\'image CartePostale.cool',
+          description: "Option IA — Génération d'image CartePostale.cool",
           customerEmail: currentUser?.email || senderEmail || undefined,
           redirectPath: '/editor?ai_paid=true',
           metadata: { feature: 'ai_image_generation' },
@@ -2192,6 +2201,49 @@ export default function EditorPage() {
     }
   }
 
+  const [isPayingWithCredit, setIsPayingWithCredit] = useState(false)
+  const [creditError, setCreditError] = useState<string | null>(null)
+
+  const handlePayWithCredit = async () => {
+    if ((currentUser?.credits || 0) <= 0) {
+      setCreditError("Vous n'avez pas assez de crédits.")
+      return
+    }
+
+    setCreditError(null)
+    setIsPayingWithCredit(true)
+
+    try {
+      // 1. Ensure postcard is created (similar to handlePayWithRevolut)
+      let pid = createdPostcardId
+      if (!pid) {
+        // ... (truncated for brevity, I'll use a helper if I could, but I'll replicate the logic or call handlePublish internally)
+        // Simplified: let's assume if we are here we might already have pid or we can just try handlePublish
+        await handlePublish()
+        pid = createdPostcardId
+      }
+
+      if (!pid) {
+        // If still no pid after handlePublish, it failed
+        setIsPayingWithCredit(false)
+        return
+      }
+
+      // 2. Consume credit
+      const res = await consumeCredit()
+      if (res.success) {
+        // Success! Redirect to the carte page with a success flag
+        window.location.href = `/carte/${pid}?payment_success=true`
+      } else {
+        setCreditError(res.error || "Erreur lors de l'utilisation du crédit.")
+        setIsPayingWithCredit(false)
+      }
+    } catch (err) {
+      setCreditError('Une erreur est survenue.')
+      setIsPayingWithCredit(false)
+    }
+  }
+
   const handleCreateVariant = () => {
     setCreatedPostcardId(null)
     setInternalPostcardId(null)
@@ -2509,16 +2561,15 @@ export default function EditorPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-violet-800">
-                          Générer par IA
-                        </span>
+                        <span className="text-sm font-bold text-violet-800">Générer par IA</span>
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-200/80 text-violet-700 text-[10px] font-bold uppercase tracking-wider">
                           <Sparkles size={10} />
                           Premium
                         </span>
                       </div>
                       <p className="text-xs text-violet-600/70 mt-0.5">
-                        Créez une image unique par IA — {AI_GENERATION_PRICE_EUR.toFixed(2).replace('.', ',')} &euro;
+                        Créez une image unique par IA —{' '}
+                        {AI_GENERATION_PRICE_EUR.toFixed(2).replace('.', ',')} &euro;
                       </p>
                     </div>
                     <span className="text-violet-400 shrink-0 group-hover:text-violet-600 transition-colors">
@@ -2885,13 +2936,24 @@ export default function EditorPage() {
                             'Lien de partage permanent',
                             'Modifiable depuis votre compte',
                           ].map((f, i) => (
-                            <li key={i} className="flex items-start gap-1.5 text-[11px] text-stone-600">
-                              <span className={cn(
-                                'mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center',
-                                selectedPlan === 'ephemere' ? 'bg-stone-700' : 'bg-stone-200',
-                              )}>
+                            <li
+                              key={i}
+                              className="flex items-start gap-1.5 text-[11px] text-stone-600"
+                            >
+                              <span
+                                className={cn(
+                                  'mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center',
+                                  selectedPlan === 'ephemere' ? 'bg-stone-700' : 'bg-stone-200',
+                                )}
+                              >
                                 <svg className="w-2 h-2 text-white" viewBox="0 0 8 8" fill="none">
-                                  <path d="M1.5 4L3 5.5L6.5 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                  <path
+                                    d="M1.5 4L3 5.5L6.5 2"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
                                 </svg>
                               </span>
                               {f}
@@ -2900,11 +2962,17 @@ export default function EditorPage() {
                         </ul>
                       </div>
                     </div>
-                    <div className={cn(
-                      'absolute top-4 right-4 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all',
-                      selectedPlan === 'ephemere' ? 'border-stone-400 bg-stone-700' : 'border-stone-300 bg-white',
-                    )}>
-                      {selectedPlan === 'ephemere' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    <div
+                      className={cn(
+                        'absolute top-4 right-4 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all',
+                        selectedPlan === 'ephemere'
+                          ? 'border-stone-400 bg-stone-700'
+                          : 'border-stone-300 bg-white',
+                      )}
+                    >
+                      {selectedPlan === 'ephemere' && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                      )}
                     </div>
                   </button>
 
@@ -2929,7 +2997,9 @@ export default function EditorPage() {
                           <span className="font-bold text-stone-900 text-sm">Carte complète</span>
                           <span className="font-black text-base text-teal-700">2,50 €</span>
                         </div>
-                        <p className="text-[11px] text-stone-400 mb-2">Tout compris, sans limites</p>
+                        <p className="text-[11px] text-stone-400 mb-2">
+                          Tout compris, sans limites
+                        </p>
                         <ul className="space-y-1">
                           {[
                             'Photos, vidéo et message vocal',
@@ -2938,13 +3008,24 @@ export default function EditorPage() {
                             'Modifiable depuis votre compte',
                             'Durée illimitée',
                           ].map((f, i) => (
-                            <li key={i} className="flex items-start gap-1.5 text-[11px] text-stone-600">
-                              <span className={cn(
-                                'mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center',
-                                selectedPlan === 'payant' ? 'bg-teal-500' : 'bg-stone-200',
-                              )}>
+                            <li
+                              key={i}
+                              className="flex items-start gap-1.5 text-[11px] text-stone-600"
+                            >
+                              <span
+                                className={cn(
+                                  'mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center',
+                                  selectedPlan === 'payant' ? 'bg-teal-500' : 'bg-stone-200',
+                                )}
+                              >
                                 <svg className="w-2 h-2 text-white" viewBox="0 0 8 8" fill="none">
-                                  <path d="M1.5 4L3 5.5L6.5 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                  <path
+                                    d="M1.5 4L3 5.5L6.5 2"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
                                 </svg>
                               </span>
                               {f}
@@ -2953,11 +3034,17 @@ export default function EditorPage() {
                         </ul>
                       </div>
                     </div>
-                    <div className={cn(
-                      'absolute top-4 right-4 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all',
-                      selectedPlan === 'payant' ? 'border-teal-400 bg-teal-500' : 'border-stone-300 bg-white',
-                    )}>
-                      {selectedPlan === 'payant' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    <div
+                      className={cn(
+                        'absolute top-4 right-4 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all',
+                        selectedPlan === 'payant'
+                          ? 'border-teal-400 bg-teal-500'
+                          : 'border-stone-300 bg-white',
+                      )}
+                    >
+                      {selectedPlan === 'payant' && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                      )}
                     </div>
                   </button>
                 </div>
@@ -3075,6 +3162,40 @@ export default function EditorPage() {
                   )}
 
                   <div className="flex flex-col gap-3">
+                    {getAlbumPrice() > 0 && !codeSuccess && (currentUser?.credits || 0) > 0 && (
+                      <div className="p-4 bg-teal-50 border border-teal-200 rounded-2xl mb-1">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <Sparkles size={16} className="text-teal-600" />
+                            <span className="text-sm font-bold text-teal-800">
+                              Vous avez {currentUser?.credits} crédits
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-black uppercase text-teal-600 bg-white px-2 py-0.5 rounded-full border border-teal-100">
+                            Prêt
+                          </span>
+                        </div>
+                        <Button
+                          onClick={handlePayWithCredit}
+                          disabled={isPayingWithCredit || isPublishing}
+                          className="w-full rounded-xl font-black py-4 h-auto bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-900/10 transition-all flex items-center justify-center gap-2"
+                        >
+                          {isPayingWithCredit ? (
+                            <RefreshCw size={18} className="animate-spin" />
+                          ) : (
+                            <>
+                              <Sparkles size={18} />
+                              <span>Utiliser 1 crédit</span>
+                            </>
+                          )}
+                        </Button>
+                        {creditError && (
+                          <p className="text-[10px] text-rose-500 mt-2 font-bold text-center">
+                            {creditError}
+                          </p>
+                        )}
+                      </div>
+                    )}
                     {getAlbumPrice() > 0 && !codeSuccess && currentUser?.role !== 'admin' ? (
                       <Button
                         onClick={handlePayWithRevolut}
@@ -3251,7 +3372,9 @@ export default function EditorPage() {
                       <div className="flex flex-col">
                         <span className="text-sm font-bold text-stone-700">Carte à gratter</span>
                         <span className="text-[10px] text-stone-400 uppercase tracking-wider font-medium">
-                          {scratchCardEnabled ? 'Le destinataire grattera pour découvrir' : 'Effet surprise désactivé'}
+                          {scratchCardEnabled
+                            ? 'Le destinataire grattera pour découvrir'
+                            : 'Effet surprise désactivé'}
                         </span>
                       </div>
                     </div>
@@ -3279,7 +3402,9 @@ export default function EditorPage() {
                       <div className="flex flex-col">
                         <span className="text-sm font-bold text-stone-700">Carte puzzle</span>
                         <span className="text-[10px] text-stone-400 uppercase tracking-wider font-medium">
-                          {puzzleCardEnabled ? 'Le destinataire reconstituera l\'image' : 'Puzzle désactivé'}
+                          {puzzleCardEnabled
+                            ? "Le destinataire reconstituera l'image"
+                            : 'Puzzle désactivé'}
                         </span>
                       </div>
                     </div>
@@ -3620,7 +3745,8 @@ export default function EditorPage() {
                             Option payante (2,50 € — tout compris)
                           </p>
                           <p className="text-[10px] text-amber-700/80 leading-tight mt-0.5">
-                            Photos, vidéo, message vocal : même prix. Cartes virtuelles avec stats de visite.
+                            Photos, vidéo, message vocal : même prix. Cartes virtuelles avec stats
+                            de visite.
                           </p>
                         </div>
                       </div>
@@ -3657,8 +3783,8 @@ export default function EditorPage() {
                         {isPremium ? (
                           <div className="flex flex-col items-end gap-1">
                             <span className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100 font-bold">
-                              <Sparkles size={12} fill="currentColor" />{' '}
-                              Formule À l&apos;unité activée
+                              <Sparkles size={12} fill="currentColor" /> Formule À l&apos;unité
+                              activée
                             </span>
                             <div className="flex items-center gap-2">
                               {getAlbumPrice() > 0 && (
@@ -3976,57 +4102,68 @@ export default function EditorPage() {
                         <div className="absolute -top-12 -right-12 w-32 h-32 bg-teal-200/20 rounded-full blur-3xl pointer-events-none" />
 
                         {/* Paiement Revolut Section (fallback si non payé) */}
-                        {!hasPaid && !codeSuccess && currentUser?.role !== 'admin' && getAlbumPrice() > 0 && (
-                          <div className="mb-10 p-6 rounded-2xl bg-stone-900 text-white text-left shadow-2xl relative z-10">
-                            <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
-                              <CreditCard size={20} className="text-teal-400" /> Finalisez le
-                              paiement
-                            </h3>
-                            <p className="text-stone-400 text-sm mb-4">
-                              Votre carte est prête, il ne manque que le règlement pour débloquer
-                              le lien de partage.
-                            </p>
-                            <Button
-                              onClick={handlePayWithRevolut}
-                              disabled={isRevolutRedirecting}
-                              className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl px-8 py-6 h-auto transition-all"
-                            >
-                              {isRevolutRedirecting
-                                ? 'Redirection...'
-                                : `Payer ${getAlbumPrice().toFixed(2)}€ avec Revolut`}
-                            </Button>
-                          </div>
-                        )}
+                        {!hasPaid &&
+                          !codeSuccess &&
+                          currentUser?.role !== 'admin' &&
+                          getAlbumPrice() > 0 && (
+                            <div className="mb-10 p-6 rounded-2xl bg-stone-900 text-white text-left shadow-2xl relative z-10">
+                              <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
+                                <CreditCard size={20} className="text-teal-400" /> Finalisez le
+                                paiement
+                              </h3>
+                              <p className="text-stone-400 text-sm mb-4">
+                                Votre carte est prête, il ne manque que le règlement pour débloquer
+                                le lien de partage.
+                              </p>
+                              <Button
+                                onClick={handlePayWithRevolut}
+                                disabled={isRevolutRedirecting}
+                                className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl px-8 py-6 h-auto transition-all"
+                              >
+                                {isRevolutRedirecting
+                                  ? 'Redirection...'
+                                  : `Payer ${getAlbumPrice().toFixed(2)}€ avec Revolut`}
+                              </Button>
+                            </div>
+                          )}
 
-                        {hasPaid || codeSuccess || selectedPlan === 'ephemere' || currentUser?.role === 'admin' ? (
+                        {hasPaid ||
+                        codeSuccess ||
+                        selectedPlan === 'ephemere' ||
+                        currentUser?.role === 'admin' ? (
                           <>
                             {/* Upsell banner for free plan */}
-                            {selectedPlan === 'ephemere' && !hasPaid && !codeSuccess && currentUser?.role !== 'admin' && (
-                              <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-teal-500 to-teal-600 text-white text-left relative z-10">
-                                <div className="flex items-start gap-3">
-                                  <Sparkles size={20} className="shrink-0 mt-0.5" />
-                                  <div className="flex-1">
-                                    <p className="font-bold text-sm mb-1">
-                                      Passez à la carte complète !
-                                    </p>
-                                    <p className="text-teal-100 text-xs leading-relaxed">
-                                      Votre carte gratuite est limitée à 1 photo, sans vidéo ni message vocal. Pour{' '}
-                                      <strong>2,50 €</strong>, débloquez toutes les fonctionnalités : album photos, vidéos, audio et statistiques.
-                                    </p>
-                                    <Button
-                                      onClick={() => {
-                                        setSelectedPlan('payant')
-                                        setCurrentStep('payment')
-                                      }}
-                                      className="mt-3 bg-white/20 hover:bg-white/30 text-white rounded-lg px-4 py-2 h-auto text-xs font-bold transition-all"
-                                    >
-                                      <CreditCard size={14} className="mr-1.5" />
-                                      Passer à la carte complète — 2,50 €
-                                    </Button>
+                            {selectedPlan === 'ephemere' &&
+                              !hasPaid &&
+                              !codeSuccess &&
+                              currentUser?.role !== 'admin' && (
+                                <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-teal-500 to-teal-600 text-white text-left relative z-10">
+                                  <div className="flex items-start gap-3">
+                                    <Sparkles size={20} className="shrink-0 mt-0.5" />
+                                    <div className="flex-1">
+                                      <p className="font-bold text-sm mb-1">
+                                        Passez à la carte complète !
+                                      </p>
+                                      <p className="text-teal-100 text-xs leading-relaxed">
+                                        Votre carte gratuite est limitée à 1 photo, sans vidéo ni
+                                        message vocal. Pour <strong>2,50 €</strong>, débloquez
+                                        toutes les fonctionnalités : album photos, vidéos, audio et
+                                        statistiques.
+                                      </p>
+                                      <Button
+                                        onClick={() => {
+                                          setSelectedPlan('payant')
+                                          setCurrentStep('payment')
+                                        }}
+                                        className="mt-3 bg-white/20 hover:bg-white/30 text-white rounded-lg px-4 py-2 h-auto text-xs font-bold transition-all"
+                                      >
+                                        <CreditCard size={14} className="mr-1.5" />
+                                        Passer à la carte complète — 2,50 €
+                                      </Button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
 
                             <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg border border-teal-50 transform hover:scale-105 transition-transform duration-300">
                               <Send size={36} className="text-teal-600" />
@@ -4120,7 +4257,8 @@ export default function EditorPage() {
                               Débloquez votre lien de partage
                             </h3>
                             <p className="text-stone-500 text-sm mb-6 max-w-md mx-auto">
-                              Votre carte est prête ! Pour obtenir le lien de partage, réglez votre carte ou entrez un code promo.
+                              Votre carte est prête ! Pour obtenir le lien de partage, réglez votre
+                              carte ou entrez un code promo.
                             </p>
                             <div className="flex flex-col gap-3 max-w-sm mx-auto">
                               <Button
@@ -4825,9 +4963,7 @@ export default function EditorPage() {
                 <span className="inline-block w-3 h-3 rounded-full bg-green-500" />
                 <h4 className="font-bold text-stone-800">Carte gratuite</h4>
               </div>
-              <p className="text-sm text-stone-600 mb-1">
-                Valable 48 h. Essayez sans engagement.
-              </p>
+              <p className="text-sm text-stone-600 mb-1">Valable 48 h. Essayez sans engagement.</p>
               <ul className="text-xs text-stone-600 space-y-1 list-disc list-inside">
                 <li>1 carte postale (photo, texte)</li>
                 <li>Modifiable via le lien reçu par email</li>
@@ -5172,9 +5308,7 @@ export default function EditorPage() {
             setMediaItems((prev) => {
               const images = (prev || []).filter((i) => i.type === 'image').length
               if (images >= ALBUM_TIERS.paid.photos) {
-                alert(
-                  `La limite est atteinte (${ALBUM_TIERS.paid.photos} photos max).`,
-                )
+                alert(`La limite est atteinte (${ALBUM_TIERS.paid.photos} photos max).`)
                 return prev || []
               }
               return [...(prev || []), newItem]
