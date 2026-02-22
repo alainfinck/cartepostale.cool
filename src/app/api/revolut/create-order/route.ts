@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
   let redirectUrl: string | undefined
   if (body.redirectPath && typeof body.redirectPath === 'string') {
-    const base = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
+    const base = process.env.NEXT_PUBLIC_REVOLUT_APP_URL || request.nextUrl.origin
     redirectUrl =
       base.replace(/\/$/, '') +
       (body.redirectPath.startsWith('/') ? body.redirectPath : `/${body.redirectPath}`)

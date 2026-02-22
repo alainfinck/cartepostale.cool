@@ -788,9 +788,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               ref={frontFaceRef}
               className={cn(
                 'absolute w-full h-full backface-hidden rounded-xl shadow-2xl overflow-hidden bg-white border border-stone-200',
-                isFlipped ? 'pointer-events-none' : 'cursor-pointer',
+                isFlipped ? 'pointer-events-none' : !onCaptionPositionChange && 'cursor-pointer',
               )}
-              onClick={handleFlip} // Only front face is clickable for flipping
+              onClick={onCaptionPositionChange ? undefined : handleFlip}
               style={{
                 backfaceVisibility: 'hidden',
                 WebkitBackfaceVisibility: 'hidden',
@@ -939,8 +939,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none z-0" />
 
-              {/* Message "Cliquer pour retourner" au survol (Front) — masqué en fullscreen ou via prop */}
-              {!isFullscreen && !hideFlipHints && (
+              {/* Message "Cliquer pour retourner" au survol (Front) — masqué en fullscreen, en mode éditeur (pour pouvoir déplacer le texte), ou via prop */}
+              {!isFullscreen && !hideFlipHints && !onCaptionPositionChange && (
                 <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
                   <div className="bg-stone-800/95 backdrop-blur-md px-3 py-2.5 rounded-xl border border-stone-600/50 shadow-xl flex items-center gap-2 transform scale-95 group-hover:scale-100 transition-all duration-300">
                     <RotateCw size={16} className="text-white shrink-0" strokeWidth={2} />
@@ -951,11 +951,32 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </div>
               )}
 
-              {/* Message démo au-dessus de la localisation (frontCaption sans frontEmoji) */}
+              {/* Message démo au-dessus de la localisation (frontCaption sans frontEmoji) — déplaçable en mode éditeur */}
               {postcard.frontCaption?.trim() && !postcard.frontEmoji && (
                 <div
-                  className="absolute left-4 sm:left-6 z-10 bottom-14 sm:bottom-16 w-fit max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-3rem)] px-3 py-2 sm:px-4 sm:py-2.5 rounded-md border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}
+                  className={cn(
+                    'z-20 w-fit max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-3rem)] px-3 py-2 sm:px-4 sm:py-2.5 rounded-md border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300',
+                    usePositionedCaption ? 'absolute' : 'absolute left-4 sm:left-6 bottom-14 sm:bottom-16',
+                    onCaptionPositionChange && 'cursor-grab active:cursor-grabbing touch-none select-none',
+                  )}
+                  style={
+                    usePositionedCaption
+                      ? {
+                          left: `${captionPos.x}%`,
+                          top: `${captionPos.y}%`,
+                          transform: 'translate(-50%, -50%)',
+                          backgroundColor: frontTextBgColor,
+                        }
+                      : { backgroundColor: 'rgba(255,255,255,0.65)' }
+                  }
+                  {...(onCaptionPositionChange && {
+                    onPointerDown: (e: React.PointerEvent) => {
+                      e.stopPropagation()
+                      e.preventDefault()
+                      setIsDraggingCaption(true)
+                    },
+                    onClick: (e: React.MouseEvent) => e.stopPropagation(),
+                  })}
                 >
                   <p className="m-0 text-base sm:text-lg font-bold leading-tight tracking-tight text-stone-900 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] break-words">
                     {postcard.frontCaption}
@@ -963,14 +984,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </div>
               )}
 
+              {/* Lieu du souvenir : toujours en bas à gauche, position fixe pour éviter tout décalage */}
               {postcard.location && !isCoordinate(postcard.location) && (
                 <div
-                  className={cn(
-                    'absolute left-4 sm:left-6 z-10 bg-white/90 backdrop-blur-md text-teal-900 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-semibold shadow-lg flex items-center gap-1.5 transition-all duration-300',
-                    postcard.frontCaption?.trim() && postcard.frontEmoji
-                      ? 'bottom-20 sm:bottom-24'
-                      : 'bottom-4 sm:bottom-6',
-                  )}
+                  className="absolute left-4 sm:left-6 bottom-4 sm:bottom-6 z-10 bg-white/90 backdrop-blur-md text-teal-900 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-semibold shadow-lg flex items-center gap-1.5"
                 >
                   <MapPin size={12} className="text-orange-500 shrink-0" />
                   <span className="normal-case tracking-wide break-words max-w-[160px] sm:max-w-[220px]">

@@ -106,6 +106,10 @@ import { useFacebookPixel } from '@/hooks/useFacebookPixel'
 import { PACK_TIERS } from '@/components/pricing/PacksSlider'
 
 const POSTCARD_ASPECT = 3 / 2
+
+/** Génération d'image par IA : masqué pour l'instant, à réactiver plus tard */
+const SHOW_AI_IMAGE_GENERATION = false
+
 const DEFAULT_FRONT_FILTER: FrontImageFilter = {
   brightness: 100,
   contrast: 100,
@@ -983,7 +987,7 @@ export default function EditorPage() {
     const aiPaid = searchParams.get('ai_paid')
     if (aiPaid === 'true') {
       setHasAiGenerationPaid(true)
-      setShowAiGeneratorModal(true)
+      if (SHOW_AI_IMAGE_GENERATION) setShowAiGeneratorModal(true)
       const url = new URL(window.location.href)
       url.searchParams.delete('ai_paid')
       window.history.replaceState({}, '', url.toString())
@@ -2546,7 +2550,8 @@ export default function EditorPage() {
                   </div>
                 )}
 
-                {/* AI Image Generation (paid option) */}
+                {SHOW_AI_IMAGE_GENERATION && (
+                /* AI Image Generation (paid option) */
                 <div className="mb-8">
                   <button
                     type="button"
@@ -2577,6 +2582,7 @@ export default function EditorPage() {
                     </span>
                   </button>
                 </div>
+                )}
 
                 {/* Retouche photo : filtres + recadrage/zoom dans un modal */}
                 {frontImage && (
@@ -2771,14 +2777,14 @@ export default function EditorPage() {
                     </div>
                   </div>
                 </section>
-                {/* Lieu du souvenir */}
-                <section className="mt-8 pt-8 border-t border-stone-200">
+                {/* Lieu du souvenir — en bas à gauche */}
+                <section className="mt-8 pt-8 border-t border-stone-200 flex flex-col items-start text-left">
                   <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
                     <span className="flex items-center gap-2">
                       <MapPin size={16} className="text-teal-500" /> Lieu du souvenir
                     </span>
                   </label>
-                  <div className="relative">
+                  <div className="relative w-full max-w-md">
                     <Input
                       placeholder="Tapez un lieu (ville, pays, région…)"
                       value={location}
@@ -3510,14 +3516,14 @@ export default function EditorPage() {
                     </div>
                   </section>
 
-                  {/* Lieu du souvenir */}
-                  <section className="mt-8 pt-8 border-t border-stone-200">
+                  {/* Lieu du souvenir — en bas à gauche */}
+                  <section className="mt-8 pt-8 border-t border-stone-200 flex flex-col items-start text-left">
                     <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
                       <span className="flex items-center gap-2">
                         <MapPin size={16} className="text-teal-500" /> Lieu du souvenir
                       </span>
                     </label>
-                    <div className="relative">
+                    <div className="relative w-full max-w-md">
                       <Input
                         placeholder="Tapez un lieu (ville, pays, région…)"
                         value={location}
@@ -5260,13 +5266,15 @@ export default function EditorPage() {
         onSelect={handleSelectUnsplashImage}
         location={location}
       />
-      <AiImageGeneratorModal
-        isOpen={showAiGeneratorModal}
-        onClose={() => setShowAiGeneratorModal(false)}
-        onSelect={handleSelectAiImage}
-        hasPaid={hasAiGenerationPaid}
-        onRequestPayment={handleAiPayment}
-      />
+      {SHOW_AI_IMAGE_GENERATION && (
+        <AiImageGeneratorModal
+          isOpen={showAiGeneratorModal}
+          onClose={() => setShowAiGeneratorModal(false)}
+          onSelect={handleSelectAiImage}
+          hasPaid={hasAiGenerationPaid}
+          onRequestPayment={handleAiPayment}
+        />
+      )}
       {/* Modal galerie stickers */}
       {showStickerGallery && (
         <div
