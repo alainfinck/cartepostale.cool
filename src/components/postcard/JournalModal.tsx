@@ -37,7 +37,7 @@ const JournalModal: React.FC<JournalModalProps> = ({ postcard, isOpen, onClose }
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[150] bg-stone-900/95 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
+          className="fixed inset-0 z-[999] bg-stone-900/98 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
           onClick={onClose}
         >
           <motion.div

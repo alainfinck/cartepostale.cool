@@ -333,7 +333,12 @@ const InstaCard = ({
   )
 }
 
-export default function PhotoFeed({ mediaItems, senderName, postcardId, postcardDate }: PhotoFeedProps) {
+export default function PhotoFeed({
+  mediaItems,
+  senderName,
+  postcardId,
+  postcardDate,
+}: PhotoFeedProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [isFlipped, setIsFlipped] = useState(false)
@@ -584,20 +589,20 @@ export default function PhotoFeed({ mediaItems, senderName, postcardId, postcard
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center"
+            className="fixed inset-0 z-[10000] bg-black/98 backdrop-blur-2xl flex flex-col items-center justify-center overflow-hidden"
             onClick={() => setSelectedIndex(null)}
           >
             {/* Close button */}
             <button
               type="button"
               aria-label="Fermer (Échap)"
-              className="absolute top-6 right-6 md:top-8 md:right-8 z-[10001] p-2.5 rounded-full bg-black/50 hover:bg-black/70 text-white/90 hover:text-white border border-white/20 transition-colors"
+              className="absolute top-10 right-6 md:top-12 md:right-12 z-[10001] p-3 rounded-full bg-white/10 hover:bg-white/20 text-white/90 hover:text-white border border-white/20 transition-all shadow-2xl backdrop-blur-md"
               onClick={(e) => {
                 e.stopPropagation()
                 setSelectedIndex(null)
               }}
             >
-              <X size={28} strokeWidth={2.5} />
+              <X size={32} strokeWidth={2} />
             </button>
 
             {/* Nav arrows (desktop) */}
@@ -719,8 +724,7 @@ export default function PhotoFeed({ mediaItems, senderName, postcardId, postcard
                         </div>
                         <p className="text-xl md:text-2xl font-serif text-stone-800 leading-relaxed italic">
                           &ldquo;
-                          {sortedMediaItems[selectedIndex].note ||
-                            'Pas de note pour cette photo.'}
+                          {sortedMediaItems[selectedIndex].note || 'Pas de note pour cette photo.'}
                           &rdquo;
                         </p>
                         <p className="mt-6 text-sm text-stone-500 font-bold uppercase tracking-wider">
@@ -748,31 +752,7 @@ export default function PhotoFeed({ mediaItems, senderName, postcardId, postcard
               </AnimatePresence>
             </div>
 
-            {/* Photo counter dots */}
-            {sortedMediaItems.length > 1 && (
-              <div
-                className="flex items-center gap-2.5 pb-8 pt-4"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {sortedMediaItems.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => {
-                      setSlideDirection(i > (selectedIndex ?? 0) ? 1 : -1)
-                      setSelectedIndex(i)
-                    }}
-                    className={cn(
-                      'rounded-full transition-all duration-300',
-                      i === selectedIndex
-                        ? 'w-2.5 h-2.5 bg-white shadow-sm shadow-white/50'
-                        : 'w-2 h-2 bg-white/30 hover:bg-white/50',
-                    )}
-                    aria-label={`Photo ${i + 1}`}
-                  />
-                ))}
-              </div>
-            )}
+            {/* Photo counter dots removed per user request */}
 
             {/* Swipe hint (mobile only, first time) */}
             {sortedMediaItems.length > 1 && (

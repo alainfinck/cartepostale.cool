@@ -52,7 +52,7 @@ const dropdownPro = [
 
 const dropdownTarifs = [
   { href: '/pricing', icon: Gift, label: 'Carte gratuite', price: '48 h', desc: '' },
-  { href: '/pricing', icon: Mail, label: 'À l\'unité', price: '2,50 €', desc: '' },
+  { href: '/pricing', icon: Mail, label: "À l'unité", price: '2,50 €', desc: '' },
   { href: '/pricing', icon: Zap, label: 'Pro & Agence', price: 'Devis', desc: '' },
 ]
 
@@ -295,7 +295,7 @@ export const Navbar = () => {
           <div
             className={cn(
               'flex justify-between items-center transition-all duration-300',
-              scrolled ? 'h-9 md:h-10' : 'h-10 md:h-12',
+              scrolled ? 'h-12 md:h-14' : 'h-16 md:h-20',
             )}
           >
             <Link href="/" className="flex items-center cursor-pointer group">
@@ -325,14 +325,16 @@ export const Navbar = () => {
                 cartepostale.cool
               </span>
             </Link>
-            <Link href="/editor" className="my-1.5 flex items-center">
+            <Link href="/editor" className="my-2 md:my-3 flex items-center">
               <Button
                 className={cn(
                   'bg-gradient-cta hover:opacity-95 text-white rounded-full font-bold shadow-xl shadow-pink-500/30 transition-all border-0 flex items-center gap-2',
-                  scrolled ? 'text-xs px-3 h-6' : 'text-xs md:text-sm px-3.5 md:px-4 h-7 md:h-8',
+                  scrolled
+                    ? 'text-xs px-4 h-8 md:h-9'
+                    : 'text-xs md:text-sm px-5 md:px-6 h-9 md:h-11',
                 )}
               >
-                <Plus size={scrolled ? 14 : 16} strokeWidth={3} />
+                <Plus size={scrolled ? 14 : 18} strokeWidth={3} />
                 <span className="hidden lg:inline">Créer ma carte postale</span>
                 <span className="lg:hidden">Créer</span>
               </Button>

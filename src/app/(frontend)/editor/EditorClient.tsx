@@ -763,7 +763,9 @@ export default function EditorPage() {
   const [scratchCardEnabled, setScratchCardEnabled] = useState(false)
   const [puzzleCardEnabled, setPuzzleCardEnabled] = useState(false)
   const [puzzleCardDifficulty, setPuzzleCardDifficulty] = useState<'3' | '4' | '5'>('3')
-  const [showInteractivePreview, setShowInteractivePreview] = useState<'scratch' | 'puzzle' | null>(null)
+  const [showInteractivePreview, setShowInteractivePreview] = useState<'scratch' | 'puzzle' | null>(
+    null,
+  )
 
   const [stampStyle, setStampStyle] = useState<Postcard['stampStyle']>('classic')
   const [stampLabel, setStampLabel] = useState('Digital Poste')
@@ -803,6 +805,7 @@ export default function EditorPage() {
   const [showPricingModal, setShowPricingModal] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<PostcardPlanId>('payant')
   const [showTemplateSection, setShowTemplateSection] = useState(false) // Mobile-friendly: hide templates by default
+  const [showPacks, setShowPacks] = useState(false)
   const [fullscreenScale, setFullscreenScale] = useState(1)
 
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal' | 'revolut' | null>(
@@ -1155,7 +1158,8 @@ export default function EditorPage() {
           if (data.frontEmoji) setFrontEmoji(data.frontEmoji)
           if (data.frontCaptionPosition) setFrontCaptionPosition(data.frontCaptionPosition)
           if (data.frontCaptionFontFamily) setFrontCaptionFontFamily(data.frontCaptionFontFamily)
-          if (data.frontCaptionFontSize != null) setFrontCaptionFontSize(Number(data.frontCaptionFontSize))
+          if (data.frontCaptionFontSize != null)
+            setFrontCaptionFontSize(Number(data.frontCaptionFontSize))
           if (data.frontCaptionColor) setFrontCaptionColor(data.frontCaptionColor)
           if (data.frontTextBgOpacity != null) setFrontTextBgOpacity(data.frontTextBgOpacity)
           if (data.message) setMessage(data.message)
@@ -1678,7 +1682,9 @@ export default function EditorPage() {
         // Image: resize max 2k JPEG 80%, puis upload R2 (presigned), fallback base64
         const previewUrl = await fileToDataUrl(file).catch(() => null)
         if (!previewUrl) {
-          alert(`Impossible de charger ${file.name}. Utilisez des photos en JPEG, PNG, HEIC ou WebP.`)
+          alert(
+            `Impossible de charger ${file.name}. Utilisez des photos en JPEG, PNG, HEIC ou WebP.`,
+          )
           continue
         }
 
@@ -2618,37 +2624,37 @@ export default function EditorPage() {
                 )}
 
                 {SHOW_AI_IMAGE_GENERATION && (
-                /* AI Image Generation (paid option) */
-                <div className="mb-8">
-                  <button
-                    type="button"
-                    onClick={() => setShowAiGeneratorModal(true)}
-                    className="w-full flex items-center gap-4 rounded-2xl border-2 border-dashed border-violet-300 bg-gradient-to-r from-violet-50/80 to-fuchsia-50/80 px-5 py-4 text-left transition-all hover:border-violet-400 hover:shadow-md hover:shadow-violet-100/50 hover:-translate-y-0.5 group"
-                  >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-100 group-hover:bg-violet-200 transition-colors">
-                      <Wand2
-                        size={22}
-                        className="text-violet-600 group-hover:text-violet-700 transition-colors"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-violet-800">Générer par IA</span>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-200/80 text-violet-700 text-[10px] font-bold uppercase tracking-wider">
-                          <Sparkles size={10} />
-                          Premium
-                        </span>
+                  /* AI Image Generation (paid option) */
+                  <div className="mb-8">
+                    <button
+                      type="button"
+                      onClick={() => setShowAiGeneratorModal(true)}
+                      className="w-full flex items-center gap-4 rounded-2xl border-2 border-dashed border-violet-300 bg-gradient-to-r from-violet-50/80 to-fuchsia-50/80 px-5 py-4 text-left transition-all hover:border-violet-400 hover:shadow-md hover:shadow-violet-100/50 hover:-translate-y-0.5 group"
+                    >
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-100 group-hover:bg-violet-200 transition-colors">
+                        <Wand2
+                          size={22}
+                          className="text-violet-600 group-hover:text-violet-700 transition-colors"
+                        />
                       </div>
-                      <p className="text-xs text-violet-600/70 mt-0.5">
-                        Créez une image unique par IA —{' '}
-                        {AI_GENERATION_PRICE_EUR.toFixed(2).replace('.', ',')} &euro;
-                      </p>
-                    </div>
-                    <span className="text-violet-400 shrink-0 group-hover:text-violet-600 transition-colors">
-                      &rarr;
-                    </span>
-                  </button>
-                </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-violet-800">Générer par IA</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-200/80 text-violet-700 text-[10px] font-bold uppercase tracking-wider">
+                            <Sparkles size={10} />
+                            Premium
+                          </span>
+                        </div>
+                        <p className="text-xs text-violet-600/70 mt-0.5">
+                          Créez une image unique par IA —{' '}
+                          {AI_GENERATION_PRICE_EUR.toFixed(2).replace('.', ',')} &euro;
+                        </p>
+                      </div>
+                      <span className="text-violet-400 shrink-0 group-hover:text-violet-600 transition-colors">
+                        &rarr;
+                      </span>
+                    </button>
+                  </div>
                 )}
 
                 {/* Retouche photo : filtres + recadrage/zoom dans un modal */}
@@ -3243,50 +3249,71 @@ export default function EditorPage() {
                 </div>
 
                 {/* Upsell : Pack de cartes postales */}
-                <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 rounded-2xl p-5 sm:p-6 border border-amber-200/80 shadow-sm">
-                  <div className="flex items-start gap-3 mb-4">
-                    <div className="bg-amber-100 p-2.5 rounded-xl shrink-0">
-                      <Gift size={20} className="text-amber-600" />
+                <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 rounded-2xl transition-all duration-300 border border-amber-200/80 shadow-sm overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setShowPacks(!showPacks)}
+                    className="w-full flex items-center justify-between p-5 sm:p-6 text-left hover:bg-amber-100/30 transition-colors"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="bg-amber-100 p-2.5 rounded-xl shrink-0">
+                        <Gift size={20} className="text-amber-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-black text-stone-900 text-sm sm:text-base">
+                          Besoin de plusieurs cartes ?
+                        </h3>
+                        <p className="text-stone-500 text-xs mt-0.5">
+                          Achetez un pack et profitez de tarifs dégressifs — jusqu&apos;à{' '}
+                          <strong className="text-amber-700">1,40 €/carte</strong>
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-black text-stone-900 text-sm sm:text-base">
-                        Besoin de plusieurs cartes ?
-                      </h3>
-                      <p className="text-stone-500 text-xs mt-0.5">
-                        Achetez un pack et profitez de tarifs dégressifs — jusqu&apos;à{' '}
-                        <strong className="text-amber-700">1,40 €/carte</strong>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {PACK_TIERS.map((tier) => (
-                      <a
-                        key={tier.id}
-                        href="/connexion?redirect=/espace-client"
-                        className={cn(
-                          'relative flex flex-col items-center p-3 rounded-xl bg-white border transition-all hover:shadow-md hover:-translate-y-0.5 text-center group',
-                          tier.popular
-                            ? 'border-amber-300 shadow-sm'
-                            : 'border-amber-100 hover:border-amber-300',
-                        )}
-                      >
-                        {tier.popular && (
-                          <span className="absolute -top-2 px-2 py-0.5 bg-amber-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-sm">
-                            Populaire
+                    <ChevronUp
+                      size={20}
+                      className={cn(
+                        'text-amber-400 transition-transform duration-300',
+                        !showPacks && 'rotate-180',
+                      )}
+                    />
+                  </button>
+
+                  <div
+                    className={cn(
+                      'px-5 sm:px-6 pb-6 transition-all duration-300',
+                      showPacks ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden',
+                    )}
+                  >
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {PACK_TIERS.map((tier) => (
+                        <a
+                          key={tier.id}
+                          href="/connexion?redirect=/espace-client"
+                          className={cn(
+                            'relative flex flex-col items-center p-3 rounded-xl bg-white border transition-all hover:shadow-md hover:-translate-y-0.5 text-center group',
+                            tier.popular
+                              ? 'border-amber-300 shadow-sm'
+                              : 'border-amber-100 hover:border-amber-300',
+                          )}
+                        >
+                          {tier.popular && (
+                            <span className="absolute -top-2 px-2 py-0.5 bg-amber-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-sm">
+                              Populaire
+                            </span>
+                          )}
+                          <span className="font-black text-stone-900 text-sm mt-1">
+                            {tier.count} cartes
                           </span>
-                        )}
-                        <span className="font-black text-stone-900 text-sm mt-1">
-                          {tier.count} cartes
-                        </span>
-                        <span className="font-bold text-amber-700 text-base">{tier.price} €</span>
-                        <span className="text-[10px] text-stone-400 font-medium">
-                          {(tier.price / tier.count).toFixed(2).replace('.', ',')} €/carte
-                        </span>
-                        <span className="mt-1.5 text-[10px] font-bold text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
-                          Voir <ChevronRight size={10} />
-                        </span>
-                      </a>
-                    ))}
+                          <span className="font-bold text-amber-700 text-base">{tier.price} €</span>
+                          <span className="text-[10px] text-stone-400 font-medium">
+                            {(tier.price / tier.count).toFixed(2).replace('.', ',')} €/carte
+                          </span>
+                          <span className="mt-1.5 text-[10px] font-bold text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+                            Voir <ChevronRight size={10} />
+                          </span>
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -5237,7 +5264,7 @@ export default function EditorPage() {
               {showInteractivePreview === 'scratch' &&
                 'Glissez sur la carte pour simuler le grattage. Ce que verra le destinataire.'}
               {showInteractivePreview === 'puzzle' &&
-                'Déplacez les pièces pour reconstituer l\'image. Ce que verra le destinataire.'}
+                "Déplacez les pièces pour reconstituer l'image. Ce que verra le destinataire."}
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-auto p-6 flex justify-center items-start min-h-0">

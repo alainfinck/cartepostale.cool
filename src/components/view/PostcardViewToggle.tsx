@@ -73,7 +73,7 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
       </div>
 
       {/* Card view + compteur de vues (même bloc, aligné à droite sous la carte) */}
-      <div className="inline-flex flex-col items-end">
+      <div className="flex flex-col items-center">
         {isMobileView ? (
           <MobilePostcardView postcard={postcard} />
         ) : (
@@ -84,16 +84,16 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
             className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] md:shadow-[0_30px_70px_rgba(0,0,0,0.2)] hover:shadow-[0_28px_60px_rgba(0,0,0,0.2)] md:hover:shadow-[0_40px_90px_rgba(0,0,0,0.25)]"
           />
         )}
-        <div className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-stone-100/50 text-stone-400 text-xs font-bold uppercase tracking-widest shadow-sm">
-          <Eye size={14} className="text-stone-300" />
-          <NumberTicker value={views} className="text-stone-400 font-bold" />
+        <div className="mt-4 flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/80 backdrop-blur-md border border-stone-200 text-stone-500 text-xs font-black uppercase tracking-[0.2em] shadow-lg transform transition-all hover:scale-105 active:scale-95">
+          <Eye size={16} className="text-teal-500 mr-1" />
+          <NumberTicker value={views} className="font-black text-stone-700" />
           <span>vues</span>
         </div>
       </div>
 
       {/* Map sous la carte (affichée en mode Carte et en mode Lecture) */}
       {hasMap && (
-        <div className="w-full max-w-2xl mx-auto mt-8 px-4">
+        <div className="w-full max-w-[95vw] sm:max-w-[552px] md:max-w-[660px] lg:max-w-[780px] xl:max-w-[840px] mx-auto mt-8 px-0 sm:px-0">
           <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
             <div className="px-4 py-3 border-b border-stone-100 flex items-center justify-between">
               <div className="flex items-center gap-2 text-stone-700">

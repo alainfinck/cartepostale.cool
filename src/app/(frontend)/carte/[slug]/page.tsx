@@ -14,6 +14,8 @@ import PhotoFeed from '@/components/view/PhotoFeed'
 import EnvelopeExperience from '@/components/view/EnvelopeExperience'
 import { getCurrentUser } from '@/lib/auth'
 import { PostcardTracking } from '@/components/analytics/PostcardTracking'
+import { TextAnimate } from '@/components/ui/text-animate'
+import * as motion from 'motion/react-client'
 
 type SearchParams = {
   [key: string]: string | string[] | undefined
@@ -256,6 +258,8 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
     <ViewPageTitle
       title="Vous avez reçu une carte postale !"
       senderName={frontendPostcard.senderName}
+      location={frontendPostcard.location}
+      date={frontendPostcard.date}
     />
   )
 
@@ -293,52 +297,105 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
         />
       </div>
 
-      {/* Signature de l'expéditeur + lieu et date */}
-      <div className="w-full py-8 text-center space-y-2">
-        <p className="font-serif text-stone-600 text-lg sm:text-xl italic">
-          — {frontendPostcard.senderName}
-        </p>
-        <p className="text-stone-500 text-sm">
-          Carte postale envoyée avec amour
-          {frontendPostcard.location?.trim() ? ` de ${frontendPostcard.location.trim()}` : ''}
-          {frontendPostcard.date ? `, le ${frontendPostcard.date}` : ''}.
-        </p>
-      </div>
+      {/* Signature de l'expéditeur + lieu et date stylisés */}
+      <div className="w-full py-16 md:py-24 text-center space-y-10">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1, ease: 'easeOut' }}
+          className="relative inline-block"
+        >
+          <p className="font-handwriting text-teal-700 text-4xl sm:text-5xl md:text-6xl -rotate-2 drop-shadow-sm tracking-tight">
+            — {frontendPostcard.senderName}
+          </p>
+          <div className="absolute -bottom-3 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-teal-300/40 to-transparent" />
+        </motion.div>
 
-      <div className="w-full bg-white/50 backdrop-blur-sm border-y border-stone-100 py-16 md:py-24 px-4">
-        <div className="max-w-md mx-auto text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-orange-100 text-orange-600 rounded-full mb-6">
-            <Sparkles size={24} />
-          </div>
-          <h3 className="font-serif font-bold text-2xl text-stone-800 mb-3">
-            Envoyez le même bonheur
-          </h3>
-          <p className="text-stone-500 mb-10 leading-relaxed font-medium">
-            Créez vos propres cartes postales numériques et partagez vos meilleurs moments avec vos
-            proches.
-          </p>
-          <Link href="/editor">
-            <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-7 text-xl rounded-2xl shadow-2xl shadow-teal-100 transition-all hover:-translate-y-1 active:scale-[0.98]">
-              Créer ma carte postale <ArrowRight className="ml-2" />
-            </Button>
-          </Link>
-          <p className="mt-6 text-stone-400 text-xs font-medium">
-            C&apos;est gratuit et instantané ✨
-          </p>
+        <div className="max-w-2xl mx-auto px-8 py-10 rounded-[2.5rem] bg-white border border-stone-100 shadow-[0_20px_60px_rgba(0,0,0,0.03)] relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-2 h-full bg-teal-500/20" />
+          <TextAnimate
+            by="character"
+            animation="blurIn"
+            duration={3}
+            className="text-stone-600 text-lg sm:text-xl md:text-2xl leading-relaxed font-semibold italic md:px-6"
+          >
+            {`Carte postale envoyée avec amour${
+              frontendPostcard.location?.trim() ? ` de ${frontendPostcard.location.trim()}` : ''
+            }${frontendPostcard.date ? `, le ${frontendPostcard.date}` : ''}.`}
+          </TextAnimate>
         </div>
       </div>
 
-      <div className="py-12 text-center space-y-6">
+      <motion.section
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-100px' }}
+        transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full bg-gradient-to-b from-white to-[#fdfbf7] py-24 md:py-40 px-4 relative"
+      >
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-stone-200 to-transparent" />
+
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white rounded-[3rem] p-10 md:p-20 shadow-[0_50px_120px_rgba(0,0,0,0.06)] border border-stone-100 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-teal-50/50 rounded-full blur-3xl -mr-40 -mt-40" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-orange-50/50 rounded-full blur-3xl -ml-40 -mb-40" />
+
+            <div className="relative z-10 text-center">
+              <div className="inline-flex items-center justify-center w-24 h-24 bg-orange-50 text-orange-500 rounded-[2rem] rotate-6 mb-12 shadow-sm border border-orange-100/50 group hover:rotate-12 transition-transform duration-500">
+                <Sparkles size={48} className="group-hover:scale-110 transition-transform" />
+              </div>
+
+              <h3 className="font-serif font-bold text-4xl md:text-6xl text-stone-800 mb-10 tracking-tight leading-tight">
+                Envoyez le <br className="sm:hidden" />
+                même bonheur
+              </h3>
+
+              <p className="text-stone-500 text-xl md:text-2xl mb-16 leading-relaxed max-w-xl mx-auto font-medium">
+                Créez vos propres cartes postales numériques et partagez vos meilleurs moments avec
+                vos proches.
+              </p>
+
+              <div className="max-w-md mx-auto space-y-10">
+                <Link href="/editor">
+                  <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white font-black h-20 sm:h-28 text-2xl sm:text-3xl rounded-[2rem] shadow-[0_30px_70px_rgba(13,148,136,0.35)] transition-all hover:-translate-y-2 active:scale-[0.98] group flex items-center justify-center gap-5">
+                    <span>Créer ma carte</span>
+                    <ArrowRight
+                      className="group-hover:translate-x-3 transition-transform"
+                      size={32}
+                    />
+                  </Button>
+                </Link>
+
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ delay: 1, duration: 1 }}
+                  className="flex items-center justify-center gap-6"
+                >
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent to-stone-200" />
+                  <p className="text-teal-600 font-black tracking-widest text-sm uppercase px-2 whitespace-nowrap">
+                    Gratuit et instantané ✨
+                  </p>
+                  <div className="h-px flex-1 bg-gradient-to-l from-transparent to-stone-200" />
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
+      <div className="py-24 text-center space-y-10">
         <Link
           href="/"
-          className="text-stone-400 hover:text-stone-600 text-sm font-medium transition-colors border-b border-transparent hover:border-stone-300 pb-1"
+          className="text-stone-400 hover:text-stone-600 text-lg md:text-xl font-bold transition-colors border-b-2 border-transparent hover:border-stone-300 pb-2"
         >
           {'Retour au site'}
         </Link>
-        <p className="text-stone-500 text-sm leading-relaxed max-w-sm mx-auto">
+        <p className="text-stone-500 text-lg md:text-2xl leading-relaxed max-w-xl mx-auto font-medium">
           Merci de faire vivre les cartes postales numériques. Chaque envoi compte.
         </p>
-        <p className="text-stone-400 text-xs font-semibold tracking-wider uppercase">
+        <p className="text-stone-400 text-sm md:text-base font-black tracking-[0.3em] uppercase">
           — L&apos;équipe cartepostale.cool
         </p>
       </div>

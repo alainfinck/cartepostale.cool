@@ -9,19 +9,34 @@ import { TextAnimate } from '@/components/ui/text-animate'
 interface ViewPageTitleProps {
   title: string
   senderName: string
+  location?: string
+  date?: string
 }
 
-export default function ViewPageTitle({ title, senderName }: ViewPageTitleProps) {
+export default function ViewPageTitle({ title, senderName, location, date }: ViewPageTitleProps) {
   useEffect(() => {
     // Fire confetti on mount
     const timer = setTimeout(() => {
-      fireSideCannons();
-    }, 2000); // Slight delay to sync with text appearance
-    return () => clearTimeout(timer);
-  }, []);
+      fireSideCannons()
+    }, 2000) // Slight delay to sync with text appearance
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
     <div className="text-center mb-6 md:mb-8 px-4 mt-8 md:mt-12 pt-8 landscape:mb-2 landscape:mt-2.5 landscape:pt-0 relative z-10 flex flex-col items-center gap-2">
+      <div className="mb-4">
+        <TextAnimate
+          by="character"
+          animation="blurIn"
+          duration={3}
+          className="text-stone-400 text-[10px] md:text-sm font-bold uppercase tracking-[0.2em]"
+        >
+          {`Envoyée avec amour${location?.trim() ? ` de ${location.trim()}` : ''}${
+            date ? `, le ${date}` : ''
+          }`}
+        </TextAnimate>
+      </div>
+
       <TextAnimate
         animation="blurInUp"
         by="word"
@@ -37,10 +52,15 @@ export default function ViewPageTitle({ title, senderName }: ViewPageTitleProps)
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
         transition={{ delay: 1.8, duration: 1.2, ease: easeOut }}
       >
-        <span className="text-lg md:text-xl font-medium tracking-wide whitespace-nowrap">De la part de</span>
+        <span className="text-lg md:text-xl font-medium tracking-wide whitespace-nowrap">
+          De la part de
+        </span>
         <span className="font-bold text-teal-600 flex items-center gap-2 text-2xl md:text-4xl lg:text-5xl font-serif whitespace-nowrap">
           {senderName}
-          <Heart className="inline-block text-red-500 fill-red-500 animate-pulse shrink-0 w-6 h-6 md:w-8 md:h-8" strokeWidth={2.5} />
+          <Heart
+            className="inline-block text-red-500 fill-red-500 animate-pulse shrink-0 w-6 h-6 md:w-8 md:h-8"
+            strokeWidth={2.5}
+          />
         </span>
       </motion.div>
     </div>
