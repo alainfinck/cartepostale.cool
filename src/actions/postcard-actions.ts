@@ -30,7 +30,13 @@ function isHeifUploadError(err: unknown): boolean {
 
 export async function createPostcard(
   data: any,
-): Promise<{ success: boolean; id?: number | string; publicId?: string; error?: string }> {
+): Promise<{
+  success: boolean
+  id?: number | string
+  publicId?: string
+  contributionToken?: string
+  error?: string
+}> {
   try {
     // Reject HEIC/HEIF upfront — Sharp/libvips often can't decode them
     if (data.frontImage && isHeicDataUrl(data.frontImage)) {
@@ -246,7 +252,13 @@ export async function createPostcard(
           ...authorPayload,
         },
       })
-      return { success: true, id: existingId, publicId: data.id }
+      const updated = await payload.findByID({
+        collection: 'postcards',
+        id: existingId,
+        depth: 0,
+      })
+      const token = (updated as { contributionToken?: string }).contributionToken
+      return { success: true, id: existingId, publicId: data.id, contributionToken: token }
     } else {
       // Generate a unique public ID
       let publicId = generatePublicId()
@@ -298,7 +310,8 @@ export async function createPostcard(
         // In a real app, you would integrate Resend/Twilio here
       }
 
-      return { success: true, id: newPostcard.id, publicId }
+      const token = (newPostcard as { contributionToken?: string }).contributionToken
+      return { success: true, id: newPostcard.id, publicId, contributionToken: token }
     }
   } catch (error) {
     console.error('Error creating/updating postcard:', error)
@@ -316,6 +329,26 @@ export async function createPostcard(
         ? 'Erreur lors de l’envoi de l’image. Utilisez JPEG ou PNG.'
         : 'Impossible de créer la carte. Réessayez.',
     }
+  }
+}
+
+export async function getContributionTokenForPostcard(
+  publicId: string,
+): Promise<string | null> {
+  try {
+    const payload = await getPayload({ config })
+    const result = await payload.find({
+      collection: 'postcards',
+      where: { publicId: { equals: publicId } },
+      depth: 0,
+      limit: 1,
+      overrideAccess: true,
+    })
+    if (result.totalDocs === 0) return null
+    const doc = result.docs[0] as { contributionToken?: string }
+    return doc.contributionToken ?? null
+  } catch {
+    return null
   }
 }
 

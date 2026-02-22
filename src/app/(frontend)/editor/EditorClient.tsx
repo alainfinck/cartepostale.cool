@@ -53,6 +53,7 @@ import {
   Volume2,
   Loader2,
   ChevronUp,
+  QrCode,
 } from 'lucide-react'
 import {
   Postcard,
@@ -68,7 +69,10 @@ import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { createPostcard } from '@/actions/postcard-actions'
+import {
+  createPostcard,
+  getContributionTokenForPostcard,
+} from '@/actions/postcard-actions'
 import { linkPostcardToUser } from '@/actions/auth-actions'
 import { sendPostcardToRecipientsFromEditor, type EditorRecipient } from '@/actions/editor-actions'
 
@@ -87,6 +91,7 @@ import UserGalleryModal from '@/components/editor/UserGalleryModal'
 import StickerGallery from '@/components/editor/StickerGallery'
 import StickerLayer from '@/components/editor/StickerLayer'
 import RealTimeViewStats from '@/components/stats/RealTimeViewStats'
+import ShareContributionModal from '@/components/postcard/ShareContributionModal'
 import {
   Dialog,
   DialogContent,
@@ -784,6 +789,8 @@ export default function EditorPage() {
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [createdPostcardId, setCreatedPostcardId] = useState<string | null>(null)
   const [internalPostcardId, setInternalPostcardId] = useState<number | null>(null)
+  const [contributionToken, setContributionToken] = useState<string | null>(null)
+  const [showSharePhotosModal, setShowSharePhotosModal] = useState(false)
   const [shareError, setShareError] = useState<string | null>(null)
   const [showEmailPromptModal, setShowEmailPromptModal] = useState(false)
 
@@ -936,6 +943,15 @@ export default function EditorPage() {
       setHasConfettiFired(true)
     }
   }, [shareUrl, hasConfettiFired])
+
+  // Fetch contribution token when we have publicId but no token (e.g. page refresh)
+  useEffect(() => {
+    if (createdPostcardId && !contributionToken) {
+      getContributionTokenForPostcard(createdPostcardId).then((token) => {
+        if (token) setContributionToken(token)
+      })
+    }
+  }, [createdPostcardId, contributionToken])
 
   // Handle payment success return
   useEffect(() => {
@@ -1961,6 +1977,9 @@ export default function EditorPage() {
           setInternalPostcardId(result.id)
         }
         setShareUrl(`${window.location.origin}/carte/${result.publicId}`)
+        if (result.contributionToken) {
+          setContributionToken(result.contributionToken)
+        }
 
         // Trigger email modal if user is not logged in and hasn't provided an email
         if (!currentUser && !senderEmail) {
@@ -2063,6 +2082,9 @@ export default function EditorPage() {
           pid = result.publicId
           setCreatedPostcardId(pid)
           setShareUrl(`${window.location.origin}/carte/${pid}`)
+          if (result.contributionToken) {
+            setContributionToken(result.contributionToken)
+          }
 
           // If promo code was used, mark it as used in DB
           if (codeSuccess && promoCode) {
@@ -2118,6 +2140,7 @@ export default function EditorPage() {
     setCreatedPostcardId(null)
     setInternalPostcardId(null)
     setShareUrl(null)
+    setContributionToken(null)
     setIsPublishing(false)
     setCurrentStep('redaction')
     // On garde tout le reste du state (image, message, etc.)
@@ -3893,6 +3916,30 @@ export default function EditorPage() {
                             </Button>
                           </div>
                         </div>
+
+                        {/* QR code et lien pour déposer des photos depuis un téléphone */}
+                        {contributionToken && createdPostcardId && (
+                          <div className="mb-8">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setShowSharePhotosModal(true)}
+                              className="w-full max-w-xl mx-auto flex items-center justify-center gap-3 px-6 py-4 rounded-2xl border-2 border-teal-200 bg-teal-50/50 hover:bg-teal-50 text-teal-800 font-bold transition-all"
+                            >
+                              <QrCode size={22} />
+                              <span>QR code / lien pour déposer des photos</span>
+                            </Button>
+                            <ShareContributionModal
+                              isOpen={showSharePhotosModal}
+                              onClose={() => setShowSharePhotosModal(false)}
+                              contributeUrl={
+                                shareUrl
+                                  ? `${shareUrl}${shareUrl.includes('?') ? '&' : '?'}token=${contributionToken}`
+                                  : ''
+                              }
+                            />
+                          </div>
+                        )}
 
                         <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
                           <a
