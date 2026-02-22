@@ -183,9 +183,13 @@ export default function PricingPage() {
         />
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(20 184 166) 1px, transparent 0)', backgroundSize: '32px 32px' }} aria-hidden />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 pt-14 sm:pt-16 pb-14 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-800 mb-6">
-            Cartes postales du futur
-          </h1>
+          <h1 className="sr-only">Cartes postales du futur — Tarifs</h1>
+          <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50/90 px-4 py-2.5 text-teal-700 mb-6 shadow-sm">
+            <Sparkles className="w-4 h-4 text-teal-600 shrink-0" />
+            <span className="text-xs font-bold uppercase tracking-widest">
+              Cartes postales du futur
+            </span>
+          </div>
           <p className="text-2xl sm:text-3xl md:text-4xl font-serif font-semibold text-stone-700 mb-4 min-h-[2.5em] sm:min-h-[2em] flex items-center justify-center">
             <RotatingHeroTitle />
           </p>
