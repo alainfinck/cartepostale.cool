@@ -30,6 +30,8 @@ interface UnsplashSearchModalProps {
     onClose: () => void;
     onSelect: (imageUrl: string) => void;
     location?: string;
+    /** When set, modal opens with this query pre-filled and search run (e.g. from editor search box). */
+    initialQuery?: string | null;
 }
 
 export function UnsplashSearchModal({
@@ -37,6 +39,7 @@ export function UnsplashSearchModal({
     onClose,
     onSelect,
     location,
+    initialQuery: initialQueryProp,
 }: UnsplashSearchModalProps) {
     const [query, setQuery] = useState('');
     const [source, setSource] = useState<ImageSource>('unsplash');
@@ -90,14 +93,23 @@ export function UnsplashSearchModal({
 
     useEffect(() => {
         if (isOpen) {
-            const initialSuggestions = getLocationSuggestions(location);
-            setSuggestions(initialSuggestions);
-            if (initialSuggestions.length > 0) {
-                handleSearch(initialSuggestions[0], source);
+            if (initialQueryProp !== undefined && initialQueryProp !== null) {
+                setQuery(initialQueryProp);
+                if (initialQueryProp.trim()) {
+                    handleSearch(initialQueryProp, source);
+                } else {
+                    setResults([]);
+                }
+            } else {
+                const initialSuggestions = getLocationSuggestions(location);
+                setSuggestions(initialSuggestions);
+                if (initialSuggestions.length > 0) {
+                    handleSearch(initialSuggestions[0], source);
+                }
             }
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only run on open/location
-    }, [isOpen, location]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only run on open/location/initialQuery
+    }, [isOpen, location, initialQueryProp]);
 
     const onSourceChange = (newSource: ImageSource) => {
         setSource(newSource);

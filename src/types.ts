@@ -41,6 +41,19 @@ export interface FrontCaptionPosition {
   y: number
 }
 
+/** Style du texte accroche (face avant). */
+export type FrontCaptionFontFamily = 'serif' | 'sans' | 'cursive' | 'display'
+export type FrontCaptionFontSize = 'sm' | 'md' | 'lg' | 'xl'
+export type FrontCaptionColor =
+  | 'stone-900'
+  | 'white'
+  | 'black'
+  | 'teal-800'
+  | 'stone-700'
+  | 'amber-900'
+  | 'rose-900'
+  | 'emerald-900'
+
 export interface Postcard {
   id: string
   frontImage: string
@@ -52,6 +65,14 @@ export interface Postcard {
   frontEmoji?: string
   /** Position du bloc caption+emoji sur la carte (centre en %). Par défaut en bas au centre. */
   frontCaptionPosition?: FrontCaptionPosition
+  /** Police du texte accroche. */
+  frontCaptionFontFamily?: FrontCaptionFontFamily
+  /** Taille du texte accroche (sm, md, lg, xl). */
+  frontCaptionFontSize?: FrontCaptionFontSize
+  /** Couleur du texte accroche. */
+  frontCaptionColor?: FrontCaptionColor
+  /** Opacité du fond du bloc texte (0–100). */
+  frontTextBgOpacity?: number
   message: string
   recipientName: string
   senderName: string

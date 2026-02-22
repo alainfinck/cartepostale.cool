@@ -1,8 +1,9 @@
 /**
- * Utilitaires pour le traitement d'images côté client :
+ * Utilitaires pour le traitement d'images côté client.
+ * Pour tous les types (JPEG, PNG, HEIC, WebP) :
  * - Redimensionnement au max 2k (2048px)
- * - Conversion en JPEG (qualité 80%)
- * - Support de HEIC/HEIF via heic2any
+ * - Conversion en JPEG (qualité 80%) côté navigateur
+ * HEIC/HEIF : conversion via heic2any puis resize ; PNG/WebP/JPEG : dessin sur canvas puis export JPEG.
  */
 
 export const MAX_IMAGE_PX = 2048

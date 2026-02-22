@@ -47,6 +47,7 @@ import {
   SlidersHorizontal,
   FileText, // Added for note editing
   Mic,
+  Search,
   Square,
   Play,
   Trash2,
@@ -54,6 +55,7 @@ import {
   Loader2,
   ChevronUp,
   Wand2,
+  Move,
 } from 'lucide-react'
 import {
   Postcard,
@@ -92,6 +94,7 @@ import {
 import UserGalleryModal from '@/components/editor/UserGalleryModal'
 import StickerGallery from '@/components/editor/StickerGallery'
 import StickerLayer from '@/components/editor/StickerLayer'
+import FrontFaceEditor from '@/components/editor/FrontFaceEditor'
 import RealTimeViewStats from '@/components/stats/RealTimeViewStats'
 import {
   Dialog,
@@ -812,6 +815,8 @@ export default function EditorPage() {
   const [recipientsSentCount, setRecipientsSentCount] = useState<number | null>(null)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [showUnsplashModal, setShowUnsplashModal] = useState(false)
+  const [imageSearchQuery, setImageSearchQuery] = useState('')
+  const [unsplashInitialQuery, setUnsplashInitialQuery] = useState<string | null>(null)
   const [showAiGeneratorModal, setShowAiGeneratorModal] = useState(false)
   const [hasAiGenerationPaid, setHasAiGenerationPaid] = useState(false)
   const [showUserGalleryModal, setShowUserGalleryModal] = useState<'front' | 'back' | null>(null)
@@ -1247,7 +1252,7 @@ export default function EditorPage() {
     if (!dataUrl) {
       setUploadStatus(null)
       setUploadedFileName('')
-      alert('Impossible de charger cette image. Utilisez une photo en JPEG ou PNG.')
+      alert('Impossible de charger cette image. Utilisez une photo en JPEG, PNG, HEIC ou WebP.')
       return
     }
 
@@ -1648,7 +1653,7 @@ export default function EditorPage() {
         // Image: resize max 2k JPEG 80%, puis upload R2 (presigned), fallback base64
         const previewUrl = await fileToDataUrl(file).catch(() => null)
         if (!previewUrl) {
-          alert(`Impossible de charger ${file.name}. Utilisez des photos en JPEG ou PNG.`)
+          alert(`Impossible de charger ${file.name}. Utilisez des photos en JPEG, PNG, HEIC ou WebP.`)
           continue
         }
 
@@ -2388,7 +2393,7 @@ export default function EditorPage() {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*,.heic,.heif,.avif,.webp,.tiff,.bmp"
+                    accept="image/jpeg,image/png,image/heic,image/heif,image/webp,.jpg,.jpeg,.png,.heic,.heif,.webp"
                     className="hidden"
                     onChange={handleFileUpload}
                   />
@@ -2439,30 +2444,32 @@ export default function EditorPage() {
                         <p className="text-stone-400 text-sm mt-1">
                           {isDropActive
                             ? 'Relâchez pour importer votre image'
-                            : 'ou cliquez pour parcourir (JPG, PNG, WebP)'}
+                            : 'ou cliquez pour parcourir (JPEG, PNG, HEIC, WebP)'}
                         </p>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {currentUser && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowUserGalleryModal('front')}
-                    className="w-full mt-3 rounded-xl border-dashed border-stone-300 text-stone-600 hover:text-teal-600 hover:border-teal-300 hover:bg-teal-50 gap-2 mb-8"
-                  >
-                    <ImageIcon size={18} /> Choisir depuis ma galerie
-                  </Button>
-                )}
-
-                {/* Mobile-friendly: Collapsible Template Section */}
-                <div className="mb-8">
+                {/* Desktop: 2 buttons side by side; mobile: stacked */}
+                <div className="flex flex-col sm:flex-row gap-3 mt-3 mb-4">
+                  {currentUser && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowUserGalleryModal('front')}
+                      className="flex-1 lg:flex-initial rounded-xl border-dashed border-stone-300 text-stone-600 hover:text-teal-600 hover:border-teal-300 hover:bg-teal-50 gap-2"
+                    >
+                      <ImageIcon size={18} /> Choisir depuis ma galerie
+                    </Button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setShowTemplateSection(!showTemplateSection)}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-stone-300 bg-stone-50/50 px-4 py-3 text-stone-600 hover:border-teal-300 hover:bg-teal-50/30 hover:text-teal-600 transition-all group"
+                    className={cn(
+                      'flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-stone-300 bg-stone-50/50 px-4 py-3 text-stone-600 hover:border-teal-300 hover:bg-teal-50/30 hover:text-teal-600 transition-all group',
+                      currentUser ? 'flex-1 lg:flex-initial' : 'w-full',
+                    )}
                   >
                     <ImageIcon
                       size={18}
@@ -2479,6 +2486,37 @@ export default function EditorPage() {
                       )}
                     />
                   </button>
+                </div>
+
+                {/* Recherche d'image : ouvre le modal banque d'images avec la recherche */}
+                <div className="flex gap-2 mb-8">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
+                    <Input
+                      type="text"
+                      placeholder="Recherche d'image (ex: plage, montagne, Paris…)"
+                      value={imageSearchQuery}
+                      onChange={(e) => setImageSearchQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          setUnsplashInitialQuery(imageSearchQuery.trim() || null)
+                          setShowUnsplashModal(true)
+                        }
+                      }}
+                      className="pl-9 h-10 rounded-xl border-stone-200 bg-stone-50/50"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setUnsplashInitialQuery(imageSearchQuery.trim() || null)
+                      setShowUnsplashModal(true)
+                    }}
+                    className="shrink-0 rounded-xl bg-teal-500 hover:bg-teal-600 text-white gap-2 px-4"
+                  >
+                    <Search size={18} /> Chercher
+                  </Button>
                 </div>
 
                 {/* Template Selection - Collapsible */}
@@ -2777,6 +2815,39 @@ export default function EditorPage() {
                     </div>
                   </div>
                 </section>
+
+                {/* Interactive Front Face Editor */}
+                {frontImage && frontCaption.trim().length > 0 && (
+                  <section className="mt-8 pt-8 border-t border-stone-200">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-100 text-teal-600">
+                        <Move size={18} />
+                      </span>
+                      <div>
+                        <h3 className="text-sm font-bold text-stone-800 uppercase tracking-wider">
+                          Position du texte
+                        </h3>
+                        <p className="text-xs text-stone-500">
+                          Glissez le texte pour le repositionner sur la photo
+                        </p>
+                      </div>
+                    </div>
+                    <FrontFaceEditor
+                      frontImage={frontImage}
+                      frontImageCrop={frontImageCrop}
+                      frontImageFilter={frontImageFilter}
+                      frontCaption={frontCaption}
+                      frontEmoji={frontEmoji}
+                      frontCaptionPosition={frontCaptionPosition}
+                      frontTextBgOpacity={frontTextBgOpacity}
+                      location={location}
+                      stickers={stickers}
+                      onCaptionPositionChange={setFrontCaptionPosition}
+                      className="w-full"
+                    />
+                  </section>
+                )}
+
                 {/* Lieu du souvenir — en bas à gauche */}
                 <section className="mt-8 pt-8 border-t border-stone-200 flex flex-col items-start text-left">
                   <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
@@ -5262,9 +5333,13 @@ export default function EditorPage() {
       )}
       <UnsplashSearchModal
         isOpen={showUnsplashModal}
-        onClose={() => setShowUnsplashModal(false)}
+        onClose={() => {
+          setShowUnsplashModal(false)
+          setUnsplashInitialQuery(null)
+        }}
         onSelect={handleSelectUnsplashImage}
         location={location}
+        initialQuery={unsplashInitialQuery}
       />
       {SHOW_AI_IMAGE_GENERATION && (
         <AiImageGeneratorModal

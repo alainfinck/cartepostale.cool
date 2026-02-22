@@ -2,7 +2,13 @@
 
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { FrontImageFilter, Postcard } from '@/types'
+import {
+  FrontImageFilter,
+  Postcard,
+  FrontCaptionFontFamily,
+  FrontCaptionFontSize,
+  FrontCaptionColor,
+} from '@/types'
 import { PhotoLocation } from '@/components/ui/PhotoMarker'
 import {
   RotateCw,
@@ -92,6 +98,43 @@ const buildFrontImageFilterCss = (filter?: FrontImageFilter): string => {
   ].join(' ')
 }
 
+const CAPTION_FONT_FAMILY: Record<FrontCaptionFontFamily, string> = {
+  serif: "Georgia, 'Times New Roman', serif",
+  sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  cursive: "'Segoe Script', 'Brush Script MT', 'Comic Sans MS', cursive",
+  display: "'Impact', 'Arial Black', sans-serif",
+}
+
+const CAPTION_FONT_SIZE: Record<FrontCaptionFontSize, string> = {
+  sm: '0.875rem',   // 14px
+  md: '1rem',       // 16px
+  lg: '1.125rem',   // 18px
+  xl: '1.375rem',   // 22px
+}
+
+const CAPTION_COLOR: Record<FrontCaptionColor, string> = {
+  'stone-900': '#1c1917',
+  white: '#ffffff',
+  black: '#000000',
+  'teal-800': '#115e59',
+  'stone-700': '#44403c',
+  'amber-900': '#78350f',
+  'rose-900': '#881337',
+  'emerald-900': '#064e3b',
+}
+
+function getCaptionStyle(postcard: Postcard): {
+  fontFamily: string
+  fontSize: string
+  color: string
+} {
+  const fontFamily =
+    CAPTION_FONT_FAMILY[postcard.frontCaptionFontFamily ?? 'sans']
+  const fontSize = CAPTION_FONT_SIZE[postcard.frontCaptionFontSize ?? 'md']
+  const color = CAPTION_COLOR[postcard.frontCaptionColor ?? 'stone-900']
+  return { fontFamily, fontSize, color }
+}
+
 const PostcardView: React.FC<PostcardViewProps> = ({
   postcard,
   flipped,
@@ -114,39 +157,75 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const frontImageRef = useRef<HTMLImageElement>(null)
   const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null)
 
-  const captionPos = postcard.frontCaptionPosition ?? DEFAULT_CAPTION_POSITION
+  const [localCaptionPos, setLocalCaptionPos] = useState(
+    postcard.frontCaptionPosition ?? DEFAULT_CAPTION_POSITION
+  )
+  
+  const rafIdRef = useRef<number | null>(null)
+  const lastUpdateRef = useRef(0)
+
+  useEffect(() => {
+    if (!isDraggingCaption) {
+      setLocalCaptionPos(postcard.frontCaptionPosition ?? DEFAULT_CAPTION_POSITION)
+    }
+  }, [postcard.frontCaptionPosition, isDraggingCaption])
+
+  const captionPos = isDraggingCaption ? localCaptionPos : (postcard.frontCaptionPosition ?? DEFAULT_CAPTION_POSITION)
   const usePositionedCaption =
     postcard.frontCaptionPosition != null || onCaptionPositionChange != null
 
   useEffect(() => {
     if (!isDraggingCaption || !onCaptionPositionChange) return
+    
     const onMove = (e: PointerEvent) => {
       const el = frontFaceRef.current
       if (!el) return
-      const rect = el.getBoundingClientRect()
-      const xPct = ((e.clientX - rect.left) / rect.width) * 100
-      const yPct = ((e.clientY - rect.top) / rect.height) * 100
-      const x = Math.max(10, Math.min(90, xPct))
-      const y = Math.max(10, Math.min(90, yPct))
-      onCaptionPositionChange({ x, y })
+      
+      const now = performance.now()
+      if (now - lastUpdateRef.current < 16) return
+      lastUpdateRef.current = now
+      
+      if (rafIdRef.current != null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
+      
+      rafIdRef.current = requestAnimationFrame(() => {
+        const rect = el.getBoundingClientRect()
+        const xPct = ((e.clientX - rect.left) / rect.width) * 100
+        const yPct = ((e.clientY - rect.top) / rect.height) * 100
+        const x = Math.max(10, Math.min(90, xPct))
+        const y = Math.max(10, Math.min(90, yPct))
+        setLocalCaptionPos({ x, y })
+      })
     }
+    
     const onUp = () => {
+      if (rafIdRef.current != null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
       setIsDraggingCaption(false)
+      onCaptionPositionChange(localCaptionPos)
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
     }
+    
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
     return () => {
+      if (rafIdRef.current != null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
     }
-  }, [isDraggingCaption, onCaptionPositionChange])
+  }, [isDraggingCaption, onCaptionPositionChange, localCaptionPos])
 
   const [isFullscreen, setIsFullscreen] = useState(false)
   const frontImageFilterCss = buildFrontImageFilterCss(postcard.frontImageFilter)
-  const clampedFrontTextBgOpacity = Math.max(0, Math.min(100, frontTextBgOpacity))
+  const effectiveBgOpacity = postcard.frontTextBgOpacity ?? frontTextBgOpacity ?? 90
+  const clampedFrontTextBgOpacity = Math.max(0, Math.min(100, effectiveBgOpacity))
   const frontTextBgColor = `rgba(255, 255, 255, ${clampedFrontTextBgOpacity / 100})`
+  const captionStyle = getCaptionStyle(postcard)
 
   useEffect(() => {
     if (isFullscreen) {
@@ -955,9 +1034,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {postcard.frontCaption?.trim() && !postcard.frontEmoji && (
                 <div
                   className={cn(
-                    'z-20 w-fit max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-3rem)] px-3 py-2 sm:px-4 sm:py-2.5 rounded-md border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300',
+                    'z-20 w-fit max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-3rem)] px-3 py-2 sm:px-4 sm:py-2.5 rounded-md border border-white/50 transition-all',
                     usePositionedCaption ? 'absolute' : 'absolute left-4 sm:left-6 bottom-14 sm:bottom-16',
                     onCaptionPositionChange && 'cursor-grab active:cursor-grabbing touch-none select-none',
+                    isDraggingCaption
+                      ? 'shadow-[0_12px_40px_rgb(0,0,0,0.2)] ring-2 ring-teal-400/50'
+                      : 'shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_10px_35px_rgb(0,0,0,0.15)]',
                   )}
                   style={
                     usePositionedCaption
@@ -966,6 +1048,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           top: `${captionPos.y}%`,
                           transform: 'translate(-50%, -50%)',
                           backgroundColor: frontTextBgColor,
+                          willChange: isDraggingCaption ? 'transform, left, top' : 'auto',
                         }
                       : { backgroundColor: 'rgba(255,255,255,0.65)' }
                   }
@@ -1000,12 +1083,15 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {postcard.frontCaption?.trim() && postcard.frontEmoji && (
                 <div
                   className={cn(
-                    'z-20 flex items-center gap-3 rounded-2xl sm:rounded-3xl border border-white/50 px-5 py-3.5 sm:px-6 sm:py-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 w-fit max-w-[calc(100%-2rem)]',
+                    'z-20 flex items-center gap-3 rounded-2xl sm:rounded-3xl border border-white/50 px-5 py-3.5 sm:px-6 sm:py-4 transition-all w-fit max-w-[calc(100%-2rem)]',
                     usePositionedCaption
                       ? 'absolute'
                       : 'absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6',
                     onCaptionPositionChange &&
                       'cursor-grab active:cursor-grabbing touch-none select-none',
+                    isDraggingCaption
+                      ? 'shadow-[0_12px_40px_rgb(0,0,0,0.2)] ring-2 ring-teal-400/50'
+                      : 'shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_10px_35px_rgb(0,0,0,0.15)]',
                   )}
                   style={
                     usePositionedCaption
@@ -1014,6 +1100,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           top: `${captionPos.y}%`,
                           transform: 'translate(-50%, -50%)',
                           backgroundColor: frontTextBgColor,
+                          willChange: isDraggingCaption ? 'transform, left, top' : 'auto',
                         }
                       : { backgroundColor: frontTextBgColor }
                   }
