@@ -2,13 +2,8 @@
 
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
-import {
-  FrontImageFilter,
-  Postcard,
-  FrontCaptionFontFamily,
-  FrontCaptionFontSize,
-  FrontCaptionColor,
-} from '@/types'
+import { FrontImageFilter, Postcard } from '@/types'
+import { getCaptionStyle } from '@/lib/caption-style'
 import { PhotoLocation } from '@/components/ui/PhotoMarker'
 import {
   RotateCw,
@@ -96,43 +91,6 @@ const buildFrontImageFilterCss = (filter?: FrontImageFilter): string => {
     `sepia(${f.sepia}%)`,
     `grayscale(${f.grayscale}%)`,
   ].join(' ')
-}
-
-const CAPTION_FONT_FAMILY: Record<FrontCaptionFontFamily, string> = {
-  serif: "Georgia, 'Times New Roman', serif",
-  sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  cursive: "'Segoe Script', 'Brush Script MT', 'Comic Sans MS', cursive",
-  display: "'Impact', 'Arial Black', sans-serif",
-}
-
-const CAPTION_FONT_SIZE: Record<FrontCaptionFontSize, string> = {
-  sm: '0.875rem',   // 14px
-  md: '1rem',       // 16px
-  lg: '1.125rem',   // 18px
-  xl: '1.375rem',   // 22px
-}
-
-const CAPTION_COLOR: Record<FrontCaptionColor, string> = {
-  'stone-900': '#1c1917',
-  white: '#ffffff',
-  black: '#000000',
-  'teal-800': '#115e59',
-  'stone-700': '#44403c',
-  'amber-900': '#78350f',
-  'rose-900': '#881337',
-  'emerald-900': '#064e3b',
-}
-
-function getCaptionStyle(postcard: Postcard): {
-  fontFamily: string
-  fontSize: string
-  color: string
-} {
-  const fontFamily =
-    CAPTION_FONT_FAMILY[postcard.frontCaptionFontFamily ?? 'sans']
-  const fontSize = CAPTION_FONT_SIZE[postcard.frontCaptionFontSize ?? 'md']
-  const color = CAPTION_COLOR[postcard.frontCaptionColor ?? 'stone-900']
-  return { fontFamily, fontSize, color }
 }
 
 const PostcardView: React.FC<PostcardViewProps> = ({
@@ -1061,7 +1019,18 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     onClick: (e: React.MouseEvent) => e.stopPropagation(),
                   })}
                 >
-                  <p className="m-0 text-base sm:text-lg font-bold leading-tight tracking-tight text-stone-900 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] break-words">
+                  <p
+                    className="m-0 font-bold leading-tight tracking-tight break-words"
+                    style={{
+                      fontFamily: captionStyle.fontFamily,
+                      fontSize: captionStyle.fontSize,
+                      color: captionStyle.color,
+                      textShadow:
+                        captionStyle.color === '#ffffff' || captionStyle.color === '#000000'
+                          ? '0 1px 2px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.15)'
+                          : '0 1px 2px rgba(255,255,255,0.8)',
+                    }}
+                  >
                     {postcard.frontCaption}
                   </p>
                 </div>
@@ -1116,7 +1085,18 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   <span className="text-xl sm:text-4xl leading-none shrink-0" aria-hidden>
                     {postcard.frontEmoji}
                   </span>
-                  <p className="m-0 text-base sm:text-lg font-bold leading-tight tracking-tight text-stone-900 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] break-words line-clamp-2">
+                  <p
+                    className="m-0 font-bold leading-tight tracking-tight break-words line-clamp-2"
+                    style={{
+                      fontFamily: captionStyle.fontFamily,
+                      fontSize: captionStyle.fontSize,
+                      color: captionStyle.color,
+                      textShadow:
+                        captionStyle.color === '#ffffff' || captionStyle.color === '#000000'
+                          ? '0 1px 2px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.15)'
+                          : '0 1px 2px rgba(255,255,255,0.8)',
+                    }}
+                  >
                     {postcard.frontCaption}
                   </p>
                 </div>

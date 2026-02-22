@@ -64,10 +64,17 @@ import {
   FrontImageCrop,
   FrontImageFilter,
   FrontCaptionPosition,
+  FrontCaptionFontFamily,
+  FrontCaptionColor,
+  CAPTION_FONT_SIZE_MIN,
+  CAPTION_FONT_SIZE_MAX,
+  CAPTION_FONT_SIZE_DEFAULT,
+  CAPTION_FONT_SIZE_STEP,
   StickerPlacement,
   Sticker,
 } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
+import ScratchCardViewWrapper from '@/components/view/ScratchCardViewWrapper'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -86,6 +93,7 @@ import {
   JPEG_QUALITY,
 } from '@/lib/image-processing'
 import { extractExifData, ExifData } from '@/lib/extract-exif'
+import { CAPTION_FONT_FAMILY, CAPTION_COLOR } from '@/lib/caption-style'
 import { UnsplashSearchModal } from '@/components/UnsplashSearchModal'
 import {
   AiImageGeneratorModal,
@@ -736,6 +744,10 @@ export default function EditorPage() {
     x: 50,
     y: 85,
   })
+  const [frontCaptionFontFamily, setFrontCaptionFontFamily] =
+    useState<FrontCaptionFontFamily>('sans')
+  const [frontCaptionFontSize, setFrontCaptionFontSize] = useState(CAPTION_FONT_SIZE_DEFAULT)
+  const [frontCaptionColor, setFrontCaptionColor] = useState<FrontCaptionColor>('stone-900')
   const [frontTextBgOpacity, setFrontTextBgOpacity] = useState(90)
   const [message, setMessage] = useState(
     'Un petit coucou de mes vacances ! Tout se passe merveilleusement bien, les paysages sont magnifiques. On pense bien à vous !',
@@ -751,6 +763,7 @@ export default function EditorPage() {
   const [scratchCardEnabled, setScratchCardEnabled] = useState(false)
   const [puzzleCardEnabled, setPuzzleCardEnabled] = useState(false)
   const [puzzleCardDifficulty, setPuzzleCardDifficulty] = useState<'3' | '4' | '5'>('3')
+  const [showInteractivePreview, setShowInteractivePreview] = useState<'scratch' | 'puzzle' | null>(null)
 
   const [stampStyle, setStampStyle] = useState<Postcard['stampStyle']>('classic')
   const [stampLabel, setStampLabel] = useState('Digital Poste')
@@ -1060,6 +1073,10 @@ export default function EditorPage() {
       frontCaption,
       frontEmoji,
       frontCaptionPosition,
+      frontCaptionFontFamily,
+      frontCaptionFontSize,
+      frontCaptionColor,
+      frontTextBgOpacity,
       message,
       recipientName,
       senderName,
@@ -1093,6 +1110,10 @@ export default function EditorPage() {
     frontCaption,
     frontEmoji,
     frontCaptionPosition,
+    frontCaptionFontFamily,
+    frontCaptionFontSize,
+    frontCaptionColor,
+    frontTextBgOpacity,
     message,
     recipientName,
     senderName,
@@ -1133,6 +1154,10 @@ export default function EditorPage() {
           if (data.frontCaption) setFrontCaption(data.frontCaption)
           if (data.frontEmoji) setFrontEmoji(data.frontEmoji)
           if (data.frontCaptionPosition) setFrontCaptionPosition(data.frontCaptionPosition)
+          if (data.frontCaptionFontFamily) setFrontCaptionFontFamily(data.frontCaptionFontFamily)
+          if (data.frontCaptionFontSize != null) setFrontCaptionFontSize(Number(data.frontCaptionFontSize))
+          if (data.frontCaptionColor) setFrontCaptionColor(data.frontCaptionColor)
+          if (data.frontTextBgOpacity != null) setFrontTextBgOpacity(data.frontTextBgOpacity)
           if (data.message) setMessage(data.message)
           if (data.recipientName) setRecipientName(data.recipientName)
           if (data.senderName) setSenderName(data.senderName)
@@ -1775,6 +1800,10 @@ export default function EditorPage() {
     frontCaption: frontCaption.trim() || undefined,
     frontEmoji: frontEmoji.trim() || undefined,
     frontCaptionPosition,
+    frontCaptionFontFamily,
+    frontCaptionFontSize,
+    frontCaptionColor,
+    frontTextBgOpacity,
     message: message || '',
     recipientName: recipientName || '',
     senderName: senderName || '',
@@ -2704,25 +2733,105 @@ export default function EditorPage() {
                       </p>
                     </div>
                     {frontCaption.trim().length > 0 && (
-                      <div>
-                        <div className="mb-1.5 flex items-center justify-between">
-                          <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider">
-                            Opacité du fond texte
+                      <>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                            Police
                           </label>
-                          <span className="text-xs font-medium text-stone-500 tabular-nums">
-                            {frontTextBgOpacity}%
-                          </span>
+                          <select
+                            value={frontCaptionFontFamily}
+                            onChange={(e) =>
+                              setFrontCaptionFontFamily(e.target.value as FrontCaptionFontFamily)
+                            }
+                            className="w-full h-10 rounded-xl border border-stone-200 bg-stone-50/80 px-3 text-sm text-stone-800 focus:border-teal-400 focus:ring-teal-400"
+                          >
+                            <option value="serif">Serif</option>
+                            <option value="sans">Sans-serif</option>
+                            <option value="cursive">Script / Cursive</option>
+                            <option value="display">Display</option>
+                          </select>
                         </div>
-                        <input
-                          type="range"
-                          min={0}
-                          max={100}
-                          step={1}
-                          value={frontTextBgOpacity}
-                          onChange={(e) => setFrontTextBgOpacity(Number(e.target.value))}
-                          className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
-                        />
-                      </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                            Taille de police
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-xl border-stone-200 shrink-0"
+                              onClick={() =>
+                                setFrontCaptionFontSize((s) =>
+                                  Math.max(CAPTION_FONT_SIZE_MIN, s - CAPTION_FONT_SIZE_STEP),
+                                )
+                              }
+                              disabled={frontCaptionFontSize <= CAPTION_FONT_SIZE_MIN}
+                              aria-label="Réduire la taille"
+                            >
+                              <Minus size={18} />
+                            </Button>
+                            <span className="min-w-[4rem] text-center text-sm font-semibold text-stone-800 tabular-nums">
+                              {frontCaptionFontSize} px
+                            </span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 rounded-xl border-stone-200 shrink-0"
+                              onClick={() =>
+                                setFrontCaptionFontSize((s) =>
+                                  Math.min(CAPTION_FONT_SIZE_MAX, s + CAPTION_FONT_SIZE_STEP),
+                                )
+                              }
+                              disabled={frontCaptionFontSize >= CAPTION_FONT_SIZE_MAX}
+                              aria-label="Augmenter la taille"
+                            >
+                              <Plus size={18} />
+                            </Button>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                            Couleur du texte
+                          </label>
+                          <select
+                            value={frontCaptionColor}
+                            onChange={(e) =>
+                              setFrontCaptionColor(e.target.value as FrontCaptionColor)
+                            }
+                            className="w-full h-10 rounded-xl border border-stone-200 bg-stone-50/80 px-3 text-sm text-stone-800 focus:border-teal-400 focus:ring-teal-400"
+                          >
+                            <option value="stone-900">Gris foncé</option>
+                            <option value="white">Blanc</option>
+                            <option value="black">Noir</option>
+                            <option value="teal-800">Teal</option>
+                            <option value="stone-700">Gris</option>
+                            <option value="amber-900">Ambre</option>
+                            <option value="rose-900">Rose</option>
+                            <option value="emerald-900">Émeraude</option>
+                          </select>
+                        </div>
+                        <div>
+                          <div className="mb-1.5 flex items-center justify-between">
+                            <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                              Opacité du fond
+                            </label>
+                            <span className="text-xs font-medium text-stone-500 tabular-nums">
+                              {frontTextBgOpacity}%
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min={0}
+                            max={100}
+                            step={1}
+                            value={frontTextBgOpacity}
+                            onChange={(e) => setFrontTextBgOpacity(Number(e.target.value))}
+                            className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                          />
+                        </div>
+                      </>
                     )}
                     <div>
                       <label className="mb-2 block text-xs font-semibold text-stone-600 uppercase tracking-wider">
@@ -2827,7 +2936,14 @@ export default function EditorPage() {
                         <h3 className="text-sm font-bold text-stone-800 uppercase tracking-wider">
                           Position du texte
                         </h3>
-                        <p className="text-xs text-stone-500">
+                        <p
+                          className="text-xs font-semibold"
+                          style={{
+                            fontFamily: CAPTION_FONT_FAMILY[frontCaptionFontFamily],
+                            fontSize: `${frontCaptionFontSize}px`,
+                            color: CAPTION_COLOR[frontCaptionColor],
+                          }}
+                        >
                           Glissez le texte pour le repositionner sur la photo
                         </p>
                       </div>
@@ -3453,6 +3569,18 @@ export default function EditorPage() {
                             ? 'Le destinataire grattera pour découvrir'
                             : 'Effet surprise désactivé'}
                         </span>
+                        {scratchCardEnabled && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setShowInteractivePreview('scratch')
+                            }}
+                            className="text-left text-xs text-amber-600 hover:text-amber-700 font-semibold mt-1"
+                          >
+                            Voir un aperçu
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -3483,6 +3611,18 @@ export default function EditorPage() {
                             ? "Le destinataire reconstituera l'image"
                             : 'Puzzle désactivé'}
                         </span>
+                        {puzzleCardEnabled && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setShowInteractivePreview('puzzle')
+                            }}
+                            className="text-left text-xs text-violet-600 hover:text-violet-700 font-semibold mt-1"
+                          >
+                            Voir un aperçu
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -5075,6 +5215,56 @@ export default function EditorPage() {
             <Button
               onClick={() => setShowPricingModal(false)}
               className="rounded-xl bg-teal-500 hover:bg-teal-600"
+            >
+              Fermer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Aperçu carte à gratter / puzzle */}
+      <Dialog
+        open={showInteractivePreview !== null}
+        onOpenChange={(open) => !open && setShowInteractivePreview(null)}
+      >
+        <DialogContent className="sm:max-w-[min(90vw,560px)] max-h-[90vh] overflow-hidden flex flex-col bg-white rounded-3xl border-none shadow-2xl p-0">
+          <DialogHeader className="px-6 pt-6 pb-3 border-b border-stone-100 flex-shrink-0">
+            <DialogTitle className="text-lg font-bold text-stone-800">
+              {showInteractivePreview === 'scratch' && 'Aperçu — Carte à gratter'}
+              {showInteractivePreview === 'puzzle' && 'Aperçu — Carte puzzle'}
+            </DialogTitle>
+            <DialogDescription className="text-sm text-stone-500">
+              {showInteractivePreview === 'scratch' &&
+                'Glissez sur la carte pour simuler le grattage. Ce que verra le destinataire.'}
+              {showInteractivePreview === 'puzzle' &&
+                'Déplacez les pièces pour reconstituer l\'image. Ce que verra le destinataire.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto p-6 flex justify-center items-start min-h-0">
+            {showInteractivePreview && frontImage && (
+              <div className="w-full max-w-[320px] perspective-[1000px]">
+                <ScratchCardViewWrapper
+                  postcard={{
+                    ...currentPostcard,
+                    scratchCardEnabled: showInteractivePreview === 'scratch',
+                    puzzleCardEnabled: showInteractivePreview === 'puzzle',
+                  }}
+                >
+                  <PostcardView
+                    postcard={currentPostcard}
+                    flipped={false}
+                    className="w-full"
+                    width="320"
+                    height="213"
+                  />
+                </ScratchCardViewWrapper>
+              </div>
+            )}
+          </div>
+          <DialogFooter className="px-6 pb-6 pt-3 border-t border-stone-100 flex-shrink-0">
+            <Button
+              onClick={() => setShowInteractivePreview(null)}
+              className="rounded-xl bg-stone-700 hover:bg-stone-800"
             >
               Fermer
             </Button>

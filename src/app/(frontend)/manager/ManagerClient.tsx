@@ -30,6 +30,7 @@ import {
   Copy,
   MessageCircle,
   Send,
+  Gift,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -107,6 +108,7 @@ import {
   getAgencyTrackingLinks,
   sendAgencyTrackingLinkByEmail,
 } from '@/actions/agence-actions'
+import { redeemPromoCodeForCredits } from '@/actions/leads-actions'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import EditPostcardDialog from './EditPostcardDialog'
@@ -210,6 +212,10 @@ export default function ManagerClient({
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [deleteConfirmBulkIds, setDeleteConfirmBulkIds] = useState<number[] | null>(null)
   const [umamiStats, setUmamiStats] = useState<Record<string, number>>({})
+  const [promoDialogOpen, setPromoDialogOpen] = useState(false)
+  const [promoCodeInput, setPromoCodeInput] = useState('')
+  const [promoLoading, setPromoLoading] = useState(false)
+  const [promoResult, setPromoResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const maxAutoColumns = useEspaceClientActions ? 3 : 6
 
   useEffect(() => {
@@ -599,6 +605,22 @@ export default function ManagerClient({
               </Button>
             </div>
           )}
+
+          {useEspaceClientActions && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-teal-200 text-teal-700 hover:bg-teal-50 hover:text-teal-800"
+              onClick={() => {
+                setPromoDialogOpen(true)
+                setPromoResult(null)
+                setPromoCodeInput('')
+              }}
+            >
+              <Gift size={16} className="mr-2" />
+              Code promo
+            </Button>
+          )}
         </div>
 
         {/* Bulk actions bar */}
@@ -861,6 +883,100 @@ export default function ManagerClient({
                 disabled={isPending}
               >
                 {isPending ? 'Suppression…' : `Supprimer (${deleteConfirmBulkIds?.length ?? 0})`}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Code promo — ajouter des crédits */}
+        <Dialog open={promoDialogOpen} onOpenChange={setPromoDialogOpen}>
+          <DialogContent className="sm:max-w-md" onClick={(e) => e.stopPropagation()}>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Gift size={20} className="text-teal-600" />
+                Ajouter des crédits avec un code promo
+              </DialogTitle>
+              <DialogDescription>
+                Entrez votre code promo pour ajouter une carte (1 crédit) à votre compte.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-2">
+              <div className="grid gap-2">
+                <label className="text-sm font-medium text-stone-700">Code promo</label>
+                <Input
+                  placeholder="Ex. COOLOS"
+                  value={promoCodeInput}
+                  onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase().trim())}
+                  className="font-mono uppercase"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      if (promoCodeInput && !promoLoading) {
+                        setPromoLoading(true)
+                        setPromoResult(null)
+                        redeemPromoCodeForCredits(promoCodeInput).then((res) => {
+                          setPromoLoading(false)
+                          if (res.success) {
+                            setPromoResult({
+                              type: 'success',
+                              message: `Code accepté ! 1 crédit a été ajouté à votre compte.`,
+                            })
+                            setPromoCodeInput('')
+                          } else {
+                            setPromoResult({
+                              type: 'error',
+                              message: res.error ?? 'Erreur inconnue',
+                            })
+                          }
+                        })
+                      }
+                    }
+                  }}
+                />
+              </div>
+              {promoResult && (
+                <p
+                  className={cn(
+                    'text-sm rounded-md p-3',
+                    promoResult.type === 'success'
+                      ? 'bg-teal-50 text-teal-800 border border-teal-200'
+                      : 'bg-red-50 text-red-800 border border-red-200',
+                  )}
+                >
+                  {promoResult.message}
+                </p>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" size="sm" onClick={() => setPromoDialogOpen(false)}>
+                Fermer
+              </Button>
+              <Button
+                size="sm"
+                className="bg-teal-600 hover:bg-teal-700 text-white"
+                disabled={!promoCodeInput || promoLoading}
+                onClick={() => {
+                  if (!promoCodeInput || promoLoading) return
+                  setPromoLoading(true)
+                  setPromoResult(null)
+                  redeemPromoCodeForCredits(promoCodeInput).then((res) => {
+                    setPromoLoading(false)
+                    if (res.success) {
+                      setPromoResult({
+                        type: 'success',
+                        message: `Code accepté ! 1 crédit a été ajouté à votre compte.`,
+                      })
+                      setPromoCodeInput('')
+                    } else {
+                      setPromoResult({
+                        type: 'error',
+                        message: res.error ?? 'Erreur inconnue',
+                      })
+                    }
+                  })
+                }}
+              >
+                {promoLoading ? 'Validation…' : 'Valider le code'}
               </Button>
             </DialogFooter>
           </DialogContent>

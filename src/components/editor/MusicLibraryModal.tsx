@@ -105,7 +105,8 @@ export function MusicLibraryModal({ isOpen, onClose, onSelect }: MusicLibraryMod
             Bibliothèque de musique
           </DialogTitle>
           <DialogDescription className="text-stone-500">
-            Musique gratuite et libre de droits (Pixabay). Choisissez une ambiance pour votre carte.
+            Musique gratuite et libre de droits (Freesound). Choisissez une ambiance pour votre
+            carte.
           </DialogDescription>
         </DialogHeader>
 
@@ -139,7 +140,9 @@ export function MusicLibraryModal({ isOpen, onClose, onSelect }: MusicLibraryMod
                   onClick={() => handleSearch(s)}
                   className={cn(
                     'px-4 py-1.5 rounded-full text-sm font-semibold transition-all',
-                    query === s ? 'bg-teal-500 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200',
+                    query === s
+                      ? 'bg-teal-500 text-white'
+                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200',
                   )}
                 >
                   {s}
@@ -176,7 +179,9 @@ export function MusicLibraryModal({ isOpen, onClose, onSelect }: MusicLibraryMod
                   <p className="font-semibold text-stone-800 truncate">{track.title}</p>
                   <p className="text-xs text-stone-500">{track.artist}</p>
                 </div>
-                <span className="text-xs text-stone-400 tabular-nums">{formatDuration(track.duration)}</span>
+                <span className="text-xs text-stone-400 tabular-nums">
+                  {formatDuration(track.duration)}
+                </span>
                 <Button
                   onClick={() => {
                     onSelect(track)

@@ -79,14 +79,10 @@ export const Postcards: CollectionConfig = {
     },
     {
       name: 'frontCaptionFontSize',
-      type: 'select',
-      admin: { description: 'Taille du texte accroche' },
-      options: [
-        { label: 'Petit', value: 'sm' },
-        { label: 'Moyen', value: 'md' },
-        { label: 'Grand', value: 'lg' },
-        { label: 'Très grand', value: 'xl' },
-      ],
+      type: 'number',
+      admin: { description: 'Taille du texte accroche (px)' },
+      min: 12,
+      max: 28,
     },
     {
       name: 'frontCaptionColor',

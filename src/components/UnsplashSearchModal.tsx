@@ -131,40 +131,40 @@ export function UnsplashSearchModal({
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="sm:max-w-[960px] max-w-[95vw] max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white border-none shadow-2xl">
                 <DialogHeader className="px-4 pt-4 pb-0 flex-shrink-0">
-                    <div className="flex flex-wrap items-baseline justify-between gap-2">
-                        <div>
+                    <div className="flex flex-col gap-2">
+                        <div className="flex flex-wrap items-center gap-3">
                             <DialogTitle className="text-xl font-serif font-bold text-stone-800">
                                 Galerie d&apos;images
                             </DialogTitle>
-                            <DialogDescription className="text-stone-500 text-sm mt-0.5">
-                                Millions d&apos;images gratuites et libres de droits.
-                            </DialogDescription>
+                            {/* Source Tabs - à gauche sous le titre */}
+                            <div className="flex gap-1 p-0.5 bg-stone-100 rounded-lg">
+                                <button
+                                    onClick={() => onSourceChange('unsplash')}
+                                    className={cn(
+                                        'px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
+                                        source === 'unsplash'
+                                            ? 'bg-white text-stone-800 shadow-sm'
+                                            : 'text-stone-500 hover:text-stone-700'
+                                    )}
+                                >
+                                    Unsplash
+                                </button>
+                                <button
+                                    onClick={() => onSourceChange('pixabay')}
+                                    className={cn(
+                                        'px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
+                                        source === 'pixabay'
+                                            ? 'bg-white text-stone-800 shadow-sm'
+                                            : 'text-stone-500 hover:text-stone-700'
+                                    )}
+                                >
+                                    Pixabay
+                                </button>
+                            </div>
                         </div>
-                        {/* Source Tabs - inline with header */}
-                        <div className="flex gap-1 p-0.5 bg-stone-100 rounded-lg">
-                            <button
-                                onClick={() => onSourceChange('unsplash')}
-                                className={cn(
-                                    'px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
-                                    source === 'unsplash'
-                                        ? 'bg-white text-stone-800 shadow-sm'
-                                        : 'text-stone-500 hover:text-stone-700'
-                                )}
-                            >
-                                Unsplash
-                            </button>
-                            <button
-                                onClick={() => onSourceChange('pixabay')}
-                                className={cn(
-                                    'px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
-                                    source === 'pixabay'
-                                        ? 'bg-white text-stone-800 shadow-sm'
-                                        : 'text-stone-500 hover:text-stone-700'
-                                )}
-                            >
-                                Pixabay
-                            </button>
-                        </div>
+                        <DialogDescription className="text-stone-500 text-sm">
+                            Millions d&apos;images gratuites et libres de droits.
+                        </DialogDescription>
                     </div>
                 </DialogHeader>
 

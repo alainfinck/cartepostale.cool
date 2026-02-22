@@ -1,18 +1,16 @@
 /**
- * API proxy pour la bibliothèque de musique Pixabay.
- * Pixabay propose des milliers de titres gratuits et libres de droits (CC0).
+ * API proxy pour la bibliothèque de musique Freesound.
+ * Freesound propose des milliers de titres gratuits et libres de droits.
  *
- * Configuration : variable d'environnement PIXABAY_API_KEY
- * Obtenir une clé gratuite : https://pixabay.com/api/docs/
- *
- * Si la clé n'est pas configurée ou est payante, la route retourne une liste vide.
+ * Configuration : variable d'environnement FREESOUND_API_KEY
+ * Obtenir une clé gratuite : https://freesound.org/apiv2/apply/
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 
-const PIXABAY_API_KEY = process.env.PIXABAY_API_KEY?.trim()
+const FREESOUND_API_KEY = process.env.FREESOUND_API_KEY?.trim()
 
-export interface PixabayMusicTrack {
+export interface MusicTrack {
   id: number
   title: string
   url: string
@@ -23,25 +21,26 @@ export interface PixabayMusicTrack {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const q = searchParams.get('q') || 'ambient'
-  const perPage = Math.min(parseInt(searchParams.get('per_page') || '20', 10), 50)
+  const page_size = Math.min(parseInt(searchParams.get('per_page') || '20', 10), 50)
 
-  if (!PIXABAY_API_KEY) {
+  if (!FREESOUND_API_KEY) {
     return NextResponse.json(
       {
         tracks: [],
         message:
-          'PIXABAY_API_KEY non configurée. Ajoutez-la dans vos variables d\'environnement pour activer la bibliothèque de musique. Clé gratuite sur pixabay.com/api/docs/',
+          "FREESOUND_API_KEY non configurée. Ajoutez-la dans vos variables d'environnement pour activer la bibliothèque de musique. Clé gratuite sur freesound.org/apiv2/apply/",
       },
       { status: 200 },
     )
   }
 
   try {
-    // Pixabay Music API - endpoint documenté sur pixabay.com/api/docs/
-    const url = new URL('https://pixabay.com/api/music/')
-    url.searchParams.set('key', PIXABAY_API_KEY)
-    url.searchParams.set('q', q)
-    url.searchParams.set('per_page', String(perPage))
+    // Freesound Search API
+    const url = new URL('https://freesound.org/apiv2/search/text/')
+    url.searchParams.set('token', FREESOUND_API_KEY)
+    url.searchParams.set('query', q)
+    url.searchParams.set('page_size', String(page_size))
+    url.searchParams.set('fields', 'id,name,username,previews,duration')
 
     const res = await fetch(url.toString(), {
       headers: { Accept: 'application/json' },
@@ -49,30 +48,33 @@ export async function GET(request: NextRequest) {
     })
 
     if (!res.ok) {
-      // Si l'endpoint music n'existe pas (404), retourner liste vide
-      if (res.status === 404) {
-        return NextResponse.json({ tracks: [], message: 'API music non disponible' }, { status: 200 })
-      }
-      throw new Error(`Pixabay API error: ${res.status}`)
+      const errorData = await res.json()
+      console.error('[freesound-music] API error:', res.status, errorData)
+      return NextResponse.json(
+        { tracks: [], message: `Erreur API Freesound: ${res.status}` },
+        { status: 200 },
+      )
     }
 
     const data = await res.json()
 
-    const tracks: PixabayMusicTrack[] = (data.hits || []).map((hit: any) => {
-      const url = hit.preview?.url || hit.url || hit.audio || hit.download || hit.video?.url
-      if (!url) return null
-      return {
-        id: hit.id,
-        title: hit.title || hit.tags || 'Sans titre',
-        url,
-        duration: hit.duration || 0,
-        artist: hit.user || hit.artist || 'Pixabay',
-      }
-    }).filter(Boolean) as PixabayMusicTrack[]
+    const tracks: MusicTrack[] = (data.results || [])
+      .map((hit: any) => {
+        const url = hit.previews?.['preview-hq-mp3'] || hit.previews?.['preview-lq-mp3']
+        if (!url) return null
+        return {
+          id: hit.id,
+          title: hit.name || 'Sans titre',
+          url,
+          duration: hit.duration || 0,
+          artist: hit.username || 'Freesound',
+        }
+      })
+      .filter(Boolean) as MusicTrack[]
 
     return NextResponse.json({ tracks })
   } catch (err) {
-    console.error('[pixabay-music] Error:', err)
+    console.error('[freesound-music] Error:', err)
     return NextResponse.json(
       { tracks: [], message: 'Erreur lors de la recherche' },
       { status: 200 },

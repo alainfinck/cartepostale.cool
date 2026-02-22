@@ -43,7 +43,11 @@ export interface FrontCaptionPosition {
 
 /** Style du texte accroche (face avant). */
 export type FrontCaptionFontFamily = 'serif' | 'sans' | 'cursive' | 'display'
-export type FrontCaptionFontSize = 'sm' | 'md' | 'lg' | 'xl'
+/** Taille du texte accroche en pixels (ex. 16). Utilisé avec boutons − / +. */
+export const CAPTION_FONT_SIZE_MIN = 12
+export const CAPTION_FONT_SIZE_MAX = 28
+export const CAPTION_FONT_SIZE_DEFAULT = 16
+export const CAPTION_FONT_SIZE_STEP = 2
 export type FrontCaptionColor =
   | 'stone-900'
   | 'white'
@@ -67,8 +71,8 @@ export interface Postcard {
   frontCaptionPosition?: FrontCaptionPosition
   /** Police du texte accroche. */
   frontCaptionFontFamily?: FrontCaptionFontFamily
-  /** Taille du texte accroche (sm, md, lg, xl). */
-  frontCaptionFontSize?: FrontCaptionFontSize
+  /** Taille du texte accroche : nombre (px) ou anciennes valeurs sm/md/lg/xl pour compat. */
+  frontCaptionFontSize?: number | string
   /** Couleur du texte accroche. */
   frontCaptionColor?: FrontCaptionColor
   /** Opacité du fond du bloc texte (0–100). */

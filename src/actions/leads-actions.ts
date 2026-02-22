@@ -3,6 +3,8 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { sendEmail, generatePromoCodeEmail } from '@/lib/email-service'
+import { getCurrentUser } from '@/lib/auth'
+import { revalidatePath } from 'next/cache'
 // crypto is available globally in Node.js 18+ and Next.js server actions
 
 const ALWAYS_FREE_PROMO_CODE = 'COOLOS'
@@ -130,6 +132,75 @@ export async function consumePromoCode(code: string, postcardId: number) {
   } catch (error: any) {
     console.error('Error using code:', error)
     return { success: false, error: "Erreur lors de l'activation" }
+  }
+}
+
+/** Redeem a promo code to add 1 credit to the current user (no postcard). */
+export async function redeemPromoCodeForCredits(code: string) {
+  const user = await getCurrentUser()
+  if (!user) {
+    return { success: false, error: 'Vous devez être connecté pour utiliser un code promo.' }
+  }
+
+  try {
+    const normalizedCode = normalizePromoCode(code)
+    const payload = await getPayload({ config })
+
+    if (normalizedCode === ALWAYS_FREE_PROMO_CODE) {
+      await payload.update({
+        collection: 'users',
+        id: user.id,
+        data: {
+          credits: (user.credits ?? 0) + 1,
+        },
+      })
+      revalidatePath('/espace-client')
+      revalidatePath('/espace-client/cartes')
+      return { success: true, creditsAdded: 1 }
+    }
+
+    const result = await payload.find({
+      collection: 'leads',
+      where: {
+        code: { equals: normalizedCode },
+        isUsed: { equals: false },
+      },
+    })
+
+    if (result.docs.length === 0) {
+      return { success: false, error: 'Code invalide ou déjà utilisé' }
+    }
+
+    const leadId = result.docs[0].id
+    await payload.update({
+      collection: 'leads',
+      id: leadId,
+      data: {
+        isUsed: true,
+        usedAt: new Date().toISOString(),
+        // usedByPostcard left null when redeeming for credits only
+      },
+    })
+
+    const dbUser = await payload.findByID({
+      collection: 'users',
+      id: user.id,
+    })
+    const currentCredits = dbUser.credits ?? 0
+    await payload.update({
+      collection: 'users',
+      id: user.id,
+      data: {
+        credits: currentCredits + 1,
+      },
+    })
+
+    revalidatePath('/espace-client')
+    revalidatePath('/espace-client/cartes')
+    return { success: true, creditsAdded: 1 }
+  } catch (error: any) {
+    console.error('Error redeeming promo for credits:', error)
+    return { success: false, error: "Erreur lors de l'activation du code." }
   }
 }
 

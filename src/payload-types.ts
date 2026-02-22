@@ -294,6 +294,24 @@ export interface Postcard {
     x?: number | null;
     y?: number | null;
   };
+  /**
+   * Police du texte accroche
+   */
+  frontCaptionFontFamily?: ('serif' | 'sans' | 'cursive' | 'display') | null;
+  /**
+   * Taille du texte accroche (px)
+   */
+  frontCaptionFontSize?: number | null;
+  /**
+   * Couleur du texte accroche
+   */
+  frontCaptionColor?:
+    | ('stone-900' | 'white' | 'black' | 'teal-800' | 'stone-700' | 'amber-900' | 'rose-900' | 'emerald-900')
+    | null;
+  /**
+   * Opacité du fond du bloc texte (0-100)
+   */
+  frontTextBgOpacity?: number | null;
   message: string;
   recipients?:
     | {
@@ -933,6 +951,10 @@ export interface PostcardsSelect<T extends boolean = true> {
         x?: T;
         y?: T;
       };
+  frontCaptionFontFamily?: T;
+  frontCaptionFontSize?: T;
+  frontCaptionColor?: T;
+  frontTextBgOpacity?: T;
   message?: T;
   recipients?:
     | T

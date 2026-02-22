@@ -101,6 +101,10 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
                 y: Number(payloadPostcard.frontCaptionPosition.y),
               }
             : undefined,
+        frontCaptionFontFamily: payloadPostcard.frontCaptionFontFamily || undefined,
+        frontCaptionFontSize: payloadPostcard.frontCaptionFontSize ?? undefined,
+        frontCaptionColor: payloadPostcard.frontCaptionColor || undefined,
+        frontTextBgOpacity: payloadPostcard.frontTextBgOpacity ?? undefined,
         message: payloadPostcard.message,
         recipientName: payloadPostcard.recipientName || '',
         senderName: payloadPostcard.senderName || '',

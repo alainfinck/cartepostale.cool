@@ -7,6 +7,7 @@ import { Postcard } from '@/types'
 import { MapPin, Mail } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
+import { getCaptionStyle, getCaptionBgColor } from '@/lib/caption-style'
 
 interface MobilePostcardViewProps {
   postcard: Postcard
@@ -56,31 +57,46 @@ export default function MobilePostcardView({ postcard }: MobilePostcardViewProps
           ))}
 
           {/* Caption + emoji (position personnalisée ou en bas par défaut) */}
-          {postcard.frontCaption?.trim() && (
-            <div
-              className={cn(
-                'z-10 flex items-center gap-2.5 rounded-xl border border-white/40 backdrop-blur-xl px-4 py-3 shadow-lg w-fit max-w-[calc(100%-2rem)]',
-                postcard.frontCaptionPosition ? 'absolute' : 'absolute bottom-4 left-4 right-4',
-              )}
-              style={
-                postcard.frontCaptionPosition
-                  ? {
-                      left: `${postcard.frontCaptionPosition.x}%`,
-                      top: `${postcard.frontCaptionPosition.y}%`,
-                      transform: 'translate(-50%, -50%)',
-                      backgroundColor: 'rgba(255,255,255,0.65)',
-                    }
-                  : { backgroundColor: 'rgba(255,255,255,0.65)' }
-              }
-            >
-              {postcard.frontEmoji && (
-                <span className="text-2xl leading-none shrink-0">{postcard.frontEmoji}</span>
-              )}
-              <p className="m-0 text-base font-bold leading-tight text-stone-900 break-words line-clamp-2">
-                {postcard.frontCaption}
-              </p>
-            </div>
-          )}
+          {postcard.frontCaption?.trim() && (() => {
+            const captionStyle = getCaptionStyle(postcard)
+            const bgColor = getCaptionBgColor(postcard)
+            return (
+              <div
+                className={cn(
+                  'z-10 flex items-center gap-2.5 rounded-xl border border-white/40 backdrop-blur-xl px-4 py-3 shadow-lg w-fit max-w-[calc(100%-2rem)]',
+                  postcard.frontCaptionPosition ? 'absolute' : 'absolute bottom-4 left-4 right-4',
+                )}
+                style={
+                  postcard.frontCaptionPosition
+                    ? {
+                        left: `${postcard.frontCaptionPosition.x}%`,
+                        top: `${postcard.frontCaptionPosition.y}%`,
+                        transform: 'translate(-50%, -50%)',
+                        backgroundColor: bgColor,
+                      }
+                    : { backgroundColor: bgColor }
+                }
+              >
+                {postcard.frontEmoji && (
+                  <span className="text-2xl leading-none shrink-0">{postcard.frontEmoji}</span>
+                )}
+                <p
+                  className="m-0 font-bold leading-tight break-words line-clamp-2"
+                  style={{
+                    fontFamily: captionStyle.fontFamily,
+                    fontSize: captionStyle.fontSize,
+                    color: captionStyle.color,
+                    textShadow:
+                      captionStyle.color === '#ffffff' || captionStyle.color === '#000000'
+                        ? '0 1px 2px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.15)'
+                        : '0 1px 2px rgba(255,255,255,0.8)',
+                  }}
+                >
+                  {postcard.frontCaption}
+                </p>
+              </div>
+            )
+          })()}
 
           {/* Location badge */}
           {postcard.location && (
