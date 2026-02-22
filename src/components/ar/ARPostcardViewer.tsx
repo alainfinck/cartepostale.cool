@@ -53,11 +53,20 @@ const ARPostcardViewer: React.FC<ARPostcardViewerProps> = ({ postcard, onClose }
     initialRotation: 0,
   })
 
+  const lastTapRef = useRef(0)
+  const [showFlipHint, setShowFlipHint] = useState(true)
   const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null)
 
   useEffect(() => {
     setPortalRoot(document.body)
   }, [])
+
+  useEffect(() => {
+    if (showFlipHint && step === 'active') {
+      const timer = setTimeout(() => setShowFlipHint(false), 6000)
+      return () => clearTimeout(timer)
+    }
+  }, [showFlipHint, step])
 
   const startCamera = useCallback(async () => {
     try {
@@ -275,6 +284,11 @@ const ARPostcardViewer: React.FC<ARPostcardViewerProps> = ({ postcard, onClose }
                   width: 'min(85vw, 500px)',
                   aspectRatio: '3/2',
                 }}
+                onDoubleClick={(e) => {
+                  e.stopPropagation()
+                  setIsFlipped((f) => !f)
+                  setShowFlipHint(false)
+                }}
               >
                 {/* Front face */}
                 <div
@@ -345,6 +359,25 @@ const ARPostcardViewer: React.FC<ARPostcardViewerProps> = ({ postcard, onClose }
                   )}
 
                   <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20 pointer-events-none" />
+
+                  {/* Flip hint on front face */}
+                  <AnimatePresence>
+                    {showFlipHint && !isFlipped && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        className="absolute top-3 right-3 z-20 pointer-events-none"
+                      >
+                        <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-md rounded-full px-3 py-1.5 border border-white/20 shadow-lg">
+                          <RotateCw size={12} className="text-white" />
+                          <span className="text-[10px] font-bold text-white uppercase tracking-wider">
+                            Double-tap pour retourner
+                          </span>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Back face */}
@@ -399,6 +432,25 @@ const ARPostcardViewer: React.FC<ARPostcardViewerProps> = ({ postcard, onClose }
                   </div>
 
                   <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/10 pointer-events-none" />
+
+                  {/* Flip hint on back face */}
+                  <AnimatePresence>
+                    {showFlipHint && isFlipped && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        className="absolute top-3 right-3 z-20 pointer-events-none"
+                      >
+                        <div className="flex items-center gap-1.5 bg-stone-800/60 backdrop-blur-md rounded-full px-3 py-1.5 border border-stone-600/30 shadow-lg">
+                          <RotateCw size={12} className="text-white" />
+                          <span className="text-[10px] font-bold text-white uppercase tracking-wider">
+                            Double-tap pour retourner
+                          </span>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </motion.div>
             </div>
@@ -509,34 +561,46 @@ const ARPostcardViewer: React.FC<ARPostcardViewerProps> = ({ postcard, onClose }
             <div className="flex items-center justify-center gap-3 max-w-md mx-auto">
               <button
                 onClick={() => setCardScale((s) => Math.max(0.3, s - 0.1))}
-                className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/60 transition-colors active:scale-95"
+                className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
                 title="Réduire"
               >
-                <ZoomOut size={18} />
+                <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/60 transition-colors">
+                  <ZoomOut size={18} />
+                </div>
+                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider">Réduire</span>
               </button>
 
               <button
                 onClick={() => setIsFlipped(!isFlipped)}
-                className="w-14 h-14 rounded-full bg-teal-500/80 backdrop-blur-md border border-teal-400/50 text-white flex items-center justify-center hover:bg-teal-500 transition-all shadow-lg shadow-teal-500/30 active:scale-95"
+                className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
                 title="Retourner la carte"
               >
-                <RotateCw size={24} />
+                <div className="w-16 h-16 rounded-full bg-teal-500/80 backdrop-blur-md border-2 border-teal-400/50 text-white flex items-center justify-center hover:bg-teal-500 transition-all shadow-lg shadow-teal-500/30">
+                  <RotateCw size={28} />
+                </div>
+                <span className="text-[10px] font-bold text-white uppercase tracking-wider">Retourner</span>
               </button>
 
               <button
                 onClick={() => setCardScale((s) => Math.min(2, s + 0.1))}
-                className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/60 transition-colors active:scale-95"
+                className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
                 title="Agrandir"
               >
-                <ZoomIn size={18} />
+                <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/60 transition-colors">
+                  <ZoomIn size={18} />
+                </div>
+                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider">Zoom</span>
               </button>
 
               <button
                 onClick={resetTransform}
-                className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/60 transition-colors active:scale-95"
+                className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
                 title="Recentrer"
               >
-                <Maximize2 size={18} />
+                <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/60 transition-colors">
+                  <Maximize2 size={18} />
+                </div>
+                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider">Centrer</span>
               </button>
             </div>
           </div>
