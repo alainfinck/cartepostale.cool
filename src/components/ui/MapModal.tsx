@@ -91,8 +91,8 @@ const MapModal: React.FC<MapModalProps> = ({
         className={cn(
           'bg-white rounded-3xl overflow-hidden shadow-2xl relative flex flex-col transition-all duration-300 border-4 border-white/50',
           isLarge
-            ? 'w-[95vw] max-h-[75dvh] h-auto md:w-[85vw] md:max-h-[80dvh] max-w-6xl'
-            : 'w-[340px] max-h-[80dvh] h-auto sm:w-[600px] sm:h-[450px]',
+            ? 'w-[95vw] h-[75dvh] md:w-[85vw] md:h-[80dvh] max-w-6xl'
+            : 'w-[340px] h-[70dvh] sm:w-[600px] sm:h-[450px]',
         )}
         onClick={(e) => e.stopPropagation()}
       >
@@ -104,7 +104,7 @@ const MapModal: React.FC<MapModalProps> = ({
           <X size={28} className="group-hover:rotate-90 transition-transform duration-300" />
         </button>
 
-        {isLarge && photoLocations.length > 0 && (
+        {photoLocations.length > 0 && (
           <button
             onClick={() => setShowPhotos(!showPhotos)}
             className={cn(
@@ -121,12 +121,12 @@ const MapModal: React.FC<MapModalProps> = ({
         )}
 
         {isLoading ? (
-          <div className="w-full h-full flex flex-col items-center justify-center text-stone-500 gap-3">
+          <div className="flex-1 flex flex-col items-center justify-center text-stone-500 gap-3">
             <Loader2 className="animate-spin text-teal-500" size={48} />
             <p className="font-medium">Localisation de votre souvenir...</p>
           </div>
         ) : error || !position ? (
-          <div className="w-full h-full flex flex-col items-center justify-center text-stone-500 gap-3 bg-stone-50">
+          <div className="flex-1 flex flex-col items-center justify-center text-stone-500 gap-3 bg-stone-50">
             <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-2">
               <Globe size={40} />
             </div>
@@ -138,78 +138,80 @@ const MapModal: React.FC<MapModalProps> = ({
             </p>
           </div>
         ) : (
-          <MapContainer
-            center={position}
-            zoom={13}
-            style={{ width: '100%', height: '100%' }}
-            className="z-0"
-          >
-            <LeafletFix />
-            <MapEffects center={position} zoom={13} />
+          <div className="flex-1 min-h-0 w-full">
+            <MapContainer
+              center={position}
+              zoom={13}
+              style={{ width: '100%', height: '100%' }}
+              className="z-0"
+            >
+              <LeafletFix />
+              <MapEffects center={position} zoom={13} />
 
-            <LayersControl position="topleft">
-              <LayersControl.BaseLayer checked name="Plan (OSM)">
-                <TileLayer
-                  attribution={
-                    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  }
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-              </LayersControl.BaseLayer>
-
-              <LayersControl.BaseLayer name="Satellite">
-                <TileLayer
-                  attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community"
-                  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                />
-              </LayersControl.BaseLayer>
-
-              <LayersControl.BaseLayer name="Hybride (Satellite + Routes)">
-                <TileLayer
-                  attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community"
-                  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                />
-                <TileLayer
-                  url="https://stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}{r}.png"
-                  opacity={0.7}
-                />
-              </LayersControl.BaseLayer>
-            </LayersControl>
-
-            <Marker position={position}>
-              <Popup className="custom-popup" minWidth={240} maxWidth={320}>
-                <div className="flex flex-col gap-3 p-1">
-                  <div className="w-full aspect-video rounded-xl overflow-hidden bg-stone-100 border-2 border-white shadow-md">
-                    <img src={image} alt={location} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex flex-col">
-                    <div className="font-bold text-lg text-stone-800 capitalize leading-tight flex items-center gap-2">
-                      <MapIcon size={16} className="text-teal-600" />
-                      {location}
-                    </div>
-                    {message && (
-                      <div className="text-xs text-stone-500 mt-2 line-clamp-3 italic bg-stone-50 p-2 rounded-lg border border-stone-100 font-handwriting text-base">
-                        &quot;{message}&quot;
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Popup>
-            </Marker>
-
-            {showPhotos &&
-              photoLocations.map((loc) => (
-                <PhotoMarker
-                  key={loc.id}
-                  location={loc}
-                  onClick={(index) => {
-                    if (onPhotoClick) {
-                      onPhotoClick(loc.mediaItems[index])
+              <LayersControl position="topleft">
+                <LayersControl.BaseLayer checked name="Plan (OSM)">
+                  <TileLayer
+                    attribution={
+                      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     }
-                  }}
-                />
-              ))}
-          </MapContainer>
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                </LayersControl.BaseLayer>
+
+                <LayersControl.BaseLayer name="Satellite">
+                  <TileLayer
+                    attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community"
+                    url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                  />
+                </LayersControl.BaseLayer>
+
+                <LayersControl.BaseLayer name="Hybride (Satellite + Routes)">
+                  <TileLayer
+                    attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community"
+                    url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                  />
+                  <TileLayer
+                    url="https://stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}{r}.png"
+                    opacity={0.7}
+                  />
+                </LayersControl.BaseLayer>
+              </LayersControl>
+
+              <Marker position={position}>
+                <Popup className="custom-popup" minWidth={240} maxWidth={320}>
+                  <div className="flex flex-col gap-3 p-1">
+                    <div className="w-full aspect-video rounded-xl overflow-hidden bg-stone-100 border-2 border-white shadow-md">
+                      <img src={image} alt={location} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="font-bold text-lg text-stone-800 capitalize leading-tight flex items-center gap-2">
+                        <MapIcon size={16} className="text-teal-600" />
+                        {location}
+                      </div>
+                      {message && (
+                        <div className="text-xs text-stone-500 mt-2 line-clamp-3 italic bg-stone-50 p-2 rounded-lg border border-stone-100 font-handwriting text-base">
+                          &quot;{message}&quot;
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+
+              {showPhotos &&
+                photoLocations.map((loc) => (
+                  <PhotoMarker
+                    key={loc.id}
+                    location={loc}
+                    onClick={(index) => {
+                      if (onPhotoClick) {
+                        onPhotoClick(loc.mediaItems[index])
+                      }
+                    }}
+                  />
+                ))}
+            </MapContainer>
+          </div>
         )}
       </div>
     </div>
