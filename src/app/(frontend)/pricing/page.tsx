@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 export const metadata: Metadata = {
   title: 'Tarifs — Cartes postales numériques | CartePostale.cool',
   description:
-    'Créez votre carte postale numérique : gratuit 48h, Classique 1,99 €, Album 2,99 € ou 4,99 €, Audio 4,99 €, Vidéo 9,99 €, Pack Multi-destinataires 4,99 €. Modifiable à tout moment.',
+    'Découvrez nos tarifs : Éphémère (gratuit), Classique (1,99 €), Album S (2,99 €) ou Album M (4,99 €). Options Audio, Vidéo et Multi-destinataires disponibles.',
 }
 
 type PlanColor = 'stone' | 'teal' | 'indigo' | 'violet' | 'amber' | 'rose' | 'orange'
@@ -177,68 +177,13 @@ const plans: PricingPlan[] = [
       "Jusqu'à 30 photos",
       'Mise en page pêle-mêle',
       'Durée de vie illimitée',
+      'Option Audio & Vidéo disponible',
       'Modifiable depuis votre compte',
     ],
     color: 'violet',
     highlight: '⭐ Populaire',
     popular: true,
     cta: 'Créer mon album',
-    ctaHref: '/editor',
-  },
-  {
-    id: 'audio',
-    emoji: '🎙️',
-    name: 'Message Audio',
-    tagline: 'Votre voix en cadeau',
-    price: '4,99 €',
-    priceNote: 'par carte',
-    duration: 'Illimitée',
-    features: [
-      '1 photo + message vocal',
-      'Durée de vie illimitée',
-      "Lecture audio à l'ouverture",
-      'Modifiable depuis votre compte',
-    ],
-    color: 'amber',
-    cta: 'Ajouter ma voix',
-    ctaHref: '/editor',
-  },
-  {
-    id: 'video',
-    emoji: '🎬',
-    name: 'Vidéo',
-    tagline: "L'ultime carte postale",
-    price: '9,99 €',
-    priceNote: 'par carte',
-    duration: 'Illimitée',
-    features: [
-      'Photos + vidéos',
-      'Durée de vie illimitée',
-      'Lecture vidéo intégrée',
-      'Modifiable depuis votre compte',
-    ],
-    color: 'rose',
-    highlight: '✨ Premium',
-    cta: 'Créer ma carte vidéo',
-    ctaHref: '/editor',
-  },
-  {
-    id: 'pack_multi',
-    emoji: '🚀',
-    name: 'Pack Multi-destinataires',
-    tagline: 'Une carte, plusieurs proches',
-    price: '4,99 €',
-    priceNote: 'par envoi groupé',
-    duration: '1 an',
-    features: [
-      "Jusqu'à 5 destinataires différents",
-      'Textes personnalisés par destinataire',
-      '1 photo commune',
-      'Modifiable depuis votre compte',
-    ],
-    color: 'orange',
-    highlight: '🔥 Recommandé',
-    cta: 'Envoyer à mes proches',
     ctaHref: '/editor',
   },
 ]
@@ -272,8 +217,9 @@ export default function PricingPage() {
           <div>
             <p className="font-bold text-sm">Le conseil Gemini</p>
             <p className="text-teal-100 text-xs mt-0.5">
-              Le <strong>Pack Multi-destinataires (4,99 €)</strong> est la formule la plus rentable
-              si vous souhaitez envoyer la même carte à plusieurs proches en une seule transaction.
+              L&apos;option <strong>Multi-destinataires (+4,99 €)</strong> est disponible sur tous
+              les plans ! C&apos;est la solution idéale pour envoyer vos vœux à toute la famille en
+              une seule fois.
             </p>
           </div>
         </div>
@@ -378,6 +324,86 @@ export default function PricingPage() {
               </div>
             )
           })}
+        </div>
+
+        {/* Options Section */}
+        <div className="mt-16 max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl font-serif font-bold text-stone-800">
+              Personnalisez votre envoi
+            </h2>
+            <p className="text-stone-500 text-sm mt-2">
+              Des options puissantes pour rendre votre carte inoubliable
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm flex flex-col">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-xl">
+                  🎙️
+                </div>
+                <div>
+                  <h3 className="font-bold text-stone-800">Message Audio</h3>
+                  <p className="text-[10px] text-amber-600 font-bold uppercase tracking-wider">
+                    Dès l&apos;Album M
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-stone-500 mb-6 flex-grow">
+                Enregistrez votre voix ou téléchargez un fichier audio. Votre message se lancera
+                automatiquement dès que votre proche retournera la carte.
+              </p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl font-black text-stone-800">+4,99 €</span>
+                <span className="text-[10px] text-stone-400">/ carte</span>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm flex flex-col">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center text-xl">
+                  🎬
+                </div>
+                <div>
+                  <h3 className="font-bold text-stone-800">Vidéo Premium</h3>
+                  <p className="text-[10px] text-rose-600 font-bold uppercase tracking-wider">
+                    Dès l&apos;Album M
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-stone-500 mb-6 flex-grow">
+                Donnez vie à vos souvenirs. Intégrez une vidéo qu&apos;on lance au retournement.
+                L&apos;expérience ultime du numérique.
+              </p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl font-black text-stone-800">+9,99 €</span>
+                <span className="text-[10px] text-stone-400">/ carte</span>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm flex flex-col">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-xl">
+                  🚀
+                </div>
+                <div>
+                  <h3 className="font-bold text-stone-800">Multi-destinataires</h3>
+                  <p className="text-[10px] text-orange-600 font-bold uppercase tracking-wider">
+                    Tous les plans
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-stone-500 mb-6 flex-grow">
+                Envoyez la même carte (avec textes personnalisés) à jusqu&apos;à 5 proches en une
+                seule fois. Idéal pour les vœux.
+              </p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl font-black text-stone-800">+4,99 €</span>
+                <span className="text-[10px] text-stone-400">/ envoi groupé</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Comparison note */}

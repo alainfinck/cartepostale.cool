@@ -51,11 +51,11 @@ const dropdownPro = [
 ]
 
 const dropdownTarifs = [
-  { href: '/pricing', icon: Gift, label: 'La "Découverte"', price: '0€', desc: 'Gratuit' },
-  { href: '/pricing', icon: Globe, label: 'La "Personnalisée"', price: '2,99€', desc: '/ carte' },
-  { href: '/pricing', icon: Star, label: 'L\'"Augmentée"', price: '4,99€', desc: '/ carte' },
-  { href: '/pricing', icon: Star, label: 'Voyageur', price: '9,99€', desc: '/ mois' },
-  { href: '/pricing', icon: Zap, label: 'Pro & Agence', price: 'Sur devis', desc: '' },
+  { href: '/pricing', icon: Gift, label: 'Éphémère', price: 'Gratuit', desc: '' },
+  { href: '/pricing', icon: Mail, label: 'Classique', price: '1,99 €', desc: '' },
+  { href: '/pricing', icon: Globe, label: 'Album S', price: '2,99 €', desc: '' },
+  { href: '/pricing', icon: Star, label: 'Album M', price: '4,99 €', desc: '' },
+  { href: '/pricing', icon: Zap, label: 'Pro & Agence', price: 'Devis', desc: '' },
 ]
 
 const dropdownFonctionnalites = [
@@ -161,78 +161,109 @@ export const Navbar = () => {
     id,
     label,
     active,
+    href,
     children,
   }: {
     id: string
     label: string
     active: boolean
+    href?: string
     children: React.ReactNode
-  }) => (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpenDropdown(openDropdown === id ? null : id)}
-        onMouseEnter={() => setOpenDropdown(id)}
-        className={cn(
-          'flex items-center gap-1.5 font-medium transition-all duration-200 rounded-xl px-4 py-3',
-          'tracking-tight text-[15px]',
-          active
-            ? 'text-teal-600 font-bold bg-teal-50/80'
-            : 'text-stone-600 hover:text-teal-600 hover:bg-stone-50/80',
-        )}
-      >
-        {label}
-        <ChevronDown
+  }) => {
+    const Component = href ? Link : 'button'
+    const props = href
+      ? { href, onClick: () => setOpenDropdown(null) }
+      : {
+          type: 'button' as const,
+          onClick: () => setOpenDropdown(openDropdown === id ? null : id),
+        }
+
+    return (
+      <div className="relative">
+        <Component
+          {...(props as any)}
+          onMouseEnter={() => setOpenDropdown(id)}
           className={cn(
-            'w-4 h-4 transition-transform duration-200',
-            openDropdown === id && 'rotate-180',
+            'flex items-center gap-1.5 font-medium transition-all duration-200 rounded-xl px-4 py-3',
+            'tracking-tight text-[15px]',
+            active
+              ? 'text-teal-600 font-bold bg-teal-50/80'
+              : 'text-stone-600 hover:text-teal-600 hover:bg-stone-50/80',
           )}
-        />
-      </button>
-      {openDropdown === id && (
-        <div
-          className="absolute top-full left-0 pt-3 min-w-[380px] z-50 animate-in fade-in slide-in-from-top-2 duration-200"
-          onMouseLeave={() => setOpenDropdown(null)}
         >
-          <div className="bg-white rounded-2xl shadow-2xl shadow-stone-200/50 border border-stone-100 overflow-hidden">
-            {children}
+          {label}
+          <ChevronDown
+            className={cn(
+              'w-4 h-4 transition-transform duration-200',
+              openDropdown === id && 'rotate-180',
+            )}
+          />
+        </Component>
+        {openDropdown === id && (
+          <div
+            className="absolute top-full left-0 pt-3 min-w-[380px] z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+            onMouseLeave={() => setOpenDropdown(null)}
+          >
+            <div className="bg-white rounded-2xl shadow-2xl shadow-stone-200/50 border border-stone-100 overflow-hidden">
+              {children}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-  )
+        )}
+      </div>
+    )
+  }
 
   const MobileSection = ({
     title,
     isOpen,
     onToggle,
+    href,
     children,
   }: {
     title: string
     isOpen: boolean
     onToggle: () => void
+    href?: string
     children: React.ReactNode
   }) => (
     <div className="border-b border-stone-100 last:border-0">
-      <button
-        onClick={onToggle}
-        className="flex items-center justify-between w-full py-4 px-2 text-left group"
-      >
-        <span
-          className={cn(
-            'text-[15px] font-bold uppercase tracking-wider transition-colors',
-            isOpen ? 'text-pink-600' : 'text-stone-950 group-hover:text-black',
-          )}
-        >
-          {title}
-        </span>
-        <ChevronDown
-          className={cn(
-            'w-5 h-5 transition-transform duration-300',
-            isOpen ? 'rotate-180 text-pink-500' : 'text-stone-400',
-          )}
-        />
-      </button>
+      <div className="flex items-center justify-between w-full group">
+        {href ? (
+          <Link
+            href={href}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex-1 py-4 px-2 text-left"
+          >
+            <span
+              className={cn(
+                'text-[15px] font-bold uppercase tracking-wider transition-colors',
+                isOpen ? 'text-pink-600' : 'text-stone-950 group-hover:text-black',
+              )}
+            >
+              {title}
+            </span>
+          </Link>
+        ) : (
+          <button onClick={onToggle} className="flex-1 py-4 px-2 text-left">
+            <span
+              className={cn(
+                'text-[15px] font-bold uppercase tracking-wider transition-colors',
+                isOpen ? 'text-pink-600' : 'text-stone-950 group-hover:text-black',
+              )}
+            >
+              {title}
+            </span>
+          </button>
+        )}
+        <button onClick={onToggle} className="py-4 px-4">
+          <ChevronDown
+            className={cn(
+              'w-5 h-5 transition-transform duration-300',
+              isOpen ? 'rotate-180 text-pink-500' : 'text-stone-400',
+            )}
+          />
+        </button>
+      </div>
       <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
@@ -434,7 +465,12 @@ export const Navbar = () => {
               </div>
             </NavDropdown>
 
-            <NavDropdown id="tarifs" label="Tarifs" active={pathname === '/pricing'}>
+            <NavDropdown
+              id="tarifs"
+              label="Tarifs"
+              active={pathname === '/pricing'}
+              href="/pricing"
+            >
               <div className="p-2">
                 {dropdownTarifs.map((item) => (
                   <Link
@@ -676,6 +712,7 @@ export const Navbar = () => {
                 onToggle={() =>
                   setOpenMobileSection(openMobileSection === 'tarifs' ? null : 'tarifs')
                 }
+                href="/pricing"
               >
                 <div className="space-y-1 pt-1 pb-2">
                   {dropdownTarifs.map((item) => (
