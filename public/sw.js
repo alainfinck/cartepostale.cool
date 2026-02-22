@@ -1,6 +1,6 @@
 // Service Worker for CartePostale.cool PWA
 // CACHE_NAME is replaced at build time by scripts/generate-sw.mjs (do not edit manually).
-const CACHE_NAME = 'cartepostale-a2eadb09a3cb'
+const CACHE_NAME = 'cartepostale-d2ef0de50ead'
 const STATIC_CACHE = [
   '/',
   '/editor',

@@ -54,6 +54,7 @@ import {
   Loader2,
   ChevronUp,
   Wand2,
+  Move,
 } from 'lucide-react'
 import {
   Postcard,
@@ -92,6 +93,7 @@ import {
 import UserGalleryModal from '@/components/editor/UserGalleryModal'
 import StickerGallery from '@/components/editor/StickerGallery'
 import StickerLayer from '@/components/editor/StickerLayer'
+import FrontFaceEditor from '@/components/editor/FrontFaceEditor'
 import RealTimeViewStats from '@/components/stats/RealTimeViewStats'
 import {
   Dialog,
@@ -2777,6 +2779,39 @@ export default function EditorPage() {
                     </div>
                   </div>
                 </section>
+
+                {/* Interactive Front Face Editor */}
+                {frontImage && frontCaption.trim().length > 0 && (
+                  <section className="mt-8 pt-8 border-t border-stone-200">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-100 text-teal-600">
+                        <Move size={18} />
+                      </span>
+                      <div>
+                        <h3 className="text-sm font-bold text-stone-800 uppercase tracking-wider">
+                          Position du texte
+                        </h3>
+                        <p className="text-xs text-stone-500">
+                          Glissez le texte pour le repositionner sur la photo
+                        </p>
+                      </div>
+                    </div>
+                    <FrontFaceEditor
+                      frontImage={frontImage}
+                      frontImageCrop={frontImageCrop}
+                      frontImageFilter={frontImageFilter}
+                      frontCaption={frontCaption}
+                      frontEmoji={frontEmoji}
+                      frontCaptionPosition={frontCaptionPosition}
+                      frontTextBgOpacity={frontTextBgOpacity}
+                      location={location}
+                      stickers={stickers}
+                      onCaptionPositionChange={setFrontCaptionPosition}
+                      className="w-full"
+                    />
+                  </section>
+                )}
+
                 {/* Lieu du souvenir — en bas à gauche */}
                 <section className="mt-8 pt-8 border-t border-stone-200 flex flex-col items-start text-left">
                   <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
