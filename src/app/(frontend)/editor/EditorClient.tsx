@@ -984,6 +984,18 @@ export default function EditorPage() {
     }
   }, [searchParams])
 
+  // Handle AI generation payment success return
+  useEffect(() => {
+    const aiPaid = searchParams.get('ai_paid')
+    if (aiPaid === 'true') {
+      setHasAiGenerationPaid(true)
+      setShowAiGeneratorModal(true)
+      const url = new URL(window.location.href)
+      url.searchParams.delete('ai_paid')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [searchParams])
+
   // Meta Pixel — AddToCart quand le premier média premium est ajouté
   const prevIsPremiumRef = useRef(false)
   useEffect(() => {
