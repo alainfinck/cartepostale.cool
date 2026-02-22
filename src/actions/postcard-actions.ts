@@ -219,6 +219,15 @@ export async function createPostcard(
       }
     }
 
+    // Handle background music: library URL or upload key -> public URL
+    let backgroundMusicURL: string | undefined
+    if (data.backgroundMusic && data.backgroundMusic.startsWith('http')) {
+      backgroundMusicURL = data.backgroundMusic
+    } else if (data.backgroundMusicKey) {
+      const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')
+      backgroundMusicURL = base ? `${base}/${data.backgroundMusicKey}` : `/media/${encodeURIComponent(data.backgroundMusicKey)}`
+    }
+
     // Remove processed fields from spread data to avoid validation errors (author comes from server only)
     const {
       frontImage: _,
@@ -230,6 +239,9 @@ export async function createPostcard(
       id,
       author: _author,
       authorId: _authorId,
+      backgroundMusicKey: _bgKey,
+      backgroundMusicMimeType: _bgMime,
+      backgroundMusicFilesize: _bgSize,
       ...cleanData
     } = data
 
@@ -245,6 +257,8 @@ export async function createPostcard(
           ...cleanData,
           ...(frontImageId && { frontImage: frontImageId }),
           ...(frontImageURL && { frontImageURL: frontImageURL }),
+          ...(backgroundMusicURL && { backgroundMusic: backgroundMusicURL }),
+          ...(data.backgroundMusicTitle && { backgroundMusicTitle: data.backgroundMusicTitle }),
           mediaItems: processedMediaItems,
           date: new Date().toISOString(),
           status: 'published',
@@ -295,6 +309,8 @@ export async function createPostcard(
           ...cleanData,
           frontImage: frontImageId,
           frontImageURL: frontImageURL,
+          ...(backgroundMusicURL && { backgroundMusic: backgroundMusicURL }),
+          ...(data.backgroundMusicTitle && { backgroundMusicTitle: data.backgroundMusicTitle }),
           mediaItems: processedMediaItems,
           publicId,
           date: new Date().toISOString(),

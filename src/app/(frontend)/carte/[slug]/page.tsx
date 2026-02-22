@@ -144,6 +144,10 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
     }),
     mediaItems,
     isPremium: payloadPostcard.isPremium || false,
+    audioMessage: (payloadPostcard as any).audioMessage ?? undefined,
+    audioDuration: (payloadPostcard as any).audioDuration ?? undefined,
+    backgroundMusic: (payloadPostcard as any).backgroundMusic ?? undefined,
+    backgroundMusicTitle: (payloadPostcard as any).backgroundMusicTitle ?? undefined,
     // coordinates if available
     coords:
       payloadPostcard.coords?.lat && payloadPostcard.coords?.lng
