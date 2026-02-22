@@ -115,6 +115,10 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
         isPremium: payloadPostcard.isPremium || false,
         allowComments: (payloadPostcard as any).allowComments ?? true,
         isPublic: (payloadPostcard as any).isPublic ?? true,
+        audioMessage: (payloadPostcard as any).audioMessage ?? undefined,
+        audioDuration: (payloadPostcard as any).audioDuration ?? undefined,
+        backgroundMusic: (payloadPostcard as any).backgroundMusic ?? undefined,
+        backgroundMusicTitle: (payloadPostcard as any).backgroundMusicTitle ?? undefined,
         // coordinates if available
         coords: payloadPostcard.coords?.lat && payloadPostcard.coords?.lng ? {
             lat: payloadPostcard.coords.lat,

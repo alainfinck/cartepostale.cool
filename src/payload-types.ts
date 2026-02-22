@@ -359,9 +359,25 @@ export interface Postcard {
    */
   contributionToken?: string | null;
   /**
-   * Autoriser l’ajout de photos via le lien de contribution
+   * Autoriser l'ajout de photos via le lien de contribution
    */
   isContributionEnabled?: boolean | null;
+  /**
+   * URL du message vocal enregistré par l'expéditeur
+   */
+  audioMessage?: string | null;
+  /**
+   * Durée du message vocal en secondes
+   */
+  audioDuration?: number | null;
+  /**
+   * URL de la musique d'ambiance (upload ou bibliothèque libre de droits)
+   */
+  backgroundMusic?: string | null;
+  /**
+   * Titre de la musique pour l'affichage
+   */
+  backgroundMusicTitle?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -961,6 +977,10 @@ export interface PostcardsSelect<T extends boolean = true> {
   isPublic?: T;
   contributionToken?: T;
   isContributionEnabled?: T;
+  audioMessage?: T;
+  audioDuration?: T;
+  backgroundMusic?: T;
+  backgroundMusicTitle?: T;
   updatedAt?: T;
   createdAt?: T;
 }
