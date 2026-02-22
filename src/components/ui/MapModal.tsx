@@ -84,15 +84,15 @@ const MapModal: React.FC<MapModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[300] bg-stone-900/95 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[300] bg-black/20 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
         className={cn(
-          'bg-white rounded-3xl overflow-hidden shadow-2xl relative flex flex-col transition-all duration-300 border-4 border-white/50',
+          'bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col border border-stone-200 animate-in fade-in zoom-in-95 duration-200',
           isLarge
             ? 'w-[95vw] h-[75dvh] md:w-[85vw] md:h-[80dvh] max-w-6xl'
-            : 'w-[340px] h-[70dvh] sm:w-[600px] sm:h-[450px]',
+            : 'w-[92vw] h-[65dvh] sm:w-[600px] sm:h-[450px]',
         )}
         onClick={(e) => e.stopPropagation()}
       >
