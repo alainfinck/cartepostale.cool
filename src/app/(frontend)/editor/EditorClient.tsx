@@ -52,9 +52,8 @@ import {
   Trash2,
   Volume2,
   Loader2,
-  Music,
   ChevronUp,
-  QrCode,
+  Wand2,
 } from 'lucide-react'
 import {
   Postcard,
@@ -70,10 +69,7 @@ import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import {
-  createPostcard,
-  getContributionTokenForPostcard,
-} from '@/actions/postcard-actions'
+import { createPostcard } from '@/actions/postcard-actions'
 import { linkPostcardToUser } from '@/actions/auth-actions'
 import { sendPostcardToRecipientsFromEditor, type EditorRecipient } from '@/actions/editor-actions'
 
@@ -88,12 +84,11 @@ import {
 } from '@/lib/image-processing'
 import { extractExifData, ExifData } from '@/lib/extract-exif'
 import { UnsplashSearchModal } from '@/components/UnsplashSearchModal'
+import { AiImageGeneratorModal, AI_GENERATION_PRICE_EUR } from '@/components/editor/AiImageGeneratorModal'
 import UserGalleryModal from '@/components/editor/UserGalleryModal'
-import { MusicLibraryModal } from '@/components/editor/MusicLibraryModal'
 import StickerGallery from '@/components/editor/StickerGallery'
 import StickerLayer from '@/components/editor/StickerLayer'
 import RealTimeViewStats from '@/components/stats/RealTimeViewStats'
-import ShareContributionModal from '@/components/postcard/ShareContributionModal'
 import {
   Dialog,
   DialogContent,
@@ -791,8 +786,6 @@ export default function EditorPage() {
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [createdPostcardId, setCreatedPostcardId] = useState<string | null>(null)
   const [internalPostcardId, setInternalPostcardId] = useState<number | null>(null)
-  const [contributionToken, setContributionToken] = useState<string | null>(null)
-  const [showSharePhotosModal, setShowSharePhotosModal] = useState(false)
   const [shareError, setShareError] = useState<string | null>(null)
   const [showEmailPromptModal, setShowEmailPromptModal] = useState(false)
 
@@ -807,6 +800,8 @@ export default function EditorPage() {
   const [recipientsSentCount, setRecipientsSentCount] = useState<number | null>(null)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [showUnsplashModal, setShowUnsplashModal] = useState(false)
+  const [showAiGeneratorModal, setShowAiGeneratorModal] = useState(false)
+  const [hasAiGenerationPaid, setHasAiGenerationPaid] = useState(false)
   const [showUserGalleryModal, setShowUserGalleryModal] = useState<'front' | 'back' | null>(null)
   const [showStickerGallery, setShowStickerGallery] = useState(false)
   const [stickers, setStickers] = useState<StickerPlacement[]>([])
@@ -861,14 +856,6 @@ export default function EditorPage() {
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null)
   const [recordingTime, setRecordingTime] = useState(0)
   const [showScrollTop, setShowScrollTop] = useState(false)
-
-  // Background music state (upload or library)
-  const [backgroundMusicUrl, setBackgroundMusicUrl] = useState<string | null>(null)
-  const [backgroundMusicTitle, setBackgroundMusicTitle] = useState<string | null>(null)
-  const [backgroundMusicKey, setBackgroundMusicKey] = useState<string | null>(null)
-  const [backgroundMusicBlob, setBackgroundMusicBlob] = useState<Blob | null>(null)
-  const [showMusicLibraryModal, setShowMusicLibraryModal] = useState(false)
-  const musicFileInputRef = useRef<HTMLInputElement>(null)
 
   const handleGoogleSuccess = useCallback(
     async (result: { success: boolean; role: string; email?: string }) => {
@@ -954,15 +941,6 @@ export default function EditorPage() {
     }
   }, [shareUrl, hasConfettiFired])
 
-  // Fetch contribution token when we have publicId but no token (e.g. page refresh)
-  useEffect(() => {
-    if (createdPostcardId && !contributionToken) {
-      getContributionTokenForPostcard(createdPostcardId).then((token) => {
-        if (token) setContributionToken(token)
-      })
-    }
-  }, [createdPostcardId, contributionToken])
-
   // Handle payment success return
   useEffect(() => {
     const success = searchParams.get('payment_success')
@@ -988,6 +966,18 @@ export default function EditorPage() {
       }
     }
   }, [searchParams, currentStep])
+
+  // Handle AI generation payment success return
+  useEffect(() => {
+    const aiPaid = searchParams.get('ai_paid')
+    if (aiPaid === 'true') {
+      setHasAiGenerationPaid(true)
+      setShowAiGeneratorModal(true)
+      const url = new URL(window.location.href)
+      url.searchParams.delete('ai_paid')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [searchParams])
 
   // Meta Pixel — AddToCart quand le premier média premium est ajouté
   const prevIsPremiumRef = useRef(false)
@@ -1409,6 +1399,68 @@ export default function EditorPage() {
     [urlToResizedDataUrl],
   )
 
+  const handleSelectAiImage = useCallback(
+    async (imageUrl: string) => {
+      setShowAiGeneratorModal(false)
+      setUploadedFileName('Image IA')
+      setFrontImageKey(null)
+      setFrontImageMimeType(null)
+      setFrontImageFilesize(null)
+      setFrontImageCrop({ scale: 1, x: 50, y: 50 })
+      setFrontImageFilter(DEFAULT_FRONT_FILTER)
+
+      try {
+        const resized = await urlToResizedDataUrl(imageUrl)
+        setFrontImage(resized)
+      } catch (err) {
+        console.error('Error processing AI image:', err)
+        setFrontImage(imageUrl)
+      }
+
+      void confetti({
+        particleCount: 60,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#8b5cf6', '#a855f7', '#c084fc', '#14b8a6'],
+      })
+    },
+    [urlToResizedDataUrl],
+  )
+
+  const handleAiPayment = useCallback(async () => {
+    const amount = AI_GENERATION_PRICE_EUR
+    setRevolutError(null)
+    setIsRevolutRedirecting(true)
+
+    try {
+      const res = await fetch('/api/revolut/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amountEur: amount,
+          description: 'Option IA — Génération d\'image CartePostale.cool',
+          customerEmail: currentUser?.email || senderEmail || undefined,
+          redirectPath: '/editor?ai_paid=true',
+          metadata: { feature: 'ai_image_generation' },
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setRevolutError(data.error || 'Impossible de créer le paiement.')
+        setIsRevolutRedirecting(false)
+        return
+      }
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url
+        return
+      }
+      setRevolutError('URL de paiement non disponible.')
+    } catch {
+      setRevolutError('Erreur réseau lors du paiement.')
+    }
+    setIsRevolutRedirecting(false)
+  }, [currentUser?.email, senderEmail])
+
   const handleCropImgLoad = useCallback(() => {
     const img = cropImgRef.current
     if (img?.naturalWidth && img.naturalHeight)
@@ -1813,74 +1865,6 @@ export default function EditorPage() {
     setRecordingTime(0)
   }
 
-  // Background music: upload to R2 or return library URL
-  const uploadBackgroundMusic = async (): Promise<{ url?: string; key?: string; mimeType?: string; filesize?: number } | undefined> => {
-    if (!backgroundMusicBlob && !backgroundMusicKey && !backgroundMusicUrl) return undefined
-    if (backgroundMusicUrl && backgroundMusicUrl.startsWith('http') && !backgroundMusicUrl.startsWith('data:')) {
-      return { url: backgroundMusicUrl }
-    }
-    if (backgroundMusicKey && !backgroundMusicBlob) {
-      return { key: backgroundMusicKey }
-    }
-    if (!backgroundMusicBlob) return undefined
-    try {
-      const ext = backgroundMusicBlob.type.includes('mp3') ? 'mp3' : backgroundMusicBlob.type.includes('wav') ? 'wav' : 'webm'
-      const filename = `postcard-music-${Date.now()}.${ext}`
-      const presignedRes = await fetch('/api/upload-presigned', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filename,
-          mimeType: backgroundMusicBlob.type || 'audio/mpeg',
-          filesize: backgroundMusicBlob.size,
-        }),
-      })
-      if (presignedRes.ok) {
-        const { url, key } = await presignedRes.json()
-        const putRes = await fetch(url, {
-          method: 'PUT',
-          body: backgroundMusicBlob,
-          headers: { 'Content-Type': backgroundMusicBlob.type },
-        })
-        if (putRes.ok) {
-          return { key, mimeType: backgroundMusicBlob.type, filesize: backgroundMusicBlob.size }
-        }
-      }
-    } catch (e) {
-      console.error('Background music upload failed', e)
-    }
-    return undefined
-  }
-
-  const handleMusicFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const validTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/x-wav']
-    if (!validTypes.includes(file.type) && !file.name.match(/\.(mp3|wav|ogg|webm)$/i)) {
-      alert('Format audio non supporté. Utilisez MP3, WAV, OGG ou WebM.')
-      return
-    }
-    setBackgroundMusicBlob(file)
-    setBackgroundMusicUrl(URL.createObjectURL(file))
-    setBackgroundMusicTitle(file.name.replace(/\.[^/.]+$/, ''))
-    setBackgroundMusicKey(null)
-    if (musicFileInputRef.current) musicFileInputRef.current.value = ''
-  }
-
-  const handleLibraryTrackSelect = (track: { url: string; title: string }) => {
-    setBackgroundMusicUrl(track.url)
-    setBackgroundMusicTitle(track.title)
-    setBackgroundMusicBlob(null)
-    setBackgroundMusicKey(null)
-  }
-
-  const deleteBackgroundMusic = () => {
-    setBackgroundMusicUrl(null)
-    setBackgroundMusicTitle(null)
-    setBackgroundMusicKey(null)
-    setBackgroundMusicBlob(null)
-  }
-
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
@@ -2037,13 +2021,6 @@ export default function EditorPage() {
           audioMessage: await uploadAudio(), // Upload and get key
           audioDuration: Math.round(audioDuration),
         }),
-        ...(await (async () => {
-          const bg = await uploadBackgroundMusic()
-          if (!bg) return {}
-          if (bg.url) return { backgroundMusic: bg.url, backgroundMusicTitle: backgroundMusicTitle ?? undefined }
-          if (bg.key) return { backgroundMusicKey: bg.key, backgroundMusicMimeType: bg.mimeType, backgroundMusicFilesize: bg.filesize, backgroundMusicTitle: backgroundMusicTitle ?? undefined }
-          return {}
-        })()),
         ...(sendKey && {
           frontImageKey: sendKey,
           frontImageMimeType: sendMime ?? undefined,
@@ -2062,9 +2039,6 @@ export default function EditorPage() {
           setInternalPostcardId(result.id)
         }
         setShareUrl(`${window.location.origin}/carte/${result.publicId}`)
-        if (result.contributionToken) {
-          setContributionToken(result.contributionToken)
-        }
 
         // Trigger email modal if user is not logged in and hasn't provided an email
         if (!currentUser && !senderEmail) {
@@ -2151,17 +2125,6 @@ export default function EditorPage() {
             url: item.key ? undefined : item.url,
           })),
           recipients: [],
-          ...(audioUrl && {
-            audioMessage: await uploadAudio(),
-            audioDuration: Math.round(audioDuration),
-          }),
-          ...(await (async () => {
-            const bg = await uploadBackgroundMusic()
-            if (!bg) return {}
-            if (bg.url) return { backgroundMusic: bg.url, backgroundMusicTitle: backgroundMusicTitle ?? undefined }
-            if (bg.key) return { backgroundMusicKey: bg.key, backgroundMusicMimeType: bg.mimeType, backgroundMusicFilesize: bg.filesize, backgroundMusicTitle: backgroundMusicTitle ?? undefined }
-            return {}
-          })()),
           ...(frontImageKey && {
             frontImageKey,
             frontImageMimeType: frontImageMimeType ?? undefined,
@@ -2178,9 +2141,6 @@ export default function EditorPage() {
           pid = result.publicId
           setCreatedPostcardId(pid)
           setShareUrl(`${window.location.origin}/carte/${pid}`)
-          if (result.contributionToken) {
-            setContributionToken(result.contributionToken)
-          }
 
           // If promo code was used, mark it as used in DB
           if (codeSuccess && promoCode) {
@@ -2236,7 +2196,6 @@ export default function EditorPage() {
     setCreatedPostcardId(null)
     setInternalPostcardId(null)
     setShareUrl(null)
-    setContributionToken(null)
     setIsPublishing(false)
     setCurrentStep('redaction')
     // On garde tout le reste du state (image, message, etc.)
@@ -2537,6 +2496,39 @@ export default function EditorPage() {
                     </Button>
                   </div>
                 )}
+
+                {/* AI Image Generation (paid option) */}
+                <div className="mb-8">
+                  <button
+                    type="button"
+                    onClick={() => setShowAiGeneratorModal(true)}
+                    className="w-full flex items-center gap-4 rounded-2xl border-2 border-dashed border-violet-300 bg-gradient-to-r from-violet-50/80 to-fuchsia-50/80 px-5 py-4 text-left transition-all hover:border-violet-400 hover:shadow-md hover:shadow-violet-100/50 hover:-translate-y-0.5 group"
+                  >
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-100 group-hover:bg-violet-200 transition-colors">
+                      <Wand2
+                        size={22}
+                        className="text-violet-600 group-hover:text-violet-700 transition-colors"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-violet-800">
+                          Générer par IA
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-200/80 text-violet-700 text-[10px] font-bold uppercase tracking-wider">
+                          <Sparkles size={10} />
+                          Premium
+                        </span>
+                      </div>
+                      <p className="text-xs text-violet-600/70 mt-0.5">
+                        Créez une image unique par IA — {AI_GENERATION_PRICE_EUR.toFixed(2).replace('.', ',')} &euro;
+                      </p>
+                    </div>
+                    <span className="text-violet-400 shrink-0 group-hover:text-violet-600 transition-colors">
+                      &rarr;
+                    </span>
+                  </button>
+                </div>
 
                 {/* Retouche photo : filtres + recadrage/zoom dans un modal */}
                 {frontImage && (
@@ -3359,66 +3351,6 @@ export default function EditorPage() {
                     </div>
                   </section>
 
-                  {/* SECTION MUSIQUE D'AMBIANCE */}
-                  <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600">
-                        <Music size={16} />
-                      </div>
-                      <h3 className="font-semibold text-stone-800">Musique d&apos;ambiance</h3>
-                    </div>
-
-                    <div className="flex flex-col items-center justify-center gap-4 p-4 border-2 border-dashed border-stone-200 rounded-xl bg-stone-50">
-                      {!backgroundMusicUrl ? (
-                        <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
-                          <label className="cursor-pointer flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-stone-200 hover:border-violet-300 rounded-xl font-medium text-stone-700 transition-colors">
-                            <Upload size={20} />
-                            Envoyer mon fichier
-                            <input
-                              ref={musicFileInputRef}
-                              type="file"
-                              accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/webm,.mp3,.wav,.ogg,.webm"
-                              className="hidden"
-                              onChange={handleMusicFileChange}
-                            />
-                          </label>
-                          <button
-                            onClick={() => setShowMusicLibraryModal(true)}
-                            className="flex items-center justify-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium transition-colors"
-                          >
-                            <Music size={20} />
-                            Bibliothèque gratuite
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="w-full flex items-center gap-3 bg-white p-3 rounded-lg border border-stone-200 shadow-sm">
-                          <button
-                            onClick={() => {
-                              const audio = new Audio(backgroundMusicUrl)
-                              audio.play()
-                            }}
-                            className="w-10 h-10 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center hover:bg-violet-200 transition-colors shrink-0"
-                          >
-                            <Play size={20} fill="currentColor" />
-                          </button>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-stone-800 truncate">
-                              {backgroundMusicTitle || 'Musique'}
-                            </p>
-                            <p className="text-xs text-stone-500">Musique d&apos;ambiance</p>
-                          </div>
-                          <button
-                            onClick={deleteBackgroundMusic}
-                            className="p-2 text-stone-400 hover:text-red-500 transition-colors"
-                            title="Supprimer"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </section>
-
                   {/* Lieu du souvenir */}
                   <section className="mt-8 pt-8 border-t border-stone-200">
                     <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-3 uppercase tracking-wider">
@@ -4072,30 +4004,6 @@ export default function EditorPage() {
                             </Button>
                           </div>
                         </div>
-
-                        {/* QR code et lien pour déposer des photos depuis un téléphone */}
-                        {contributionToken && createdPostcardId && (
-                          <div className="mb-8">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => setShowSharePhotosModal(true)}
-                              className="w-full max-w-xl mx-auto flex items-center justify-center gap-3 px-6 py-4 rounded-2xl border-2 border-teal-200 bg-teal-50/50 hover:bg-teal-50 text-teal-800 font-bold transition-all"
-                            >
-                              <QrCode size={22} />
-                              <span>QR code / lien pour déposer des photos</span>
-                            </Button>
-                            <ShareContributionModal
-                              isOpen={showSharePhotosModal}
-                              onClose={() => setShowSharePhotosModal(false)}
-                              contributeUrl={
-                                shareUrl
-                                  ? `${shareUrl}${shareUrl.includes('?') ? '&' : '?'}token=${contributionToken}`
-                                  : ''
-                              }
-                            />
-                          </div>
-                        )}
 
                         <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
                           <a
@@ -5123,10 +5031,12 @@ export default function EditorPage() {
         onSelect={handleSelectUnsplashImage}
         location={location}
       />
-      <MusicLibraryModal
-        isOpen={showMusicLibraryModal}
-        onClose={() => setShowMusicLibraryModal(false)}
-        onSelect={handleLibraryTrackSelect}
+      <AiImageGeneratorModal
+        isOpen={showAiGeneratorModal}
+        onClose={() => setShowAiGeneratorModal(false)}
+        onSelect={handleSelectAiImage}
+        hasPaid={hasAiGenerationPaid}
+        onRequestPayment={handleAiPayment}
       />
       {/* Modal galerie stickers */}
       {showStickerGallery && (
