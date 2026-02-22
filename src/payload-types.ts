@@ -370,6 +370,14 @@ export interface Postcard {
    * Image de couverture à gratter
    */
   scratchCardImage?: (number | null) | Media;
+  /**
+   * Activer l'effet puzzle
+   */
+  puzzleCardEnabled?: boolean | null;
+  /**
+   * Nombre de pièces du puzzle
+   */
+  puzzleCardDifficulty?: ('3' | '4' | '5') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -971,6 +979,8 @@ export interface PostcardsSelect<T extends boolean = true> {
   isContributionEnabled?: T;
   scratchCardEnabled?: T;
   scratchCardImage?: T;
+  puzzleCardEnabled?: T;
+  puzzleCardDifficulty?: T;
   updatedAt?: T;
   createdAt?: T;
 }

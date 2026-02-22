@@ -735,6 +735,8 @@ export default function EditorPage() {
   const [allowComments, setAllowComments] = useState(true)
   const [isPublic, setIsPublic] = useState(false)
   const [scratchCardEnabled, setScratchCardEnabled] = useState(false)
+  const [puzzleCardEnabled, setPuzzleCardEnabled] = useState(false)
+  const [puzzleCardDifficulty, setPuzzleCardDifficulty] = useState<'3' | '4' | '5'>('3')
 
   const [stampStyle, setStampStyle] = useState<Postcard['stampStyle']>('classic')
   const [stampLabel, setStampLabel] = useState('Digital Poste')
@@ -1705,6 +1707,8 @@ export default function EditorPage() {
     mediaItems,
     coords: coords || undefined,
     scratchCardEnabled,
+    puzzleCardEnabled,
+    puzzleCardDifficulty,
   }
 
   /** Aperçu : à l'étape Rédaction, si un modèle verso est choisi, on affiche le verso avec son style (timbre, message, lieu). */
@@ -1941,6 +1945,8 @@ export default function EditorPage() {
         allowComments,
         isPublic,
         scratchCardEnabled,
+        puzzleCardEnabled,
+        puzzleCardDifficulty,
         password: isPasswordProtected ? password : undefined,
         ...(audioUrl && {
           audioMessage: await uploadAudio(), // Upload and get key
@@ -3166,7 +3172,11 @@ export default function EditorPage() {
 
                     <div
                       className="flex items-center gap-3 cursor-pointer group"
-                      onClick={() => setScratchCardEnabled(!scratchCardEnabled)}
+                      onClick={() => {
+                        const next = !scratchCardEnabled
+                        setScratchCardEnabled(next)
+                        if (next) setPuzzleCardEnabled(false)
+                      }}
                     >
                       <div
                         className={cn(
@@ -3185,6 +3195,54 @@ export default function EditorPage() {
                         </span>
                       </div>
                     </div>
+
+                    <div className="w-px h-8 bg-stone-200 hidden sm:block" />
+
+                    <div
+                      className="flex items-center gap-3 cursor-pointer group"
+                      onClick={() => {
+                        const next = !puzzleCardEnabled
+                        setPuzzleCardEnabled(next)
+                        if (next) setScratchCardEnabled(false)
+                      }}
+                    >
+                      <div
+                        className={cn(
+                          'w-5 h-5 rounded border transition-all flex items-center justify-center',
+                          puzzleCardEnabled
+                            ? 'bg-violet-500 border-violet-500 text-white'
+                            : 'border-stone-300 bg-white group-hover:border-violet-300',
+                        )}
+                      >
+                        {puzzleCardEnabled && <Check size={14} strokeWidth={3} />}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-stone-700">Carte puzzle</span>
+                        <span className="text-[10px] text-stone-400 uppercase tracking-wider font-medium">
+                          {puzzleCardEnabled ? 'Le destinataire reconstituera l\'image' : 'Puzzle désactivé'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {puzzleCardEnabled && (
+                      <div className="flex items-center gap-2 ml-2">
+                        {(['3', '4', '5'] as const).map((size) => (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => setPuzzleCardDifficulty(size)}
+                            className={cn(
+                              'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all',
+                              puzzleCardDifficulty === size
+                                ? 'bg-violet-500 text-white border-violet-500 shadow-sm'
+                                : 'bg-white text-stone-600 border-stone-200 hover:border-violet-300',
+                            )}
+                          >
+                            {size}&times;{size}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </section>
 
                   {/* SECTION MESSAGE VOCAL */}

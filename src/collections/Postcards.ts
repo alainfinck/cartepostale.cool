@@ -280,5 +280,28 @@ export const Postcards: CollectionConfig = {
         condition: (data) => data.scratchCardEnabled === true,
       },
     },
+    {
+      name: 'puzzleCardEnabled',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description:
+          'Activer l\u2019effet puzzle : le destinataire doit reconstituer l\u2019image avant de lire le message.',
+      },
+    },
+    {
+      name: 'puzzleCardDifficulty',
+      type: 'select',
+      options: [
+        { label: 'Facile (3\u00d73)', value: '3' },
+        { label: 'Moyen (4\u00d74)', value: '4' },
+        { label: 'Difficile (5\u00d75)', value: '5' },
+      ],
+      defaultValue: '3',
+      admin: {
+        description: 'Nombre de pi\u00e8ces du puzzle (lignes \u00d7 colonnes).',
+        condition: (data) => data.puzzleCardEnabled === true,
+      },
+    },
   ],
 }

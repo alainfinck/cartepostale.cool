@@ -156,6 +156,8 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
     scratchCardImage: isMedia(payloadPostcard.scratchCardImage)
       ? normalizeMediaUrl(mediaUrl(payloadPostcard.scratchCardImage as Media))
       : undefined,
+    puzzleCardEnabled: payloadPostcard.puzzleCardEnabled || false,
+    puzzleCardDifficulty: (payloadPostcard.puzzleCardDifficulty as '3' | '4' | '5') || '3',
   }
 }
 

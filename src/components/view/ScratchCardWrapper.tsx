@@ -6,23 +6,35 @@ import { Postcard } from '@/types'
 import PostcardViewToggle from '@/components/view/PostcardViewToggle'
 
 const ScratchCard = dynamic(() => import('@/components/view/ScratchCard'), { ssr: false })
+const PuzzleCard = dynamic(() => import('@/components/view/PuzzleCard'), { ssr: false })
 
-interface ScratchCardWrapperProps {
+interface InteractiveCardWrapperProps {
   postcard: Postcard
   views: number
 }
 
-export default function ScratchCardWrapper({ postcard, views }: ScratchCardWrapperProps) {
-  if (!postcard.scratchCardEnabled) {
-    return <PostcardViewToggle postcard={postcard} views={views} />
+export default function ScratchCardWrapper({ postcard, views }: InteractiveCardWrapperProps) {
+  const inner = <PostcardViewToggle postcard={postcard} views={views} />
+
+  if (postcard.puzzleCardEnabled) {
+    return (
+      <PuzzleCard
+        imageUrl={postcard.frontImage}
+        gridSize={Number(postcard.puzzleCardDifficulty || '3')}
+        senderName={postcard.senderName}
+      >
+        {inner}
+      </PuzzleCard>
+    )
   }
 
-  return (
-    <ScratchCard
-      coverImage={postcard.scratchCardImage}
-      senderName={postcard.senderName}
-    >
-      <PostcardViewToggle postcard={postcard} views={views} />
-    </ScratchCard>
-  )
+  if (postcard.scratchCardEnabled) {
+    return (
+      <ScratchCard coverImage={postcard.scratchCardImage} senderName={postcard.senderName}>
+        {inner}
+      </ScratchCard>
+    )
+  }
+
+  return inner
 }
