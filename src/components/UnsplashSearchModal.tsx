@@ -10,9 +10,20 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Loader2, X, ExternalLink, Image as ImageIcon } from 'lucide-react';
+import { Search, Loader2, ExternalLink, Image as ImageIcon } from 'lucide-react';
 import { searchUnsplashPhotos, getLocationSuggestions, UnsplashPhoto } from '@/lib/unsplash';
 import { cn } from '@/lib/utils';
+
+type ImageSource = 'unsplash' | 'pixabay';
+
+interface GalleryPhoto {
+    id: string;
+    thumbUrl: string;
+    regularUrl: string;
+    user: string;
+    source: ImageSource;
+    alt?: string;
+}
 
 interface UnsplashSearchModalProps {
     isOpen: boolean;
@@ -28,24 +39,13 @@ export function UnsplashSearchModal({
     location,
 }: UnsplashSearchModalProps) {
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState<UnsplashPhoto[]>([]);
+    const [source, setSource] = useState<ImageSource>('unsplash');
+    const [results, setResults] = useState<GalleryPhoto[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [suggestions, setSuggestions] = useState<string[]>([]);
 
-    // Load initial suggestions based on location
-    useEffect(() => {
-        if (isOpen) {
-            const initialSuggestions = getLocationSuggestions(location);
-            setSuggestions(initialSuggestions);
-            // Auto-search for the first suggestion
-            if (initialSuggestions.length > 0) {
-                handleSearch(initialSuggestions[0]);
-            }
-        }
-    }, [isOpen, location]);
-
-    const handleSearch = useCallback(async (searchQuery: string) => {
+    const handleSearch = useCallback(async (searchQuery: string, src: ImageSource) => {
         if (!searchQuery.trim()) return;
 
         setLoading(true);
@@ -53,18 +53,65 @@ export function UnsplashSearchModal({
         setQuery(searchQuery);
 
         try {
-            const response = await searchUnsplashPhotos(searchQuery);
-            setResults(response.results);
+            if (src === 'unsplash') {
+                const response = await searchUnsplashPhotos(searchQuery);
+                const photos: GalleryPhoto[] = response.results.map((p: UnsplashPhoto) => ({
+                    id: `unsplash-${p.id}`,
+                    thumbUrl: p.urls.small,
+                    regularUrl: p.urls.regular,
+                    user: p.user.name,
+                    source: 'unsplash',
+                    alt: p.alt_description || p.description,
+                }));
+                setResults(photos);
+            } else {
+                const res = await fetch(`/api/pixabay-images?q=${encodeURIComponent(searchQuery)}`);
+                const data = await res.json();
+                const photos: GalleryPhoto[] = (data.hits || []).map((hit: any) => ({
+                    id: `pixabay-${hit.id}`,
+                    thumbUrl: hit.previewURL || hit.webformatURL,
+                    regularUrl: hit.webformatURL || hit.largeImageURL || hit.previewURL,
+                    user: hit.user || 'Pixabay',
+                    source: 'pixabay',
+                    alt: hit.tags,
+                }));
+                setResults(photos);
+                if (data.message && !data.hits?.length) {
+                    setError(data.message);
+                }
+            }
         } catch (err: any) {
             setError(err.message || 'Une erreur est survenue lors de la recherche.');
+            setResults([]);
         } finally {
             setLoading(false);
         }
     }, []);
 
+    useEffect(() => {
+        if (isOpen) {
+            const initialSuggestions = getLocationSuggestions(location);
+            setSuggestions(initialSuggestions);
+            if (initialSuggestions.length > 0) {
+                handleSearch(initialSuggestions[0], source);
+            }
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only run on open/location
+    }, [isOpen, location]);
+
+    const onSourceChange = (newSource: ImageSource) => {
+        setSource(newSource);
+        setError(null);
+        if (query.trim()) {
+            handleSearch(query, newSource);
+        } else if (suggestions.length > 0) {
+            handleSearch(suggestions[0], newSource);
+        }
+    };
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
-            handleSearch(query);
+            handleSearch(query, source);
         }
     };
 
@@ -73,14 +120,40 @@ export function UnsplashSearchModal({
             <DialogContent className="sm:max-w-[900px] max-w-[95vw] max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white border-none shadow-2xl">
                 <DialogHeader className="p-6 pb-0">
                     <DialogTitle className="text-2xl font-serif font-bold text-stone-800">
-                        Rechercher sur Unsplash
+                        Galerie d&apos;images
                     </DialogTitle>
                     <DialogDescription className="text-stone-500">
-                        Trouvez la photo parfaite pour votre carte postale parmi des millions d'images gratuites.
+                        Trouvez la photo parfaite parmi des millions d&apos;images gratuites et libres de droits.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="p-6 flex flex-col gap-6 overflow-hidden flex-1">
+                    {/* Source Tabs */}
+                    <div className="flex gap-2 p-1 bg-stone-100 rounded-xl w-fit">
+                        <button
+                            onClick={() => onSourceChange('unsplash')}
+                            className={cn(
+                                'px-4 py-2 rounded-lg text-sm font-semibold transition-all',
+                                source === 'unsplash'
+                                    ? 'bg-white text-stone-800 shadow-sm'
+                                    : 'text-stone-500 hover:text-stone-700'
+                            )}
+                        >
+                            Unsplash
+                        </button>
+                        <button
+                            onClick={() => onSourceChange('pixabay')}
+                            className={cn(
+                                'px-4 py-2 rounded-lg text-sm font-semibold transition-all',
+                                source === 'pixabay'
+                                    ? 'bg-white text-stone-800 shadow-sm'
+                                    : 'text-stone-500 hover:text-stone-700'
+                            )}
+                        >
+                            Pixabay
+                        </button>
+                    </div>
+
                     {/* Search Input */}
                     <div className="relative group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-teal-500 transition-colors" size={20} />
@@ -92,7 +165,7 @@ export function UnsplashSearchModal({
                             className="pl-12 h-14 text-lg rounded-2xl border-stone-200 bg-stone-50/50 focus:border-teal-400 focus:ring-teal-400 transition-all"
                         />
                         <Button
-                            onClick={() => handleSearch(query)}
+                            onClick={() => handleSearch(query, source)}
                             disabled={loading || !query.trim()}
                             className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl bg-teal-500 hover:bg-teal-600 text-white h-10 px-6 font-bold transition-all"
                         >
@@ -107,7 +180,7 @@ export function UnsplashSearchModal({
                             {suggestions.map((s) => (
                                 <button
                                     key={s}
-                                    onClick={() => handleSearch(s)}
+                                    onClick={() => handleSearch(s, source)}
                                     className={cn(
                                         "px-4 py-1.5 rounded-full text-sm font-semibold transition-all",
                                         query === s
@@ -134,7 +207,7 @@ export function UnsplashSearchModal({
                         ) : error ? (
                             <div className="p-8 text-center bg-red-50 rounded-2xl border border-red-100">
                                 <p className="text-red-600 font-medium">{error}</p>
-                                <Button variant="outline" onClick={() => handleSearch(query)} className="mt-4 border-red-200 text-red-600 hover:bg-red-100 hover:text-red-700">
+                                <Button variant="outline" onClick={() => handleSearch(query, source)} className="mt-4 border-red-200 text-red-600 hover:bg-red-100 hover:text-red-700">
                                     Réessayer
                                 </Button>
                             </div>
@@ -144,18 +217,20 @@ export function UnsplashSearchModal({
                                     <div
                                         key={photo.id}
                                         className="group relative aspect-[3/2] rounded-xl overflow-hidden bg-stone-100 cursor-pointer border border-stone-200 hover:border-teal-400 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                                        onClick={() => onSelect(photo.urls.regular)}
+                                        onClick={() => onSelect(photo.regularUrl)}
                                     >
                                         <img
-                                            src={photo.urls.small}
-                                            alt={photo.alt_description || photo.description || 'Unsplash photo'}
+                                            src={photo.thumbUrl}
+                                            alt={photo.alt || 'Photo'}
                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
                                             <p className="text-white text-[10px] font-medium truncate">
-                                                Par <span className="font-bold underline">{photo.user.name}</span>
+                                                Par <span className="font-bold underline">{photo.user}</span>
                                             </p>
-                                            <p className="text-white/70 text-[8px] uppercase tracking-wider">Sur Unsplash</p>
+                                            <p className="text-white/70 text-[8px] uppercase tracking-wider">
+                                                {photo.source === 'unsplash' ? 'Unsplash' : 'Pixabay'}
+                                            </p>
                                         </div>
                                         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                             <div className="bg-white/90 backdrop-blur-sm p-1.5 rounded-lg shadow-sm">
@@ -171,7 +246,7 @@ export function UnsplashSearchModal({
                                     <Search size={24} className="text-stone-400" />
                                 </div>
                                 <p className="text-stone-800 font-bold text-lg">Aucun résultat trouvé</p>
-                                <p className="text-stone-500">Essayez avec d'autres mots-clés ou suggestions.</p>
+                                <p className="text-stone-500">Essayez avec d&apos;autres mots-clés ou suggestions.</p>
                             </div>
                         ) : (
                             <div className="py-20 text-center">
@@ -185,10 +260,13 @@ export function UnsplashSearchModal({
                     </div>
                 </div>
 
-                {/* Footer with Unsplash Requirement */}
-                <div className="p-4 bg-stone-50 border-t border-stone-100 flex items-center justify-between">
-                    <p className="text-[10px] text-stone-400 font-medium flex items-center gap-1">
-                        Propulsé par <a href="https://unsplash.com/?utm_source=cartepostale&utm_medium=referral" target="_blank" rel="noopener noreferrer" className="underline font-bold text-stone-500 hover:text-teal-600">Unsplash</a>
+                {/* Footer */}
+                <div className="p-4 bg-stone-50 border-t border-stone-100 flex items-center justify-between flex-wrap gap-2">
+                    <p className="text-[10px] text-stone-400 font-medium flex items-center gap-2">
+                        Propulsé par
+                        <a href="https://unsplash.com/?utm_source=cartepostale&utm_medium=referral" target="_blank" rel="noopener noreferrer" className="underline font-bold text-stone-500 hover:text-teal-600">Unsplash</a>
+                        <span className="text-stone-300">•</span>
+                        <a href="https://pixabay.com/?utm_source=cartepostale&utm_medium=referral" target="_blank" rel="noopener noreferrer" className="underline font-bold text-stone-500 hover:text-teal-600">Pixabay</a>
                     </p>
                     <Button variant="ghost" size="sm" onClick={onClose} className="text-stone-400 hover:text-stone-600 font-bold uppercase tracking-widest text-[10px]">
                         Fermer
