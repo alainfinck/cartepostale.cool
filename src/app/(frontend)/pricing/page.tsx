@@ -19,7 +19,9 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { PricingTracking } from '@/components/analytics/PricingTracking'
 import { PacksSlider } from '@/components/pricing/PacksSlider'
-import { RotatingHeroTitle } from '@/components/pricing/RotatingHeroTitle'
+import WordRotate from '@/components/ui/word-rotate'
+import { TextAnimate } from '@/components/ui/text-animate'
+import { HeroShimmerCta } from '@/components/pricing/HeroShimmerCta'
 
 export const metadata: Metadata = {
   title: 'Tarifs — Cartes postales numériques | CartePostale.cool',
@@ -186,20 +188,45 @@ export default function PricingPage() {
           <h1 className="sr-only">Cartes postales du futur — Tarifs</h1>
           <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50/90 px-4 py-2.5 text-teal-700 mb-6 shadow-sm">
             <Sparkles className="w-4 h-4 text-teal-600 shrink-0" />
-            <span className="text-xs font-bold uppercase tracking-widest">
+            <TextAnimate
+              as="span"
+              by="word"
+              animation="blurInUp"
+              className="text-xs font-bold uppercase tracking-widest"
+              startOnView
+              once
+            >
               Cartes postales du futur
-            </span>
+            </TextAnimate>
           </div>
           <p className="text-2xl sm:text-3xl md:text-4xl font-serif font-semibold text-stone-700 mb-4 min-h-[2.5em] sm:min-h-[2em] flex items-center justify-center">
-            <RotatingHeroTitle />
+            <WordRotate
+              words={[
+                'À un prix dérisoire face au papier',
+                'Envoi illimité de destinataires par carte',
+                'Photo, vidéo, message vocal : même prix',
+                'Cartes 100 % virtuelles, avec stats de visite',
+              ]}
+              duration={4200}
+              className="text-teal-600"
+            />
           </p>
-          <p className="text-lg text-stone-500 max-w-2xl mx-auto leading-relaxed">
+          <TextAnimate
+            by="word"
+            animation="fadeIn"
+            className="text-lg text-stone-500 max-w-2xl mx-auto leading-relaxed mb-6"
+            startOnView
+            once
+            delay={0.2}
+          >
             Photo, vidéo ou message vocal : même tarif. Cartes 100 % virtuelles, avec stats de visite
             — sans timbre ni impression. Jusqu&apos;à 10× moins cher qu&apos;une carte physique.
-          </p>
+          </TextAnimate>
+
+          <HeroShimmerCta />
 
           {/* Message clé + carte gratuite */}
-          <div className="mt-7 inline-flex items-start gap-3 bg-teal-600 text-white rounded-2xl px-5 py-4 text-left max-w-xl shadow-lg shadow-teal-900/10">
+          <div className="mt-8 inline-flex items-start gap-3 bg-teal-600 text-white rounded-2xl px-5 py-4 text-left max-w-xl shadow-lg shadow-teal-900/10">
             <span className="text-xl mt-0.5">💡</span>
             <div>
               <p className="font-bold text-sm">Carte gratuite 48 h</p>
