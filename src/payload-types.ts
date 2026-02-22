@@ -363,19 +363,19 @@ export interface Postcard {
    */
   isContributionEnabled?: boolean | null;
   /**
-   * Activer l'effet carte à gratter
+   * Activer l’effet carte à gratter : le destinataire doit gratter l’image pour révéler le message ou la photo.
    */
   scratchCardEnabled?: boolean | null;
   /**
-   * Image de couverture à gratter
+   * Image de couverture à gratter (si vide, un visuel par défaut sera utilisé).
    */
   scratchCardImage?: (number | null) | Media;
   /**
-   * Activer l'effet puzzle
+   * Activer l’effet puzzle : le destinataire doit reconstituer l’image avant de lire le message.
    */
   puzzleCardEnabled?: boolean | null;
   /**
-   * Nombre de pièces du puzzle
+   * Nombre de pièces du puzzle (lignes × colonnes).
    */
   puzzleCardDifficulty?: ('3' | '4' | '5') | null;
   updatedAt: string;

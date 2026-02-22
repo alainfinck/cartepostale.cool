@@ -272,6 +272,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
           mediaItems={frontendPostcard.mediaItems}
           senderName={frontendPostcard.senderName}
           postcardId={payloadPostcard.id}
+          postcardDate={frontendPostcard.date}
         />
       )}
 

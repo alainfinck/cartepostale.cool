@@ -8,6 +8,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { getMyPostcards } from '@/actions/espace-client-actions'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import type { Postcard, Media } from '@/payload-types'
+import { CreditsCard } from '@/components/espace-client/CreditsCard'
 
 export const metadata: Metadata = {
   title: 'Mon espace',
@@ -90,7 +91,11 @@ export default async function EspaceClientDashboardPage() {
                     </p>
                     <p className="text-xs text-stone-500 flex items-center gap-1">
                       <Calendar size={12} className="shrink-0" />
-                      {new Date(card.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {new Date(card.date).toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
                     </p>
                     {card.location && (
                       <p className="text-xs text-stone-500 flex items-center gap-1 truncate">
@@ -123,7 +128,8 @@ export default async function EspaceClientDashboardPage() {
               Voir, modifier et gérer toutes vos cartes postales.
             </p>
             <span className="inline-flex items-center gap-1 text-sm font-medium text-teal-600 mt-2">
-              Accéder <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+              Accéder{' '}
+              <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
             </span>
           </div>
         </Link>
@@ -136,12 +142,15 @@ export default async function EspaceClientDashboardPage() {
             <Plus className="w-6 h-6 text-orange-600" />
           </div>
           <div className="min-w-0">
-            <h2 className="font-bold text-stone-800 group-hover:text-orange-700">Créer une carte</h2>
+            <h2 className="font-bold text-stone-800 group-hover:text-orange-700">
+              Créer une carte
+            </h2>
             <p className="text-sm text-stone-500 mt-0.5">
               Nouvelle carte postale avec vos photos et votre message.
             </p>
             <span className="inline-flex items-center gap-1 text-sm font-medium text-orange-600 mt-2">
-              Créer <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+              Créer{' '}
+              <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
             </span>
           </div>
         </Link>
@@ -159,10 +168,14 @@ export default async function EspaceClientDashboardPage() {
               Informations personnelles et préférences.
             </p>
             <span className="inline-flex items-center gap-1 text-sm font-medium text-teal-600 mt-2">
-              Voir le profil <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+              Voir le profil{' '}
+              <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
             </span>
           </div>
         </Link>
+
+        {/* Crédits */}
+        <CreditsCard initialCredits={user.credits || 0} userId={user.id} userEmail={user.email} />
       </div>
 
       <div className="p-6 rounded-2xl bg-stone-50 border border-stone-100">
