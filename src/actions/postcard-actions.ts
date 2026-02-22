@@ -224,13 +224,8 @@ export async function createPostcard(
       id,
       author: _author,
       authorId: _authorId,
-      isDemo: _isDemo,
       ...cleanData
     } = data
-
-    const expiresAt = data.isDemo
-      ? new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
-      : undefined
 
     const currentUser = await getCurrentUser()
     const authorPayload = currentUser ? { author: currentUser.id } : {}
@@ -248,7 +243,6 @@ export async function createPostcard(
           date: new Date().toISOString(),
           status: 'published',
           isPublic: true,
-          ...(expiresAt ? { expiresAt } : {}),
           ...authorPayload,
         },
       })
@@ -294,7 +288,6 @@ export async function createPostcard(
           date: new Date().toISOString(),
           status: 'published',
           isPublic: true,
-          ...(expiresAt ? { expiresAt } : {}),
           ...authorPayload,
         },
       })
@@ -323,28 +316,6 @@ export async function createPostcard(
         ? 'Erreur lors de l’envoi de l’image. Utilisez JPEG ou PNG.'
         : 'Impossible de créer la carte. Réessayez.',
     }
-  }
-}
-
-export async function upgradePostcardFromDemo(
-  publicId: string,
-): Promise<{ success: boolean; error?: string }> {
-  try {
-    const payload = await getPayload({ config })
-    const result = await payload.find({
-      collection: 'postcards',
-      where: { publicId: { equals: publicId } },
-    })
-    if (result.totalDocs === 0) return { success: false, error: 'Carte introuvable.' }
-    await payload.update({
-      collection: 'postcards',
-      id: result.docs[0].id,
-      data: { expiresAt: null } as any,
-    })
-    return { success: true }
-  } catch (err) {
-    console.error('upgradePostcardFromDemo:', err)
-    return { success: false, error: 'Impossible de mettre à jour la carte.' }
   }
 }
 

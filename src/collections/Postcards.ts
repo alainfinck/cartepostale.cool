@@ -261,14 +261,5 @@ export const Postcards: CollectionConfig = {
         description: 'Autoriser l’ajout de photos via le lien de contribution',
       },
     },
-    {
-      name: 'expiresAt',
-      type: 'date',
-      admin: {
-        description: "Date d'expiration (cartes demo 48h). Null = carte permanente.",
-        position: 'sidebar',
-      },
-      index: true,
-    },
   ],
 }

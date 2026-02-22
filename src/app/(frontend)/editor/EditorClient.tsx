@@ -816,7 +816,6 @@ export default function EditorPage() {
   const [isRevolutRedirecting, setIsRevolutRedirecting] = useState(false)
   const [revolutError, setRevolutError] = useState<string | null>(null)
   const [hasPaid, setHasPaid] = useState(false)
-  const [isDemoCard, setIsDemoCard] = useState(false)
 
   // Meta Facebook Pixel
   const {
@@ -1180,7 +1179,7 @@ export default function EditorPage() {
         // Un seul critère : au moins un message. Destinataire / expéditeur / lieu optionnels (valeurs par défaut à l’envoi).
         return message.trim().length > 0
       case 'payment':
-        return hasPaid || codeSuccess || isDemoCard || currentUser?.role === 'admin'
+        return hasPaid || codeSuccess || selectedPlan === 'ephemere' || currentUser?.role === 'admin'
       case 'preview':
         return true
       default:
@@ -1946,9 +1945,6 @@ export default function EditorPage() {
         ...(!sendKey && {
           frontExif: frontExif ?? undefined,
         }),
-        ...(isDemoCard && !hasPaid && !codeSuccess && currentUser?.role !== 'admin'
-          ? { isDemo: true }
-          : {}),
       })
 
       if (result.success && result.publicId) {
@@ -2742,39 +2738,108 @@ export default function EditorPage() {
                   </p>
                 </div>
 
-                {/* Carte unique */}
-                <div className="relative w-full text-left rounded-2xl border-2 border-teal-400 bg-teal-50 ring-2 ring-teal-500 shadow-md p-5">
-                  <span className="absolute -top-2.5 right-3 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm bg-teal-100 text-teal-800">
-                    Carte unique
-                  </span>
-                  <div className="flex items-start gap-3">
-                    <span className="text-3xl leading-none mt-0.5">💌</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <span className="font-bold text-stone-900 text-base">Carte postale</span>
-                        <span className="font-black text-xl text-teal-700">2,50 €</span>
+                {/* Plan selection */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Carte gratuite (limitée) */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPlan('ephemere')}
+                    className={cn(
+                      'relative w-full text-left rounded-2xl border-2 p-5 transition-all duration-200 focus:outline-none',
+                      selectedPlan === 'ephemere'
+                        ? 'border-stone-400 bg-stone-50 ring-2 ring-stone-400 shadow-md'
+                        : 'border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm',
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl leading-none mt-0.5">🌸</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="font-bold text-stone-900 text-sm">Carte gratuite</span>
+                          <span className="font-black text-base text-stone-700">Gratuit</span>
+                        </div>
+                        <p className="text-[11px] text-stone-400 mb-2">Limitée mais permanente</p>
+                        <ul className="space-y-1">
+                          {[
+                            '1 photo (pas de vidéo ni audio)',
+                            'Lien de partage permanent',
+                            'Modifiable depuis votre compte',
+                          ].map((f, i) => (
+                            <li key={i} className="flex items-start gap-1.5 text-[11px] text-stone-600">
+                              <span className={cn(
+                                'mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center',
+                                selectedPlan === 'ephemere' ? 'bg-stone-700' : 'bg-stone-200',
+                              )}>
+                                <svg className="w-2 h-2 text-white" viewBox="0 0 8 8" fill="none">
+                                  <path d="M1.5 4L3 5.5L6.5 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </span>
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                      <p className="text-xs text-stone-500 mb-2">Prix unique tout compris</p>
-                      <ul className="space-y-1">
-                        {[
-                          'Photo, vidéo ou message vocal inclus',
-                          'Envoi illimité de destinataires',
-                          'Statistiques de visite',
-                          'Modifiable depuis votre compte',
-                          'Durée illimitée',
-                        ].map((f, i) => (
-                          <li key={i} className="flex items-start gap-1.5 text-[11px] text-stone-600">
-                            <span className="mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center bg-teal-500">
-                              <svg className="w-2 h-2 text-white" viewBox="0 0 8 8" fill="none">
-                                <path d="M1.5 4L3 5.5L6.5 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                            </span>
-                            {f}
-                          </li>
-                        ))}
-                      </ul>
                     </div>
-                  </div>
+                    <div className={cn(
+                      'absolute top-4 right-4 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all',
+                      selectedPlan === 'ephemere' ? 'border-stone-400 bg-stone-700' : 'border-stone-300 bg-white',
+                    )}>
+                      {selectedPlan === 'ephemere' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    </div>
+                  </button>
+
+                  {/* Carte complète (payante) */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPlan('payant')}
+                    className={cn(
+                      'relative w-full text-left rounded-2xl border-2 p-5 transition-all duration-200 focus:outline-none',
+                      selectedPlan === 'payant'
+                        ? 'border-teal-400 bg-teal-50 ring-2 ring-teal-500 shadow-md'
+                        : 'border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm',
+                    )}
+                  >
+                    <span className="absolute -top-2.5 right-3 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm bg-teal-100 text-teal-800">
+                      Populaire
+                    </span>
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl leading-none mt-0.5">💌</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="font-bold text-stone-900 text-sm">Carte complète</span>
+                          <span className="font-black text-base text-teal-700">2,50 €</span>
+                        </div>
+                        <p className="text-[11px] text-stone-400 mb-2">Tout compris, sans limites</p>
+                        <ul className="space-y-1">
+                          {[
+                            'Photos, vidéo et message vocal',
+                            'Envoi illimité de destinataires',
+                            'Statistiques de visite',
+                            'Modifiable depuis votre compte',
+                            'Durée illimitée',
+                          ].map((f, i) => (
+                            <li key={i} className="flex items-start gap-1.5 text-[11px] text-stone-600">
+                              <span className={cn(
+                                'mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center',
+                                selectedPlan === 'payant' ? 'bg-teal-500' : 'bg-stone-200',
+                              )}>
+                                <svg className="w-2 h-2 text-white" viewBox="0 0 8 8" fill="none">
+                                  <path d="M1.5 4L3 5.5L6.5 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </span>
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                    <div className={cn(
+                      'absolute top-4 right-4 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all',
+                      selectedPlan === 'payant' ? 'border-teal-400 bg-teal-500' : 'border-stone-300 bg-white',
+                    )}>
+                      {selectedPlan === 'payant' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    </div>
+                  </button>
                 </div>
 
                 {/* Upsell : Pack de cartes postales */}
@@ -2829,8 +2894,10 @@ export default function EditorPage() {
                 <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <p className="text-sm text-stone-500">Votre carte</p>
-                      <p className="font-bold text-stone-900">💌 Carte postale</p>
+                      <p className="text-sm text-stone-500">Formule sélectionnée</p>
+                      <p className="font-bold text-stone-900">
+                        {selectedPlan === 'ephemere' ? '🌸 Carte gratuite' : '💌 Carte complète'}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-stone-500">Total</p>
@@ -2840,8 +2907,8 @@ export default function EditorPage() {
                     </div>
                   </div>
 
-                  {/* Promo Code */}
-                  {!codeSuccess && (
+                  {/* Promo Code (only for paid plan) */}
+                  {!codeSuccess && getAlbumPrice() > 0 && (
                     <div className="mb-4 pt-4 border-t border-stone-100">
                       <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2">
                         Code promo
@@ -2910,42 +2977,9 @@ export default function EditorPage() {
                         disabled={!canGoNext()}
                         className="w-full rounded-2xl font-bold py-6 h-auto bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-100 transition-all flex items-center justify-center gap-3 text-lg"
                       >
-                        Continuer
+                        {selectedPlan === 'ephemere' ? 'Continuer gratuitement' : 'Continuer'}
                         <ChevronRight size={20} />
                       </Button>
-                    )}
-
-                    {/* Demo card option */}
-                    {!codeSuccess && !hasPaid && currentUser?.role !== 'admin' && (
-                      <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-stone-200" />
-                        </div>
-                        <div className="relative flex justify-center text-[10px]">
-                          <span className="px-3 bg-white text-stone-400 font-bold uppercase tracking-widest">
-                            ou
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                    {!codeSuccess && !hasPaid && currentUser?.role !== 'admin' && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsDemoCard(true)
-                          setTimeout(() => goNext(), 0)
-                        }}
-                        className="w-full rounded-xl py-3 h-auto text-stone-500 hover:text-stone-700 hover:bg-stone-50 border border-dashed border-stone-300 hover:border-stone-400 transition-all text-sm font-semibold flex items-center justify-center gap-2"
-                      >
-                        <Eye size={16} />
-                        <span>Carte démo gratuite — visible 48h</span>
-                      </button>
-                    )}
-                    {!codeSuccess && !hasPaid && currentUser?.role !== 'admin' && (
-                      <p className="text-center text-[10px] text-stone-400 leading-relaxed">
-                        La carte démo est visible 48 h. Vous pourrez la convertir en carte permanente
-                        à tout moment en payant 2,50 €.
-                      </p>
                     )}
 
                     <Button
@@ -3768,31 +3802,30 @@ export default function EditorPage() {
                           </div>
                         )}
 
-                        {hasPaid || codeSuccess || isDemoCard || currentUser?.role === 'admin' ? (
+                        {hasPaid || codeSuccess || selectedPlan === 'ephemere' || currentUser?.role === 'admin' ? (
                           <>
-                            {/* Demo card banner */}
-                            {isDemoCard && !hasPaid && !codeSuccess && currentUser?.role !== 'admin' && (
-                              <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-left relative z-10">
+                            {/* Upsell banner for free plan */}
+                            {selectedPlan === 'ephemere' && !hasPaid && !codeSuccess && currentUser?.role !== 'admin' && (
+                              <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-teal-500 to-teal-600 text-white text-left relative z-10">
                                 <div className="flex items-start gap-3">
-                                  <div className="bg-amber-100 p-2 rounded-xl shrink-0">
-                                    <Eye size={18} className="text-amber-600" />
-                                  </div>
+                                  <Sparkles size={20} className="shrink-0 mt-0.5" />
                                   <div className="flex-1">
-                                    <p className="font-bold text-amber-900 text-sm mb-1">
-                                      Carte démo — visible 48 h
+                                    <p className="font-bold text-sm mb-1">
+                                      Passez à la carte complète !
                                     </p>
-                                    <p className="text-amber-700 text-xs leading-relaxed">
-                                      Votre carte est en ligne pour 48 heures. Pour la rendre permanente, passez à la version payante à tout moment.
+                                    <p className="text-teal-100 text-xs leading-relaxed">
+                                      Votre carte gratuite est limitée à 1 photo, sans vidéo ni message vocal. Pour{' '}
+                                      <strong>2,50 €</strong>, débloquez toutes les fonctionnalités : album photos, vidéos, audio et statistiques.
                                     </p>
                                     <Button
                                       onClick={() => {
-                                        setIsDemoCard(false)
+                                        setSelectedPlan('payant')
                                         setCurrentStep('payment')
                                       }}
-                                      className="mt-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg px-4 py-2 h-auto text-xs font-bold transition-all"
+                                      className="mt-3 bg-white/20 hover:bg-white/30 text-white rounded-lg px-4 py-2 h-auto text-xs font-bold transition-all"
                                     >
                                       <CreditCard size={14} className="mr-1.5" />
-                                      Passer en carte permanente — 2,50 €
+                                      Passer à la carte complète — 2,50 €
                                     </Button>
                                   </div>
                                 </div>
