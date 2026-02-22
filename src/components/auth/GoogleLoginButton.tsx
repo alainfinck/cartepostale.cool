@@ -19,13 +19,29 @@ export function GoogleLoginButton({ redirectPath, className, onSuccess }: Google
     setLoading(true)
     setError(null)
     try {
-      await signIn('google', { callbackUrl: redirectPath || '/espace-client' })
+      const result = await signIn('google', {
+        callbackUrl: redirectPath || '/espace-client',
+        redirect: false,
+      })
+      if (result?.url) {
+        window.location.href = result.url
+        return
+      }
+      if (result?.error) {
+        setError(
+          result.error === 'OAuthAccountNotLinked'
+            ? 'Ce compte email est déjà utilisé avec une autre méthode de connexion.'
+            : 'Erreur lors de la connexion Google.',
+        )
+        setLoading(false)
+        return
+      }
       if (onSuccess) {
-        // Just in case, Next.js page will redirect anyway
         onSuccess({ success: true, role: 'user' })
       }
     } catch (_err) {
       setError('Erreur lors de la connexion Google.')
+    } finally {
       setLoading(false)
     }
   }
