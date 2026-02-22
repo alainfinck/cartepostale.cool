@@ -12,6 +12,10 @@ export default function ConnexionClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const initialFlipped = useMemo(() => searchParams.get('inscription') === '1', [searchParams])
+  const callbackUrl = useMemo(
+    () => searchParams.get('callbackUrl') || '/espace-client',
+    [searchParams],
+  )
 
   const [flipped, setFlipped] = useState(initialFlipped)
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
@@ -50,7 +54,7 @@ export default function ConnexionClient() {
         setLoading(false)
         return
       }
-      router.push('/espace-client')
+      router.push(callbackUrl)
       router.refresh()
     } catch {
       setError('Impossible de se connecter. Vérifiez votre connexion.')
@@ -94,7 +98,7 @@ export default function ConnexionClient() {
         setSignupLoading(false)
         return
       }
-      router.push('/espace-client')
+      router.push(callbackUrl)
       router.refresh()
     } catch {
       setSignupError('Impossible de créer le compte. Réessayez.')
@@ -146,7 +150,7 @@ export default function ConnexionClient() {
 
                   {googleClientId && (
                     <div className="space-y-6">
-                      <GoogleLoginButton />
+                      <GoogleLoginButton redirectPath={callbackUrl} />
                       <div className="relative">
                         <div className="absolute inset-0 flex items-center">
                           <div className="w-full border-t border-stone-200"></div>
@@ -247,7 +251,7 @@ export default function ConnexionClient() {
 
                   {googleClientId && (
                     <div className="space-y-6">
-                      <GoogleLoginButton />
+                      <GoogleLoginButton redirectPath={callbackUrl} />
                       <div className="relative">
                         <div className="absolute inset-0 flex items-center">
                           <div className="w-full border-t border-stone-200"></div>

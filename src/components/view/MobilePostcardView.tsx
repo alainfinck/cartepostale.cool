@@ -24,10 +24,9 @@ export default function MobilePostcardView({ postcard }: MobilePostcardViewProps
       <div className="relative w-full rounded-t-2xl overflow-hidden shadow-xl border border-stone-200 border-b-0">
         <div className="w-full aspect-[3/2] relative">
           <Image
-            src={postcard.frontImage || '/images/demo/photo-1507525428034-b723cf961d3e.jpg'}
+            src={postcard.frontImage || 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'}
             alt="Carte postale recto"
             fill
-            unoptimized
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 512px"
             priority
@@ -61,9 +60,7 @@ export default function MobilePostcardView({ postcard }: MobilePostcardViewProps
             <div
               className={cn(
                 'z-10 flex items-center gap-2.5 rounded-xl border border-white/40 backdrop-blur-xl px-4 py-3 shadow-lg w-fit max-w-[calc(100%-2rem)]',
-                postcard.frontCaptionPosition
-                  ? 'absolute'
-                  : 'absolute bottom-4 left-4 right-4',
+                postcard.frontCaptionPosition ? 'absolute' : 'absolute bottom-4 left-4 right-4',
               )}
               style={
                 postcard.frontCaptionPosition

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
       'Cartes postales en marque blanche pour agences. Tarifs dédiés, photothèque, analytics et marketing pour vos clients.',
     images: [
       {
-        url: '/images/demo/photo-1486406146926-c627a92ad1ab.jpg',
+        url: 'https://img.cartepostale.cool/demo/photo-1486406146926-c627a92ad1ab.jpg',
         width: 1200,
         height: 630,
         alt: 'CartePostale.cool Agences',

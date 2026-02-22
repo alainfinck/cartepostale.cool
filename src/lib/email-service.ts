@@ -76,7 +76,7 @@ export function generateMagicLinkEmail(
     ? postcardImageUrl
     : postcardImageUrl
       ? `${baseUrl}${postcardImageUrl}`
-      : `${baseUrl}/images/demo/photo-1507525428034-b723cf961d3e.jpg`
+      : `${baseUrl}https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg`
 
   return `
 <!DOCTYPE html>

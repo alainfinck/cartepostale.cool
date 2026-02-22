@@ -10,8 +10,16 @@ import {
   Loader2,
   ExternalLink,
   HardDrive,
+  Trash2,
 } from 'lucide-react'
-import { listR2Objects, type ListR2Result, type R2ObjectItem } from '@/actions/manager-actions'
+import Image from 'next/image'
+import {
+  listR2Objects,
+  deleteR2Object,
+  type ListR2Result,
+  type R2ObjectItem,
+} from '@/actions/manager-actions'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -27,7 +35,13 @@ function formatSize(bytes: number): string {
 function formatDate(iso: string | null): string {
   if (!iso) return '—'
   const d = new Date(iso)
-  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 export function ManagerR2Client({ initial }: { initial: ListR2Result }) {
@@ -54,10 +68,14 @@ export function ManagerR2Client({ initial }: { initial: ListR2Result }) {
         </h1>
         <Card className="p-6 border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
           <p className="text-amber-800 dark:text-amber-200">
-            R2 n’est pas configuré. Définissez <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">S3_BUCKET</code>,{' '}
+            R2 n’est pas configuré. Définissez{' '}
+            <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">S3_BUCKET</code>,{' '}
             <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">S3_ENDPOINT</code>,{' '}
             <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">S3_ACCESS_KEY_ID</code> et{' '}
-            <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">S3_SECRET_ACCESS_KEY</code> dans les variables d’environnement.
+            <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">
+              S3_SECRET_ACCESS_KEY
+            </code>{' '}
+            dans les variables d’environnement.
           </p>
         </Card>
       </div>
@@ -133,7 +151,7 @@ export function ManagerR2Client({ initial }: { initial: ListR2Result }) {
               disabled={isPending}
               className={cn(
                 'flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-colors',
-                'hover:bg-muted/50 hover:border-primary/30 disabled:opacity-50'
+                'hover:bg-muted/50 hover:border-primary/30 disabled:opacity-50',
               )}
             >
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -147,31 +165,51 @@ export function ManagerR2Client({ initial }: { initial: ListR2Result }) {
 
         {/* Files */}
         {result.objects.map((obj) => (
-          <R2ObjectCard key={obj.key} item={obj} />
+          <R2ObjectCard key={obj.key} item={obj} onDeleted={() => loadPrefix(prefix)} />
         ))}
       </div>
 
       {!isPending && result.prefixes.length === 0 && result.objects.length === 0 && (
-        <Card className="p-8 text-center text-muted-foreground">
-          Ce dossier est vide.
-        </Card>
+        <Card className="p-8 text-center text-muted-foreground">Ce dossier est vide.</Card>
       )}
     </div>
   )
 }
 
-function R2ObjectCard({ item }: { item: R2ObjectItem }) {
+function R2ObjectCard({ item, onDeleted }: { item: R2ObjectItem; onDeleted: () => void }) {
+  const [isDeleting, startTransition] = useTransition()
   const name = item.key.split('/').pop() ?? item.key
   const isImage = IMAGE_EXT.test(name)
+
+  const handleDelete = () => {
+    if (!confirm(`Voulez-vous vraiment supprimer "${name}" ?`)) return
+    startTransition(async () => {
+      const res = await deleteR2Object(item.key)
+      if (res.success) {
+        toast.success('Fichier supprimé')
+        onDeleted()
+      } else {
+        toast.error(res.error || 'Erreur lors de la suppression')
+      }
+    })
+  }
+
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden relative group">
       <div className="aspect-square bg-muted/30 relative">
         {isImage && item.publicUrl ? (
-          <a href={item.publicUrl} target="_blank" rel="noopener noreferrer" className="block size-full">
-            <img
+          <a
+            href={item.publicUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block size-full"
+          >
+            <Image
               src={item.publicUrl}
               alt={name}
-              className="size-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 100vw, 300px"
             />
           </a>
         ) : (
@@ -187,16 +225,35 @@ function R2ObjectCard({ item }: { item: R2ObjectItem }) {
         <p className="text-xs text-muted-foreground">
           {formatSize(item.size)} · {formatDate(item.lastModified)}
         </p>
-        {item.publicUrl && (
-          <a
-            href={item.publicUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-primary hover:underline flex items-center gap-1"
+        <div className="flex items-center justify-between mt-2 pt-2 border-t text-muted-foreground">
+          {item.publicUrl ? (
+            <a
+              href={item.publicUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-primary hover:underline flex items-center gap-1"
+            >
+              Ouvrir <ExternalLink className="h-3 w-3" />
+            </a>
+          ) : (
+            <span />
+          )}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            title="Supprimer"
           >
-            Ouvrir <ExternalLink className="h-3 w-3" />
-          </a>
-        )}
+            {isDeleting ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Trash2 className="h-3 w-3" />
+            )}
+          </Button>
+        </div>
       </div>
     </Card>
   )

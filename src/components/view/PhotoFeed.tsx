@@ -552,7 +552,6 @@ export default function PhotoFeed({ mediaItems, senderName, postcardId }: PhotoF
                       src={mediaItems[selectedIndex].url}
                       alt={`Full photo ${selectedIndex + 1}`}
                       fill
-                      unoptimized
                       className="object-cover"
                       priority
                     />

@@ -55,7 +55,7 @@ export default function BusinessClient() {
       <section className="relative bg-[#061e1e] min-h-[85vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
-            src={getOptimizedImageUrl('/images/demo/photo-1507525428034-b723cf961d3e.jpg', {
+            src={getOptimizedImageUrl('https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg', {
               width: 1920,
             })}
             alt="Vacation Background"
@@ -256,7 +256,7 @@ export default function BusinessClient() {
                     <div className="w-full h-full overflow-hidden rounded-sm relative group">
                       <img
                         src={getOptimizedImageUrl(
-                          '/images/demo/photo-1501785888041-af3ef285b470.jpg',
+                          'https://img.cartepostale.cool/demo/photo-1501785888041-af3ef285b470.jpg',
                           {
                             width: 800,
                           },
@@ -385,7 +385,7 @@ export default function BusinessClient() {
             <div className="absolute -inset-4 bg-orange-100 rounded-[40px] rotate-2 -z-10 blur-2xl opacity-50"></div>
             <div className="bg-white rounded-[40px] p-2 shadow-2xl overflow-hidden border border-stone-100">
               <img
-                src={getOptimizedImageUrl('/images/demo/photo-1502602898657-3e91760cbb34.jpg', {
+                src={getOptimizedImageUrl('https://img.cartepostale.cool/demo/photo-1502602898657-3e91760cbb34.jpg', {
                   width: 1000,
                 })}
                 alt="Image Bank Preview"

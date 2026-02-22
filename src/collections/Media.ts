@@ -59,6 +59,37 @@ export const Media: CollectionConfig = {
       ],
     },
   ],
+  hooks: {
+    beforeChange: [
+      ({ req, data }) => {
+        if (!data) return data
+        // Determine the prefix/folder based on referer
+        let referer = ''
+        if (req && typeof req.headers?.get === 'function') {
+          referer = req.headers.get('referer') || ''
+        } else if (req && req.headers && typeof req.headers === 'object') {
+          referer = (req.headers as any).referer || ''
+        }
+
+        if (!data.prefix || data.prefix === '') {
+          if (referer.includes('/admin/collections/gallery')) {
+            data.prefix = 'gallery'
+          } else if (
+            referer.includes('/admin/collections/posts') ||
+            referer.includes('/admin/collections/agencies') ||
+            referer.includes('/admin/collections/stickers') ||
+            referer.includes('/admin/collections/email-templates')
+          ) {
+            data.prefix = 'site'
+          } else {
+            // Default folder for general medias uploaded in Admin
+            data.prefix = 'site'
+          }
+        }
+        return data
+      },
+    ],
+  },
   upload: {
     staticDir: 'public/media',
     adminThumbnail: 'thumbnail',

@@ -29,7 +29,7 @@ function getFrontImageUrl(postcard: Postcard): string {
   if (postcard.frontImage && typeof postcard.frontImage === 'object' && 'url' in postcard.frontImage && postcard.frontImage.url) {
     return postcard.frontImage.url
   }
-  return '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
+  return 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'
 }
 
 function MapFocusController({ focusedCoords }: { focusedCoords?: { lat: number; lng: number } }) {

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     description: 'Personnalisez votre carte postale : ajoutez votre photo, rédigez votre message avec une écriture manuscrite et signez.',
     images: [
       {
-        url: '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
+        url: 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg',
         width: 1200,
         height: 630,
         alt: 'Créer ma carte postale',

@@ -100,7 +100,6 @@ export default function PhotoAlbum({ mediaItems, senderName }: PhotoAlbumProps) 
                     src={item.url}
                     alt={`Photo ${index + 1} de ${senderName}`}
                     fill
-                    unoptimized
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
@@ -168,7 +167,6 @@ export default function PhotoAlbum({ mediaItems, senderName }: PhotoAlbumProps) 
                     src={mediaItems[selectedIndex].url}
                     alt={`Full photo ${selectedIndex + 1}`}
                     fill
-                    unoptimized
                     className="object-contain"
                     priority
                   />

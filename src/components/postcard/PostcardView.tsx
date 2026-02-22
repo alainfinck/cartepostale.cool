@@ -70,7 +70,7 @@ interface PostcardViewProps {
 
 const DEFAULT_CAPTION_POSITION = { x: 50, y: 85 }
 
-const FALLBACK_FRONT_IMAGE = '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
+const FALLBACK_FRONT_IMAGE = 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'
 const DEFAULT_FRONT_FILTER: FrontImageFilter = {
   brightness: 100,
   contrast: 100,

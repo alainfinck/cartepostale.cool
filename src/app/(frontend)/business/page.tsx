@@ -10,7 +10,7 @@ export const metadata: Metadata = {
         description: 'Diffusez votre marque sur chaque carte postale. Données clients, CRM, envois sous votre nom pour agences et professionnels.',
         images: [
             {
-                url: '/images/demo/photo-1486406146926-c627a92ad1ab.jpg',
+                url: 'https://img.cartepostale.cool/demo/photo-1486406146926-c627a92ad1ab.jpg',
                 width: 1200,
                 height: 630,
                 alt: 'CartePostale.cool Business',

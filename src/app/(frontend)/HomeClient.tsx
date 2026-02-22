@@ -35,7 +35,7 @@ export default function Home() {
 
   const demoCard: Postcard = {
     id: 'demo-rv',
-    frontImage: '/images/demo/photo-1596394516093-501ba68a0ba6.jpg',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1596394516093-501ba68a0ba6.jpg',
     frontCaption: 'Salut de Bali ! 🌴',
     location: 'Bali, Indonésie',
     message:
@@ -50,7 +50,7 @@ export default function Home() {
 
   const heroPostcard: Postcard = {
     id: 'hero-card',
-    frontImage: '/images/demo/photo-1502602898657-3e91760cbb34.jpg',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1502602898657-3e91760cbb34.jpg',
     frontCaption: 'Bonjour de Paris ! 🗼',
     location: 'Paris, France',
     message:
@@ -62,8 +62,8 @@ export default function Home() {
     isPremium: true,
     coords: { lat: 48.8566, lng: 2.3522 },
     mediaItems: [
-      { id: 'h1', type: 'image', url: '/images/demo/photo-1502602898657-3e91760cbb34.jpg' },
-      { id: 'h2', type: 'image', url: '/images/demo/photo-1499856871958-5b9627545d1a.jpg' },
+      { id: 'h1', type: 'image', url: 'https://img.cartepostale.cool/demo/photo-1502602898657-3e91760cbb34.jpg' },
+      { id: 'h2', type: 'image', url: 'https://img.cartepostale.cool/demo/photo-1499856871958-5b9627545d1a.jpg' },
       {
         id: 'h3',
         type: 'video',
@@ -409,7 +409,7 @@ export default function Home() {
               <div className="absolute -inset-4 bg-teal-500/20 rounded-[40px] rotate-2 -z-10 blur-3xl opacity-50"></div>
               <div className="bg-stone-900 rounded-[40px] p-2 shadow-2xl overflow-hidden border border-white/10 group">
                 <img
-                  src="/images/demo/photo-1486406146926-c627a92ad1ab.jpg"
+                  src="https://img.cartepostale.cool/demo/photo-1486406146926-c627a92ad1ab.jpg"
                   alt="Business Dashboard Preview"
                   className="rounded-[38px] w-full opacity-80 group-hover:opacity-100 transition-opacity duration-500"
                 />

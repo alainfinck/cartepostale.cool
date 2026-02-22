@@ -23,7 +23,7 @@ function isMedia(m: unknown): m is Media {
 function getFrontImageUrl(postcard: Postcard): string {
   if (postcard.frontImageURL) return postcard.frontImageURL
   if (isMedia(postcard.frontImage) && postcard.frontImage?.url) return postcard.frontImage.url
-  return '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
+  return 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'
 }
 
 const statusLabels: Record<string, string> = {

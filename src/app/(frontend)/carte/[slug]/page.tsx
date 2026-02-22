@@ -99,7 +99,7 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
 
   // Fallback if no image found (shouldn't happen for valid cards)
   if (!frontImageUrl) {
-    frontImageUrl = '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
+    frontImageUrl = 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'
   }
 
   const mediaItems: MediaItem[] = []

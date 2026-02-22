@@ -6,6 +6,8 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
+    loader: 'custom',
+    loaderFile: './src/lib/cloudflare-loader.ts',
     remotePatterns: [{ protocol: 'https', hostname: 'img.cartepostale.cool', pathname: '/**' }],
   },
   async headers() {

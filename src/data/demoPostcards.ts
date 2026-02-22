@@ -3,7 +3,7 @@ import { Postcard } from '@/types'
 export const demoPostcards: Postcard[] = [
   {
     id: 'demo-ski',
-    frontImage: '/images/demo/photo-1486074218988-66a98816c117.jpg',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1486074218988-66a98816c117.jpg',
     frontCaption: 'Salut des pistes ! ⛷️',
     location: 'Courchevel, France',
     message:
@@ -15,7 +15,7 @@ export const demoPostcards: Postcard[] = [
     isPremium: true,
     coords: { lat: 45.4147, lng: 6.6342 },
     mediaItems: [
-      { id: 's1', type: 'image', url: '/images/demo/photo-1520629411511-eb4407764282.jpg' },
+      { id: 's1', type: 'image', url: 'https://img.cartepostale.cool/demo/photo-1520629411511-eb4407764282.jpg' },
       {
         id: 's2',
         type: 'video',
@@ -25,7 +25,7 @@ export const demoPostcards: Postcard[] = [
   },
   {
     id: 'demo-japan',
-    frontImage: '/images/demo/photo-1493976040374-85c8e12f0c0e.jpg',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1493976040374-85c8e12f0c0e.jpg',
     frontCaption: "Kyoto m'émerveille 🌸",
     location: 'Kyoto, Japon',
     message:
@@ -37,12 +37,12 @@ export const demoPostcards: Postcard[] = [
     isPremium: true,
     coords: { lat: 35.0116, lng: 135.7681 },
     mediaItems: [
-      { id: 'j1', type: 'image', url: '/images/demo/photo-1528164344705-47542687000d.jpg' },
+      { id: 'j1', type: 'image', url: 'https://img.cartepostale.cool/demo/photo-1528164344705-47542687000d.jpg' },
     ],
   },
   {
     id: 'demo-canada',
-    frontImage: '/images/demo/photo-1503614472-8c93d56e92ce.jpg',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1503614472-8c93d56e92ce.jpg',
     frontCaption: 'Les Rocheuses ! 🏔️',
     location: 'Banff, Canada',
     message:
@@ -54,12 +54,12 @@ export const demoPostcards: Postcard[] = [
     isPremium: true,
     coords: { lat: 51.1784, lng: -115.5708 },
     mediaItems: [
-      { id: 'c1', type: 'image', url: '/images/demo/photo-1439396087961-99bc12bd8959.jpg' },
+      { id: 'c1', type: 'image', url: 'https://img.cartepostale.cool/demo/photo-1439396087961-99bc12bd8959.jpg' },
     ],
   },
   {
     id: 'demo-anniv',
-    frontImage: '/images/demo/photo-1530103043960-ef38714abb15.jpg',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1530103043960-ef38714abb15.jpg',
     frontCaption: 'Joyeux anniversaire ! 🎂',
     location: 'Votre Cœur, Partout',
     message:
@@ -73,7 +73,7 @@ export const demoPostcards: Postcard[] = [
   },
   {
     id: 'demo-safari',
-    frontImage: '/images/demo/photo-1516426122078-c23e76319801.jpg',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1516426122078-c23e76319801.jpg',
     frontCaption: 'Safari inoubliable ! 🦁',
     location: 'Kruger Park, Afrique du Sud',
     message:
@@ -85,13 +85,13 @@ export const demoPostcards: Postcard[] = [
     isPremium: true,
     coords: { lat: -23.9884, lng: 31.5594 },
     mediaItems: [
-      { id: 'sa1', type: 'image', url: '/images/demo/photo-1549366021-9f761d450615.jpg' },
+      { id: 'sa1', type: 'image', url: 'https://img.cartepostale.cool/demo/photo-1549366021-9f761d450615.jpg' },
     ],
   },
   // New Themes
   {
     id: 'demo-mothers-day',
-    frontImage: '/images/demo/mothers-day.png',
+    frontImage: 'https://img.cartepostale.cool/demo/mothers-day.png',
     frontCaption: 'Bonne fête Maman ! ❤️',
     location: 'Maison de famille',
     message:
@@ -105,7 +105,7 @@ export const demoPostcards: Postcard[] = [
   },
   {
     id: 'demo-fathers-day',
-    frontImage: '/images/demo/fathers-day.png',
+    frontImage: 'https://img.cartepostale.cool/demo/fathers-day.png',
     frontCaption: 'Super Papa ! 🛠️',
     location: 'Atelier de Papa',
     message:
@@ -119,7 +119,7 @@ export const demoPostcards: Postcard[] = [
   },
   {
     id: 'demo-birth',
-    frontImage: '/images/demo/birth.png',
+    frontImage: 'https://img.cartepostale.cool/demo/birth.png',
     frontCaption: 'Bienvenue petit ange 👶',
     location: 'Maternité',
     message:
@@ -133,7 +133,7 @@ export const demoPostcards: Postcard[] = [
   },
   {
     id: 'demo-wedding',
-    frontImage: '/images/demo/wedding.png',
+    frontImage: 'https://img.cartepostale.cool/demo/wedding.png',
     frontCaption: 'Vive les mariés ! 💍',
     location: 'Mairie de Paris',
     message:

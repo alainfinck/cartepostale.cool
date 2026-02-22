@@ -36,6 +36,7 @@ import { Button } from '@/components/ui/button'
 import { Pencil, RotateCcw } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
+import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Minus } from 'lucide-react'
@@ -121,9 +122,9 @@ function getFrontImageUrl(postcard: PayloadPostcard): string {
   let url = ''
   if (postcard.frontImageURL) url = postcard.frontImageURL
   else if (isMedia(postcard.frontImage) && postcard.frontImage.url) url = postcard.frontImage.url
-  else url = '/images/demo/photo-1507525428034-b723cf961d3e.jpg'
+  else url = 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'
 
-  return getOptimizedImageUrl(url, { width: 400 })
+  return url
 }
 
 function mapToFrontend(p: PayloadPostcard): FrontendPostcard {
@@ -1026,10 +1027,12 @@ function GridCard({
                   className="h-4 w-4 rounded border-border text-teal-600 focus:ring-teal-500 cursor-pointer bg-white/90 shadow"
                 />
               </div>
-              <img
+              <Image
                 src={imageUrl}
                 alt={`Carte de ${postcard.senderName}`}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-700"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
               <div className="absolute top-3 left-10 flex gap-2">
                 <StatusBadge status={postcard.status || 'draft'} />
@@ -1245,10 +1248,12 @@ function ListRow({
       </TableCell>
       <TableCell>
         <div className="relative w-16 h-11 group-hover:scale-105 transition-transform duration-300">
-          <img
+          <Image
             src={imageUrl}
             alt=""
-            className="w-full h-full object-cover rounded-md shadow-sm border border-border/30"
+            fill
+            className="object-cover rounded-md shadow-sm border border-border/30"
+            sizes="64px"
           />
         </div>
       </TableCell>

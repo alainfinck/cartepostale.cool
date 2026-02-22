@@ -119,7 +119,7 @@ export default function AgencesLandingClient() {
       <section className="relative bg-[#061e1e] min-h-[80vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
-            src={getOptimizedImageUrl('/images/demo/photo-1486406146926-c627a92ad1ab.jpg', { width: 1920 })}
+            src={getOptimizedImageUrl('https://img.cartepostale.cool/demo/photo-1486406146926-c627a92ad1ab.jpg', { width: 1920 })}
             alt="Agences"
             className="w-full h-full object-cover opacity-25 mix-blend-overlay scale-105"
           />

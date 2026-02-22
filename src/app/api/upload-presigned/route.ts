@@ -68,14 +68,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Upload direct R2 non configuré' }, { status: 503 })
   }
 
-  let body: { filename?: string; mimeType?: string; filesize?: number }
+  let body: { filename?: string; mimeType?: string; filesize?: number; folder?: string }
   try {
     body = await request.json()
   } catch {
     return NextResponse.json({ error: 'Body JSON invalide' }, { status: 400 })
   }
 
-  const { filename, mimeType, filesize } = body
+  const { filename, mimeType, filesize, folder } = body
   if (!filename || typeof filename !== 'string' || !mimeType || typeof filesize !== 'number') {
     return NextResponse.json({ error: 'filename, mimeType et filesize requis' }, { status: 400 })
   }
@@ -97,7 +97,13 @@ export async function POST(request: NextRequest) {
   }
 
   const s3 = getS3Client()!
-  const key = filename
+
+  // Construction du chemin avec dossier optionnel sécurisé
+  let safeFolder = folder ? folder.trim().replace(/[^a-zA-Z0-9_\-\/]/g, '') : 'postcards'
+  if (safeFolder.startsWith('/')) safeFolder = safeFolder.slice(1)
+  if (safeFolder.endsWith('/')) safeFolder = safeFolder.slice(0, -1)
+
+  const key = safeFolder ? `${safeFolder}/${filename}` : filename
 
   try {
     const url = await getSignedUrl(

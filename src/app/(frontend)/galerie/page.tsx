@@ -10,7 +10,7 @@ export const metadata: Metadata = {
         description: 'Découvrez comment nos utilisateurs partagent leurs souvenirs de voyage.',
         images: [
             {
-                url: '/images/demo/photo-1488646953014-85cb44e25828.jpg',
+                url: 'https://img.cartepostale.cool/demo/photo-1488646953014-85cb44e25828.jpg',
                 width: 1200,
                 height: 630,
                 alt: 'Galerie CartePostale.cool',

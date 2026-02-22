@@ -5,7 +5,7 @@ import type { Where } from 'payload'
 import config from '@payload-config'
 import { Postcard, User, Agency, Gallery, GalleryCategory, GalleryTag } from '@/payload-types'
 import { getCurrentUser } from '@/lib/auth'
-import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3'
+import { S3Client, ListObjectsV2Command, DeleteObjectCommand } from '@aws-sdk/client-s3'
 
 async function requireAdmin(): Promise<void> {
   const user = await getCurrentUser()
@@ -1025,10 +1025,7 @@ export async function deleteGalleryImage(
 }
 
 /** List media for gallery image picker (admin only). */
-export async function getMediaForGallery(params?: {
-  limit?: number
-  search?: string
-}): Promise<{
+export async function getMediaForGallery(params?: { limit?: number; search?: string }): Promise<{
   docs: { id: number; alt: string; url?: string | null; filename?: string | null }[]
 }> {
   await requireAdmin()
@@ -1147,5 +1144,25 @@ export async function listR2Objects(prefix?: string, maxKeys = 100): Promise<Lis
       publicBaseUrl: R2_PUBLIC_BASE_URL ?? null,
       configured: true,
     }
+  }
+}
+
+/** Delete an object from R2 bucket (admin only). */
+export async function deleteR2Object(key: string): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin()
+  const client = getR2Client()
+  if (!client || !R2_BUCKET) {
+    return { success: false, error: 'R2 non configuré' }
+  }
+  try {
+    const cmd = new DeleteObjectCommand({
+      Bucket: R2_BUCKET,
+      Key: key,
+    })
+    await client.send(cmd)
+    return { success: true }
+  } catch (error: any) {
+    console.error('Error deleting R2 object:', error)
+    return { success: false, error: error.message || 'Impossible de supprimer le fichier' }
   }
 }

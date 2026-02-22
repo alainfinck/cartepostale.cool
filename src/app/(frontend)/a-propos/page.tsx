@@ -34,7 +34,7 @@ export default function AProposPage() {
                     <div className="relative">
                         <div className="absolute inset-0 bg-stone-900/5 rotate-3 rounded-2xl"></div>
                         <Image
-                            src="/images/demo/photo-1527529482837-4698179dc6ce.jpg"
+                            src="https://img.cartepostale.cool/demo/photo-1527529482837-4698179dc6ce.jpg"
                             alt="Notre équipe en voyage"
                             width={600}
                             height={400}
