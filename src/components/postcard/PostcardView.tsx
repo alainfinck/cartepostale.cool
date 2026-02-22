@@ -114,34 +114,68 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const frontImageRef = useRef<HTMLImageElement>(null)
   const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null)
 
-  const captionPos = postcard.frontCaptionPosition ?? DEFAULT_CAPTION_POSITION
+  const [localCaptionPos, setLocalCaptionPos] = useState(
+    postcard.frontCaptionPosition ?? DEFAULT_CAPTION_POSITION
+  )
+  
+  const rafIdRef = useRef<number | null>(null)
+  const lastUpdateRef = useRef(0)
+
+  useEffect(() => {
+    if (!isDraggingCaption) {
+      setLocalCaptionPos(postcard.frontCaptionPosition ?? DEFAULT_CAPTION_POSITION)
+    }
+  }, [postcard.frontCaptionPosition, isDraggingCaption])
+
+  const captionPos = isDraggingCaption ? localCaptionPos : (postcard.frontCaptionPosition ?? DEFAULT_CAPTION_POSITION)
   const usePositionedCaption =
     postcard.frontCaptionPosition != null || onCaptionPositionChange != null
 
   useEffect(() => {
     if (!isDraggingCaption || !onCaptionPositionChange) return
+    
     const onMove = (e: PointerEvent) => {
       const el = frontFaceRef.current
       if (!el) return
-      const rect = el.getBoundingClientRect()
-      const xPct = ((e.clientX - rect.left) / rect.width) * 100
-      const yPct = ((e.clientY - rect.top) / rect.height) * 100
-      const x = Math.max(10, Math.min(90, xPct))
-      const y = Math.max(10, Math.min(90, yPct))
-      onCaptionPositionChange({ x, y })
+      
+      const now = performance.now()
+      if (now - lastUpdateRef.current < 16) return
+      lastUpdateRef.current = now
+      
+      if (rafIdRef.current != null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
+      
+      rafIdRef.current = requestAnimationFrame(() => {
+        const rect = el.getBoundingClientRect()
+        const xPct = ((e.clientX - rect.left) / rect.width) * 100
+        const yPct = ((e.clientY - rect.top) / rect.height) * 100
+        const x = Math.max(10, Math.min(90, xPct))
+        const y = Math.max(10, Math.min(90, yPct))
+        setLocalCaptionPos({ x, y })
+      })
     }
+    
     const onUp = () => {
+      if (rafIdRef.current != null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
       setIsDraggingCaption(false)
+      onCaptionPositionChange(localCaptionPos)
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
     }
+    
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
     return () => {
+      if (rafIdRef.current != null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
     }
-  }, [isDraggingCaption, onCaptionPositionChange])
+  }, [isDraggingCaption, onCaptionPositionChange, localCaptionPos])
 
   const [isFullscreen, setIsFullscreen] = useState(false)
   const frontImageFilterCss = buildFrontImageFilterCss(postcard.frontImageFilter)
