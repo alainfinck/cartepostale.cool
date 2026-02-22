@@ -14,6 +14,7 @@ import ViewPageTitle from '@/components/view/ViewPageTitle'
 import DistanceDisplay from '@/components/view/DistanceDisplay'
 import PhotoAlbum from '@/components/view/PhotoAlbum'
 import EnvelopeExperience from '@/components/view/EnvelopeExperience'
+import ARButton from '@/components/ar/ARButton'
 
 interface PageProps {
     params: Promise<{
@@ -223,6 +224,14 @@ export default async function PostcardPage({
                             <span>vues</span>
                         </div>
                     </div>
+                </div>
+
+                {/* AR Button */}
+                <div className="flex justify-center mb-4">
+                    <ARButton
+                        postcard={frontendPostcard}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white text-sm font-bold uppercase tracking-wider shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5 active:scale-95"
+                    />
                 </div>
 
                 {/* Album photo (sous la carte postale) */}
