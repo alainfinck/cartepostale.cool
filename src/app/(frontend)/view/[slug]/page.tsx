@@ -9,6 +9,7 @@ import { NumberTicker } from '@/components/ui/number-ticker'
 import { Postcard as PayloadPostcard, Media } from '@/payload-types'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import { RotateDevicePrompt } from "@/components/ui/rotate-device-prompt"
+import PostcardExpiredBanner from '@/components/view/PostcardExpiredBanner'
 import SocialBar from '@/components/social/SocialBar'
 import ViewPageTitle from '@/components/view/ViewPageTitle'
 import DistanceDisplay from '@/components/view/DistanceDisplay'
@@ -188,6 +189,23 @@ export default async function PostcardPage({
     if (frontendPostcard.location && !frontendPostcard.coords) {
         const coords = await geocodeLocation(frontendPostcard.location)
         if (coords) frontendPostcard.coords = coords
+    }
+
+    const expiresAt = (payloadPostcard as any).expiresAt
+        ? new Date((payloadPostcard as any).expiresAt)
+        : null
+    const isExpired = expiresAt ? expiresAt.getTime() < Date.now() : false
+
+    if (isExpired) {
+        return (
+            <div className="min-h-screen bg-[#fdfbf7] flex flex-col items-center justify-center px-4">
+                <PostcardExpiredBanner
+                    publicId={slug}
+                    senderName={payloadPostcard.senderName || ''}
+                    expiresAt={expiresAt!.toISOString()}
+                />
+            </div>
+        )
     }
 
     return (

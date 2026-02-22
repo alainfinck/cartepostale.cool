@@ -14,6 +14,7 @@ import PhotoFeed from '@/components/view/PhotoFeed'
 import EnvelopeExperience from '@/components/view/EnvelopeExperience'
 import { getCurrentUser } from '@/lib/auth'
 import { PostcardTracking } from '@/components/analytics/PostcardTracking'
+import PostcardExpiredBanner from '@/components/view/PostcardExpiredBanner'
 
 type SearchParams = {
   [key: string]: string | string[] | undefined
@@ -218,6 +219,24 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
     if (coords) frontendPostcard.coords = coords
   }
 
+  // Check if card is expired (demo 48h)
+  const expiresAt = (payloadPostcard as any).expiresAt
+    ? new Date((payloadPostcard as any).expiresAt)
+    : null
+  const isExpired = expiresAt ? expiresAt.getTime() < Date.now() : false
+
+  if (isExpired) {
+    return (
+      <div className="min-h-screen bg-[#fdfbf7] flex flex-col items-center justify-center px-4">
+        <PostcardExpiredBanner
+          publicId={slug}
+          senderName={payloadPostcard.senderName || ''}
+          expiresAt={expiresAt!.toISOString()}
+        />
+      </div>
+    )
+  }
+
   // Check contribution access
   const user = await getCurrentUser()
   const payloadPostcardAny = payloadPostcard as any
@@ -248,6 +267,15 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
   const pageContent = (
     <div className="min-h-screen bg-[#fdfbf7] pt-9 md:pt-0 flex flex-col items-center overflow-x-hidden landscape:justify-center landscape:pt-4 landscape:pb-4">
       <RotateDevicePrompt />
+
+      {expiresAt && !isExpired && (
+        <PostcardExpiredBanner
+          publicId={slug}
+          senderName={payloadPostcard.senderName || ''}
+          expiresAt={expiresAt.toISOString()}
+          isCountdown
+        />
+      )}
 
       <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-4 md:mb-6 px-2 md:px-4">
         <PostcardViewToggle postcard={frontendPostcard} views={payloadPostcard.views || 0} />

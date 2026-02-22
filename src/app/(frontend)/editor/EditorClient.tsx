@@ -816,6 +816,7 @@ export default function EditorPage() {
   const [isRevolutRedirecting, setIsRevolutRedirecting] = useState(false)
   const [revolutError, setRevolutError] = useState<string | null>(null)
   const [hasPaid, setHasPaid] = useState(false)
+  const [isDemoCard, setIsDemoCard] = useState(false)
 
   // Meta Facebook Pixel
   const {
@@ -1179,7 +1180,7 @@ export default function EditorPage() {
         // Un seul critère : au moins un message. Destinataire / expéditeur / lieu optionnels (valeurs par défaut à l’envoi).
         return message.trim().length > 0
       case 'payment':
-        return hasPaid || codeSuccess || currentUser?.role === 'admin'
+        return hasPaid || codeSuccess || isDemoCard || currentUser?.role === 'admin'
       case 'preview':
         return true
       default:
@@ -1945,6 +1946,9 @@ export default function EditorPage() {
         ...(!sendKey && {
           frontExif: frontExif ?? undefined,
         }),
+        ...(isDemoCard && !hasPaid && !codeSuccess && currentUser?.role !== 'admin'
+          ? { isDemo: true }
+          : {}),
       })
 
       if (result.success && result.publicId) {
@@ -1954,7 +1958,6 @@ export default function EditorPage() {
         }
         setShareUrl(`${window.location.origin}/carte/${result.publicId}`)
 
-        // Trigger email modal if user is not logged in and hasn't provided an email
         if (!currentUser && !senderEmail) {
           setShowEmailPromptModal(true)
         }
@@ -2912,6 +2915,39 @@ export default function EditorPage() {
                       </Button>
                     )}
 
+                    {/* Demo card option */}
+                    {!codeSuccess && !hasPaid && currentUser?.role !== 'admin' && (
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-stone-200" />
+                        </div>
+                        <div className="relative flex justify-center text-[10px]">
+                          <span className="px-3 bg-white text-stone-400 font-bold uppercase tracking-widest">
+                            ou
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {!codeSuccess && !hasPaid && currentUser?.role !== 'admin' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsDemoCard(true)
+                          setTimeout(() => goNext(), 0)
+                        }}
+                        className="w-full rounded-xl py-3 h-auto text-stone-500 hover:text-stone-700 hover:bg-stone-50 border border-dashed border-stone-300 hover:border-stone-400 transition-all text-sm font-semibold flex items-center justify-center gap-2"
+                      >
+                        <Eye size={16} />
+                        <span>Carte démo gratuite — visible 48h</span>
+                      </button>
+                    )}
+                    {!codeSuccess && !hasPaid && currentUser?.role !== 'admin' && (
+                      <p className="text-center text-[10px] text-stone-400 leading-relaxed">
+                        La carte démo est visible 48 h. Vous pourrez la convertir en carte permanente
+                        à tout moment en payant 2,50 €.
+                      </p>
+                    )}
+
                     <Button
                       variant="ghost"
                       onClick={goPrev}
@@ -3732,8 +3768,37 @@ export default function EditorPage() {
                           </div>
                         )}
 
-                        {hasPaid || codeSuccess || currentUser?.role === 'admin' ? (
+                        {hasPaid || codeSuccess || isDemoCard || currentUser?.role === 'admin' ? (
                           <>
+                            {/* Demo card banner */}
+                            {isDemoCard && !hasPaid && !codeSuccess && currentUser?.role !== 'admin' && (
+                              <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-left relative z-10">
+                                <div className="flex items-start gap-3">
+                                  <div className="bg-amber-100 p-2 rounded-xl shrink-0">
+                                    <Eye size={18} className="text-amber-600" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="font-bold text-amber-900 text-sm mb-1">
+                                      Carte démo — visible 48 h
+                                    </p>
+                                    <p className="text-amber-700 text-xs leading-relaxed">
+                                      Votre carte est en ligne pour 48 heures. Pour la rendre permanente, passez à la version payante à tout moment.
+                                    </p>
+                                    <Button
+                                      onClick={() => {
+                                        setIsDemoCard(false)
+                                        setCurrentStep('payment')
+                                      }}
+                                      className="mt-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg px-4 py-2 h-auto text-xs font-bold transition-all"
+                                    >
+                                      <CreditCard size={14} className="mr-1.5" />
+                                      Passer en carte permanente — 2,50 €
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
                             <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg border border-teal-50 transform hover:scale-105 transition-transform duration-300">
                               <Send size={36} className="text-teal-600" />
                             </div>
