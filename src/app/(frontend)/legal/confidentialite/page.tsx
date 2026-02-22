@@ -34,7 +34,7 @@ export default function ConfidentialitePage() {
 
             <h3>3. Conservation des données</h3>
             <p>
-                Les photos téléchargées sont conservées le temps nécessaire à l&apos;impression et à l&apos;expédition, puis supprimées de nos serveurs de production sous 30 jours, sauf si vous choisissez de les conserver dans votre album personnel.
+                Les photos téléchargées sont conservées le temps nécessaire à la création et à la diffusion de vos cartes virtuelles, puis supprimées de nos serveurs de production sous 30 jours, sauf si vous choisissez de les conserver dans votre album personnel.
             </p>
             <p>
                 Les données de facturation sont conservées conformément aux obligations légales (10 ans).

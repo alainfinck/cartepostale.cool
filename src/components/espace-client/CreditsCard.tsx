@@ -25,7 +25,7 @@ export function CreditsCard({ initialCredits, userId, userEmail }: CreditsCardPr
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amountEur: amount,
-          description: `Pack de crédits ${packType.replace('pack_', '')} - CartePostale.cool`,
+          description: `Pack ${packType.replace('pack_', '')} cartes - CartePostale.cool`,
           customerEmail: userEmail || undefined,
           redirectPath: '/espace-client?payment_success=true',
           metadata: {
@@ -88,9 +88,12 @@ export function CreditsCard({ initialCredits, userId, userEmail }: CreditsCardPr
 
           <div className="grid grid-cols-1 gap-2">
             {[
-              { id: 'pack_3', label: 'Pack 3 cartes', price: 4.99, icon: '💌' },
-              { id: 'pack_5', label: 'Pack 5 cartes', price: 7.99, icon: '✨', popular: true },
-              { id: 'pack_10', label: 'Pack 10 cartes', price: 14.99, icon: '🚀' },
+              { id: 'pack_5', label: 'Pack 5 cartes', price: 12, icon: '💌' },
+              { id: 'pack_10', label: 'Pack 10 cartes', price: 22, icon: '✨' },
+              { id: 'pack_20', label: 'Pack 20 cartes', price: 40, icon: '💌', popular: true },
+              { id: 'pack_50', label: 'Pack 50 cartes', price: 95, icon: '📦' },
+              { id: 'pack_100', label: 'Pack 100 cartes', price: 150, icon: '🚀' },
+              { id: 'pack_200', label: 'Pack 200 cartes', price: 280, icon: '🏆' },
             ].map((pack) => (
               <button
                 key={pack.id}

@@ -51,10 +51,8 @@ const dropdownPro = [
 ]
 
 const dropdownTarifs = [
-  { href: '/pricing', icon: Gift, label: 'Éphémère', price: 'Gratuit', desc: '' },
-  { href: '/pricing', icon: Mail, label: 'Classique', price: '1,99 €', desc: '' },
-  { href: '/pricing', icon: Globe, label: 'Album S', price: '2,99 €', desc: '' },
-  { href: '/pricing', icon: Star, label: 'Album M', price: '4,99 €', desc: '' },
+  { href: '/pricing', icon: Gift, label: 'Carte gratuite', price: '48 h', desc: '' },
+  { href: '/pricing', icon: Mail, label: 'À l\'unité', price: '2,50 €', desc: '' },
   { href: '/pricing', icon: Zap, label: 'Pro & Agence', price: 'Devis', desc: '' },
 ]
 

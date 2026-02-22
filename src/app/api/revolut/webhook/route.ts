@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     if (event === 'ORDER_COMPLETED') {
       const userId = metadata?.userId || metadata?.order_reference
-      const paymentType = metadata?.paymentType // 'pack_3', 'pack_5', 'pack_10' or 'single_card'
+      const paymentType = metadata?.paymentType // 'pack_5' | 'pack_10' | 'pack_20' | 'pack_50' | 'pack_100' | 'pack_200' | 'single_card'
 
       if (!userId) {
         console.warn('[Revolut Webhook] Missing userId in metadata')
@@ -27,9 +27,12 @@ export async function POST(request: NextRequest) {
       // Attribution des crédits si c'est un pack
       if (paymentType && typeof paymentType === 'string' && paymentType.startsWith('pack_')) {
         const creditMap: Record<string, number> = {
-          pack_3: 3,
           pack_5: 5,
           pack_10: 10,
+          pack_20: 20,
+          pack_50: 50,
+          pack_100: 100,
+          pack_200: 200,
         }
 
         const creditsToAdd = creditMap[paymentType] || 0

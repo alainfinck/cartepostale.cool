@@ -21,12 +21,12 @@ export default function CGVPage() {
 
             <h3>2. Produits et Services</h3>
             <p>
-                Le Vendeur propose un service de création, impression et expédition de cartes postales personnalisées à partir de photos et textes fournis par l&apos;Utilisateur.
+                Le Vendeur propose un service de création et d&apos;envoi de cartes postales virtuelles personnalisées (aucune impression physique) à partir de photos et textes fournis par l&apos;Utilisateur.
             </p>
 
             <h3>3. Prix</h3>
             <p>
-                Les prix de nos produits sont indiqués en euros toutes taxes comprises (TTC), sauf indication contraire et hors frais de traitement et d&apos;expédition. Le Vendeur se réserve le droit de modifier ses prix à tout moment, mais le produit sera facturé sur la base du tarif en vigueur au moment de la validation de la commande.
+                Les prix de nos produits sont indiqués en euros toutes taxes comprises (TTC), sauf indication contraire et hors frais de traitement. Le Vendeur se réserve le droit de modifier ses prix à tout moment, mais le produit sera facturé sur la base du tarif en vigueur au moment de la validation de la commande.
             </p>
 
             <h3>4. Commandes</h3>

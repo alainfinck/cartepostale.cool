@@ -633,20 +633,13 @@ const MESSAGE_EMOJIS = [
   '🏖️',
 ]
 
+/** Un seul palier payant : prix unique tout compris (photo, vidéo, audio). */
 const ALBUM_TIERS = {
-  tier1: { photos: 6, videos: 0, price: 2.99 },
-  tier2: { photos: 50, videos: 3, price: 4.99 },
+  paid: { photos: 50, videos: 10, price: 2.5 },
 } as const
 
-/** Plans tarifaires complets de la carte postale */
-type PostcardPlanId =
-  | 'ephemere'
-  | 'classique'
-  | 'album_s'
-  | 'album_m'
-  | 'audio'
-  | 'video'
-  | 'pack_multi'
+/** Plans tarifaires : Éphémère (gratuit 48 h) ou Carte payante (prix unique tout compris). */
+type PostcardPlanId = 'ephemere' | 'payant'
 
 interface PostcardPlan {
   id: PostcardPlanId
@@ -657,12 +650,12 @@ interface PostcardPlan {
   priceLabel: string
   duration: string
   features: string[]
-  highlight?: string // badge/pill text
+  highlight?: string
   color: 'stone' | 'teal' | 'indigo' | 'violet' | 'amber' | 'rose' | 'orange'
   maxPhotos: number
   allowsAudio: boolean
   allowsVideo: boolean
-  multiRecipients: number // 1 = solo
+  multiRecipients: number
 }
 
 const POSTCARD_PLANS: PostcardPlan[] = [
@@ -676,9 +669,9 @@ const POSTCARD_PLANS: PostcardPlan[] = [
     duration: '48h',
     features: [
       '1 photo',
-      'Carte disponible pendant 48 h',
+      'Carte disponible 48 h',
+      'Modifiable via le lien reçu par email',
       'Partage par lien',
-      'Modifiable depuis votre compte',
     ],
     color: 'stone',
     maxPhotos: 1,
@@ -687,127 +680,24 @@ const POSTCARD_PLANS: PostcardPlan[] = [
     multiRecipients: 1,
   },
   {
-    id: 'classique',
-    label: 'Classique',
-    emoji: '📬',
-    tagline: 'Le souvenir qui dure',
-    price: 1.99,
-    priceLabel: '1,99 €',
-    duration: '1 an',
-    features: [
-      '1 photo',
-      'Carte conservée 1 an',
-      'Sans filigrane',
-      'Modifiable depuis votre compte',
-    ],
-    color: 'teal',
-    maxPhotos: 1,
-    allowsAudio: false,
-    allowsVideo: false,
-    multiRecipients: 1,
-  },
-  {
-    id: 'album_s',
-    label: 'Album S',
-    emoji: '🖼️',
-    tagline: 'Un pêle-mêle intime',
-    price: 2.99,
-    priceLabel: '2,99 €',
-    duration: '1 an',
-    features: [
-      'Jusqu\u2019à 5 photos',
-      'Carte conservée 1 an',
-      'Mise en page pêle-mêle',
-      'Modifiable depuis votre compte',
-    ],
-    color: 'indigo',
-    maxPhotos: 5,
-    allowsAudio: false,
-    allowsVideo: false,
-    multiRecipients: 1,
-  },
-  {
-    id: 'album_m',
-    label: 'Album M',
-    emoji: '📸',
-    tagline: 'Racontez votre voyage',
-    price: 4.99,
-    priceLabel: '4,99 €',
+    id: 'payant',
+    label: 'Carte payante',
+    emoji: '💌',
+    tagline: 'Prix unique tout compris',
+    price: 2.5,
+    priceLabel: '2,50 €',
     duration: 'Illimitée',
     features: [
-      'Jusqu\u2019à 30 photos',
-      'Durée de vie illimitée',
-      'Mise en page pêle-mêle',
+      'Photo, vidéo ou message vocal : même prix',
+      'Cartes 100 % virtuelles, avec statistiques de visite',
       'Modifiable depuis votre compte',
     ],
     highlight: 'Populaire',
-    color: 'violet',
-    maxPhotos: 30,
-    allowsAudio: false,
-    allowsVideo: false,
-    multiRecipients: 1,
-  },
-  {
-    id: 'audio',
-    label: 'Message Audio',
-    emoji: '🎙️',
-    tagline: 'Votre voix en cadeau',
-    price: 4.99,
-    priceLabel: '4,99 €',
-    duration: 'Illimitée',
-    features: [
-      '1 photo + message vocal',
-      'Durée de vie illimitée',
-      'Lecture à l\u2019ouverture de la carte',
-      'Modifiable depuis votre compte',
-    ],
-    color: 'amber',
-    maxPhotos: 1,
-    allowsAudio: true,
-    allowsVideo: false,
-    multiRecipients: 1,
-  },
-  {
-    id: 'video',
-    label: 'Vidéo',
-    emoji: '🎬',
-    tagline: 'L\u2019ultime carte postale',
-    price: 9.99,
-    priceLabel: '9,99 €',
-    duration: 'Illimitée',
-    features: [
-      'Photos + vidéos',
-      'Durée de vie illimitée',
-      'Lecture vidéo intégrée',
-      'Modifiable depuis votre compte',
-    ],
-    highlight: 'Premium',
-    color: 'rose',
-    maxPhotos: 30,
+    color: 'teal',
+    maxPhotos: ALBUM_TIERS.paid.photos,
     allowsAudio: true,
     allowsVideo: true,
     multiRecipients: 1,
-  },
-  {
-    id: 'pack_multi',
-    label: 'Pack Multi-destinataires',
-    emoji: '🚀',
-    tagline: 'Une carte, plusieurs proches',
-    price: 4.99,
-    priceLabel: '4,99 €',
-    duration: '1 an',
-    features: [
-      'Jusqu\u2019à 5 destinataires différents',
-      '1 photo par envoi',
-      'Textes personnalisés par destinataire',
-      'Modifiable depuis votre compte',
-    ],
-    highlight: '⭐ Recommandé',
-    color: 'orange',
-    maxPhotos: 1,
-    allowsAudio: false,
-    allowsVideo: false,
-    multiRecipients: 5,
   },
 ]
 
@@ -1653,8 +1543,8 @@ export default function EditorPage() {
 
         setMediaItems((prev) => {
           const videos = (prev || []).filter((i) => i.type === 'video').length
-          if (videos >= ALBUM_TIERS.tier2.videos) {
-            alert(`Limite de ${ALBUM_TIERS.tier2.videos} vidéos atteinte.`)
+          if (videos >= ALBUM_TIERS.paid.videos) {
+            alert(`Limite de ${ALBUM_TIERS.paid.videos} vidéos atteinte.`)
             return prev || []
           }
           const newItem = {
@@ -1722,8 +1612,8 @@ export default function EditorPage() {
 
         setMediaItems((prev) => {
           const photos = (prev || []).filter((i) => i.type === 'image').length
-          if (photos >= ALBUM_TIERS.tier2.photos) {
-            alert(`Limite de ${ALBUM_TIERS.tier2.photos} photos atteinte.`)
+          if (photos >= ALBUM_TIERS.paid.photos) {
+            alert(`Limite de ${ALBUM_TIERS.paid.photos} photos atteinte.`)
             return prev || []
           }
           const newItem = {
@@ -3031,19 +2921,19 @@ export default function EditorPage() {
                       <span className="text-2xl">💡</span>
                       <div>
                         <p className="font-bold text-sm mb-1">
-                          Conseil : passez au plan Classique !
+                          Conseil : prolongez votre carte !
                         </p>
                         <p className="text-teal-100 text-xs">
-                          Votre carte est gratuite mais expire dans 48h. Pour seulement{' '}
-                          <strong>1,99 €</strong>, elle devient éternelle (1 an) — et vous pouvez la
-                          modifier à tout moment.
+                          Votre carte est gratuite mais expire dans 48 h. Pour seulement{' '}
+                          <strong>2,50 €</strong>, elle devient pérenne — photo, vidéo ou message
+                          vocal. Cartes virtuelles avec stats de visite. Modifiable via le lien reçu par email.
                         </p>
                         <button
                           type="button"
-                          onClick={() => setSelectedPlan('classique')}
+                          onClick={() => setSelectedPlan('payant')}
                           className="mt-2 inline-flex items-center gap-1 bg-white/20 hover:bg-white/30 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors"
                         >
-                          Passer au Classique — 1,99 € <ChevronRight size={12} />
+                          Passer à la carte payante — 2,50 € <ChevronRight size={12} />
                         </button>
                       </div>
                     </div>
@@ -3580,10 +3470,10 @@ export default function EditorPage() {
                         <Sparkles size={18} className="text-amber-500 shrink-0" />
                         <div className="flex-1">
                           <p className="text-[10px] font-black text-amber-900 uppercase tracking-[0.15em]">
-                            Option payante (dès +2,99€)
+                            Option payante (2,50 € — tout compris)
                           </p>
                           <p className="text-[10px] text-amber-700/80 leading-tight mt-0.5">
-                            Multi-photos, HD et options premium jusqu&apos;à la carte augmentée.
+                            Photos, vidéo, message vocal : même prix. Cartes virtuelles avec stats de visite.
                           </p>
                         </div>
                       </div>
@@ -3621,9 +3511,7 @@ export default function EditorPage() {
                           <div className="flex flex-col items-end gap-1">
                             <span className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100 font-bold">
                               <Sparkles size={12} fill="currentColor" />{' '}
-                              {getAlbumPrice() === ALBUM_TIERS.tier1.price
-                                ? 'Palier Personnalisée activé'
-                                : 'Palier Augmentée activé'}
+                              Carte payante activée
                             </span>
                             <div className="flex items-center gap-2">
                               {getAlbumPrice() > 0 && (
@@ -3633,12 +3521,8 @@ export default function EditorPage() {
                               )}
                               <span className="text-[10px] text-stone-400 font-bold">
                                 {(mediaItems || []).filter((i) => i.type === 'image').length}/
-                                {getAlbumPrice() === ALBUM_TIERS.tier1.price
-                                  ? ALBUM_TIERS.tier1.photos
-                                  : ALBUM_TIERS.tier2.photos}{' '}
-                                photos
-                                {getAlbumPrice() === ALBUM_TIERS.tier2.price &&
-                                  ` - ${(mediaItems || []).filter((i) => i.type === 'video').length}/${ALBUM_TIERS.tier2.videos} vidéos`}
+                                {ALBUM_TIERS.paid.photos} photos
+                                {` - ${(mediaItems || []).filter((i) => i.type === 'video').length}/${ALBUM_TIERS.paid.videos} vidéos`}
                               </span>
                             </div>
                           </div>
@@ -3658,22 +3542,12 @@ export default function EditorPage() {
                               <span
                                 className={cn(
                                   'text-[11px] sm:text-xs px-2.5 py-1.5 rounded-lg font-extrabold border-2 transition-colors whitespace-nowrap',
-                                  getAlbumPrice() === ALBUM_TIERS.tier1.price
-                                    ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-sm'
+                                  getAlbumPrice() === ALBUM_TIERS.paid.price
+                                    ? 'bg-teal-50 text-teal-800 border-teal-300 shadow-sm'
                                     : 'bg-stone-50 text-stone-500 border-stone-200',
                                 )}
                               >
-                                2,99€ : jusqu&apos;à 6 photos
-                              </span>
-                              <span
-                                className={cn(
-                                  'text-[11px] sm:text-xs px-2.5 py-1.5 rounded-lg font-extrabold border-2 transition-colors whitespace-nowrap',
-                                  getAlbumPrice() === ALBUM_TIERS.tier2.price
-                                    ? 'bg-purple-50 text-purple-800 border-purple-300 shadow-sm'
-                                    : 'bg-stone-50 text-stone-500 border-stone-200',
-                                )}
-                              >
-                                4,99€ : photos + vidéos
+                                2,50 € : photos + vidéos + message vocal
                               </span>
                             </div>
                           </div>
@@ -4753,41 +4627,23 @@ export default function EditorPage() {
                 <li>Texte limité (comme un tweet)</li>
                 <li>Filigrane &quot;Créé avec ❤️ sur cartepostale.cool&quot; au dos</li>
                 <li>Partage direct via lien public ou bouton social</li>
-                <li>Carte expirée après 7 jours</li>
+                <li>Carte modifiable via le lien reçu par email (48 h)</li>
               </ul>
             </div>
-            {/* 2,99 € - Personnalisée */}
+            {/* 2,50 € — Prix unique tout compris */}
             <div className="rounded-2xl border-2 border-teal-200 bg-teal-50/50 p-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className="inline-block w-3 h-3 rounded-full bg-teal-500" />
-                <h4 className="font-bold text-stone-800">2,99 € — La &quot;Personnalisée&quot;</h4>
+                <h4 className="font-bold text-stone-800">2,50 € — Prix unique tout compris</h4>
               </div>
               <p className="text-sm text-stone-600 mb-1">
-                Objectif : un souvenir propre, esthétique et durable.
+                Peu importe le contenu (Photo, Vidéo ou Message vocal), le prix reste le même.
               </p>
               <ul className="text-xs text-stone-600 space-y-1 list-disc list-inside">
-                <li>Multi-photos (pêle-mêle) : jusqu&apos;à 4 ou 6 photos</li>
-                <li>Zéro publicité, pas de filigrane</li>
-                <li>Personnalisation avancée : police, couleur du papier, stickers</li>
-                <li>Téléchargement HD (recto/verso)</li>
-                <li>Lien permanent (à vie ou au moins 1 an)</li>
-              </ul>
-            </div>
-            {/* 4,99 € - Augmentée */}
-            <div className="rounded-2xl border-2 border-purple-200 bg-purple-50/50 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="inline-block w-3 h-3 rounded-full bg-purple-500" />
-                <h4 className="font-bold text-stone-800">4,99 € — L&apos;&quot;Augmentée&quot;</h4>
-              </div>
-              <p className="text-sm text-stone-600 mb-1">
-                Objectif : créer une vraie émotion (cadeau numérique).
-              </p>
-              <ul className="text-xs text-stone-600 space-y-1 list-disc list-inside">
-                <li>Audio souvenir : message vocal ou musique d&apos;ambiance</li>
-                <li>Le &quot;Secret&quot; : sécurité par mot de passe</li>
-                <li>Livre d&apos;or interactif (réponse du destinataire)</li>
-                <li>Notification de lecture par email</li>
-                <li>Effets visuels : confettis ou neige à l&apos;ouverture</li>
+                <li>Cartes 100 % virtuelles, avec statistiques de visite</li>
+                <li>Photos, vidéos, message vocal : même tarif</li>
+                <li>Modifiable depuis votre compte</li>
+                <li>Carte gratuite 48 h modifiable via le lien reçu par email</li>
               </ul>
             </div>
           </div>
@@ -5102,11 +4958,9 @@ export default function EditorPage() {
             }
             setMediaItems((prev) => {
               const images = (prev || []).filter((i) => i.type === 'image').length
-              if (images >= (isPremium ? ALBUM_TIERS.tier2.photos : ALBUM_TIERS.tier1.photos)) {
+              if (images >= ALBUM_TIERS.paid.photos) {
                 alert(
-                  `La limite est atteinte (${
-                    isPremium ? ALBUM_TIERS.tier2.photos : ALBUM_TIERS.tier1.photos
-                  } photos max).`,
+                  `La limite est atteinte (${ALBUM_TIERS.paid.photos} photos max).`,
                 )
                 return prev || []
               }
@@ -5116,12 +4970,16 @@ export default function EditorPage() {
         }}
       />
 
-      {/* Floating Buttons: Scroll to Top & Preview */}
+      {/* Floating Buttons: Scroll to Top & Preview — ne pas changer l'étape pour éviter de déclencher handlePublish() / création de carte */}
       <div className="fixed bottom-4 right-4 z-[71] flex flex-col-reverse gap-3 items-end">
         <button
           onClick={() => {
-            setCurrentStep('preview')
-            window.scrollTo({ top: 0, behavior: 'smooth' })
+            const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024
+            if (!isDesktop && previewSectionRef.current) {
+              previewSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            } else {
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }
           }}
           className={cn(
             'group flex items-center gap-2 px-4 py-2.5',

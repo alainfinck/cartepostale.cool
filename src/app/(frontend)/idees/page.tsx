@@ -12,6 +12,7 @@ import {
   Sparkles,
   Globe,
   MessageCircle,
+  CalendarClock,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -204,7 +205,68 @@ export default function IdeasPage() {
           </div>
         </section>
 
-        {/* Section 4: Social & Mobile */}
+        {/* Section 4: Programmation */}
+        <section className="grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <div className="w-16 h-16 bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center mb-6">
+              <CalendarClock size={32} />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-6">
+              Programmation
+            </h2>
+            <p className="text-lg text-stone-600 mb-6 leading-relaxed">
+              Créez votre carte à l&apos;avance et choisissez le moment exact de l&apos;envoi. Idéal pour un
+              anniversaire : la carte part <strong className="text-teal-600">le jour J à 8h00</strong> pile,
+              sans que vous ayez à y penser.
+            </p>
+            <ul className="space-y-4 mb-8">
+              <li className="flex items-start gap-3 text-stone-600">
+                <div className="mt-1 w-5 h-5 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center flex-shrink-0">
+                  ✓
+                </div>
+                <span>Indiquez la date d&apos;anniversaire (ou toute autre date)</span>
+              </li>
+              <li className="flex items-start gap-3 text-stone-600">
+                <div className="mt-1 w-5 h-5 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center flex-shrink-0">
+                  ✓
+                </div>
+                <span>Envoi automatique à 8h00 le matin pour une surprise au réveil</span>
+              </li>
+              <li className="flex items-start gap-3 text-stone-600">
+                <div className="mt-1 w-5 h-5 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center flex-shrink-0">
+                  ✓
+                </div>
+                <span>Disponible avec les cartes payantes</span>
+              </li>
+            </ul>
+            <Link href="/pricing">
+              <Button className="rounded-full bg-teal-600 hover:bg-teal-700 text-white">
+                Voir les tarifs
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+          <div>
+            <div className="bg-white p-8 rounded-[40px] shadow-xl shadow-stone-200/50 border border-stone-100 relative overflow-hidden">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-3 p-4 bg-teal-50 rounded-2xl border border-teal-100">
+                  <div className="w-12 h-12 rounded-full bg-teal-500 text-white flex items-center justify-center text-lg font-bold">
+                    8h
+                  </div>
+                  <div>
+                    <p className="font-bold text-stone-800">Envoi programmé</p>
+                    <p className="text-sm text-stone-500">Le jour de l&apos;anniversaire à 8h00</p>
+                  </div>
+                </div>
+                <div className="h-4 bg-stone-100 rounded w-full" />
+                <div className="h-4 bg-stone-100 rounded w-4/5" />
+                <div className="h-4 bg-stone-100 rounded w-3/4" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 5: Social & Mobile */}
         <section className="bg-white rounded-[40px] p-8 md:p-16 text-center border border-stone-100 shadow-xl shadow-stone-200/30">
           <div className="max-w-3xl mx-auto">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl mb-8">

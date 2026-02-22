@@ -1,15 +1,29 @@
 import React from 'react'
 import { Metadata } from 'next'
-import { Check, X, Zap, ArrowRight, Sparkles, Users, Clock, Infinity } from 'lucide-react'
+import {
+  Check,
+  X,
+  Zap,
+  ArrowRight,
+  Sparkles,
+  Clock,
+  Infinity,
+  CalendarClock,
+  Send,
+  BarChart3,
+  Video,
+  MessageCircle,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { PricingTracking } from '@/components/analytics/PricingTracking'
+import { PacksSlider } from '@/components/pricing/PacksSlider'
 
 export const metadata: Metadata = {
   title: 'Tarifs — Cartes postales numériques | CartePostale.cool',
   description:
-    'Découvrez nos tarifs : Éphémère (gratuit), Classique (1,99 €), Album S (2,99 €) ou Album M (4,99 €). Options Audio, Vidéo et Multi-destinataires disponibles.',
+    'Prix unique tout compris : 2,50 €/carte. Photo, vidéo ou message vocal : même prix. Cartes 100 % virtuelles avec statistiques de visite. Carte gratuite 48 h modifiable via le lien reçu par email.',
 }
 
 type PlanColor = 'stone' | 'teal' | 'indigo' | 'violet' | 'amber' | 'rose' | 'orange'
@@ -112,77 +126,36 @@ const plans: PricingPlan[] = [
   {
     id: 'ephemere',
     emoji: '🌸',
-    name: 'Éphémère',
+    name: 'Carte gratuite',
     tagline: 'Essayez sans engagement',
     price: 'Gratuit',
-    priceNote: 'pour toujours',
+    priceNote: 'valable 48 h',
     duration: '48 heures',
     features: [
-      '1 photo',
-      'Mise en page carte postale',
+      '1 carte postale (photo, texte)',
+      'Modifiable via le lien reçu par email',
       'Prolongeable en carte payante à tout moment',
-      'Modifiable depuis votre compte',
     ],
-    notIncluded: ['Album multi-photos', 'Audio ou vidéo'],
     color: 'stone',
     cta: 'Créer ma carte',
     ctaHref: '/editor',
   },
   {
-    id: 'classique',
-    emoji: '📬',
-    name: 'Classique',
-    tagline: 'Le souvenir qui dure',
-    price: '1,99 €',
-    priceNote: 'par carte',
-    duration: '1 an',
-    features: [
-      "Jusqu'à 5 photos",
-      'Mise en page pêle-mêle',
-      'Carte conservée 1 an',
-      'Modifiable depuis votre compte',
-    ],
-    notIncluded: ['Audio ou vidéo'],
-    color: 'teal',
-    cta: 'Créer ma carte',
-    ctaHref: '/editor',
-  },
-  {
-    id: 'album_s',
-    emoji: '🖼️',
-    name: 'Album S',
-    tagline: 'Un pêle-mêle intime',
-    price: '2,99 €',
-    priceNote: 'par carte',
-    duration: '1 an',
-    features: [
-      "Jusqu'à 10 photos",
-      'Message vocal inclus',
-      'Mise en page pêle-mêle',
-      'Carte conservée 1 an',
-      'Modifiable depuis votre compte',
-    ],
-    notIncluded: ['Vidéo'],
-    color: 'indigo',
-    cta: 'Créer ma carte',
-    ctaHref: '/editor',
-  },
-  {
-    id: 'album_m',
-    emoji: '📸',
-    name: 'Album M',
-    tagline: 'Racontez votre voyage',
-    price: '4,99 €',
+    id: 'unite',
+    emoji: '💌',
+    name: 'À l\'unité',
+    tagline: 'Prix unique tout compris',
+    price: '2,50 €',
     priceNote: 'par carte',
     duration: 'Illimitée',
     features: [
-      "Jusqu'à 50 photos",
-      'Vidéos incluses',
-      'Mise en page pêle-mêle',
-      'Durée de vie illimitée',
+      'Photo, vidéo ou message vocal : même prix',
+      'Envoi à un nombre illimité de destinataires par carte',
+      'Cartes 100 % virtuelles, avec statistiques de visite',
+      'Programmation : envoi le jour de l’anniversaire à 8h00',
       'Modifiable depuis votre compte',
     ],
-    color: 'violet',
+    color: 'teal',
     highlight: '⭐ Populaire',
     popular: true,
     cta: 'Créer ma carte',
@@ -204,25 +177,24 @@ export default function PricingPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-20 pb-12 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-xs font-bold uppercase tracking-widest mb-6">
           <Sparkles className="w-3.5 h-3.5" />
-          Simple &amp; Transparent
+          Cartes postales du futur
         </div>
         <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-800 mb-5">
-          Des souvenirs, <span className="text-teal-500">au juste prix</span>
+          À un prix <span className="text-teal-500">dérisoire</span> face au papier
         </h1>
         <p className="text-lg text-stone-500 max-w-2xl mx-auto leading-relaxed">
-          Commencez gratuitement, passez au premium en un clic. Chaque carte reste modifiable depuis
-          votre compte, quelle que soit la formule.
+          Photo, vidéo ou message vocal : même tarif. Cartes 100 % virtuelles, avec stats de visite
+          — sans timbre ni impression. Jusqu&apos;à 10× moins cher qu&apos;une carte physique.
         </p>
 
-        {/* Quick tip */}
+        {/* Message clé + carte gratuite */}
         <div className="mt-8 inline-flex items-start gap-3 bg-teal-600 text-white rounded-2xl px-5 py-4 text-left max-w-xl">
           <span className="text-xl mt-0.5">💡</span>
           <div>
-            <p className="font-bold text-sm">Le conseil Gemini</p>
+            <p className="font-bold text-sm">Carte gratuite 48 h</p>
             <p className="text-teal-100 text-xs mt-0.5">
-              L&apos;option <strong>Multi-destinataires (+4,99 €)</strong> est disponible sur tous
-              les plans ! C&apos;est la solution idéale pour envoyer vos vœux à toute la famille en
-              une seule fois.
+              Créez une carte sans payer. Elle est valable 48 h et modifiable via le lien reçu par
+              email — vous pourrez la modifier tant qu&apos;elle est active.
             </p>
           </div>
         </div>
@@ -230,7 +202,7 @@ export default function PricingPage() {
 
       {/* Plans Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl mx-auto">
           {plans.map((plan) => {
             const c = COLOR_MAP[plan.color]
             return (
@@ -296,7 +268,7 @@ export default function PricingPage() {
                       </div>
                     ))}
 
-                    {plan.notIncluded && plan.notIncluded.length > 0 && (
+                    {plan.notIncluded && plan.notIncluded.length > 0 ? (
                       <>
                         <div className="h-px bg-stone-100 my-3" />
                         {plan.notIncluded.map((f, i) => (
@@ -306,7 +278,7 @@ export default function PricingPage() {
                           </div>
                         ))}
                       </>
-                    )}
+                    ) : null}
                   </div>
 
                   {/* CTA */}
@@ -334,108 +306,231 @@ export default function PricingPage() {
           <div className="text-center mb-10">
             <h2 className="text-3xl font-serif font-bold text-stone-900 mb-3">Packs de Cartes</h2>
             <p className="text-stone-500 text-lg max-w-2xl mx-auto">
-              Rechargez vos crédits en avance et profitez de tarifs préférentiels. Vos crédits sont
-              valables à vie. Un crédit = une carte au tarif correspondant.
+              Rechargez vos crédits en avance et profitez de tarifs dégressifs. Un crédit = une
+              carte (photo, vidéo ou message vocal). Cartes virtuelles avec stats de visite.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Pack 3 */}
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-stone-100 flex flex-col text-center transition-transform hover:-translate-y-1 hover:shadow-md">
-              <div className="text-4xl mb-4">💌</div>
-              <h3 className="text-xl font-bold text-stone-900 mb-1">Pack 3 cartes</h3>
-              <p className="text-sm text-stone-400 mb-6">Valable sur les "Classique"</p>
-              <div className="flex flex-col mb-8">
-                <span className="text-3xl font-black text-stone-900">4,99 €</span>
-                <span className="text-sm text-teal-600 font-bold mt-1">~1,66 € / carte</span>
-              </div>
-              <Button
-                className="w-full mt-auto rounded-xl font-bold bg-stone-900 hover:bg-stone-800"
-                asChild
-              >
-                <Link href="/connexion?redirect=/espace-client">Acheter ce pack</Link>
-              </Button>
-            </div>
-
-            {/* Pack 5 */}
-            <div className="bg-teal-50 rounded-3xl p-8 shadow-sm border border-teal-100 flex flex-col text-center relative transition-transform hover:-translate-y-1 hover:shadow-md">
-              <div className="absolute top-0 inset-x-0 -translate-y-1/2 flex justify-center">
-                <span className="bg-teal-600 text-white text-xs font-black uppercase tracking-wider py-1 px-3 rounded-full">
-                  Plus populaire
-                </span>
-              </div>
-              <div className="text-4xl mb-4">✨</div>
-              <h3 className="text-xl font-bold text-stone-900 mb-1">Pack 5 cartes</h3>
-              <p className="text-sm text-stone-500 mb-6">Valable sur les "Classique"</p>
-              <div className="flex flex-col mb-8">
-                <span className="text-3xl font-black text-teal-700">7,99 €</span>
-                <span className="text-sm text-teal-600 font-bold mt-1">~1,59 € / carte</span>
-              </div>
-              <Button
-                className="w-full mt-auto rounded-xl font-bold bg-teal-600 hover:bg-teal-700"
-                asChild
-              >
-                <Link href="/connexion?redirect=/espace-client">Acheter ce pack</Link>
-              </Button>
-            </div>
-
-            {/* Pack 10 */}
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-stone-100 flex flex-col text-center transition-transform hover:-translate-y-1 hover:shadow-md">
-              <div className="text-4xl mb-4">🚀</div>
-              <h3 className="text-xl font-bold text-stone-900 mb-1">Pack 10 cartes</h3>
-              <p className="text-sm text-stone-400 mb-6">Valable sur les "Classique"</p>
-              <div className="flex flex-col mb-8">
-                <span className="text-3xl font-black text-stone-900">14,99 €</span>
-                <span className="text-sm text-teal-600 font-bold mt-1">~1,49 € / carte</span>
-              </div>
-              <Button
-                className="w-full mt-auto rounded-xl font-bold bg-stone-900 hover:bg-stone-800"
-                asChild
-              >
-                <Link href="/connexion?redirect=/espace-client">Acheter ce pack</Link>
-              </Button>
-            </div>
-          </div>
+          <PacksSlider />
         </div>
       </div>
 
-      {/* Feature Highlight — Upsell row */}
+      {/* Comparateur prix : virtuelle vs physique */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 mb-24">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-serif font-bold text-stone-900 mb-3">
+            Comparateur de prix
+          </h2>
+          <p className="text-stone-500 text-lg max-w-2xl mx-auto">
+            Carte virtuelle vs carte papier : le même geste, un coût sans comparaison.
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[500px] border-collapse rounded-2xl overflow-hidden border border-stone-200 bg-white shadow-sm">
+            <thead>
+              <tr className="bg-stone-50 border-b border-stone-200">
+                <th className="text-left py-4 px-6 font-bold text-stone-800">Nombre de cartes</th>
+                <th className="text-center py-4 px-6 font-bold text-stone-600 bg-stone-100">
+                  Carte papier (carte + timbre)
+                </th>
+                <th className="text-center py-4 px-6 font-bold text-teal-700 bg-teal-50">
+                  CartePostale.cool (virtuelle)
+                </th>
+                <th className="text-center py-4 px-6 font-bold text-stone-500 text-sm">
+                  Économie
+                </th>
+              </tr>
+            </thead>
+            <tbody className="text-stone-700">
+              <tr className="border-b border-stone-100">
+                <td className="py-3 px-6 font-medium">1 carte</td>
+                <td className="py-3 px-6 text-center">~3,50 €</td>
+                <td className="py-3 px-6 text-center font-bold text-teal-600">2,50 €</td>
+                <td className="py-3 px-6 text-center text-green-600 font-semibold">~30 %</td>
+              </tr>
+              <tr className="border-b border-stone-100 bg-stone-50/30">
+                <td className="py-3 px-6 font-medium">10 cartes</td>
+                <td className="py-3 px-6 text-center">~35 €</td>
+                <td className="py-3 px-6 text-center font-bold text-teal-600">22 €</td>
+                <td className="py-3 px-6 text-center text-green-600 font-semibold">~37 %</td>
+              </tr>
+              <tr className="border-b border-stone-100">
+                <td className="py-3 px-6 font-medium">20 cartes</td>
+                <td className="py-3 px-6 text-center">~70 €</td>
+                <td className="py-3 px-6 text-center font-bold text-teal-600">40 €</td>
+                <td className="py-3 px-6 text-center text-green-600 font-semibold">~43 %</td>
+              </tr>
+              <tr className="border-b border-stone-100 bg-stone-50/30">
+                <td className="py-3 px-6 font-medium">50 cartes</td>
+                <td className="py-3 px-6 text-center">~175 €</td>
+                <td className="py-3 px-6 text-center font-bold text-teal-600">95 €</td>
+                <td className="py-3 px-6 text-center text-green-600 font-semibold">~46 %</td>
+              </tr>
+              <tr>
+                <td className="py-3 px-6 font-medium">100 cartes</td>
+                <td className="py-3 px-6 text-center">~350 €</td>
+                <td className="py-3 px-6 text-center font-bold text-teal-600">150 €</td>
+                <td className="py-3 px-6 text-center text-green-600 font-semibold">~57 %</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Comparateur de fonctionnalités */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 mb-24">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-serif font-bold text-stone-900 mb-3">
+            Comparateur de fonctionnalités
+          </h2>
+          <p className="text-stone-500 text-lg max-w-2xl mx-auto">
+            Tout ce que la carte physique ne peut pas faire — inclus dans chaque carte virtuelle.
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[500px] border-collapse rounded-2xl overflow-hidden border border-stone-200 bg-white shadow-sm">
+            <thead>
+              <tr className="bg-stone-50 border-b border-stone-200">
+                <th className="text-left py-4 px-6 font-bold text-stone-800">Fonctionnalité</th>
+                <th className="text-center py-4 px-6 font-bold text-stone-600 bg-stone-100 w-[40%]">
+                  Carte papier
+                </th>
+                <th className="text-center py-4 px-6 font-bold text-teal-700 bg-teal-50 w-[40%]">
+                  CartePostale.cool
+                </th>
+              </tr>
+            </thead>
+            <tbody className="text-stone-700">
+              <tr className="border-b border-stone-100">
+                <td className="py-3 px-6 font-medium">
+                  <span className="inline-flex items-center gap-2">
+                    <Send className="w-4 h-4 text-stone-400 shrink-0" />
+                    Délai d&apos;envoi
+                  </span>
+                </td>
+                <td className="py-3 px-6 text-center">
+                  <span className="text-red-600 font-medium">3 à 10 jours</span>
+                </td>
+                <td className="py-3 px-6 text-center">
+                  <span className="text-green-600 font-bold">Instantané</span>
+                </td>
+              </tr>
+              <tr className="border-b border-stone-100 bg-stone-50/30">
+                <td className="py-3 px-6 font-medium">
+                  <span className="inline-flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4 text-stone-400 shrink-0" />
+                    Statistiques de visite
+                  </span>
+                </td>
+                <td className="py-3 px-6 text-center">
+                  <X className="w-5 h-5 text-red-400 inline" />
+                </td>
+                <td className="py-3 px-6 text-center">
+                  <Check className="w-5 h-5 text-green-500 inline" /> Savoir quand la carte est ouverte
+                </td>
+              </tr>
+              <tr className="border-b border-stone-100">
+                <td className="py-3 px-6 font-medium">
+                  <span className="inline-flex items-center gap-2">
+                    <Video className="w-4 h-4 text-stone-400 shrink-0" />
+                    Vidéo intégrée
+                  </span>
+                </td>
+                <td className="py-3 px-6 text-center">
+                  <X className="w-5 h-5 text-red-400 inline" />
+                </td>
+                <td className="py-3 px-6 text-center">
+                  <Check className="w-5 h-5 text-green-500 inline" /> Même prix que la photo
+                </td>
+              </tr>
+              <tr className="border-b border-stone-100 bg-stone-50/30">
+                <td className="py-3 px-6 font-medium">
+                  <span className="inline-flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-stone-400 shrink-0" />
+                    Message vocal
+                  </span>
+                </td>
+                <td className="py-3 px-6 text-center">
+                  <X className="w-5 h-5 text-red-400 inline" />
+                </td>
+                <td className="py-3 px-6 text-center">
+                  <Check className="w-5 h-5 text-green-500 inline" /> Inclus
+                </td>
+              </tr>
+              <tr className="border-b border-stone-100 bg-stone-50/30">
+                <td className="py-3 px-6 font-medium">Nombre de destinataires par carte</td>
+                <td className="py-3 px-6 text-center">
+                  <span className="text-red-600 font-medium">1 seul</span>
+                </td>
+                <td className="py-3 px-6 text-center">
+                  <span className="text-green-600 font-bold">Illimité</span>
+                </td>
+              </tr>
+              <tr className="border-b border-stone-100">
+                <td className="py-3 px-6 font-medium">Modification après envoi</td>
+                <td className="py-3 px-6 text-center">
+                  <X className="w-5 h-5 text-red-400 inline" />
+                </td>
+                <td className="py-3 px-6 text-center">
+                  <Check className="w-5 h-5 text-green-500 inline" /> Via le lien reçu par email
+                </td>
+              </tr>
+              <tr className="bg-stone-50/30">
+                <td className="py-3 px-6 font-medium">Programmation (anniversaire, etc.)</td>
+                <td className="py-3 px-6 text-center">
+                  <X className="w-5 h-5 text-red-400 inline" />
+                </td>
+                <td className="py-3 px-6 text-center">
+                  <Check className="w-5 h-5 text-green-500 inline" /> Envoi à la date et l&apos;heure choisies
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Feature Highlight */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 mb-20">
-        <div className="bg-gradient-to-br from-stone-900 to-stone-800 rounded-3xl p-8 md:p-12 relative overflow-hidden">
-          <div className="absolute -top-8 -right-8 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl" />
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
-            <div className="flex flex-col items-center md:items-start gap-3">
-              <div className="w-12 h-12 bg-teal-500/20 rounded-2xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-teal-400" />
-              </div>
-              <p className="font-bold text-white">Pack Multi-destinataires</p>
-              <p className="text-stone-400 text-sm">
-                Envoyez la même carte à 5 proches pour{' '}
-                <strong className="text-teal-400">4,99 €</strong> au lieu de 5 × 1,99 € = 9,95 €.
-                Économisez 50 % !
-              </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm hover:shadow-md hover:border-teal-200 transition-all">
+            <div className="w-12 h-12 bg-teal-50 rounded-2xl flex items-center justify-center mb-4">
+              <CalendarClock className="w-6 h-6 text-teal-600" />
             </div>
-            <div className="flex flex-col items-center md:items-start gap-3">
-              <div className="w-12 h-12 bg-violet-500/20 rounded-2xl flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-violet-400" />
-              </div>
-              <p className="font-bold text-white">Upsell intelligent</p>
-              <p className="text-stone-400 text-sm">
-                Créez votre carte gratuite (48h), puis convertissez-la en{' '}
-                <strong className="text-violet-400">Classique à 1,99 €</strong> avant expiration.
-                Votre travail n&apos;est jamais perdu.
-              </p>
+            <p className="font-bold text-stone-900 mb-2">Programmation</p>
+            <p className="text-stone-600 text-sm leading-relaxed">
+              Envoyez la carte <strong className="text-teal-600">le jour de l’anniversaire à 8h00</strong> pile.
+              Créez à l’avance, on s’occupe de l’envoi au bon moment.
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm hover:shadow-md hover:border-teal-200 transition-all">
+            <div className="w-12 h-12 bg-teal-50 rounded-2xl flex items-center justify-center mb-4">
+              <Sparkles className="w-6 h-6 text-teal-600" />
             </div>
-            <div className="flex flex-col items-center md:items-start gap-3">
-              <div className="w-12 h-12 bg-rose-500/20 rounded-2xl flex items-center justify-center">
-                <Zap className="w-6 h-6 text-rose-400" />
-              </div>
-              <p className="font-bold text-white">Modifiable à vie</p>
-              <p className="text-stone-400 text-sm">
-                Tous les plans permettent de modifier votre carte depuis votre compte : texte,
-                photo, destinataire.
-              </p>
+            <p className="font-bold text-stone-900 mb-2">Prix unique tout compris</p>
+            <p className="text-stone-600 text-sm leading-relaxed">
+              Photo, vidéo ou message vocal : <strong className="text-teal-600">même prix</strong>.
+              Chaque carte peut être envoyée à un <strong className="text-teal-600">nombre illimité de destinataires</strong>. Cartes 100 % virtuelles, avec statistiques de visite — aucune impression.
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm hover:shadow-md hover:border-violet-200 transition-all">
+            <div className="w-12 h-12 bg-violet-50 rounded-2xl flex items-center justify-center mb-4">
+              <Clock className="w-6 h-6 text-violet-600" />
             </div>
+            <p className="font-bold text-stone-900 mb-2">Carte gratuite 48 h</p>
+            <p className="text-stone-600 text-sm leading-relaxed">
+              Créez sans payer. Votre carte est modifiable via le lien reçu par email — changez
+              photo ou texte tant qu&apos;elle est active, puis prolongez à 2,50 € si vous le
+              souhaitez.
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm hover:shadow-md hover:border-rose-200 transition-all">
+            <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center mb-4">
+              <Zap className="w-6 h-6 text-rose-600" />
+            </div>
+            <p className="font-bold text-stone-900 mb-2">Modifiable depuis votre compte</p>
+            <p className="text-stone-600 text-sm leading-relaxed">
+              Toutes les cartes payantes restent modifiables : texte, photo, vidéo, destinataire.
+            </p>
           </div>
         </div>
       </div>
