@@ -10,7 +10,13 @@ import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistratio
 /**
  * On /manager* routes we don't show the public Navbar/Footer (admin has its own shell).
  */
-export function FrontendLayoutWrapper({ children }: { children: React.ReactNode }) {
+export function FrontendLayoutWrapper({
+  children,
+  exitIntentEnabled = true,
+}: {
+  children: React.ReactNode
+  exitIntentEnabled?: boolean
+}) {
   const pathname = usePathname()
   const isManager = pathname?.startsWith('/manager')
   const isEspaceClient = pathname?.startsWith('/espace-client')
@@ -19,7 +25,7 @@ export function FrontendLayoutWrapper({ children }: { children: React.ReactNode 
     return <>{children}</>
   }
 
-  const showExitIntent = !isEspaceClient
+  const showExitIntent = !isEspaceClient && exitIntentEnabled
 
   return (
     <>

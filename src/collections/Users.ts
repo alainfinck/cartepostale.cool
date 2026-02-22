@@ -106,6 +106,11 @@ export const Users: CollectionConfig = {
       defaultValue: 'free',
     },
     {
+      name: 'credits',
+      type: 'number',
+      defaultValue: 0,
+    },
+    {
       name: 'magicLinkToken',
       type: 'text',
       hidden: true,

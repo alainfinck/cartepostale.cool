@@ -117,8 +117,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    settings: Setting;
+  };
+  globalsSelect: {
+    settings: SettingsSelect<false> | SettingsSelect<true>;
+  };
   locale: null;
   user: User;
   jobs: {
@@ -161,6 +165,7 @@ export interface User {
   company?: string | null;
   cardsCreated?: number | null;
   plan?: ('free' | 'pro' | 'enterprise') | null;
+  credits?: number | null;
   magicLinkToken?: string | null;
   magicLinkExpires?: string | null;
   sessions?:
@@ -651,6 +656,10 @@ export interface Feedback {
    */
   rating?: number | null;
   message: string;
+  /**
+   * Email de contact (facultatif)
+   */
+  email?: string | null;
   pageUrl?: string | null;
   user?: (string | null) | User;
   status?: ('new' | 'read' | 'processed') | null;
@@ -805,6 +814,7 @@ export interface UsersSelect<T extends boolean = true> {
   company?: T;
   cardsCreated?: T;
   plan?: T;
+  credits?: T;
   magicLinkToken?: T;
   magicLinkExpires?: T;
   sessions?:
@@ -1131,6 +1141,7 @@ export interface EmailTemplatesSelect<T extends boolean = true> {
 export interface FeedbackSelect<T extends boolean = true> {
   rating?: T;
   message?: T;
+  email?: T;
   pageUrl?: T;
   user?: T;
   status?: T;
@@ -1176,6 +1187,26 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings".
+ */
+export interface Setting {
+  id: number;
+  exitIntentEnabled?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings_select".
+ */
+export interface SettingsSelect<T extends boolean = true> {
+  exitIntentEnabled?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

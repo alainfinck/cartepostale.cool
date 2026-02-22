@@ -20,6 +20,7 @@ export function FeedbackButton() {
   const [isOpen, setIsOpen] = useState(false)
   const [rating, setRating] = useState(0)
   const [message, setMessage] = useState('')
+  const [email, setEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const pathname = usePathname()
@@ -35,6 +36,7 @@ export function FeedbackButton() {
     const result = await submitFeedback({
       rating,
       message,
+      email,
       pageUrl: window.location.href,
     })
     setIsSubmitting(false)
@@ -49,6 +51,7 @@ export function FeedbackButton() {
           setIsSuccess(false)
           setRating(0)
           setMessage('')
+          setEmail('')
         }, 300)
       }, 2000)
     } else {
@@ -118,6 +121,22 @@ export function FeedbackButton() {
                 placeholder="Dites-nous ce que vous en pensez ou signalez-nous un problème..."
                 className="min-h-[120px] resize-none"
                 required
+              />
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-stone-700">
+                Email{' '}
+                <span className="text-stone-400 font-normal">
+                  (facultatif, pour vous recontacter)
+                </span>
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="votre@email.com"
+                className="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 

@@ -4,15 +4,12 @@ import { getGlobalViewStats } from '@/actions/postcard-view-stats'
 import { StatsOverview } from './StatsOverview'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Mail, Users, Building2 } from 'lucide-react'
+import { Mail, Users, Building2, LayoutDashboard } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ManagerPage() {
-  const [stats, viewStats] = await Promise.all([
-    getManagerStats(),
-    getGlobalViewStats(),
-  ])
+  const [stats, viewStats] = await Promise.all([getManagerStats(), getGlobalViewStats()])
 
   const actionCards = [
     {
@@ -35,6 +32,13 @@ export default async function ManagerPage() {
       value: stats.totalAgencies,
       href: '/manager/agences',
       Icon: Building2,
+    },
+    {
+      title: 'Réglages',
+      description: 'Configurez les paramètres globaux (popup, etc.).',
+      value: '',
+      href: '/manager/reglages',
+      Icon: LayoutDashboard,
     },
   ]
 
@@ -66,4 +70,3 @@ export default async function ManagerPage() {
     </div>
   )
 }
-

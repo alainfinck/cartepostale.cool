@@ -179,7 +179,9 @@ const adminRequestStub: Partial<PayloadRequest> = {
 
 async function fetchImageAsBuffer(url: string): Promise<Buffer> {
   console.log(`  Fetching: ${url}`)
-  const res = await fetch(url)
+  const res = await fetch(url, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+  })
   if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`)
   const ab = await res.arrayBuffer()
   return Buffer.from(ab)
@@ -297,7 +299,7 @@ async function main() {
         name: cat.name,
         description: cat.description,
         agency: agency.id,
-      },
+      } as any,
     })
     categoryMap[cat.slug] = (doc as any).id
     console.log(`  ✓ Category: ${cat.name}`)
@@ -312,7 +314,7 @@ async function main() {
       data: {
         name: tag.name,
         agency: agency.id,
-      },
+      } as any,
     })
     tagMap[tag.slug] = (doc as any).id
     console.log(`  ✓ Tag: ${tag.name}`)
@@ -368,7 +370,7 @@ async function main() {
         collection: 'gallery',
         data: {
           title: img.title,
-          image: mediaId,
+          image: mediaId as number,
           caption: img.caption,
           category: catId || undefined,
           tags: tagIds,

@@ -71,13 +71,22 @@ export const metadata: Metadata = {
 }
 
 import { FeedbackButton } from '@/components/FeedbackButton'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 
-export default function FrontendLayout({ children }: { children: React.ReactNode }) {
+export default async function FrontendLayout({ children }: { children: React.ReactNode }) {
+  const payload = await getPayload({ config })
+  const settings = await payload.findGlobal({
+    slug: 'settings',
+  })
+
   return (
     <>
       <div className="flex flex-col min-h-screen bg-[#faf8f5] font-sans antialiased">
         <NextAuthProvider>
-          <FrontendLayoutWrapper>{children}</FrontendLayoutWrapper>
+          <FrontendLayoutWrapper exitIntentEnabled={settings.exitIntentEnabled ?? true}>
+            {children}
+          </FrontendLayoutWrapper>
           <InstallPrompt />
           <FeedbackButton />
           <Toaster position="top-right" richColors />

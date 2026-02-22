@@ -32,6 +32,13 @@ export const Feedback: CollectionConfig = {
       required: true,
     },
     {
+      name: 'email',
+      type: 'email',
+      admin: {
+        description: 'Email de contact (facultatif)',
+      },
+    },
+    {
       name: 'pageUrl',
       type: 'text',
       admin: {

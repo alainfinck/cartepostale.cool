@@ -79,6 +79,12 @@ export default async function EspaceClientComptePage() {
               <dd className="text-stone-800">{user.cardsCreated}</dd>
             </div>
           )}
+          <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-2">
+            <dt className="text-stone-500 text-sm font-medium sm:w-40 shrink-0 font-bold text-teal-600">
+              Crédits disponibles
+            </dt>
+            <dd className="text-teal-700 font-bold">{(user as any).credits || 0} cartes</dd>
+          </div>
         </dl>
       </div>
 

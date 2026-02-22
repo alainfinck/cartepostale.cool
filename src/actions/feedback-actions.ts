@@ -4,7 +4,12 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { getCurrentUser } from '@/lib/auth'
 
-export async function submitFeedback(data: { rating: number; message: string; pageUrl?: string }) {
+export async function submitFeedback(data: {
+  rating: number
+  message: string
+  pageUrl?: string
+  email?: string
+}) {
   try {
     const user = await getCurrentUser()
     const payload = await getPayload({ config })
@@ -14,6 +19,7 @@ export async function submitFeedback(data: { rating: number; message: string; pa
       data: {
         rating: data.rating,
         message: data.message,
+        email: data.email,
         pageUrl: data.pageUrl,
         user: user ? user.id : undefined,
         status: 'new',

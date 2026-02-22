@@ -92,6 +92,7 @@ const plugins = [
 ]
 
 import { Leads } from './collections/Leads'
+import { Settings } from './globals/Settings'
 
 export default buildConfig({
   admin: {
@@ -119,6 +120,7 @@ export default buildConfig({
     EmailTemplates,
     Feedback,
   ],
+  globals: [Settings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

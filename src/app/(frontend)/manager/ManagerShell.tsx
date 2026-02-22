@@ -33,6 +33,7 @@ const nav = [
   { href: '/manager/leads', label: 'Leads', icon: Mail },
   { href: '/manager/agences', label: 'Agences', icon: Building2 },
   { href: '/manager/landing-pages', label: 'Landing pages', icon: FileText },
+  { href: '/manager/reglages', label: 'Réglages', icon: LayoutDashboard },
 ]
 
 export function ManagerShell({ children }: { children: React.ReactNode }) {
