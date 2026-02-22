@@ -13,6 +13,7 @@ import ViewPageTitle from '@/components/view/ViewPageTitle'
 import PhotoFeed from '@/components/view/PhotoFeed'
 import EnvelopeExperience from '@/components/view/EnvelopeExperience'
 import { getCurrentUser } from '@/lib/auth'
+import { PostcardTracking } from '@/components/analytics/PostcardTracking'
 
 type SearchParams = {
   [key: string]: string | string[] | undefined
@@ -284,9 +285,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
         </p>
         <p className="text-stone-500 text-sm">
           Carte postale envoyée avec amour
-          {frontendPostcard.location?.trim()
-            ? ` de ${frontendPostcard.location.trim()}`
-            : ''}
+          {frontendPostcard.location?.trim() ? ` de ${frontendPostcard.location.trim()}` : ''}
           {frontendPostcard.date ? `, le ${frontendPostcard.date}` : ''}.
         </p>
       </div>
@@ -333,6 +332,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
 
   return (
     <EnvelopeExperience enabled={showEnvelope} hero={heroSection}>
+      <PostcardTracking postcardId={slug} senderName={frontendPostcard.senderName} />
       {pageContent}
     </EnvelopeExperience>
   )

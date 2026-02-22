@@ -924,8 +924,13 @@ export default function EditorPage() {
   const [revolutError, setRevolutError] = useState<string | null>(null)
 
   // Meta Facebook Pixel
-  const { trackInitiateCheckout, trackAddToCart, trackCompleteRegistration, trackViewContent } =
-    useFacebookPixel()
+  const {
+    trackInitiateCheckout,
+    trackAddToCart,
+    trackCompleteRegistration,
+    trackViewContent,
+    trackCustomizeProduct,
+  } = useFacebookPixel()
 
   const [password, setPassword] = useState('')
   const [isPasswordProtected, setIsPasswordProtected] = useState(false)

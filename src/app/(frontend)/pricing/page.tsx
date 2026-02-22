@@ -198,6 +198,7 @@ const durationIcon = (duration: string) => {
 export default function PricingPage() {
   return (
     <div className="bg-[#fdfbf7] min-h-screen">
+      <PricingTracking />
       {/* Hero */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-20 pb-12 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-xs font-bold uppercase tracking-widest mb-6">
