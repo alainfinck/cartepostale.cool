@@ -64,14 +64,16 @@ export default function ReactionBar({
                 const count = counts[emoji] || 0
 
                 return (
-                    <CoolMode key={emoji} options={{ particle: emoji, particleCount: 8, size: 20, effect: "balloon" }}>
+                    <CoolMode key={emoji} options={{ particle: emoji, particleCount: 4, size: 28, effect: "balloon", speed: 0.2, gravity: 0.08 }}>
                         <motion.button
-                            whileTap={{ scale: 1.5, transition: { duration: 0.5, ease: "easeInOut" } }}
+                            whileTap={{ scale: 1.15 }}
+                            whileHover={{ scale: 1.08 }}
+                            transition={{ type: 'spring', stiffness: 200, damping: 15, duration: 0.6 }}
                             onClick={() => handleToggle(emoji)}
                             disabled={loading === emoji}
                             className={`
                                 flex items-center gap-1 sm:gap-1.5 px-2 py-1.5 sm:px-3 sm:py-2 rounded-full border text-xs sm:text-sm
-                                transition-all duration-300 cursor-pointer shadow-sm hover:scale-110 active:scale-95
+                                transition-all duration-500 ease-out cursor-pointer shadow-sm
                                 ${isActive
                                     ? 'bg-teal-50 border-teal-400 text-teal-700 shadow-teal-100/50'
                                     : 'bg-white border-stone-200 text-stone-600 hover:border-stone-300 hover:bg-stone-50'
@@ -79,7 +81,13 @@ export default function ReactionBar({
                                 ${loading === emoji ? 'opacity-50' : ''}
                             `}
                         >
-                            <span className="text-base sm:text-3xl filter drop-shadow-sm transform group-hover:scale-110 transition-transform">{emoji}</span>
+                            <motion.span
+                                className="text-base sm:text-3xl filter drop-shadow-sm"
+                                animate={isActive ? { scale: [1, 1.3, 1], rotate: [0, -10, 10, 0] } : { scale: 1, rotate: 0 }}
+                                transition={{ duration: 0.6, ease: 'easeOut' }}
+                            >
+                                {emoji}
+                            </motion.span>
                             {count > 0 && (
                                 <NumberTicker
                                     value={count}
