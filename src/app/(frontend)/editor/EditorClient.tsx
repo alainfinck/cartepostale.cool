@@ -638,6 +638,179 @@ const ALBUM_TIERS = {
   tier2: { photos: 50, videos: 3, price: 4.99 },
 } as const
 
+/** Plans tarifaires complets de la carte postale */
+type PostcardPlanId =
+  | 'ephemere'
+  | 'classique'
+  | 'album_s'
+  | 'album_m'
+  | 'audio'
+  | 'video'
+  | 'pack_multi'
+
+interface PostcardPlan {
+  id: PostcardPlanId
+  label: string
+  emoji: string
+  tagline: string
+  price: number // 0 = gratuit
+  priceLabel: string
+  duration: string
+  features: string[]
+  highlight?: string // badge/pill text
+  color: 'stone' | 'teal' | 'indigo' | 'violet' | 'amber' | 'rose' | 'orange'
+  maxPhotos: number
+  allowsAudio: boolean
+  allowsVideo: boolean
+  multiRecipients: number // 1 = solo
+}
+
+const POSTCARD_PLANS: PostcardPlan[] = [
+  {
+    id: 'ephemere',
+    label: 'Éphémère',
+    emoji: '🌸',
+    tagline: 'Découvrez sans engagement',
+    price: 0,
+    priceLabel: 'Gratuit',
+    duration: '48h',
+    features: [
+      '1 photo',
+      'Carte disponible pendant 48 h',
+      'Partage par lien',
+      'Modifiable depuis votre compte',
+    ],
+    color: 'stone',
+    maxPhotos: 1,
+    allowsAudio: false,
+    allowsVideo: false,
+    multiRecipients: 1,
+  },
+  {
+    id: 'classique',
+    label: 'Classique',
+    emoji: '📬',
+    tagline: 'Le souvenir qui dure',
+    price: 1.99,
+    priceLabel: '1,99 €',
+    duration: '1 an',
+    features: [
+      '1 photo',
+      'Carte conservée 1 an',
+      'Sans filigrane',
+      'Modifiable depuis votre compte',
+    ],
+    color: 'teal',
+    maxPhotos: 1,
+    allowsAudio: false,
+    allowsVideo: false,
+    multiRecipients: 1,
+  },
+  {
+    id: 'album_s',
+    label: 'Album S',
+    emoji: '🖼️',
+    tagline: 'Un pêle-mêle intime',
+    price: 2.99,
+    priceLabel: '2,99 €',
+    duration: '1 an',
+    features: [
+      'Jusqu\u2019à 5 photos',
+      'Carte conservée 1 an',
+      'Mise en page pêle-mêle',
+      'Modifiable depuis votre compte',
+    ],
+    color: 'indigo',
+    maxPhotos: 5,
+    allowsAudio: false,
+    allowsVideo: false,
+    multiRecipients: 1,
+  },
+  {
+    id: 'album_m',
+    label: 'Album M',
+    emoji: '📸',
+    tagline: 'Racontez votre voyage',
+    price: 4.99,
+    priceLabel: '4,99 €',
+    duration: 'Illimitée',
+    features: [
+      'Jusqu\u2019à 30 photos',
+      'Durée de vie illimitée',
+      'Mise en page pêle-mêle',
+      'Modifiable depuis votre compte',
+    ],
+    highlight: 'Populaire',
+    color: 'violet',
+    maxPhotos: 30,
+    allowsAudio: false,
+    allowsVideo: false,
+    multiRecipients: 1,
+  },
+  {
+    id: 'audio',
+    label: 'Message Audio',
+    emoji: '🎙️',
+    tagline: 'Votre voix en cadeau',
+    price: 4.99,
+    priceLabel: '4,99 €',
+    duration: 'Illimitée',
+    features: [
+      '1 photo + message vocal',
+      'Durée de vie illimitée',
+      'Lecture à l\u2019ouverture de la carte',
+      'Modifiable depuis votre compte',
+    ],
+    color: 'amber',
+    maxPhotos: 1,
+    allowsAudio: true,
+    allowsVideo: false,
+    multiRecipients: 1,
+  },
+  {
+    id: 'video',
+    label: 'Vidéo',
+    emoji: '🎬',
+    tagline: 'L\u2019ultime carte postale',
+    price: 9.99,
+    priceLabel: '9,99 €',
+    duration: 'Illimitée',
+    features: [
+      'Photos + vidéos',
+      'Durée de vie illimitée',
+      'Lecture vidéo intégrée',
+      'Modifiable depuis votre compte',
+    ],
+    highlight: 'Premium',
+    color: 'rose',
+    maxPhotos: 30,
+    allowsAudio: true,
+    allowsVideo: true,
+    multiRecipients: 1,
+  },
+  {
+    id: 'pack_multi',
+    label: 'Pack Multi-destinataires',
+    emoji: '🚀',
+    tagline: 'Une carte, plusieurs proches',
+    price: 4.99,
+    priceLabel: '4,99 €',
+    duration: '1 an',
+    features: [
+      'Jusqu\u2019à 5 destinataires différents',
+      '1 photo par envoi',
+      'Textes personnalisés par destinataire',
+      'Modifiable depuis votre compte',
+    ],
+    highlight: '⭐ Recommandé',
+    color: 'orange',
+    maxPhotos: 1,
+    allowsAudio: false,
+    allowsVideo: false,
+    multiRecipients: 5,
+  },
+]
+
 export default function EditorPage() {
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
 
@@ -706,6 +879,7 @@ export default function EditorPage() {
   const [showRecipientModal, setShowRecipientModal] = useState(false)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [showPricingModal, setShowPricingModal] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState<PostcardPlanId>('ephemere')
   const [showTemplateSection, setShowTemplateSection] = useState(false) // Mobile-friendly: hide templates by default
   const [fullscreenScale, setFullscreenScale] = useState(1)
 
@@ -1556,15 +1730,12 @@ export default function EditorPage() {
   const getAlbumPrice = () => {
     if (codeSuccess) return 0
     if (currentUser?.role === 'admin') return 0
-    if (!mediaItems || mediaItems.length === 0) return 0
-    const photos = mediaItems.filter((i) => i.type === 'image').length
-    const videos = mediaItems.filter((i) => i.type === 'video').length
-
-    if (photos <= ALBUM_TIERS.tier1.photos && videos === 0) {
-      return ALBUM_TIERS.tier1.price
-    }
-    return ALBUM_TIERS.tier2.price
+    const plan = POSTCARD_PLANS.find((p) => p.id === selectedPlan)
+    return plan?.price ?? 0
   }
+
+  const getSelectedPlan = () =>
+    POSTCARD_PLANS.find((p) => p.id === selectedPlan) ?? POSTCARD_PLANS[0]
 
   const removeMediaItem = (id: string) => {
     setMediaItems((prev) => {
@@ -2662,105 +2833,231 @@ export default function EditorPage() {
 
             {/* ==================== STEP: PAIEMENT ==================== */}
             {currentStep === 'payment' && (
-              <div className="w-full max-w-full bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
-                <h2 className="text-2xl font-serif font-bold text-stone-800 mb-2">Règlement</h2>
-                <p className="text-stone-500 mb-8">
-                  Paiement sécurisé via Revolut. Vous pourrez finaliser le paiement à l&apos;étape
-                  suivante.
-                </p>
-
-                {/* Récap commande */}
-                <div className="bg-stone-50 rounded-xl p-4 mb-8 border border-stone-100">
-                  <div className="flex justify-between items-center mb-2 text-sm text-stone-600">
-                    <span>Carte postale virtuelle</span>
-                    <span className="text-teal-600 font-bold uppercase text-[10px]">Gratuit</span>
-                  </div>
-                  {getAlbumPrice() > 0 && (
-                    <div className="flex justify-between items-center mb-2 text-sm text-amber-600 font-medium">
-                      <span className="flex items-center gap-1">
-                        <Sparkles size={12} />
-                        {getAlbumPrice() === ALBUM_TIERS.tier1.price
-                          ? `Palier Personnalisée (jusqu'à ${ALBUM_TIERS.tier1.photos} photos)`
-                          : `Palier Augmentée (${ALBUM_TIERS.tier2.photos}+ photos + ${ALBUM_TIERS.tier2.videos} vidéos)`}
-                      </span>
-                      <span>+{getAlbumPrice().toFixed(2)} €</span>
-                    </div>
-                  )}
-                  <div className="border-t border-stone-200 my-3" />
-                  <div className="flex justify-between items-center font-bold text-stone-800 text-lg">
-                    <span>Total</span>
-                    <span>{getAlbumPrice().toFixed(2)} €</span>
-                  </div>
-                </div>
-
-                {/* Paiement CB / virement / Revolut */}
-                <div className="rounded-2xl border-2 border-teal-500 bg-teal-50/50 p-6 mb-8 ring-1 ring-teal-500 shadow-sm">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                      <CreditCard size={24} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-bold text-stone-800 text-lg">
-                        Paiement par CB / Apple Pay / Google Pay
-                      </p>
-                      <p className="text-sm text-stone-500">
-                        Carte bancaire, Apple Pay ou Google Pay
-                      </p>
-                    </div>
-                    {getAlbumPrice() > 0 && (
-                      <div className="text-right">
-                        <span className="text-2xl font-black text-teal-600">
-                          {getAlbumPrice().toFixed(2)}€
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <p className="mt-4 text-xs text-stone-400 bg-white/50 p-2 rounded-lg border border-teal-100">
-                    Cliquez sur le bouton ci-dessous pour régler votre option et finaliser votre
-                    carte.
+              <div className="w-full max-w-full space-y-6">
+                {/* Header */}
+                <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
+                  <h2 className="text-2xl font-serif font-bold text-stone-800 mb-1">
+                    Choisissez votre formule
+                  </h2>
+                  <p className="text-stone-500 text-sm">
+                    Tous les plans vous permettent de modifier votre carte depuis votre compte.
                   </p>
                 </div>
 
-                <div className="flex flex-col gap-3">
-                  {getAlbumPrice() > 0 ? (
-                    <Button
-                      onClick={handlePayWithRevolut}
-                      disabled={isRevolutRedirecting || isPublishing}
-                      className="w-full rounded-2xl font-bold py-6 h-auto bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-100 transition-all flex items-center justify-center gap-3 text-lg"
-                    >
-                      {isRevolutRedirecting || isPublishing ? (
-                        <RefreshCw size={24} className="animate-spin" />
-                      ) : (
-                        <>
-                          <span>Régler {getAlbumPrice().toFixed(2)}€</span>
-                          <ChevronRight size={20} />
-                        </>
-                      )}
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={goNext}
-                      className="w-full rounded-2xl font-bold py-6 h-auto bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-100 transition-all flex items-center justify-center gap-3 text-lg"
-                    >
-                      Continuer gratuitement
-                      <ChevronRight size={20} />
-                    </Button>
-                  )}
+                {/* Plan Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {POSTCARD_PLANS.map((plan) => {
+                    const isSelected = selectedPlan === plan.id
+                    const colorMap: Record<
+                      PostcardPlan['color'],
+                      {
+                        border: string
+                        ring: string
+                        bg: string
+                        badge: string
+                        check: string
+                        price: string
+                      }
+                    > = {
+                      stone: {
+                        border: 'border-stone-300',
+                        ring: 'ring-stone-400',
+                        bg: 'bg-stone-50',
+                        badge: 'bg-stone-200 text-stone-700',
+                        check: 'bg-stone-700',
+                        price: 'text-stone-800',
+                      },
+                      teal: {
+                        border: 'border-teal-400',
+                        ring: 'ring-teal-500',
+                        bg: 'bg-teal-50',
+                        badge: 'bg-teal-100 text-teal-800',
+                        check: 'bg-teal-500',
+                        price: 'text-teal-700',
+                      },
+                      indigo: {
+                        border: 'border-indigo-400',
+                        ring: 'ring-indigo-500',
+                        bg: 'bg-indigo-50',
+                        badge: 'bg-indigo-100 text-indigo-800',
+                        check: 'bg-indigo-500',
+                        price: 'text-indigo-700',
+                      },
+                      violet: {
+                        border: 'border-violet-400',
+                        ring: 'ring-violet-500',
+                        bg: 'bg-violet-50',
+                        badge: 'bg-violet-100 text-violet-800',
+                        check: 'bg-violet-500',
+                        price: 'text-violet-700',
+                      },
+                      amber: {
+                        border: 'border-amber-400',
+                        ring: 'ring-amber-500',
+                        bg: 'bg-amber-50',
+                        badge: 'bg-amber-100 text-amber-800',
+                        check: 'bg-amber-500',
+                        price: 'text-amber-700',
+                      },
+                      rose: {
+                        border: 'border-rose-400',
+                        ring: 'ring-rose-500',
+                        bg: 'bg-rose-50',
+                        badge: 'bg-rose-100 text-rose-800',
+                        check: 'bg-rose-500',
+                        price: 'text-rose-700',
+                      },
+                      orange: {
+                        border: 'border-orange-400',
+                        ring: 'ring-orange-500',
+                        bg: 'bg-orange-50',
+                        badge: 'bg-orange-100 text-orange-800',
+                        check: 'bg-orange-500',
+                        price: 'text-orange-700',
+                      },
+                    }
+                    const c = colorMap[plan.color]
+                    return (
+                      <button
+                        key={plan.id}
+                        type="button"
+                        id={`plan-${plan.id}`}
+                        onClick={() => setSelectedPlan(plan.id)}
+                        className={cn(
+                          'relative w-full text-left rounded-2xl border-2 p-4 transition-all duration-200 focus:outline-none',
+                          isSelected
+                            ? `${c.border} ${c.bg} ring-2 ${c.ring} shadow-md`
+                            : 'border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm',
+                        )}
+                      >
+                        {/* Badge highlight */}
+                        {plan.highlight && (
+                          <span
+                            className={cn(
+                              'absolute -top-2.5 right-3 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm',
+                              c.badge,
+                            )}
+                          >
+                            {plan.highlight}
+                          </span>
+                        )}
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl leading-none mt-0.5">{plan.emoji}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-bold text-stone-900 text-sm">{plan.label}</span>
+                              <span
+                                className={cn(
+                                  'font-black text-base',
+                                  isSelected ? c.price : 'text-stone-700',
+                                )}
+                              >
+                                {plan.priceLabel}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-stone-400 mb-2">{plan.tagline}</p>
+                            <ul className="space-y-1">
+                              {plan.features.map((f, i) => (
+                                <li
+                                  key={i}
+                                  className="flex items-start gap-1.5 text-[11px] text-stone-600"
+                                >
+                                  <span
+                                    className={cn(
+                                      'mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center',
+                                      isSelected ? c.check : 'bg-stone-200',
+                                    )}
+                                  >
+                                    <svg
+                                      className="w-2 h-2 text-white"
+                                      viewBox="0 0 8 8"
+                                      fill="none"
+                                    >
+                                      <path
+                                        d="M1.5 4L3 5.5L6.5 2"
+                                        stroke="currentColor"
+                                        strokeWidth="1.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                    </svg>
+                                  </span>
+                                  {f}
+                                </li>
+                              ))}
+                            </ul>
+                            <div className="mt-2 flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
+                                Durée :
+                              </span>
+                              <span className="text-[10px] font-semibold text-stone-600">
+                                {plan.duration}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        {/* Radio indicator */}
+                        <div
+                          className={cn(
+                            'absolute top-4 right-4 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all',
+                            isSelected ? `${c.border} ${c.check}` : 'border-stone-300 bg-white',
+                          )}
+                        >
+                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
 
-                  <Button
-                    variant="ghost"
-                    onClick={goPrev}
-                    className="w-full rounded-xl font-semibold py-3 h-auto text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-all"
-                  >
-                    <ChevronLeft size={18} className="mr-2" />
-                    Modifier ma commande
-                  </Button>
+                {/* Upsell banner for free plan */}
+                {selectedPlan === 'ephemere' && (
+                  <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl p-4 text-white">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">💡</span>
+                      <div>
+                        <p className="font-bold text-sm mb-1">
+                          Conseil : passez au plan Classique !
+                        </p>
+                        <p className="text-teal-100 text-xs">
+                          Votre carte est gratuite mais expire dans 48h. Pour seulement{' '}
+                          <strong>1,99 €</strong>, elle devient éternelle (1 an) — et vous pouvez la
+                          modifier à tout moment.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPlan('classique')}
+                          className="mt-2 inline-flex items-center gap-1 bg-white/20 hover:bg-white/30 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors"
+                        >
+                          Passer au Classique — 1,99 € <ChevronRight size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-                  {/* Late Promo Code in Payment Step */}
-                  {!codeSuccess && (
-                    <div className="mt-8 pt-6 border-t border-stone-100">
-                      <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">
-                        Un code promo ?
+                {/* Récap + CTA */}
+                <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <div>
+                      <p className="text-sm text-stone-500">Formule sélectionnée</p>
+                      <p className="font-bold text-stone-900">
+                        {getSelectedPlan().emoji} {getSelectedPlan().label}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-stone-500">Total</p>
+                      <p className="text-2xl font-black text-stone-900">
+                        {getAlbumPrice() === 0 ? 'Gratuit' : `${getAlbumPrice().toFixed(2)} €`}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Promo Code */}
+                  {!codeSuccess && getAlbumPrice() > 0 && (
+                    <div className="mb-4 pt-4 border-t border-stone-100">
+                      <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2">
+                        Code promo
                       </p>
                       <div className="flex gap-2">
                         <Input
@@ -2787,12 +3084,61 @@ export default function EditorPage() {
                           }}
                           className="bg-stone-800 text-white h-10 px-4"
                         >
-                          Appliquer
+                          {isActivatingCode ? (
+                            <RefreshCw size={14} className="animate-spin" />
+                          ) : (
+                            'Appliquer'
+                          )}
                         </Button>
                       </div>
                       {codeError && <p className="text-[10px] text-red-500 mt-1">{codeError}</p>}
                     </div>
                   )}
+                  {codeSuccess && (
+                    <div className="mb-4 flex items-center gap-2 text-teal-600 text-sm font-bold">
+                      <CheckCircle2 size={16} /> Code appliqué — Accès gratuit !
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-3">
+                    {getAlbumPrice() > 0 ? (
+                      <Button
+                        onClick={handlePayWithRevolut}
+                        disabled={isRevolutRedirecting || isPublishing}
+                        className="w-full rounded-2xl font-bold py-6 h-auto bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-100 transition-all flex items-center justify-center gap-3 text-lg"
+                      >
+                        {isRevolutRedirecting || isPublishing ? (
+                          <RefreshCw size={24} className="animate-spin" />
+                        ) : (
+                          <>
+                            <CreditCard size={20} />
+                            <span>Régler {getAlbumPrice().toFixed(2)} €</span>
+                            <ChevronRight size={20} />
+                          </>
+                        )}
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={goNext}
+                        className="w-full rounded-2xl font-bold py-6 h-auto bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-100 transition-all flex items-center justify-center gap-3 text-lg"
+                      >
+                        Continuer gratuitement — 48 h
+                        <ChevronRight size={20} />
+                      </Button>
+                    )}
+
+                    <Button
+                      variant="ghost"
+                      onClick={goPrev}
+                      className="w-full rounded-xl font-semibold py-3 h-auto text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-all"
+                    >
+                      <ChevronLeft size={18} className="mr-2" />
+                      Modifier ma carte
+                    </Button>
+                  </div>
+                  <p className="text-center text-[10px] text-stone-400 mt-4">
+                    Paiement sécurisé via Revolut · CB, Apple Pay, Google Pay
+                  </p>
                 </div>
               </div>
             )}
