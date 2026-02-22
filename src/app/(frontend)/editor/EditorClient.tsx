@@ -97,6 +97,7 @@ import {
 } from '@/components/ui/dialog'
 import { GoogleLoginButton } from '@/components/auth/GoogleLoginButton'
 import { useFacebookPixel } from '@/hooks/useFacebookPixel'
+import { PACK_TIERS } from '@/components/pricing/PacksSlider'
 
 const POSTCARD_ASPECT = 3 / 2
 const DEFAULT_FRONT_FILTER: FrontImageFilter = {
@@ -771,7 +772,7 @@ export default function EditorPage() {
   const [showRecipientModal, setShowRecipientModal] = useState(false)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [showPricingModal, setShowPricingModal] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState<PostcardPlanId>('ephemere')
+  const [selectedPlan, setSelectedPlan] = useState<PostcardPlanId>('payant')
   const [showTemplateSection, setShowTemplateSection] = useState(false) // Mobile-friendly: hide templates by default
   const [fullscreenScale, setFullscreenScale] = useState(1)
 
@@ -814,6 +815,7 @@ export default function EditorPage() {
   } | null>(null)
   const [isRevolutRedirecting, setIsRevolutRedirecting] = useState(false)
   const [revolutError, setRevolutError] = useState<string | null>(null)
+  const [hasPaid, setHasPaid] = useState(false)
 
   // Meta Facebook Pixel
   const {
@@ -937,12 +939,12 @@ export default function EditorPage() {
     }
   }, [shareUrl, hasConfettiFired])
 
-  // Handle payment success return
+  // Handle payment success return (after Revolut redirect, state is reset)
   useEffect(() => {
     const success = searchParams.get('payment_success')
-    if (success === 'true' && currentStep === 'payment') {
+    if (success === 'true' && !hasPaid) {
+      setHasPaid(true)
       setCurrentStep('preview')
-      // Meta Pixel — Purchase (côté serveur via Conversions API pour iOS safe)
       const amount = getAlbumPrice()
       if (amount > 0) {
         fetch('/api/meta/event', {
@@ -961,7 +963,7 @@ export default function EditorPage() {
         }).catch(() => {})
       }
     }
-  }, [searchParams, currentStep])
+  }, [searchParams, hasPaid])
 
   // Meta Pixel — AddToCart quand le premier média premium est ajouté
   const prevIsPremiumRef = useRef(false)
@@ -1177,7 +1179,7 @@ export default function EditorPage() {
         // Un seul critère : au moins un message. Destinataire / expéditeur / lieu optionnels (valeurs par défaut à l’envoi).
         return message.trim().length > 0
       case 'payment':
-        return paymentMethod !== null
+        return hasPaid || codeSuccess || currentUser?.role === 'admin'
       case 'preview':
         return true
       default:
@@ -1188,24 +1190,14 @@ export default function EditorPage() {
   const goNext = () => {
     if (currentStepIndex < STEPS.length - 1 && canGoNext()) {
       const nextStep = STEPS[currentStepIndex + 1].id
-      if (nextStep === 'payment' && getAlbumPrice() === 0) {
-        // Skip payment if free
-        setCurrentStep('preview')
-      } else {
-        setCurrentStep(nextStep)
-      }
+      setCurrentStep(nextStep)
     }
   }
 
   const goPrev = () => {
     if (currentStepIndex > 0) {
       const prevStep = STEPS[currentStepIndex - 1].id
-      if (prevStep === 'payment' && getAlbumPrice() === 0) {
-        // Skip payment if free
-        setCurrentStep('redaction')
-      } else {
-        setCurrentStep(prevStep)
-      }
+      setCurrentStep(prevStep)
     }
   }
 
@@ -2141,9 +2133,6 @@ export default function EditorPage() {
               const isActive = step.id === currentStep
               const isCompleted = index < currentStepIndex
               const isPayment = step.id === 'payment'
-              const isSkipped = isPayment && getAlbumPrice() === 0
-
-              if (isSkipped) return null
 
               return (
                 <React.Fragment key={step.id}>
@@ -2169,7 +2158,7 @@ export default function EditorPage() {
                     )}
                     <span className="hidden sm:inline">{step.label}</span>
                   </button>
-                  {index < STEPS.length - 1 && !isSkipped && (
+                  {index < STEPS.length - 1 && (
                     <div
                       className={cn(
                         'flex-1 min-w-0 h-0.5 mx-1 sm:mx-2 rounded-full transition-colors shrink',
@@ -2750,206 +2739,95 @@ export default function EditorPage() {
                   </p>
                 </div>
 
-                {/* Plan Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {POSTCARD_PLANS.map((plan) => {
-                    const isSelected = selectedPlan === plan.id
-                    const colorMap: Record<
-                      PostcardPlan['color'],
-                      {
-                        border: string
-                        ring: string
-                        bg: string
-                        badge: string
-                        check: string
-                        price: string
-                      }
-                    > = {
-                      stone: {
-                        border: 'border-stone-300',
-                        ring: 'ring-stone-400',
-                        bg: 'bg-stone-50',
-                        badge: 'bg-stone-200 text-stone-700',
-                        check: 'bg-stone-700',
-                        price: 'text-stone-800',
-                      },
-                      teal: {
-                        border: 'border-teal-400',
-                        ring: 'ring-teal-500',
-                        bg: 'bg-teal-50',
-                        badge: 'bg-teal-100 text-teal-800',
-                        check: 'bg-teal-500',
-                        price: 'text-teal-700',
-                      },
-                      indigo: {
-                        border: 'border-indigo-400',
-                        ring: 'ring-indigo-500',
-                        bg: 'bg-indigo-50',
-                        badge: 'bg-indigo-100 text-indigo-800',
-                        check: 'bg-indigo-500',
-                        price: 'text-indigo-700',
-                      },
-                      violet: {
-                        border: 'border-violet-400',
-                        ring: 'ring-violet-500',
-                        bg: 'bg-violet-50',
-                        badge: 'bg-violet-100 text-violet-800',
-                        check: 'bg-violet-500',
-                        price: 'text-violet-700',
-                      },
-                      amber: {
-                        border: 'border-amber-400',
-                        ring: 'ring-amber-500',
-                        bg: 'bg-amber-50',
-                        badge: 'bg-amber-100 text-amber-800',
-                        check: 'bg-amber-500',
-                        price: 'text-amber-700',
-                      },
-                      rose: {
-                        border: 'border-rose-400',
-                        ring: 'ring-rose-500',
-                        bg: 'bg-rose-50',
-                        badge: 'bg-rose-100 text-rose-800',
-                        check: 'bg-rose-500',
-                        price: 'text-rose-700',
-                      },
-                      orange: {
-                        border: 'border-orange-400',
-                        ring: 'ring-orange-500',
-                        bg: 'bg-orange-50',
-                        badge: 'bg-orange-100 text-orange-800',
-                        check: 'bg-orange-500',
-                        price: 'text-orange-700',
-                      },
-                    }
-                    const c = colorMap[plan.color]
-                    return (
-                      <button
-                        key={plan.id}
-                        type="button"
-                        id={`plan-${plan.id}`}
-                        onClick={() => setSelectedPlan(plan.id)}
-                        className={cn(
-                          'relative w-full text-left rounded-2xl border-2 p-4 transition-all duration-200 focus:outline-none',
-                          isSelected
-                            ? `${c.border} ${c.bg} ring-2 ${c.ring} shadow-md`
-                            : 'border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm',
-                        )}
-                      >
-                        {/* Badge highlight */}
-                        {plan.highlight && (
-                          <span
-                            className={cn(
-                              'absolute -top-2.5 right-3 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm',
-                              c.badge,
-                            )}
-                          >
-                            {plan.highlight}
-                          </span>
-                        )}
-                        <div className="flex items-start gap-3">
-                          <span className="text-2xl leading-none mt-0.5">{plan.emoji}</span>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="font-bold text-stone-900 text-sm">{plan.label}</span>
-                              <span
-                                className={cn(
-                                  'font-black text-base',
-                                  isSelected ? c.price : 'text-stone-700',
-                                )}
-                              >
-                                {plan.priceLabel}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-stone-400 mb-2">{plan.tagline}</p>
-                            <ul className="space-y-1">
-                              {plan.features.map((f, i) => (
-                                <li
-                                  key={i}
-                                  className="flex items-start gap-1.5 text-[11px] text-stone-600"
-                                >
-                                  <span
-                                    className={cn(
-                                      'mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center',
-                                      isSelected ? c.check : 'bg-stone-200',
-                                    )}
-                                  >
-                                    <svg
-                                      className="w-2 h-2 text-white"
-                                      viewBox="0 0 8 8"
-                                      fill="none"
-                                    >
-                                      <path
-                                        d="M1.5 4L3 5.5L6.5 2"
-                                        stroke="currentColor"
-                                        strokeWidth="1.5"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                      />
-                                    </svg>
-                                  </span>
-                                  {f}
-                                </li>
-                              ))}
-                            </ul>
-                            <div className="mt-2 flex items-center gap-2">
-                              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
-                                Durée :
-                              </span>
-                              <span className="text-[10px] font-semibold text-stone-600">
-                                {plan.duration}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        {/* Radio indicator */}
-                        <div
-                          className={cn(
-                            'absolute top-4 right-4 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all',
-                            isSelected ? `${c.border} ${c.check}` : 'border-stone-300 bg-white',
-                          )}
-                        >
-                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-
-                {/* Upsell banner for free plan */}
-                {selectedPlan === 'ephemere' && (
-                  <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl p-4 text-white">
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl">💡</span>
-                      <div>
-                        <p className="font-bold text-sm mb-1">
-                          Conseil : prolongez votre carte !
-                        </p>
-                        <p className="text-teal-100 text-xs">
-                          Votre carte est gratuite mais expire dans 48 h. Pour seulement{' '}
-                          <strong>2,50 €</strong>, elle devient pérenne : photo, vidéo ou message
-                          vocal, envoi à un nombre illimité de destinataires. Cartes virtuelles avec stats de visite.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedPlan('payant')}
-                          className="mt-2 inline-flex items-center gap-1 bg-white/20 hover:bg-white/30 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors"
-                        >
-                          Passer à l&apos;unité — 2,50 € <ChevronRight size={12} />
-                        </button>
+                {/* Carte unique */}
+                <div className="relative w-full text-left rounded-2xl border-2 border-teal-400 bg-teal-50 ring-2 ring-teal-500 shadow-md p-5">
+                  <span className="absolute -top-2.5 right-3 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm bg-teal-100 text-teal-800">
+                    Carte unique
+                  </span>
+                  <div className="flex items-start gap-3">
+                    <span className="text-3xl leading-none mt-0.5">💌</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="font-bold text-stone-900 text-base">Carte postale</span>
+                        <span className="font-black text-xl text-teal-700">2,50 €</span>
                       </div>
+                      <p className="text-xs text-stone-500 mb-2">Prix unique tout compris</p>
+                      <ul className="space-y-1">
+                        {[
+                          'Photo, vidéo ou message vocal inclus',
+                          'Envoi illimité de destinataires',
+                          'Statistiques de visite',
+                          'Modifiable depuis votre compte',
+                          'Durée illimitée',
+                        ].map((f, i) => (
+                          <li key={i} className="flex items-start gap-1.5 text-[11px] text-stone-600">
+                            <span className="mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center bg-teal-500">
+                              <svg className="w-2 h-2 text-white" viewBox="0 0 8 8" fill="none">
+                                <path d="M1.5 4L3 5.5L6.5 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            </span>
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
-                )}
+                </div>
+
+                {/* Upsell : Pack de cartes postales */}
+                <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 rounded-2xl p-5 sm:p-6 border border-amber-200/80 shadow-sm">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="bg-amber-100 p-2.5 rounded-xl shrink-0">
+                      <Gift size={20} className="text-amber-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-black text-stone-900 text-sm sm:text-base">
+                        Besoin de plusieurs cartes ?
+                      </h3>
+                      <p className="text-stone-500 text-xs mt-0.5">
+                        Achetez un pack et profitez de tarifs dégressifs — jusqu&apos;à{' '}
+                        <strong className="text-amber-700">1,40 €/carte</strong>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {PACK_TIERS.map((tier) => (
+                      <a
+                        key={tier.id}
+                        href="/connexion?redirect=/espace-client"
+                        className={cn(
+                          'relative flex flex-col items-center p-3 rounded-xl bg-white border transition-all hover:shadow-md hover:-translate-y-0.5 text-center group',
+                          tier.popular
+                            ? 'border-amber-300 shadow-sm'
+                            : 'border-amber-100 hover:border-amber-300',
+                        )}
+                      >
+                        {tier.popular && (
+                          <span className="absolute -top-2 px-2 py-0.5 bg-amber-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-sm">
+                            Populaire
+                          </span>
+                        )}
+                        <span className="font-black text-stone-900 text-sm mt-1">
+                          {tier.count} cartes
+                        </span>
+                        <span className="font-bold text-amber-700 text-base">{tier.price} €</span>
+                        <span className="text-[10px] text-stone-400 font-medium">
+                          {(tier.price / tier.count).toFixed(2).replace('.', ',')} €/carte
+                        </span>
+                        <span className="mt-1.5 text-[10px] font-bold text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+                          Voir <ChevronRight size={10} />
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
 
                 {/* Récap + CTA */}
                 <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <p className="text-sm text-stone-500">Formule sélectionnée</p>
-                      <p className="font-bold text-stone-900">
-                        {getSelectedPlan().emoji} {getSelectedPlan().label}
-                      </p>
+                      <p className="text-sm text-stone-500">Votre carte</p>
+                      <p className="font-bold text-stone-900">💌 Carte postale</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-stone-500">Total</p>
@@ -2960,7 +2838,7 @@ export default function EditorPage() {
                   </div>
 
                   {/* Promo Code */}
-                  {!codeSuccess && getAlbumPrice() > 0 && (
+                  {!codeSuccess && (
                     <div className="mb-4 pt-4 border-t border-stone-100">
                       <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2">
                         Code promo
@@ -3007,7 +2885,7 @@ export default function EditorPage() {
                   )}
 
                   <div className="flex flex-col gap-3">
-                    {getAlbumPrice() > 0 ? (
+                    {getAlbumPrice() > 0 && !codeSuccess && currentUser?.role !== 'admin' ? (
                       <Button
                         onClick={handlePayWithRevolut}
                         disabled={isRevolutRedirecting || isPublishing}
@@ -3026,9 +2904,10 @@ export default function EditorPage() {
                     ) : (
                       <Button
                         onClick={goNext}
+                        disabled={!canGoNext()}
                         className="w-full rounded-2xl font-bold py-6 h-auto bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-100 transition-all flex items-center justify-center gap-3 text-lg"
                       >
-                        Continuer gratuitement — 48 h
+                        Continuer
                         <ChevronRight size={20} />
                       </Button>
                     )}
@@ -3830,8 +3709,8 @@ export default function EditorPage() {
                         {/* Decorative background element */}
                         <div className="absolute -top-12 -right-12 w-32 h-32 bg-teal-200/20 rounded-full blur-3xl pointer-events-none" />
 
-                        {/* Paiement Revolut Section */}
-                        {paymentMethod === 'revolut' && getAlbumPrice() > 0 && (
+                        {/* Paiement Revolut Section (fallback si non payé) */}
+                        {!hasPaid && !codeSuccess && currentUser?.role !== 'admin' && getAlbumPrice() > 0 && (
                           <div className="mb-10 p-6 rounded-2xl bg-stone-900 text-white text-left shadow-2xl relative z-10">
                             <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
                               <CreditCard size={20} className="text-teal-400" /> Finalisez le
@@ -3839,7 +3718,7 @@ export default function EditorPage() {
                             </h3>
                             <p className="text-stone-400 text-sm mb-4">
                               Votre carte est prête, il ne manque que le règlement pour débloquer
-                              l&apos;album complet.
+                              le lien de partage.
                             </p>
                             <Button
                               onClick={handlePayWithRevolut}
@@ -3853,90 +3732,121 @@ export default function EditorPage() {
                           </div>
                         )}
 
-                        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg border border-teal-50 transform hover:scale-105 transition-transform duration-300">
-                          <Send size={36} className="text-teal-600" />
-                        </div>
-                        <h3 className="text-2xl font-serif font-black text-stone-900 mb-2 italic">
-                          Lien prêt à être envoyé !
-                        </h3>
-                        <p className="text-stone-500 text-[10px] sm:text-xs mb-8 uppercase tracking-[0.2em] font-black">
-                          Copiez le lien ou partagez directement
-                        </p>
+                        {hasPaid || codeSuccess || currentUser?.role === 'admin' ? (
+                          <>
+                            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg border border-teal-50 transform hover:scale-105 transition-transform duration-300">
+                              <Send size={36} className="text-teal-600" />
+                            </div>
+                            <h3 className="text-2xl font-serif font-black text-stone-900 mb-2 italic">
+                              Lien prêt à être envoyé !
+                            </h3>
+                            <p className="text-stone-500 text-[10px] sm:text-xs mb-8 uppercase tracking-[0.2em] font-black">
+                              Copiez le lien ou partagez directement
+                            </p>
 
-                        {/* Real-Time View Statistics */}
-                        {createdPostcardId && internalPostcardId && (
-                          <div className="flex justify-center mb-6">
-                            <RealTimeViewStats
-                              postcardId={internalPostcardId}
-                              initialViews={0}
-                              pollingInterval={5000}
-                            />
+                            {createdPostcardId && internalPostcardId && (
+                              <div className="flex justify-center mb-6">
+                                <RealTimeViewStats
+                                  postcardId={internalPostcardId}
+                                  initialViews={0}
+                                  pollingInterval={5000}
+                                />
+                              </div>
+                            )}
+
+                            <div className="mb-10 w-full max-w-xl mx-auto">
+                              <div className="flex flex-col sm:flex-row gap-3">
+                                <div className="relative flex-1 group">
+                                  <input
+                                    type="text"
+                                    readOnly
+                                    value={shareUrl}
+                                    className="w-full bg-white border border-stone-200 rounded-2xl px-5 py-4.5 text-sm text-stone-700 focus:outline-none shadow-inner font-bold text-center sm:text-left group-hover:border-stone-400 transition-colors"
+                                  />
+                                </div>
+                                <Button
+                                  onClick={copyToClipboard}
+                                  className="w-full sm:w-auto rounded-2xl bg-stone-900 hover:bg-black text-white px-8 py-4.5 h-auto shadow-xl flex items-center justify-center gap-3 font-black active:scale-95 transition-all"
+                                >
+                                  <Copy size={20} />
+                                  <span>COPIER LE LIEN</span>
+                                </Button>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+                              <a
+                                href={`mailto:?subject=Regarde ma carte postale !&body=J'ai créé une carte postale pour toi : ${shareUrl}`}
+                                className="flex items-center gap-2 px-5 py-3 bg-white text-stone-700 border border-stone-200 rounded-xl font-bold text-xs hover:bg-stone-50 transition-all shadow-sm active:scale-95"
+                              >
+                                <Mail size={18} className="text-stone-400" /> <span>Emails</span>
+                              </a>
+                              <a
+                                href={`sms:?body=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`}
+                                className="flex items-center gap-2 px-5 py-3 bg-stone-800 text-white rounded-xl font-bold text-xs hover:bg-stone-900 transition-all shadow-md active:scale-95"
+                              >
+                                <MessageSquare size={18} /> <span>SMS</span>
+                              </a>
+                              <a
+                                href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-5 py-3 bg-[#25D366] text-white rounded-xl font-bold text-xs hover:opacity-90 transition-all shadow-md active:scale-95"
+                              >
+                                <Share2 size={18} /> <span>WhatsApp</span>
+                              </a>
+                            </div>
+
+                            <Button
+                              type="button"
+                              onClick={() => setShowRecipientModal(true)}
+                              className="w-full max-w-sm mx-auto flex items-center justify-center gap-3 px-8 py-5 bg-gradient-to-br from-teal-400 via-teal-500 to-emerald-500 text-white rounded-2xl text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-teal-500/30 hover:shadow-teal-500/50 hover:scale-[1.02] active:scale-95 transition-all h-auto"
+                            >
+                              <Plane size={24} className="animate-bounce-subtle" />
+                              <span>VOIR COMME DESTINATAIRE</span>
+                            </Button>
+
+                            <div className="mt-4 flex justify-center">
+                              <Button
+                                variant="ghost"
+                                onClick={handleCreateVariant}
+                                className="text-stone-500 hover:text-teal-600 hover:bg-teal-50 rounded-xl px-4 py-2 font-bold text-xs sm:text-sm flex items-center gap-2 transition-all"
+                              >
+                                <Copy size={16} />
+                                <span>Créer une variante de cette carte</span>
+                              </Button>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="py-6 text-center">
+                            <div className="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                              <CreditCard size={36} className="text-stone-400" />
+                            </div>
+                            <h3 className="text-2xl font-serif font-black text-stone-900 mb-2">
+                              Débloquez votre lien de partage
+                            </h3>
+                            <p className="text-stone-500 text-sm mb-6 max-w-md mx-auto">
+                              Votre carte est prête ! Pour obtenir le lien de partage, réglez votre carte ou entrez un code promo.
+                            </p>
+                            <div className="flex flex-col gap-3 max-w-sm mx-auto">
+                              <Button
+                                onClick={() => setCurrentStep('payment')}
+                                className="w-full rounded-2xl font-bold py-5 h-auto bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-100 transition-all flex items-center justify-center gap-3 text-base"
+                              >
+                                <CreditCard size={20} />
+                                <span>Régler {getAlbumPrice().toFixed(2)} €</span>
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                onClick={() => setCurrentStep('payment')}
+                                className="w-full rounded-xl font-semibold py-3 h-auto text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-all"
+                              >
+                                <Gift size={16} className="mr-2" />
+                                Entrer un code promo
+                              </Button>
+                            </div>
                           </div>
                         )}
-
-                        <div className="mb-10 w-full max-w-xl mx-auto">
-                          <div className="flex flex-col sm:flex-row gap-3">
-                            <div className="relative flex-1 group">
-                              <input
-                                type="text"
-                                readOnly
-                                value={shareUrl}
-                                className="w-full bg-white border border-stone-200 rounded-2xl px-5 py-4.5 text-sm text-stone-700 focus:outline-none shadow-inner font-bold text-center sm:text-left group-hover:border-stone-400 transition-colors"
-                              />
-                            </div>
-                            <Button
-                              onClick={copyToClipboard}
-                              className="w-full sm:w-auto rounded-2xl bg-stone-900 hover:bg-black text-white px-8 py-4.5 h-auto shadow-xl flex items-center justify-center gap-3 font-black active:scale-95 transition-all"
-                            >
-                              <Copy size={20} />
-                              <span>COPIER LE LIEN</span>
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-                          <a
-                            href={`mailto:?subject=Regarde ma carte postale !&body=J'ai créé une carte postale pour toi : ${shareUrl}`}
-                            className="flex items-center gap-2 px-5 py-3 bg-white text-stone-700 border border-stone-200 rounded-xl font-bold text-xs hover:bg-stone-50 transition-all shadow-sm active:scale-95"
-                          >
-                            <Mail size={18} className="text-stone-400" /> <span>Emails</span>
-                          </a>
-                          <a
-                            href={`sms:?body=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`}
-                            className="flex items-center gap-2 px-5 py-3 bg-stone-800 text-white rounded-xl font-bold text-xs hover:bg-stone-900 transition-all shadow-md active:scale-95"
-                          >
-                            <MessageSquare size={18} /> <span>SMS</span>
-                          </a>
-                          <a
-                            href={`https://wa.me/?text=${encodeURIComponent(`Regarde ma carte postale ! ${shareUrl}`)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-5 py-3 bg-[#25D366] text-white rounded-xl font-bold text-xs hover:opacity-90 transition-all shadow-md active:scale-95"
-                          >
-                            <Share2 size={18} /> <span>WhatsApp</span>
-                          </a>
-                        </div>
-
-                        <Button
-                          type="button"
-                          onClick={() => setShowRecipientModal(true)}
-                          className="w-full max-w-sm mx-auto flex items-center justify-center gap-3 px-8 py-5 bg-gradient-to-br from-teal-400 via-teal-500 to-emerald-500 text-white rounded-2xl text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-teal-500/30 hover:shadow-teal-500/50 hover:scale-[1.02] active:scale-95 transition-all h-auto"
-                        >
-                          <Plane size={24} className="animate-bounce-subtle" />
-                          <span>VOIR COMME DESTINATAIRE</span>
-                        </Button>
-
-                        {/* Bouton Créer une variante */}
-                        <div className="mt-4 flex justify-center">
-                          <Button
-                            variant="ghost"
-                            onClick={handleCreateVariant}
-                            className="text-stone-500 hover:text-teal-600 hover:bg-teal-50 rounded-xl px-4 py-2 font-bold text-xs sm:text-sm flex items-center gap-2 transition-all"
-                          >
-                            <Copy size={16} />
-                            <span>Créer une variante de cette carte</span>
-                          </Button>
-                        </div>
                       </div>
                     )}
                   </div>
