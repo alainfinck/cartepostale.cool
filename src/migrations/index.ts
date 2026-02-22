@@ -1,9 +1,9 @@
-import * as migration_20260222_204641_add_credits_to_user from './20260222_204641_add_credits_to_user';
+import * as migration_20260222_210000_add_credits_column from './20260222_210000_add_credits_column'
 
 export const migrations = [
   {
-    up: migration_20260222_204641_add_credits_to_user.up,
-    down: migration_20260222_204641_add_credits_to_user.down,
-    name: '20260222_204641_add_credits_to_user'
+    up: migration_20260222_210000_add_credits_column.up,
+    down: migration_20260222_210000_add_credits_column.down,
+    name: '20260222_210000_add_credits_column',
   },
-];
+]
