@@ -362,6 +362,14 @@ export interface Postcard {
    * Autoriser l’ajout de photos via le lien de contribution
    */
   isContributionEnabled?: boolean | null;
+  /**
+   * Activer l'effet carte à gratter
+   */
+  scratchCardEnabled?: boolean | null;
+  /**
+   * Image de couverture à gratter
+   */
+  scratchCardImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -961,6 +969,8 @@ export interface PostcardsSelect<T extends boolean = true> {
   isPublic?: T;
   contributionToken?: T;
   isContributionEnabled?: T;
+  scratchCardEnabled?: T;
+  scratchCardImage?: T;
   updatedAt?: T;
   createdAt?: T;
 }
