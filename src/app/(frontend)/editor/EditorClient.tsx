@@ -53,6 +53,7 @@ import {
   Volume2,
   Loader2,
   ChevronUp,
+  Wand2,
 } from 'lucide-react'
 import {
   Postcard,
@@ -83,6 +84,7 @@ import {
 } from '@/lib/image-processing'
 import { extractExifData, ExifData } from '@/lib/extract-exif'
 import { UnsplashSearchModal } from '@/components/UnsplashSearchModal'
+import { AiImageGeneratorModal, AI_GENERATION_PRICE_EUR } from '@/components/editor/AiImageGeneratorModal'
 import UserGalleryModal from '@/components/editor/UserGalleryModal'
 import StickerGallery from '@/components/editor/StickerGallery'
 import StickerLayer from '@/components/editor/StickerLayer'
@@ -798,6 +800,8 @@ export default function EditorPage() {
   const [recipientsSentCount, setRecipientsSentCount] = useState<number | null>(null)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [showUnsplashModal, setShowUnsplashModal] = useState(false)
+  const [showAiGeneratorModal, setShowAiGeneratorModal] = useState(false)
+  const [hasAiGenerationPaid, setHasAiGenerationPaid] = useState(false)
   const [showUserGalleryModal, setShowUserGalleryModal] = useState<'front' | 'back' | null>(null)
   const [showStickerGallery, setShowStickerGallery] = useState(false)
   const [stickers, setStickers] = useState<StickerPlacement[]>([])
@@ -962,6 +966,18 @@ export default function EditorPage() {
       }
     }
   }, [searchParams, currentStep])
+
+  // Handle AI generation payment success return
+  useEffect(() => {
+    const aiPaid = searchParams.get('ai_paid')
+    if (aiPaid === 'true') {
+      setHasAiGenerationPaid(true)
+      setShowAiGeneratorModal(true)
+      const url = new URL(window.location.href)
+      url.searchParams.delete('ai_paid')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [searchParams])
 
   // Meta Pixel — AddToCart quand le premier média premium est ajouté
   const prevIsPremiumRef = useRef(false)
@@ -1382,6 +1398,68 @@ export default function EditorPage() {
     },
     [urlToResizedDataUrl],
   )
+
+  const handleSelectAiImage = useCallback(
+    async (imageUrl: string) => {
+      setShowAiGeneratorModal(false)
+      setUploadedFileName('Image IA')
+      setFrontImageKey(null)
+      setFrontImageMimeType(null)
+      setFrontImageFilesize(null)
+      setFrontImageCrop({ scale: 1, x: 50, y: 50 })
+      setFrontImageFilter(DEFAULT_FRONT_FILTER)
+
+      try {
+        const resized = await urlToResizedDataUrl(imageUrl)
+        setFrontImage(resized)
+      } catch (err) {
+        console.error('Error processing AI image:', err)
+        setFrontImage(imageUrl)
+      }
+
+      void confetti({
+        particleCount: 60,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#8b5cf6', '#a855f7', '#c084fc', '#14b8a6'],
+      })
+    },
+    [urlToResizedDataUrl],
+  )
+
+  const handleAiPayment = useCallback(async () => {
+    const amount = AI_GENERATION_PRICE_EUR
+    setRevolutError(null)
+    setIsRevolutRedirecting(true)
+
+    try {
+      const res = await fetch('/api/revolut/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amountEur: amount,
+          description: 'Option IA — Génération d\'image CartePostale.cool',
+          customerEmail: currentUser?.email || senderEmail || undefined,
+          redirectPath: '/editor?ai_paid=true',
+          metadata: { feature: 'ai_image_generation' },
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setRevolutError(data.error || 'Impossible de créer le paiement.')
+        setIsRevolutRedirecting(false)
+        return
+      }
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url
+        return
+      }
+      setRevolutError('URL de paiement non disponible.')
+    } catch {
+      setRevolutError('Erreur réseau lors du paiement.')
+    }
+    setIsRevolutRedirecting(false)
+  }, [currentUser?.email, senderEmail])
 
   const handleCropImgLoad = useCallback(() => {
     const img = cropImgRef.current
@@ -2418,6 +2496,39 @@ export default function EditorPage() {
                     </Button>
                   </div>
                 )}
+
+                {/* AI Image Generation (paid option) */}
+                <div className="mb-8">
+                  <button
+                    type="button"
+                    onClick={() => setShowAiGeneratorModal(true)}
+                    className="w-full flex items-center gap-4 rounded-2xl border-2 border-dashed border-violet-300 bg-gradient-to-r from-violet-50/80 to-fuchsia-50/80 px-5 py-4 text-left transition-all hover:border-violet-400 hover:shadow-md hover:shadow-violet-100/50 hover:-translate-y-0.5 group"
+                  >
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-100 group-hover:bg-violet-200 transition-colors">
+                      <Wand2
+                        size={22}
+                        className="text-violet-600 group-hover:text-violet-700 transition-colors"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-violet-800">
+                          Générer par IA
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-200/80 text-violet-700 text-[10px] font-bold uppercase tracking-wider">
+                          <Sparkles size={10} />
+                          Premium
+                        </span>
+                      </div>
+                      <p className="text-xs text-violet-600/70 mt-0.5">
+                        Créez une image unique par IA — {AI_GENERATION_PRICE_EUR.toFixed(2).replace('.', ',')} &euro;
+                      </p>
+                    </div>
+                    <span className="text-violet-400 shrink-0 group-hover:text-violet-600 transition-colors">
+                      &rarr;
+                    </span>
+                  </button>
+                </div>
 
                 {/* Retouche photo : filtres + recadrage/zoom dans un modal */}
                 {frontImage && (
@@ -4919,6 +5030,13 @@ export default function EditorPage() {
         onClose={() => setShowUnsplashModal(false)}
         onSelect={handleSelectUnsplashImage}
         location={location}
+      />
+      <AiImageGeneratorModal
+        isOpen={showAiGeneratorModal}
+        onClose={() => setShowAiGeneratorModal(false)}
+        onSelect={handleSelectAiImage}
+        hasPaid={hasAiGenerationPaid}
+        onRequestPayment={handleAiPayment}
       />
       {/* Modal galerie stickers */}
       {showStickerGallery && (

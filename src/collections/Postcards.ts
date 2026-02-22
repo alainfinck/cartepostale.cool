@@ -204,6 +204,14 @@ export const Postcards: CollectionConfig = {
       defaultValue: false,
     },
     {
+      name: 'isAiGenerated',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Image de face générée par IA (NanoBanana)',
+      },
+    },
+    {
       name: 'agency',
       type: 'relationship',
       relationTo: 'agencies',
