@@ -989,9 +989,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {postcard.frontCaption?.trim() && !postcard.frontEmoji && (
                 <div
                   className={cn(
-                    'z-20 w-fit max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-3rem)] px-3 py-2 sm:px-4 sm:py-2.5 rounded-md border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300',
+                    'z-20 w-fit max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-3rem)] px-3 py-2 sm:px-4 sm:py-2.5 rounded-md border border-white/50 transition-all',
                     usePositionedCaption ? 'absolute' : 'absolute left-4 sm:left-6 bottom-14 sm:bottom-16',
                     onCaptionPositionChange && 'cursor-grab active:cursor-grabbing touch-none select-none',
+                    isDraggingCaption
+                      ? 'shadow-[0_12px_40px_rgb(0,0,0,0.2)] ring-2 ring-teal-400/50'
+                      : 'shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_10px_35px_rgb(0,0,0,0.15)]',
                   )}
                   style={
                     usePositionedCaption
@@ -1000,6 +1003,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           top: `${captionPos.y}%`,
                           transform: 'translate(-50%, -50%)',
                           backgroundColor: frontTextBgColor,
+                          willChange: isDraggingCaption ? 'transform, left, top' : 'auto',
                         }
                       : { backgroundColor: 'rgba(255,255,255,0.65)' }
                   }
@@ -1034,12 +1038,15 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {postcard.frontCaption?.trim() && postcard.frontEmoji && (
                 <div
                   className={cn(
-                    'z-20 flex items-center gap-3 rounded-2xl sm:rounded-3xl border border-white/50 px-5 py-3.5 sm:px-6 sm:py-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 w-fit max-w-[calc(100%-2rem)]',
+                    'z-20 flex items-center gap-3 rounded-2xl sm:rounded-3xl border border-white/50 px-5 py-3.5 sm:px-6 sm:py-4 transition-all w-fit max-w-[calc(100%-2rem)]',
                     usePositionedCaption
                       ? 'absolute'
                       : 'absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6',
                     onCaptionPositionChange &&
                       'cursor-grab active:cursor-grabbing touch-none select-none',
+                    isDraggingCaption
+                      ? 'shadow-[0_12px_40px_rgb(0,0,0,0.2)] ring-2 ring-teal-400/50'
+                      : 'shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_10px_35px_rgb(0,0,0,0.15)]',
                   )}
                   style={
                     usePositionedCaption
@@ -1048,6 +1055,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           top: `${captionPos.y}%`,
                           transform: 'translate(-50%, -50%)',
                           backgroundColor: frontTextBgColor,
+                          willChange: isDraggingCaption ? 'transform, left, top' : 'auto',
                         }
                       : { backgroundColor: frontTextBgColor }
                   }
