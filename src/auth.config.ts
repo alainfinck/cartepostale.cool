@@ -3,13 +3,9 @@ import Google from 'next-auth/providers/google'
 import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 
-// Support multiple env var naming conventions (Auth.js, custom, Next.js public)
-const googleClientId =
-  process.env.GOOGLE_CLIENT_ID ||
-  process.env.AUTH_GOOGLE_ID ||
-  process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-const googleClientSecret =
-  process.env.GOOGLE_CLIENT_SECRET || process.env.AUTH_GOOGLE_SECRET
+// Variables Coolify : GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+const googleClientId = process.env.GOOGLE_CLIENT_ID
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET
 
 export const authConfig: NextAuthConfig = {
   secret: process.env.AUTH_SECRET || process.env.PAYLOAD_SECRET,
