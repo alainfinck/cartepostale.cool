@@ -86,6 +86,8 @@ export interface Postcard {
   password?: string
   contributionToken?: string
   isContributionEnabled?: boolean
+  scratchCardEnabled?: boolean
+  scratchCardImage?: string
 }
 
 export interface Sticker {

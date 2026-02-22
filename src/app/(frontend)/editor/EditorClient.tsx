@@ -734,6 +734,7 @@ export default function EditorPage() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [allowComments, setAllowComments] = useState(true)
   const [isPublic, setIsPublic] = useState(false)
+  const [scratchCardEnabled, setScratchCardEnabled] = useState(false)
 
   const [stampStyle, setStampStyle] = useState<Postcard['stampStyle']>('classic')
   const [stampLabel, setStampLabel] = useState('Digital Poste')
@@ -1703,6 +1704,7 @@ export default function EditorPage() {
     stickers,
     mediaItems,
     coords: coords || undefined,
+    scratchCardEnabled,
   }
 
   /** Aperçu : à l'étape Rédaction, si un modèle verso est choisi, on affiche le verso avec son style (timbre, message, lieu). */
@@ -1938,6 +1940,7 @@ export default function EditorPage() {
         recipients: [],
         allowComments,
         isPublic,
+        scratchCardEnabled,
         password: isPasswordProtected ? password : undefined,
         ...(audioUrl && {
           audioMessage: await uploadAudio(), // Upload and get key
@@ -3158,6 +3161,30 @@ export default function EditorPage() {
                         />
                       </div>
                     )}
+
+                    <div className="w-px h-8 bg-stone-200 hidden sm:block" />
+
+                    <div
+                      className="flex items-center gap-3 cursor-pointer group"
+                      onClick={() => setScratchCardEnabled(!scratchCardEnabled)}
+                    >
+                      <div
+                        className={cn(
+                          'w-5 h-5 rounded border transition-all flex items-center justify-center',
+                          scratchCardEnabled
+                            ? 'bg-amber-500 border-amber-500 text-white'
+                            : 'border-stone-300 bg-white group-hover:border-amber-300',
+                        )}
+                      >
+                        {scratchCardEnabled && <Check size={14} strokeWidth={3} />}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-stone-700">Carte à gratter</span>
+                        <span className="text-[10px] text-stone-400 uppercase tracking-wider font-medium">
+                          {scratchCardEnabled ? 'Le destinataire grattera pour découvrir' : 'Effet surprise désactivé'}
+                        </span>
+                      </div>
+                    </div>
                   </section>
 
                   {/* SECTION MESSAGE VOCAL */}

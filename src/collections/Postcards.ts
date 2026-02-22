@@ -32,7 +32,7 @@ export const Postcards: CollectionConfig = {
       name: 'frontImage',
       type: 'upload',
       relationTo: 'media',
-      required: false, // Can use frontImageURL instead
+      required: false,
     },
     {
       name: 'frontImageURL',
@@ -45,14 +45,14 @@ export const Postcards: CollectionConfig = {
       name: 'frontCaption',
       type: 'text',
       admin: {
-        description: 'Texte court affiché sur la face avant',
+        description: 'Texte court affich\u00e9 sur la face avant',
       },
     },
     {
       name: 'frontEmoji',
       type: 'text',
       admin: {
-        description: 'Emoji affiché près du texte de la face avant',
+        description: 'Emoji affich\u00e9 pr\u00e8s du texte de la face avant',
       },
     },
     {
@@ -90,7 +90,7 @@ export const Postcards: CollectionConfig = {
       ],
     },
     {
-      name: 'recipientName', // Primary/First recipient name for display
+      name: 'recipientName',
       type: 'text',
       required: false,
     },
@@ -102,7 +102,7 @@ export const Postcards: CollectionConfig = {
     {
       name: 'senderEmail',
       type: 'email',
-      required: false, // Optional for now, but we'll collect it
+      required: false,
     },
     {
       name: 'location',
@@ -193,7 +193,7 @@ export const Postcards: CollectionConfig = {
           name: 'note',
           type: 'textarea',
           admin: {
-            description: 'Note ou légende pour cette photo/vidéo',
+            description: 'Note ou l\u00e9gende pour cette photo/vid\u00e9o',
           },
         },
       ],
@@ -225,7 +225,7 @@ export const Postcards: CollectionConfig = {
       name: 'stickers',
       type: 'json',
       admin: {
-        description: 'Liste des autocollants placés sur la carte (ID, x, y, scale, rotation)',
+        description: 'Liste des autocollants plac\u00e9s sur la carte (ID, x, y, scale, rotation)',
       },
     },
     {
@@ -241,7 +241,7 @@ export const Postcards: CollectionConfig = {
       type: 'checkbox',
       defaultValue: true,
       admin: {
-        description: 'Si décoché, la carte sera privée et non listée',
+        description: 'Si d\u00e9coch\u00e9, la carte sera priv\u00e9e et non list\u00e9e',
       },
     },
     {
@@ -250,7 +250,7 @@ export const Postcards: CollectionConfig = {
       index: true,
       admin: {
         readOnly: true,
-        description: 'Token secret pour permettre à des tiers d’ajouter des photos',
+        description: 'Token secret pour permettre \u00e0 des tiers d\u2019ajouter des photos',
       },
     },
     {
@@ -258,7 +258,26 @@ export const Postcards: CollectionConfig = {
       type: 'checkbox',
       defaultValue: true,
       admin: {
-        description: 'Autoriser l’ajout de photos via le lien de contribution',
+        description: 'Autoriser l\u2019ajout de photos via le lien de contribution',
+      },
+    },
+    {
+      name: 'scratchCardEnabled',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description:
+          'Activer l\u2019effet carte \u00e0 gratter : le destinataire doit gratter l\u2019image pour r\u00e9v\u00e9ler le message ou la photo.',
+      },
+    },
+    {
+      name: 'scratchCardImage',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description:
+          'Image de couverture \u00e0 gratter (si vide, un visuel par d\u00e9faut sera utilis\u00e9).',
+        condition: (data) => data.scratchCardEnabled === true,
       },
     },
   ],
