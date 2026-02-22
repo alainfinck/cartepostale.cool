@@ -5,7 +5,7 @@
  * - Agency record with logo & branding
  * - Gallery categories: Mer & Plages, Villes d'Art, Montagnes, Hôtels & Resorts
  * - Gallery tags: europe, méditerranée, tropical, luxe, culture, famille
- * - Gallery images using public Unsplash/demo images
+ * - Gallery images using local files in public/images/demo/
  * - A demo agency user (agence role)
  *
  * Run: npx tsx scripts/seed-demo-agency.ts
@@ -13,6 +13,7 @@
 
 import dotenv from 'dotenv'
 import path from 'path'
+import fs from 'fs'
 import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -26,12 +27,13 @@ type PayloadClient = Awaited<ReturnType<typeof getPayload>>
 
 const DEMO_AGENCY_CODE = 'voyages-lumiere-demo'
 const DEMO_USER_EMAIL = 'demo@voyages-lumiere.fr'
+const LOCAL_IMAGES_DIR = path.resolve(__dirname, '../public/images/demo')
 
-// Public demo image URLs (from Cloudflare R2 public bucket or Unsplash demo)
+// Local demo images (matching the files the user uploaded)
 const DEMO_IMAGES = [
   // Mer & Plages
   {
-    url: 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg',
+    filename: 'demo_beach_maldives_1771746866734.png',
     alt: 'Plage tropicale aux Maldives',
     title: 'Maldives – Plage paradisiaque',
     caption: "Les eaux cristallines des Maldives, parfaites pour s'évader",
@@ -40,44 +42,44 @@ const DEMO_IMAGES = [
     order: 1,
   },
   {
-    url: 'https://img.cartepostale.cool/demo/photo-1544644181-1484b3fdfc62.jpg',
-    alt: 'Plage de sable blanc en Thaïlande',
-    title: 'Thaïlande – Ko Phi Phi',
-    caption: "Falaises calcaires et mer turquoise au coeur de l'Asie du Sud-Est",
+    filename: 'photo-1507525428034-b723cf961d3e.jpg',
+    alt: 'Plage turquoise',
+    title: 'Destinations Tropicales',
+    caption: 'Le bleu turquoise à perte de vue',
     categorySlug: 'mer-plages',
     tags: ['tropical', 'famille'],
     order: 2,
   },
   {
-    url: 'https://img.cartepostale.cool/demo/photo-1519046904884-53103b34b206.jpg',
-    alt: 'Coucher de soleil sur la plage',
-    title: 'Îles Canaries – Fuerteventura',
-    caption: "Les plages sauvages des Canaries baignées par l'Atlantique",
+    filename: 'photo-1488646953014-85cb44e25828.jpg',
+    alt: 'Vue aérienne plage',
+    title: "L'aventure commence ici",
+    caption: 'Prêt pour le grand départ ?',
     categorySlug: 'mer-plages',
     tags: ['europe', 'famille'],
     order: 3,
   },
   // Villes d'Art & Culture
   {
-    url: 'https://img.cartepostale.cool/demo/photo-1499856374031-44e31b8f5d63.jpg',
+    filename: 'demo_paris_eiffel_1771746884932.png',
     alt: 'Tour Eiffel Paris',
     title: 'Paris – La Ville Lumière',
-    caption: 'Paris, capitale du romantisme et de la haute couture',
+    caption: "Paris, capitale du romantisme et de l'art de vivre",
     categorySlug: 'villes-art',
     tags: ['europe', 'culture'],
     order: 4,
   },
   {
-    url: 'https://img.cartepostale.cool/demo/photo-1467269204594-9661b134dd2b.jpg',
-    alt: 'Vieille ville de Prague',
-    title: 'Prague – La Ville aux Cent Clochers',
-    caption: 'La magie médiévale de la capitale tchèque',
+    filename: 'photo-1534113414509-0eec2bfb493f.jpg',
+    alt: 'Architecture classique',
+    title: 'Patrimoine & Culture',
+    caption: "Découvrez l'histoire des plus grandes cités",
     categorySlug: 'villes-art',
     tags: ['europe', 'culture'],
     order: 5,
   },
   {
-    url: 'https://img.cartepostale.cool/demo/photo-1526392060635-9d6019884377.jpg',
+    filename: 'demo_morocco_1771746946024.png',
     alt: 'Médina de Marrakech',
     title: 'Marrakech – La Ville Ocre',
     caption: 'Les souks colorés et la magie orientale de Marrakech',
@@ -87,7 +89,7 @@ const DEMO_IMAGES = [
   },
   // Méditerranée & Îles
   {
-    url: 'https://img.cartepostale.cool/demo/photo-1570077188670-e3a8d69ac5ff.jpg',
+    filename: 'demo_santorini_1771746924198.png',
     alt: 'Santorin vue panoramique',
     title: 'Santorin – Coucher de soleil à Oia',
     caption: "Les maisons blanches et dômes bleus emblématiques de l'île volcanique",
@@ -96,26 +98,26 @@ const DEMO_IMAGES = [
     order: 7,
   },
   {
-    url: 'https://img.cartepostale.cool/demo/photo-1541628951107-a9af5346a3e4.jpg',
-    alt: 'Côte Amalfitaine Italie',
-    title: 'Côte Amalfitaine – Positano',
-    caption: 'Les villages colorés suspendus au-dessus de la Méditerranée',
+    filename: 'photo-1520629411511-eb4407764282.jpg',
+    alt: 'Méditerranée',
+    title: 'Escales Méditerranéennes',
+    caption: 'Un air de dolce vita',
     categorySlug: 'mediterranee',
     tags: ['europe', 'méditerranée', 'culture'],
     order: 8,
   },
   // Hôtels & Resorts
   {
-    url: 'https://img.cartepostale.cool/demo/photo-1582719478250-c89cae4dc85b.jpg',
-    alt: 'Chambre overwater bungalow',
-    title: 'Overwater Bungalow – Bora Bora',
-    caption: "Séjour d'exception dans un bungalow sur pilotis au-dessus du lagon",
+    filename: 'photo-1520250497591-112f2f40a3f4.jpg',
+    alt: 'Piscine Resort',
+    title: 'Expériences Bien-être',
+    caption: 'Détente absolue dans nos hôtels partenaires',
     categorySlug: 'hotels-resorts',
     tags: ['luxe', 'tropical'],
     order: 9,
   },
   {
-    url: 'https://img.cartepostale.cool/demo/photo-1551882547-ff40c63fe2fa.jpg',
+    filename: 'demo_hotel_pool_1771746967145.png',
     alt: 'Piscine à débordement resort',
     title: 'Resort de Luxe – Piscine à débordement',
     caption: "La piscine à débordement avec vue sur l'océan, l'apogée de la détente",
@@ -124,10 +126,10 @@ const DEMO_IMAGES = [
     order: 10,
   },
   {
-    url: 'https://img.cartepostale.cool/demo/photo-1571003123894-1f0594d2b5d9.jpg',
-    alt: 'Suite Riad Maroc',
-    title: 'Riad de Luxe – Marrakech',
-    caption: "L'authenticité marocaine dans un riad entièrement rénové",
+    filename: 'photo-1556761175-5973dc0f32e7.jpg',
+    alt: 'Intérieur de standing',
+    title: "Hôtellerie d'Exception",
+    caption: 'Le confort ultime pour votre séjour',
     categorySlug: 'hotels-resorts',
     tags: ['luxe', 'culture'],
     order: 11,
@@ -174,17 +176,15 @@ const adminRequestStub: Partial<PayloadRequest> = {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     collection: 'users',
-  },
+  } as any,
 }
 
-async function fetchImageAsBuffer(url: string): Promise<Buffer> {
-  console.log(`  Fetching: ${url}`)
-  const res = await fetch(url, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-  })
-  if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`)
-  const ab = await res.arrayBuffer()
-  return Buffer.from(ab)
+function getLocalFileAsBuffer(filename: string): Buffer {
+  const filePath = path.join(LOCAL_IMAGES_DIR, filename)
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Local file not found: ${filePath}`)
+  }
+  return fs.readFileSync(filePath)
 }
 
 async function cleanup(payload: PayloadClient) {
@@ -198,34 +198,35 @@ async function cleanup(payload: PayloadClient) {
     depth: 0,
   })
 
-  if (existingAgency.docs.length > 0) {
-    const agencyId = existingAgency.docs[0].id
+  const agencyDocs = existingAgency.docs
+  if (agencyDocs.length > 0) {
+    const agencyIdValue = agencyDocs[0].id
 
     // Delete gallery items for this agency
     await payload.delete({
       collection: 'gallery',
-      where: { agency: { equals: agencyId } },
+      where: { agency: { equals: agencyIdValue } },
     })
     console.log('  ✓ Deleted gallery items')
 
     // Delete gallery categories for this agency
     await payload.delete({
       collection: 'gallery-categories',
-      where: { agency: { equals: agencyId } },
+      where: { agency: { equals: agencyIdValue } },
     })
     console.log('  ✓ Deleted gallery categories')
 
     // Delete gallery tags for this agency
     await payload.delete({
       collection: 'gallery-tags',
-      where: { agency: { equals: agencyId } },
+      where: { agency: { equals: agencyIdValue } },
     })
     console.log('  ✓ Deleted gallery tags')
 
     // Delete the agency
     await payload.delete({
       collection: 'agencies',
-      id: agencyId,
+      id: agencyIdValue,
     })
     console.log('  ✓ Deleted agency')
   }
@@ -239,32 +240,49 @@ async function cleanup(payload: PayloadClient) {
 }
 
 async function main() {
-  console.log('🚀 Starting demo agency seed: Voyages Lumière\n')
+  console.log('🚀 Starting demo agency seed: Voyages Lumière (Local Assets)\n')
   const payload = await getPayload({ config })
 
   await cleanup(payload)
 
-  // ── 1. Create Agency Logo (via URL as external URL stored in media) ──
+  // ── 1. Create Agency Logo (using local demo logo) ──
   console.log('\n📸 Creating agency logo media...')
-  let logoMedia: { id: number } | null = null
+  let logoMediaId: string | number | null = null
   try {
-    const logoBuffer = await fetchImageAsBuffer(
-      'https://img.cartepostale.cool/demo/photo-1486406146926-c627a92ad1ab.jpg',
-    )
+    const logoFilename = 'demo_agency_logo_1771746901678.png'
+    const logoBuffer = getLocalFileAsBuffer(logoFilename)
     const logoDoc = await payload.create({
       collection: 'media',
       data: { alt: 'Logo Voyages Lumière' },
       file: {
         data: logoBuffer,
-        mimetype: 'image/jpeg',
-        name: 'voyages-lumiere-logo.jpg',
+        mimetype: 'image/png',
+        name: `voyages-lumiere-logo-${Date.now()}.png`,
         size: logoBuffer.length,
       },
     })
-    logoMedia = { id: (logoDoc as any).id }
+    logoMediaId = logoDoc.id
     console.log('  ✓ Logo created')
   } catch (e) {
-    console.warn('  ⚠ Could not fetch logo image, continuing without logo:', (e as Error).message)
+    console.warn('  ⚠ Could not find local logo, trying default one:', (e as Error).message)
+    try {
+      const altLogo = 'photo-1486406146926-c627a92ad1ab.jpg'
+      const logoBuffer = getLocalFileAsBuffer(altLogo)
+      const logoDoc = await payload.create({
+        collection: 'media',
+        data: { alt: 'Logo Voyages Lumière' },
+        file: {
+          data: logoBuffer,
+          mimetype: 'image/jpeg',
+          name: `voyages-lumiere-logo-${Date.now()}.jpg`,
+          size: logoBuffer.length,
+        },
+      })
+      logoMediaId = logoDoc.id
+      console.log('  ✓ Logo created (via fallback)')
+    } catch (fallbackErr) {
+      console.warn('  ⚠ No logo found at all, continuing without logo')
+    }
   }
 
   // ── 2. Create Agency ──
@@ -282,7 +300,7 @@ async function main() {
       email: 'contact@voyages-lumiere.fr',
       website: 'https://voyages-lumiere.fr',
       primaryColor: '#0d9488', // teal-600
-      ...(logoMedia ? { logo: logoMedia.id } : {}),
+      logo: logoMediaId || undefined,
       imageBank: [],
       qrCodeUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://cartepostale.cool'}/agences/demo`,
     },
@@ -291,7 +309,7 @@ async function main() {
 
   // ── 3. Create Gallery Categories ──
   console.log('\n📂 Creating gallery categories...')
-  const categoryMap: Record<string, number> = {}
+  const categoryMap: Record<string, string | number> = {}
   for (const cat of CATEGORIES) {
     const doc = await payload.create({
       collection: 'gallery-categories',
@@ -301,13 +319,13 @@ async function main() {
         agency: agency.id,
       } as any,
     })
-    categoryMap[cat.slug] = (doc as any).id
+    categoryMap[cat.slug] = doc.id
     console.log(`  ✓ Category: ${cat.name}`)
   }
 
   // ── 4. Create Gallery Tags ──
   console.log('\n🏷️  Creating gallery tags...')
-  const tagMap: Record<string, number> = {}
+  const tagMap: Record<string, string | number> = {}
   for (const tag of TAGS) {
     const doc = await payload.create({
       collection: 'gallery-tags',
@@ -316,49 +334,37 @@ async function main() {
         agency: agency.id,
       } as any,
     })
-    tagMap[tag.slug] = (doc as any).id
+    tagMap[tag.slug] = doc.id
     console.log(`  ✓ Tag: ${tag.name}`)
   }
 
   // ── 5. Create Gallery Images ──
-  console.log('\n🖼️  Creating gallery images (fetching from R2)...')
+  console.log('\n🖼️  Creating gallery images (using local assets)...')
   let successCount = 0
   let errorCount = 0
 
   for (const img of DEMO_IMAGES) {
     try {
       // Create media record
-      let mediaId: number | null = null
+      let mediaId: string | number | null = null
       try {
-        const buffer = await fetchImageAsBuffer(img.url)
-        const ext = img.url.split('.').pop()?.toLowerCase() || 'jpg'
-        const mime = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`
+        const buffer = getLocalFileAsBuffer(img.filename)
+        const ext = img.filename.split('.').pop()?.toLowerCase() || 'jpg'
+        const mime = ext === 'png' ? 'image/png' : 'image/jpeg'
         const mediaDoc = await payload.create({
           collection: 'media',
           data: { alt: img.alt },
           file: {
             data: buffer,
             mimetype: mime,
-            name: `demo-gallery-${Date.now()}-${img.order}.${ext}`,
+            name: `demo-gallery-${img.order}-${Date.now()}.${ext}`,
             size: buffer.length,
           },
         })
-        mediaId = (mediaDoc as any).id
-      } catch (fetchErr) {
-        console.warn(`  ⚠ Cannot fetch image for "${img.title}", creating placeholder media`)
-        // Create placeholder media record with a minimal buffer
-        const placeholder = Buffer.from('placeholder', 'utf8')
-        const mediaDoc = await payload.create({
-          collection: 'media',
-          data: { alt: img.alt },
-          file: {
-            data: placeholder,
-            mimetype: 'image/jpeg',
-            name: `demo-gallery-placeholder-${img.order}.jpg`,
-            size: placeholder.length,
-          },
-        })
-        mediaId = (mediaDoc as any).id
+        mediaId = mediaDoc.id
+      } catch (fileErr) {
+        console.warn(`  ⚠ Cannot find local image for "${img.title}":`, (fileErr as Error).message)
+        continue
       }
 
       // Resolve category and tag IDs
@@ -370,10 +376,10 @@ async function main() {
         collection: 'gallery',
         data: {
           title: img.title,
-          image: mediaId as number,
+          image: mediaId as any,
           caption: img.caption,
-          category: catId || undefined,
-          tags: tagIds,
+          category: catId as any,
+          tags: tagIds as any,
           agency: agency.id,
           order: img.order,
           views: Math.floor(Math.random() * 150) + 20,
@@ -392,7 +398,7 @@ async function main() {
   // ── 6. Create Demo Agency User ──
   console.log('\n👤 Creating demo agency user...')
   try {
-    const demoUser = await payload.create({
+    await payload.create({
       collection: 'users',
       data: {
         email: DEMO_USER_EMAIL,
@@ -403,11 +409,11 @@ async function main() {
         plan: 'pro',
         cardsCreated: 0,
       } as any,
-      req: adminRequestStub,
+      req: adminRequestStub as any,
     })
-    console.log(`  ✓ Demo user created: ${DEMO_USER_EMAIL} (agency ID: ${agency.id})`)
+    console.log(`  ✓ Demo user created: ${DEMO_USER_EMAIL}`)
   } catch (e) {
-    console.warn('  ⚠ Could not create demo user (may already exist):', (e as Error).message)
+    console.warn('  ⚠ Could not create demo user:', (e as Error).message)
   }
 
   // ── Summary ──
@@ -422,6 +428,8 @@ async function main() {
   console.log('\n🔗 Demo page: /agences/demo')
   console.log('🔗 Agency login: /espace-agence/login')
   console.log('═'.repeat(60))
+
+  process.exit(0)
 }
 
 main().catch((err) => {

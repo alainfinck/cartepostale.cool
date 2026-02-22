@@ -1,7 +1,10 @@
 import { headers } from 'next/headers'
 import type { User } from '@/payload-types'
 
-export type CurrentUser = Pick<User, 'id' | 'email' | 'name' | 'role' | 'plan' | 'company' | 'cardsCreated'> & {
+export type CurrentUser = Pick<
+  User,
+  'id' | 'email' | 'name' | 'role' | 'plan' | 'company' | 'cardsCreated' | 'credits'
+> & {
   agency?: number | null
 }
 
@@ -25,7 +28,12 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     if (!res.ok || !data?.user) return null
     const u = data.user as User
     const agencyRaw = (u as any).agency
-    const agencyId = typeof agencyRaw === 'object' && agencyRaw ? agencyRaw.id : (typeof agencyRaw === 'number' ? agencyRaw : null)
+    const agencyId =
+      typeof agencyRaw === 'object' && agencyRaw
+        ? agencyRaw.id
+        : typeof agencyRaw === 'number'
+          ? agencyRaw
+          : null
     return {
       id: u.id,
       email: u.email,
@@ -34,6 +42,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
       plan: u.plan ?? null,
       company: u.company ?? null,
       cardsCreated: u.cardsCreated ?? null,
+      credits: u.credits ?? 0,
       agency: agencyId,
     }
   } catch {

@@ -21,8 +21,7 @@ export async function POST(request: NextRequest) {
     customerEmail?: string
     redirectPath?: string
     merchantOrderReference?: string
-    userId?: string
-    packType?: string
+    metadata?: Record<string, any>
   }
   try {
     body = await request.json()
@@ -42,6 +41,7 @@ export async function POST(request: NextRequest) {
   const customerEmail = typeof body.customerEmail === 'string' ? body.customerEmail : undefined
   const merchantOrderReference =
     typeof body.merchantOrderReference === 'string' ? body.merchantOrderReference : undefined
+  const metadata = typeof body.metadata === 'object' ? body.metadata : undefined
 
   let redirectUrl: string | undefined
   if (body.redirectPath && typeof body.redirectPath === 'string') {
@@ -59,12 +59,9 @@ export async function POST(request: NextRequest) {
       customerEmail,
       redirectUrl,
       merchantOrderReference,
+      metadata,
       expirePendingAfter: 'PT30M',
-      metadata: {
-        ...(body.userId && { user_id: body.userId }),
-        ...(body.packType && { pack_type: body.packType }),
-      },
-    } as any)
+    })
 
     const checkoutUrl =
       order.checkout_url ||

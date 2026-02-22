@@ -16,6 +16,8 @@ export type CreateOrderParams = {
   redirectUrl?: string
   /** Référence interne (ex. publicId de la carte) */
   merchantOrderReference?: string
+  /** Métadonnées arbitraires */
+  metadata?: Record<string, any>
   /** Expiration des commandes en attente (ex. "PT30M" = 30 min) */
   expirePendingAfter?: string
 }
@@ -32,16 +34,28 @@ export type RevolutOrder = {
 
 export async function createRevolutOrder(
   secretKey: string,
-  params: CreateOrderParams
+  params: CreateOrderParams,
 ): Promise<RevolutOrder> {
-  const { amountMinor, currency = 'EUR', description, customerEmail, redirectUrl, merchantOrderReference, expirePendingAfter } = params
+  const {
+    amountMinor,
+    currency = 'EUR',
+    description,
+    customerEmail,
+    redirectUrl,
+    merchantOrderReference,
+    metadata,
+    expirePendingAfter,
+  } = params
   const body: Record<string, unknown> = {
     amount: amountMinor,
     currency,
     ...(description && { description }),
     ...(customerEmail && { customer: { email: customerEmail } }),
     ...(redirectUrl && { redirect_url: redirectUrl }),
-    ...(merchantOrderReference && { metadata: { order_reference: merchantOrderReference } }),
+    ...(merchantOrderReference && {
+      metadata: { order_reference: merchantOrderReference, ...(metadata || {}) },
+    }),
+    ...(!merchantOrderReference && metadata && { metadata }),
     ...(expirePendingAfter && { expire_pending_after: expirePendingAfter }),
   }
 
