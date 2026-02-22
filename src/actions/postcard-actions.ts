@@ -314,7 +314,7 @@ export async function createPostcard(
           mediaItems: processedMediaItems,
           publicId,
           date: new Date().toISOString(),
-          status: 'published', // Automatically publish when created from editor
+          status: 'published',
           isPublic: true,
           ...authorPayload,
         },

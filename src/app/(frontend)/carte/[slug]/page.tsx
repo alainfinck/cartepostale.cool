@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Metadata } from 'next'
 import { getPostcardByPublicId } from '@/actions/postcard-actions'
-import PostcardViewToggle from '@/components/view/PostcardViewToggle'
+import ScratchCardWrapper from '@/components/view/ScratchCardWrapper'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import { Postcard as PayloadPostcard, Media } from '@/payload-types'
@@ -156,6 +156,12 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
             lng: payloadPostcard.coords.lng,
           }
         : undefined,
+    scratchCardEnabled: payloadPostcard.scratchCardEnabled || false,
+    scratchCardImage: isMedia(payloadPostcard.scratchCardImage)
+      ? normalizeMediaUrl(mediaUrl(payloadPostcard.scratchCardImage as Media))
+      : undefined,
+    puzzleCardEnabled: payloadPostcard.puzzleCardEnabled || false,
+    puzzleCardDifficulty: (payloadPostcard.puzzleCardDifficulty as '3' | '4' | '5') || '3',
   }
 }
 
@@ -254,7 +260,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
       <RotateDevicePrompt />
 
       <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-4 md:mb-6 px-2 md:px-4">
-        <PostcardViewToggle postcard={frontendPostcard} views={payloadPostcard.views || 0} />
+        <ScratchCardWrapper postcard={frontendPostcard} views={payloadPostcard.views || 0} />
       </div>
 
       {/* Cible pour la barre de réactions (rendue ici par SocialBar via portal) */}

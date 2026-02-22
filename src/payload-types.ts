@@ -359,25 +359,25 @@ export interface Postcard {
    */
   contributionToken?: string | null;
   /**
-   * Autoriser l'ajout de photos via le lien de contribution
+   * Autoriser l’ajout de photos via le lien de contribution
    */
   isContributionEnabled?: boolean | null;
   /**
-   * URL du message vocal enregistré par l'expéditeur
+   * Activer l'effet carte à gratter
    */
-  audioMessage?: string | null;
+  scratchCardEnabled?: boolean | null;
   /**
-   * Durée du message vocal en secondes
+   * Image de couverture à gratter
    */
-  audioDuration?: number | null;
+  scratchCardImage?: (number | null) | Media;
   /**
-   * URL de la musique d'ambiance (upload ou bibliothèque libre de droits)
+   * Activer l'effet puzzle
    */
-  backgroundMusic?: string | null;
+  puzzleCardEnabled?: boolean | null;
   /**
-   * Titre de la musique pour l'affichage
+   * Nombre de pièces du puzzle
    */
-  backgroundMusicTitle?: string | null;
+  puzzleCardDifficulty?: ('3' | '4' | '5') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -977,10 +977,10 @@ export interface PostcardsSelect<T extends boolean = true> {
   isPublic?: T;
   contributionToken?: T;
   isContributionEnabled?: T;
-  audioMessage?: T;
-  audioDuration?: T;
-  backgroundMusic?: T;
-  backgroundMusicTitle?: T;
+  scratchCardEnabled?: T;
+  scratchCardImage?: T;
+  puzzleCardEnabled?: T;
+  puzzleCardDifficulty?: T;
   updatedAt?: T;
   createdAt?: T;
 }

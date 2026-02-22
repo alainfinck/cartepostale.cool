@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Metadata } from 'next'
 import { getPostcardByPublicId } from '@/actions/postcard-actions'
 import PostcardView from '@/components/postcard/PostcardView'
+import ScratchCardViewWrapper from '@/components/view/ScratchCardViewWrapper'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Sparkles, Eye } from 'lucide-react'
 import { NumberTicker } from '@/components/ui/number-ticker'
@@ -124,7 +125,13 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
         coords: payloadPostcard.coords?.lat && payloadPostcard.coords?.lng ? {
             lat: payloadPostcard.coords.lat,
             lng: payloadPostcard.coords.lng
-        } : undefined
+        } : undefined,
+        scratchCardEnabled: payloadPostcard.scratchCardEnabled || false,
+        scratchCardImage: isMedia(payloadPostcard.scratchCardImage)
+            ? normalizeMediaUrl(mediaUrl(payloadPostcard.scratchCardImage as Media))
+            : undefined,
+        puzzleCardEnabled: payloadPostcard.puzzleCardEnabled || false,
+        puzzleCardDifficulty: (payloadPostcard.puzzleCardDifficulty as '3' | '4' | '5') || '3',
     }
 }
 
@@ -209,12 +216,14 @@ export default async function PostcardPage({
                 {/* Card View */}
                 <div className="w-full max-w-[100vw] md:max-w-4xl flex justify-center perspective-[1000px] mb-4 md:mb-6 px-2 md:px-0 landscape:mb-4 relative">
                     <div className="flex flex-col w-full items-center">
-                        <PostcardView
-                            postcard={frontendPostcard}
-                            flipped={false}
-                            isLarge={true}
-                            className="z-10"
-                        />
+                        <ScratchCardViewWrapper postcard={frontendPostcard}>
+                            <PostcardView
+                                postcard={frontendPostcard}
+                                flipped={false}
+                                isLarge={true}
+                                className="z-10"
+                            />
+                        </ScratchCardViewWrapper>
                     </div>
                     {/* View Counter - en bas à droite du bloc carte */}
                     <div className="absolute bottom-0 right-2 md:right-0 pb-0 z-20">
