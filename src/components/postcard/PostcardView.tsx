@@ -70,7 +70,8 @@ interface PostcardViewProps {
 
 const DEFAULT_CAPTION_POSITION = { x: 50, y: 85 }
 
-const FALLBACK_FRONT_IMAGE = 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'
+const FALLBACK_FRONT_IMAGE =
+  'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'
 const DEFAULT_FRONT_FILTER: FrontImageFilter = {
   brightness: 100,
   contrast: 100,
@@ -1531,7 +1532,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           </div>
                           {/* Boutons zoom + / - au-dessus de la carte, cliquables sans déclencher flip ni ouverture modal */}
                           <div
-                            className="absolute top-1.5 right-1.5 z-10 flex flex-col gap-0 shadow-md rounded-md overflow-hidden"
+                            className="absolute top-1 right-1 z-10 flex flex-col gap-0 shadow-sm rounded-sm overflow-hidden"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <button
@@ -1540,10 +1541,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 e.stopPropagation()
                                 setBackMapZoom((z) => Math.min(18, z + 1))
                               }}
-                              className="w-[14px] h-[14px] sm:w-5 sm:h-5 flex items-center justify-center bg-white/95 hover:bg-white text-stone-600 hover:text-teal-600 border border-stone-200/80 transition-colors"
+                              className="w-3 h-3 sm:w-5 sm:h-5 flex items-center justify-center bg-white/95 hover:bg-white text-stone-600 hover:text-teal-600 border border-stone-200/80 transition-colors"
                               aria-label="Zoom avant"
                             >
-                              <span className="text-[8px] sm:text-xs font-bold leading-none">
+                              <span className="text-[7px] sm:text-xs font-bold leading-none">
                                 +
                               </span>
                             </button>
@@ -1553,10 +1554,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 e.stopPropagation()
                                 setBackMapZoom((z) => Math.max(5, z - 1))
                               }}
-                              className="w-[14px] h-[14px] sm:w-5 sm:h-5 flex items-center justify-center bg-white/95 hover:bg-white text-stone-600 hover:text-teal-600 border border-stone-200/80 transition-colors"
+                              className="w-3 h-3 sm:w-5 sm:h-5 flex items-center justify-center bg-white/95 hover:bg-white text-stone-600 hover:text-teal-600 border border-stone-200/80 transition-colors"
                               aria-label="Zoom arrière"
                             >
-                              <span className="text-[8px] sm:text-xs font-bold leading-none">
+                              <span className="text-[7px] sm:text-xs font-bold leading-none">
                                 −
                               </span>
                             </button>

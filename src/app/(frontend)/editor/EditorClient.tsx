@@ -52,6 +52,7 @@ import {
   Trash2,
   Volume2,
   Loader2,
+  ChevronUp,
 } from 'lucide-react'
 import {
   Postcard,
@@ -774,6 +775,7 @@ export default function EditorPage() {
   const audioChunksRef = useRef<Blob[]>([])
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null)
   const [recordingTime, setRecordingTime] = useState(0)
+  const [showScrollTop, setShowScrollTop] = useState(false)
 
   const handleGoogleSuccess = useCallback(
     async (result: { success: boolean; role: string; email?: string }) => {
@@ -816,7 +818,10 @@ export default function EditorPage() {
 
   // Même seuil que la Navbar : quand elle passe en mode réduit, on ajuste le top de la barre d'étapes
   useEffect(() => {
-    const handleScroll = () => setNavbarScrolled(window.scrollY > 20)
+    const handleScroll = () => {
+      setNavbarScrolled(window.scrollY > 20)
+      setShowScrollTop(window.scrollY > 300)
+    }
     handleScroll() // valeur initiale
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
@@ -1557,7 +1562,8 @@ export default function EditorPage() {
 
   const currentPostcard: Postcard = {
     id: createdPostcardId || 'editor-preview',
-    frontImage: frontImage || 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg',
+    frontImage:
+      frontImage || 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg',
     frontImageCrop: frontImage ? frontImageCrop : undefined,
     frontImageFilter: frontImage ? frontImageFilter : undefined,
     frontCaption: frontCaption.trim() || undefined,
@@ -3957,19 +3963,6 @@ export default function EditorPage() {
         </div>
       </div>
 
-      {/* Scroll to preview — œil Aperçu (pas flèche), bouton rond */}
-      <div className="lg:hidden fixed bottom-4 right-[4.5rem] sm:bottom-6 sm:right-[5rem] z-[70] flex items-center justify-center">
-        <button
-          type="button"
-          onClick={() =>
-            previewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-          }
-          aria-label="Aller à l'aperçu"
-          className="h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-white/50 hover:bg-white/70 text-teal-600 hover:text-teal-700 border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_28px_rgba(0,0,0,0.1)] backdrop-blur-xl flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-400 transition-all duration-300"
-        >
-          <Eye className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden />
-        </button>
-      </div>
       <div className="lg:hidden fixed bottom-4 left-4 z-[45] animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Button
           onClick={() => setShowFullscreen(true)}
@@ -4717,6 +4710,37 @@ export default function EditorPage() {
           }
         }}
       />
+
+      {/* Floating Buttons: Scroll to Top & Preview */}
+      <div className="fixed bottom-4 right-4 z-[71] flex flex-col-reverse gap-3 items-end">
+        <button
+          onClick={() => {
+            setCurrentStep('preview')
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          }}
+          className={cn(
+            'group flex items-center gap-2 px-4 py-2.5',
+            'bg-teal-600 hover:bg-teal-700 text-white rounded-full shadow-lg transition-all duration-300',
+            'hover:scale-105 active:scale-95',
+          )}
+        >
+          <Eye className="w-5 h-5" />
+          <span className="font-medium text-sm hidden md:inline">Aperçu</span>
+        </button>
+        {showScrollTop && (
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className={cn(
+              'group flex items-center justify-center w-12 h-12',
+              'bg-teal-600 hover:bg-teal-700 text-white rounded-full shadow-lg transition-all duration-300',
+              'hover:scale-110 active:scale-95 animate-in fade-in zoom-in duration-300',
+            )}
+            title="Retour en haut"
+          >
+            <ChevronUp className="w-6 h-6" />
+          </button>
+        )}
+      </div>
     </div>
   )
 }

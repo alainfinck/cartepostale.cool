@@ -22,7 +22,9 @@ import {
   Zap,
   Heart,
   BookOpen,
+  LogOut,
 } from 'lucide-react'
+import { signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -219,7 +221,7 @@ export const Navbar = () => {
         <span
           className={cn(
             'text-[15px] font-bold uppercase tracking-wider transition-colors',
-            isOpen ? 'text-pink-600' : 'text-stone-400 group-hover:text-stone-600',
+            isOpen ? 'text-pink-600' : 'text-stone-950 group-hover:text-black',
           )}
         >
           {title}
@@ -227,7 +229,7 @@ export const Navbar = () => {
         <ChevronDown
           className={cn(
             'w-5 h-5 transition-transform duration-300',
-            isOpen ? 'rotate-180 text-pink-500' : 'text-stone-300',
+            isOpen ? 'rotate-180 text-pink-500' : 'text-stone-400',
           )}
         />
       </button>
@@ -570,7 +572,7 @@ export const Navbar = () => {
                         : '/espace-client'
                   }
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-3 w-full py-3 rounded-2xl bg-stone-100 text-stone-800 font-bold text-base border border-stone-200"
+                  className="flex items-center justify-center gap-3 w-full py-3 rounded-2xl bg-stone-100 text-stone-900 font-bold text-base border border-stone-200"
                 >
                   <LayoutDashboard size={20} />
                   <span>Tableau de bord</span>
@@ -579,7 +581,7 @@ export const Navbar = () => {
                 <Link
                   href="/connexion"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-3 w-full py-3 rounded-2xl bg-white text-stone-800 font-bold text-base border border-stone-200 shadow-sm"
+                  className="flex items-center justify-center gap-3 w-full py-3 rounded-2xl bg-white text-stone-900 font-bold text-base border border-stone-200 shadow-sm"
                 >
                   <GoogleIcon className="w-5 h-5" />
                   <span>Connexion / Inscription</span>
@@ -599,7 +601,7 @@ export const Navbar = () => {
                   <Link
                     href="/#fonctionnalites"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-50/80 text-stone-700 font-semibold text-[15px] transition-colors"
+                    className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-pink-50/80 text-stone-900 font-bold text-[15px] transition-colors"
                   >
                     <Star className="w-6 h-6 text-pink-500 flex-shrink-0" />
                     Fonctionnalités
@@ -608,10 +610,10 @@ export const Navbar = () => {
                     href="/pricing"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={cn(
-                      'flex items-center gap-4 px-4 py-3 rounded-2xl transition-colors font-semibold text-[15px]',
+                      'flex items-center gap-4 px-4 py-3 rounded-2xl transition-colors font-bold text-[15px]',
                       pathname === '/pricing'
-                        ? 'bg-pink-50 text-pink-700'
-                        : 'hover:bg-pink-50/80 text-stone-700',
+                        ? 'bg-pink-50 text-pink-900'
+                        : 'hover:bg-pink-50/80 text-stone-900',
                     )}
                   >
                     <CreditCard className="w-6 h-6 text-pink-500 flex-shrink-0" />
@@ -621,10 +623,10 @@ export const Navbar = () => {
                     href="/galerie"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={cn(
-                      'flex items-center gap-4 px-4 py-3 rounded-2xl transition-colors font-semibold text-[15px]',
+                      'flex items-center gap-4 px-4 py-3 rounded-2xl transition-colors font-bold text-[15px]',
                       pathname === '/galerie'
-                        ? 'bg-pink-50 text-pink-700'
-                        : 'hover:bg-pink-50/80 text-stone-700',
+                        ? 'bg-pink-50 text-pink-900'
+                        : 'hover:bg-pink-50/80 text-stone-900',
                     )}
                   >
                     <ImageIcon className="w-6 h-6 text-pink-500 flex-shrink-0" />
@@ -634,10 +636,10 @@ export const Navbar = () => {
                     href="/a-propos"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={cn(
-                      'flex items-center gap-4 px-4 py-3 rounded-2xl transition-colors font-semibold text-[15px]',
+                      'flex items-center gap-4 px-4 py-3 rounded-2xl transition-colors font-bold text-[15px]',
                       pathname === '/a-propos'
-                        ? 'bg-pink-50 text-pink-700'
-                        : 'hover:bg-pink-50/80 text-stone-700',
+                        ? 'bg-pink-50 text-pink-900'
+                        : 'hover:bg-pink-50/80 text-stone-900',
                     )}
                   >
                     <Info className="w-6 h-6 text-pink-500 flex-shrink-0" />À propos
@@ -656,11 +658,11 @@ export const Navbar = () => {
                       key={item.href + item.title}
                       href={item.href}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex gap-4 px-4 py-3 rounded-2xl hover:bg-orange-50/80 active:bg-orange-50 text-stone-700 transition-colors"
+                      className="flex gap-4 px-4 py-3 rounded-2xl hover:bg-orange-50/80 active:bg-orange-50 text-stone-900 transition-colors"
                     >
                       <item.icon className="w-6 h-6 text-orange-500 flex-shrink-0 mt-0.5" />
                       <div>
-                        <div className="font-semibold text-[15px]">{item.title}</div>
+                        <div className="font-bold text-[15px]">{item.title}</div>
                         <div className="text-sm text-stone-500 mt-0.5">{item.description}</div>
                       </div>
                     </Link>
@@ -681,10 +683,10 @@ export const Navbar = () => {
                       key={item.label}
                       href={item.href}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-stone-50 active:bg-stone-100 text-stone-700 transition-colors"
+                      className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-stone-50 active:bg-stone-100 text-stone-900 transition-colors"
                     >
                       <item.icon className="w-6 h-6 text-pink-500 flex-shrink-0" />
-                      <span className="font-medium flex-1 text-[15px]">{item.label}</span>
+                      <span className="font-bold flex-1 text-[15px]">{item.label}</span>
                       <span className="text-sm font-bold text-pink-600 tabular-nums">
                         {item.price}
                       </span>
@@ -698,36 +700,45 @@ export const Navbar = () => {
 
             <div className="space-y-2 pb-6">
               {user ? (
-                <Link
-                  href={
-                    user.role === 'admin'
-                      ? '/manager'
-                      : user.role === 'agence'
-                        ? '/espace-agence'
-                        : '/espace-client'
-                  }
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-4 px-4 py-4 rounded-2xl bg-pink-50 text-pink-700 font-semibold text-[15px] shadow-sm shadow-pink-100"
-                >
-                  <LayoutDashboard size={22} />
-                  <div className="flex flex-col min-w-0">
-                    <span className="truncate font-bold">
-                      {user.name?.trim() || user.email?.split('@')[0]}
-                    </span>
-                    <span className="text-pink-500 font-medium text-xs">
-                      {user.role === 'admin'
-                        ? 'Administrateur'
+                <React.Fragment>
+                  <Link
+                    href={
+                      user.role === 'admin'
+                        ? '/manager'
                         : user.role === 'agence'
-                          ? 'Espace Agence'
-                          : 'Tableau de bord'}
-                    </span>
-                  </div>
-                </Link>
+                          ? '/espace-agence'
+                          : '/espace-client'
+                    }
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-4 px-4 py-4 rounded-2xl bg-pink-50 text-pink-700 font-semibold text-[15px] shadow-sm shadow-pink-100"
+                  >
+                    <LayoutDashboard size={22} />
+                    <div className="flex flex-col min-w-0">
+                      <span className="truncate font-bold">
+                        {user.name?.trim() || user.email?.split('@')[0]}
+                      </span>
+                      <span className="text-pink-500 font-medium text-xs">
+                        {user.role === 'admin'
+                          ? 'Administrateur'
+                          : user.role === 'agence'
+                            ? 'Espace Agence'
+                            : 'Tableau de bord'}
+                      </span>
+                    </div>
+                  </Link>
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="flex items-center gap-4 w-full px-4 py-4 rounded-2xl bg-stone-50 text-stone-900 font-bold text-[15px] border border-stone-200 mt-2"
+                  >
+                    <LogOut size={22} className="text-stone-500" />
+                    <span>Déconnexion</span>
+                  </button>
+                </React.Fragment>
               ) : (
                 <Link
                   href="/connexion"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-stone-50 text-stone-700 font-semibold text-[15px] border border-stone-100"
+                  className="flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-stone-50 text-stone-900 font-bold text-[15px] border border-stone-100"
                 >
                   <div className="flex items-center justify-center w-6 h-6">
                     <GoogleIcon className="w-5 h-5" />

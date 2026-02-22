@@ -1166,3 +1166,37 @@ export async function deleteR2Object(key: string): Promise<{ success: boolean; e
     return { success: false, error: error.message || 'Impossible de supprimer le fichier' }
   }
 }
+
+/** List unused R2 objects (not found in Media collection) in a prefix. */
+export async function listUnusedR2Objects(prefix?: string): Promise<ListR2Result> {
+  await requireAdmin()
+  const result = await listR2Objects(prefix, 1000)
+  if (!result.configured || result.objects.length === 0) return result
+
+  try {
+    const payload = await getPayload({ config })
+
+    // Fetch all media to collect used filenames
+    // 5000 limit as a safe upper bound without pagination overhead
+    const allMedia = await payload.find({ collection: 'media', limit: 5000, depth: 0 })
+
+    const usedFilenames = new Set<string>()
+    for (const doc of allMedia.docs) {
+      if (doc.filename) usedFilenames.add(doc.filename)
+      if (doc.url) usedFilenames.add(doc.url.split('/').pop() || '')
+    }
+
+    const unusedObjects = result.objects.filter((obj) => {
+      const name = obj.key.split('/').pop() || obj.key
+      return !usedFilenames.has(name)
+    })
+
+    return {
+      ...result,
+      objects: unusedObjects,
+    }
+  } catch (err) {
+    console.error('Error finding unused objects:', err)
+    return result
+  }
+}

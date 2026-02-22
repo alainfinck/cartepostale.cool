@@ -2,10 +2,25 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Mail, Users, Building2, Image as ImageIcon, Cloud, LogOut, Menu, BarChart3, Sticker, Gift, FileText } from 'lucide-react'
+import {
+  LayoutDashboard,
+  Mail,
+  Users,
+  Building2,
+  Image as ImageIcon,
+  Cloud,
+  LogOut,
+  Menu,
+  BarChart3,
+  Sticker,
+  Gift,
+  FileText,
+  Home,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { signOut } from 'next-auth/react'
 
 const nav = [
   { href: '/manager/cartes', label: 'Cartes postales', icon: Mail },
@@ -30,14 +45,17 @@ export function ManagerShell({ children }: { children: React.ReactNode }) {
       </div>
       <nav className="flex-1 space-y-1 p-3">
         {nav.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/manager' && pathname?.startsWith(item.href))
+          const isActive =
+            pathname === item.href || (item.href !== '/manager' && pathname?.startsWith(item.href))
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                isActive
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
               )}
             >
               <item.icon className="h-4 w-4 shrink-0" />
@@ -46,13 +64,22 @@ export function ManagerShell({ children }: { children: React.ReactNode }) {
           )
         })}
       </nav>
-      <div className="border-t border-border p-3">
+      <div className="border-t border-border p-3 space-y-1">
         <Link href="/">
           <Button variant="ghost" size="sm" className="w-full justify-start gap-3">
-            <LogOut className="h-4 w-4" />
+            <Home className="h-4 w-4" />
             Retour au site
           </Button>
         </Link>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
+          onClick={() => signOut({ callbackUrl: '/' })}
+        >
+          <LogOut className="h-4 w-4" />
+          Déconnexion
+        </Button>
       </div>
     </aside>
   )
