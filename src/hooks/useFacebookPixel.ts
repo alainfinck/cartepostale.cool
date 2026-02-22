@@ -40,6 +40,7 @@ interface ViewContentParams {
   content_ids?: string[]
   content_name?: string
   content_type?: string
+  content_category?: string
   value?: number
   currency?: string
 }

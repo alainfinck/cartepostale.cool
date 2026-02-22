@@ -1079,6 +1079,15 @@ export default function EditorPage() {
     prevIsPremiumRef.current = isPremium
   }, [isPremium])
 
+  // Meta Pixel — CustomizeProduct quand la première image est ajoutée
+  const hasTrackedFirstEdit = useRef(false)
+  useEffect(() => {
+    if (frontImage && !hasTrackedFirstEdit.current) {
+      trackCustomizeProduct()
+      hasTrackedFirstEdit.current = true
+    }
+  }, [frontImage, trackCustomizeProduct])
+
   useEffect(() => {
     fetch('/api/users/me', { credentials: 'include' })
       .then((res) => (res.ok ? res.json() : null))

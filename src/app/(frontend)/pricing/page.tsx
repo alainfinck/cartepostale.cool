@@ -4,6 +4,7 @@ import { Check, X, Zap, ArrowRight, Sparkles, Users, Clock, Infinity } from 'luc
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { PricingTracking } from '@/components/analytics/PricingTracking'
 
 export const metadata: Metadata = {
   title: 'Tarifs — Cartes postales numériques | CartePostale.cool',
