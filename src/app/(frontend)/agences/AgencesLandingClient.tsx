@@ -119,7 +119,10 @@ export default function AgencesLandingClient() {
       <section className="relative bg-[#061e1e] min-h-[80vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
-            src={getOptimizedImageUrl('https://img.cartepostale.cool/demo/photo-1486406146926-c627a92ad1ab.jpg', { width: 1920 })}
+            src={getOptimizedImageUrl(
+              'https://img.cartepostale.cool/demo/photo-1486406146926-c627a92ad1ab.jpg',
+              { width: 1920 },
+            )}
             alt="Agences"
             className="w-full h-full object-cover opacity-25 mix-blend-overlay scale-105"
           />
@@ -136,26 +139,32 @@ export default function AgencesLandingClient() {
               <Building2 size={16} className="text-orange-400" /> POUR LES AGENCES & PROFESSIONNELS
             </div>
             <h1 className="text-4xl md:text-7xl font-serif font-bold text-white mb-6 leading-[1.1] tracking-tight">
-              Cartes postales en <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-amber-200">marque blanche</span>
+              Cartes postales en{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-amber-200">
+                marque blanche
+              </span>
               <br />
               pour vos clients
             </h1>
             <p className="text-teal-100/80 text-lg md:text-xl mb-10 max-w-2xl font-light leading-relaxed">
-              Proposez à vos offices de tourisme, hôtels et partenaires une solution clé en main : cartes postales à leur image, avec votre branding. Tarifs dédiés agences.
+              Proposez à vos offices de tourisme, hôtels et partenaires une solution clé en main :
+              cartes postales à leur image, avec votre branding. Tarifs dédiés agences.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 asChild
                 className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white px-8 py-6 rounded-2xl text-lg font-bold shadow-xl border-0"
               >
-                <Link href="/contact">Demander une démo <ArrowRight size={20} /></Link>
+                <Link href="/contact">
+                  Demander une démo <ArrowRight size={20} />
+                </Link>
               </Button>
               <Button
                 asChild
                 variant="outline"
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20 px-8 py-6 rounded-2xl text-lg font-bold"
               >
-                <Link href="#tarifs">Voir les tarifs agences</Link>
+                <Link href="/agences/demo">Voir la démo en direct ✨</Link>
               </Button>
             </div>
           </motion.div>
@@ -172,7 +181,8 @@ export default function AgencesLandingClient() {
             Tout ce dont votre agence a besoin
           </h2>
           <p className="text-stone-600 text-lg">
-            Une solution pensée pour les agences qui revendent ou déploient la carte postale auprès de leurs clients.
+            Une solution pensée pour les agences qui revendent ou déploient la carte postale auprès
+            de leurs clients.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -198,7 +208,9 @@ export default function AgencesLandingClient() {
       {/* Social proof */}
       <section className="py-16 bg-stone-100">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <p className="text-stone-500 text-sm font-bold uppercase tracking-widest mb-4">Idéal pour</p>
+          <p className="text-stone-500 text-sm font-bold uppercase tracking-widest mb-4">
+            Idéal pour
+          </p>
           <div className="flex flex-wrap justify-center gap-8 text-stone-700 font-semibold">
             <span>Offices de tourisme</span>
             <span>•</span>
@@ -222,7 +234,8 @@ export default function AgencesLandingClient() {
               Marque blanche à prix agence
             </h2>
             <p className="text-stone-600 text-lg">
-              Formules mensuelles avec volume de cartes inclus. Carte supplémentaire facturée au dégressif.
+              Formules mensuelles avec volume de cartes inclus. Carte supplémentaire facturée au
+              dégressif.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
@@ -234,7 +247,9 @@ export default function AgencesLandingClient() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
                 className={`relative flex flex-col rounded-2xl border overflow-hidden bg-white shadow-lg hover:shadow-xl transition-all ${
-                  plan.popular ? 'ring-2 ring-orange-500 ring-offset-4 scale-[1.02]' : 'border-stone-200'
+                  plan.popular
+                    ? 'ring-2 ring-orange-500 ring-offset-4 scale-[1.02]'
+                    : 'border-stone-200'
                 }`}
               >
                 {plan.badge && (
@@ -248,8 +263,12 @@ export default function AgencesLandingClient() {
                 )}
                 <div className="p-8 flex flex-col flex-1">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className={`p-2 rounded-lg ${plan.popular ? 'bg-orange-100' : 'bg-stone-100'}`}>
-                      <Zap className={`w-6 h-6 ${plan.popular ? 'text-orange-600' : 'text-stone-600'}`} />
+                    <div
+                      className={`p-2 rounded-lg ${plan.popular ? 'bg-orange-100' : 'bg-stone-100'}`}
+                    >
+                      <Zap
+                        className={`w-6 h-6 ${plan.popular ? 'text-orange-600' : 'text-stone-600'}`}
+                      />
                     </div>
                     <h3 className="text-xl font-bold text-stone-800">{plan.name}</h3>
                   </div>
@@ -261,12 +280,19 @@ export default function AgencesLandingClient() {
                   <ul className="space-y-3 flex-1 mb-8">
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex items-start gap-3">
-                        <Check className="w-5 h-5 text-teal-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+                        <Check
+                          className="w-5 h-5 text-teal-500 shrink-0 mt-0.5"
+                          strokeWidth={2.5}
+                        />
                         <span className="text-stone-700 text-sm font-medium">{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <Button asChild className="mt-auto w-full py-6 rounded-xl text-base font-bold" variant={plan.popular ? 'default' : 'outline'}>
+                  <Button
+                    asChild
+                    className="mt-auto w-full py-6 rounded-xl text-base font-bold"
+                    variant={plan.popular ? 'default' : 'outline'}
+                  >
                     <Link
                       href={plan.href}
                       className={plan.popular ? 'bg-orange-500 hover:bg-orange-600' : ''}
@@ -291,13 +317,20 @@ export default function AgencesLandingClient() {
             Demandez une démo ou un devis personnalisé. Nous vous répondons sous 24 h.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button asChild className="bg-orange-500 hover:bg-orange-600 text-white px-10 py-6 rounded-2xl text-lg font-bold border-0">
+            <Button
+              asChild
+              className="bg-orange-500 hover:bg-orange-600 text-white px-10 py-6 rounded-2xl text-lg font-bold border-0"
+            >
               <Link href="/contact">
                 <Mail className="w-5 h-5 mr-2 inline" />
                 Nous contacter
               </Link>
             </Button>
-            <Button asChild variant="outline" className="bg-transparent border-white/30 text-white hover:bg-white/10 px-10 py-6 rounded-2xl text-lg font-bold">
+            <Button
+              asChild
+              variant="outline"
+              className="bg-transparent border-white/30 text-white hover:bg-white/10 px-10 py-6 rounded-2xl text-lg font-bold"
+            >
               <Link href="/pricing">Voir tous les tarifs</Link>
             </Button>
           </div>
