@@ -25,7 +25,6 @@ import {
   Mic,
   Volume2,
   MoreHorizontal,
-  Link2,
 } from 'lucide-react'
 import { cn, isCoordinate } from '@/lib/utils'
 import { AnimatePresence, motion, useSpring, useMotionValue, useTransform } from 'framer-motion'
@@ -50,11 +49,6 @@ const JournalModal = dynamic(() => import('@/components/postcard/JournalModal'),
   ssr: false,
   loading: () => null,
 })
-
-const ShareContributionModal = dynamic(
-  () => import('@/components/postcard/ShareContributionModal'),
-  { ssr: false },
-)
 
 interface PostcardViewProps {
   postcard: Postcard
@@ -237,7 +231,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isTopMenuOpen, setIsTopMenuOpen] = useState(false)
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
 
   const handleUploadClick = () => {
     fileInputRef.current?.click()
@@ -293,18 +286,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
       setIsUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
-  }
-
-  const getContributeUrl = () => {
-    if (!postcard.contributionToken) return ''
-    const url = new URL(typeof window !== 'undefined' ? window.location.href : '', 'https://cartepostale.cool')
-    url.searchParams.set('token', postcard.contributionToken)
-    return url.toString()
-  }
-
-  const handleShareContribution = () => {
-    if (!postcard.contributionToken) return
-    setIsShareModalOpen(true)
   }
 
   // Calculate photo locations from EXIF data
@@ -651,13 +632,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   <Camera size={16} />
                 )}
                 <span className="hidden sm:inline">Ajouter une photo</span>
-              </button>
-              <button
-                onClick={handleShareContribution}
-                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg backdrop-blur-md border border-white/20 transition-all flex items-center gap-2"
-              >
-                <Link2 size={16} />
-                <span className="hidden sm:inline">Partager (QR / lien)</span>
               </button>
               <input
                 type="file"
@@ -1172,23 +1146,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             </button>
                           )}
 
-                          {/* Share Contribution Option */}
-                          {canContribute && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setIsTopMenuOpen(false)
-                                handleShareContribution()
-                              }}
-                              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-teal-50 text-stone-600 hover:text-teal-600 transition-colors text-left"
-                            >
-                              <Link2 size={16} />
-                              <span className="text-xs font-bold uppercase tracking-wider">
-                                Partager (QR code / lien)
-                              </span>
-                            </button>
-                          )}
-
                           {/* Flip Option */}
                           <button
                             type="button"
@@ -1686,23 +1643,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </button>
               )}
 
-              {canContribute && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleShareContribution()
-                  }}
-                  title="Partager pour envoyer des photos depuis un téléphone"
-                  className={cn(
-                    actionButtonBase,
-                    'bg-teal-50/80 border border-teal-200/70 text-teal-800 hover:bg-teal-100 hover:border-teal-300 hover:shadow',
-                  )}
-                >
-                  <Link2 size={10} className="text-teal-600 shrink-0" />
-                  <span>PARTAGER</span>
-                </button>
-              )}
-
               {(postcard.coords || postcard.location) && (
                 <button
                   onClick={openMap}
@@ -1784,13 +1724,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
       {renderAlbumModal()}
       {renderMessageModal()}
       {renderJournalModal()}
-      {postcard.contributionToken && (
-        <ShareContributionModal
-          isOpen={isShareModalOpen}
-          onClose={() => setIsShareModalOpen(false)}
-          contributeUrl={getContributeUrl()}
-        />
-      )}
 
       {/* Audio Element (hidden) */}
       {postcard.audioMessage && (
