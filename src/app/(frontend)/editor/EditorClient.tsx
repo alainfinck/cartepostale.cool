@@ -53,6 +53,7 @@ import {
   Volume2,
   Loader2,
   ChevronUp,
+  ChevronDown,
   Wand2,
 } from 'lucide-react'
 import {
