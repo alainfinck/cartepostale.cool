@@ -21,8 +21,6 @@ import { PricingTracking } from '@/components/analytics/PricingTracking'
 import { PacksSlider } from '@/components/pricing/PacksSlider'
 import WordRotate from '@/components/ui/word-rotate'
 import { TextAnimate } from '@/components/ui/text-animate'
-import { HeroShimmerCta } from '@/components/pricing/HeroShimmerCta'
-
 export const metadata: Metadata = {
   title: 'Tarifs — Cartes postales numériques | CartePostale.cool',
   description:
@@ -222,8 +220,6 @@ export default function PricingPage() {
             Photo, vidéo ou message vocal : même tarif. Cartes 100 % virtuelles, avec stats de visite
             — sans timbre ni impression. Jusqu&apos;à 10× moins cher qu&apos;une carte physique.
           </TextAnimate>
-
-          <HeroShimmerCta />
 
           {/* Message clé + carte gratuite */}
           <div className="mt-8 inline-flex items-start gap-3 bg-teal-600 text-white rounded-2xl px-5 py-4 text-left max-w-xl shadow-lg shadow-teal-900/10">
