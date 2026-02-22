@@ -24,11 +24,16 @@ export function PacksSlider() {
   const unitPrice = getUnitPrice(tier.price, tier.count)
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="bg-white rounded-3xl p-8 shadow-sm border border-stone-100 flex flex-col text-center relative overflow-hidden">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6">
+      <div
+        className={cn(
+          'bg-white rounded-3xl shadow-sm border border-stone-100 flex flex-col text-center relative overflow-visible',
+          tier.popular ? 'pt-10 pb-8 px-8 sm:pt-12 sm:pb-10 sm:px-10' : 'p-8 sm:p-10',
+        )}
+      >
         {tier.popular && (
-          <div className="absolute top-0 inset-x-0 -translate-y-1/2 flex justify-center">
-            <span className="bg-teal-600 text-white text-xs font-black uppercase tracking-wider py-1 px-3 rounded-full">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <span className="bg-teal-600 text-white text-xs font-black uppercase tracking-wider py-1.5 px-4 rounded-full whitespace-nowrap shadow-sm">
               Plus populaire
             </span>
           </div>

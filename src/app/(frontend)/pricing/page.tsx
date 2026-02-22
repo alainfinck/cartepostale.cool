@@ -302,7 +302,7 @@ export default function PricingPage() {
         </div>
 
         {/* Section Packs */}
-        <div className="mt-20 max-w-5xl mx-auto px-4">
+        <div className="mt-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-serif font-bold text-stone-900 mb-3">Packs de Cartes</h2>
             <p className="text-stone-500 text-lg max-w-2xl mx-auto">
