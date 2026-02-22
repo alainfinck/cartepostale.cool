@@ -19,6 +19,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { PricingTracking } from '@/components/analytics/PricingTracking'
 import { PacksSlider } from '@/components/pricing/PacksSlider'
+import { RotatingHeroTitle } from '@/components/pricing/RotatingHeroTitle'
 
 export const metadata: Metadata = {
   title: 'Tarifs — Cartes postales numériques | CartePostale.cool',
@@ -174,30 +175,39 @@ export default function PricingPage() {
     <div className="bg-[#fdfbf7] min-h-screen">
       <PricingTracking />
       {/* Hero */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-20 pb-12 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-xs font-bold uppercase tracking-widest mb-6">
-          <Sparkles className="w-3.5 h-3.5" />
-          Cartes postales du futur
-        </div>
-        <h1 className="text-4xl md:text-5xl font-serif font-bold text-stone-800 mb-5">
-          À un prix <span className="text-teal-500">dérisoire</span> face au papier
-        </h1>
-        <p className="text-lg text-stone-500 max-w-2xl mx-auto leading-relaxed">
-          Photo, vidéo ou message vocal : même tarif. Cartes 100 % virtuelles, avec stats de visite
-          — sans timbre ni impression. Jusqu&apos;à 10× moins cher qu&apos;une carte physique.
-        </p>
+      <div className="relative overflow-hidden">
+        {/* Fond stylé : dégradé + motif léger */}
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-teal-50/80 via-white to-[#fdfbf7]"
+          aria-hidden
+        />
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(20 184 166) 1px, transparent 0)', backgroundSize: '32px 32px' }} aria-hidden />
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 pt-14 sm:pt-16 pb-14 text-center">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-800 mb-6">
+            Cartes postales du futur
+          </h1>
+          <p className="text-2xl sm:text-3xl md:text-4xl font-serif font-semibold text-stone-700 mb-4 min-h-[2.5em] sm:min-h-[2em] flex items-center justify-center">
+            <RotatingHeroTitle />
+          </p>
+          <p className="text-lg text-stone-500 max-w-2xl mx-auto leading-relaxed">
+            Photo, vidéo ou message vocal : même tarif. Cartes 100 % virtuelles, avec stats de visite
+            — sans timbre ni impression. Jusqu&apos;à 10× moins cher qu&apos;une carte physique.
+          </p>
 
-        {/* Message clé + carte gratuite */}
-        <div className="mt-8 inline-flex items-start gap-3 bg-teal-600 text-white rounded-2xl px-5 py-4 text-left max-w-xl">
-          <span className="text-xl mt-0.5">💡</span>
-          <div>
-            <p className="font-bold text-sm">Carte gratuite 48 h</p>
-            <p className="text-teal-100 text-xs mt-0.5">
-              Créez une carte sans payer. Elle est valable 48 h et modifiable via le lien reçu par
-              email — vous pourrez la modifier tant qu&apos;elle est active.
-            </p>
+          {/* Message clé + carte gratuite */}
+          <div className="mt-7 inline-flex items-start gap-3 bg-teal-600 text-white rounded-2xl px-5 py-4 text-left max-w-xl shadow-lg shadow-teal-900/10">
+            <span className="text-xl mt-0.5">💡</span>
+            <div>
+              <p className="font-bold text-sm">Carte gratuite 48 h</p>
+              <p className="text-teal-100 text-xs mt-0.5">
+                Créez une carte sans payer. Elle est valable 48 h et modifiable via le lien reçu par
+                email — vous pourrez la modifier tant qu&apos;elle est active.
+              </p>
+            </div>
           </div>
         </div>
+        {/* Ligne de transition douce vers le contenu */}
+        <div className="h-8 bg-gradient-to-b from-transparent to-[#fdfbf7]" aria-hidden />
       </div>
 
       {/* Plans Grid */}
@@ -321,20 +331,24 @@ export default function PricingPage() {
           <h2 className="text-3xl font-serif font-bold text-stone-900 mb-3">
             Comparateur de prix
           </h2>
-          <p className="text-stone-500 text-lg max-w-2xl mx-auto">
+          <p className="text-stone-500 text-lg max-w-2xl mx-auto mb-4">
             Carte virtuelle vs carte papier : le même geste, un coût sans comparaison.
+          </p>
+          <p className="text-stone-600 text-sm max-w-2xl mx-auto mb-6 p-4 bg-teal-50/70 border border-teal-100 rounded-xl">
+            <strong className="text-teal-800">En papier</strong> : chaque destinataire = une carte + un timbre à payer (donc le coût multiplie par le nombre d&apos;envois).{' '}
+            <strong className="text-teal-800">Chez nous</strong> : une seule carte peut être envoyée à un nombre illimité de destinataires — vous ne payez qu&apos;une fois par carte.
           </p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[500px] border-collapse rounded-2xl overflow-hidden border border-stone-200 bg-white shadow-sm">
             <thead>
               <tr className="bg-stone-50 border-b border-stone-200">
-                <th className="text-left py-4 px-6 font-bold text-stone-800">Nombre de cartes</th>
+                <th className="text-left py-4 px-6 font-bold text-stone-800">Nombre d&apos;envois</th>
                 <th className="text-center py-4 px-6 font-bold text-stone-600 bg-stone-100">
-                  Carte papier (carte + timbre)
+                  Carte papier (carte + timbre à chaque envoi)
                 </th>
                 <th className="text-center py-4 px-6 font-bold text-teal-700 bg-teal-50">
-                  CartePostale.cool (virtuelle)
+                  CartePostale.cool (1 carte = illimité de destinataires)
                 </th>
                 <th className="text-center py-4 px-6 font-bold text-stone-500 text-sm">
                   Économie
@@ -343,34 +357,34 @@ export default function PricingPage() {
             </thead>
             <tbody className="text-stone-700">
               <tr className="border-b border-stone-100">
-                <td className="py-3 px-6 font-medium">1 carte</td>
-                <td className="py-3 px-6 text-center">~3,50 €</td>
+                <td className="py-3 px-6 font-medium">1 envoi</td>
+                <td className="py-3 px-6 text-center">~3,50 € (1 carte + 1 timbre)</td>
                 <td className="py-3 px-6 text-center font-bold text-teal-600">2,50 €</td>
-                <td className="py-3 px-6 text-center text-green-600 font-semibold">~30 %</td>
+                <td className="py-3 px-6 text-center text-green-600 font-semibold">~30 % / 2,50 €</td>
               </tr>
               <tr className="border-b border-stone-100 bg-stone-50/30">
-                <td className="py-3 px-6 font-medium">10 cartes</td>
-                <td className="py-3 px-6 text-center">~35 €</td>
-                <td className="py-3 px-6 text-center font-bold text-teal-600">22 €</td>
-                <td className="py-3 px-6 text-center text-green-600 font-semibold">~37 %</td>
+                <td className="py-3 px-6 font-medium">10 destinataires</td>
+                <td className="py-3 px-6 text-center">~35 € (10 × carte + timbre)</td>
+                <td className="py-3 px-6 text-center font-bold text-teal-600">22 € (pack 10) ou 1 carte réutilisable</td>
+                <td className="py-3 px-6 text-center text-green-600 font-semibold">~37 % / 2,50 €</td>
               </tr>
               <tr className="border-b border-stone-100">
-                <td className="py-3 px-6 font-medium">20 cartes</td>
-                <td className="py-3 px-6 text-center">~70 €</td>
-                <td className="py-3 px-6 text-center font-bold text-teal-600">40 €</td>
-                <td className="py-3 px-6 text-center text-green-600 font-semibold">~43 %</td>
+                <td className="py-3 px-6 font-medium">20 destinataires</td>
+                <td className="py-3 px-6 text-center">~70 € (20 × carte + timbre)</td>
+                <td className="py-3 px-6 text-center font-bold text-teal-600">40 € (pack 20) ou 1 carte réutilisable</td>
+                <td className="py-3 px-6 text-center text-green-600 font-semibold">~43 % / 2,50 €</td>
               </tr>
               <tr className="border-b border-stone-100 bg-stone-50/30">
-                <td className="py-3 px-6 font-medium">50 cartes</td>
-                <td className="py-3 px-6 text-center">~175 €</td>
-                <td className="py-3 px-6 text-center font-bold text-teal-600">95 €</td>
-                <td className="py-3 px-6 text-center text-green-600 font-semibold">~46 %</td>
+                <td className="py-3 px-6 font-medium">50 destinataires</td>
+                <td className="py-3 px-6 text-center">~175 € (50 × carte + timbre)</td>
+                <td className="py-3 px-6 text-center font-bold text-teal-600">95 € (pack 50) ou 1 carte réutilisable</td>
+                <td className="py-3 px-6 text-center text-green-600 font-semibold">~46 % / 2,50 €</td>
               </tr>
               <tr>
-                <td className="py-3 px-6 font-medium">100 cartes</td>
-                <td className="py-3 px-6 text-center">~350 €</td>
-                <td className="py-3 px-6 text-center font-bold text-teal-600">150 €</td>
-                <td className="py-3 px-6 text-center text-green-600 font-semibold">~57 %</td>
+                <td className="py-3 px-6 font-medium">100 destinataires</td>
+                <td className="py-3 px-6 text-center">~350 € (100 × carte + timbre)</td>
+                <td className="py-3 px-6 text-center font-bold text-teal-600">150 € (pack 100) ou 1 carte réutilisable</td>
+                <td className="py-3 px-6 text-center text-green-600 font-semibold">~57 % / 2,50 €</td>
               </tr>
             </tbody>
           </table>
@@ -458,12 +472,14 @@ export default function PricingPage() {
                 </td>
               </tr>
               <tr className="border-b border-stone-100 bg-stone-50/30">
-                <td className="py-3 px-6 font-medium">Nombre de destinataires par carte</td>
+                <td className="py-3 px-6 font-medium">Destinataires par carte</td>
                 <td className="py-3 px-6 text-center">
                   <span className="text-red-600 font-medium">1 seul</span>
+                  <span className="block text-xs text-stone-500 mt-0.5">Chaque envoi = carte + timbre à payer</span>
                 </td>
                 <td className="py-3 px-6 text-center">
                   <span className="text-green-600 font-bold">Illimité</span>
+                  <span className="block text-xs text-teal-700 mt-0.5">Une carte → autant de destinataires que vous voulez, même prix</span>
                 </td>
               </tr>
               <tr className="border-b border-stone-100">

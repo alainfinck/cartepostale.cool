@@ -638,7 +638,7 @@ const ALBUM_TIERS = {
   paid: { photos: 50, videos: 10, price: 2.5 },
 } as const
 
-/** Plans tarifaires : Éphémère (gratuit 48 h) ou Carte payante (prix unique tout compris). */
+/** Plans tarifaires : Carte gratuite (48 h) ou À l'unité 2,50 € (prix unique tout compris). */
 type PostcardPlanId = 'ephemere' | 'payant'
 
 interface PostcardPlan {
@@ -658,20 +658,20 @@ interface PostcardPlan {
   multiRecipients: number
 }
 
+/** Même plan tarifaire que la page /pricing : Carte gratuite 48 h + À l'unité 2,50 €. */
 const POSTCARD_PLANS: PostcardPlan[] = [
   {
     id: 'ephemere',
-    label: 'Éphémère',
+    label: 'Carte gratuite',
     emoji: '🌸',
-    tagline: 'Découvrez sans engagement',
+    tagline: 'Essayez sans engagement',
     price: 0,
     priceLabel: 'Gratuit',
     duration: '48h',
     features: [
-      '1 photo',
-      'Carte disponible 48 h',
+      '1 carte postale (photo, texte)',
       'Modifiable via le lien reçu par email',
-      'Partage par lien',
+      'Prolongeable en carte payante à tout moment',
     ],
     color: 'stone',
     maxPhotos: 1,
@@ -681,7 +681,7 @@ const POSTCARD_PLANS: PostcardPlan[] = [
   },
   {
     id: 'payant',
-    label: 'Carte payante',
+    label: "À l'unité",
     emoji: '💌',
     tagline: 'Prix unique tout compris',
     price: 2.5,
@@ -689,7 +689,9 @@ const POSTCARD_PLANS: PostcardPlan[] = [
     duration: 'Illimitée',
     features: [
       'Photo, vidéo ou message vocal : même prix',
+      'Envoi à un nombre illimité de destinataires par carte',
       'Cartes 100 % virtuelles, avec statistiques de visite',
+      'Programmation : envoi le jour de l\'anniversaire à 8h00',
       'Modifiable depuis votre compte',
     ],
     highlight: 'Populaire',
@@ -2925,15 +2927,15 @@ export default function EditorPage() {
                         </p>
                         <p className="text-teal-100 text-xs">
                           Votre carte est gratuite mais expire dans 48 h. Pour seulement{' '}
-                          <strong>2,50 €</strong>, elle devient pérenne — photo, vidéo ou message
-                          vocal. Cartes virtuelles avec stats de visite. Modifiable via le lien reçu par email.
+                          <strong>2,50 €</strong>, elle devient pérenne : photo, vidéo ou message
+                          vocal, envoi à un nombre illimité de destinataires. Cartes virtuelles avec stats de visite.
                         </p>
                         <button
                           type="button"
                           onClick={() => setSelectedPlan('payant')}
                           className="mt-2 inline-flex items-center gap-1 bg-white/20 hover:bg-white/30 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors"
                         >
-                          Passer à la carte payante — 2,50 € <ChevronRight size={12} />
+                          Passer à l&apos;unité — 2,50 € <ChevronRight size={12} />
                         </button>
                       </div>
                     </div>
@@ -3511,7 +3513,7 @@ export default function EditorPage() {
                           <div className="flex flex-col items-end gap-1">
                             <span className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100 font-bold">
                               <Sparkles size={12} fill="currentColor" />{' '}
-                              Carte payante activée
+                              Formule À l&apos;unité activée
                             </span>
                             <div className="flex items-center gap-2">
                               {getAlbumPrice() > 0 && (
@@ -4613,35 +4615,35 @@ export default function EditorPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="p-6 space-y-6">
-            {/* Gratuit - Découverte */}
+            {/* Carte gratuite — même plan que /pricing */}
             <div className="rounded-2xl border-2 border-green-200 bg-green-50/50 p-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className="inline-block w-3 h-3 rounded-full bg-green-500" />
-                <h4 className="font-bold text-stone-800">Gratuit — La &quot;Découverte&quot;</h4>
+                <h4 className="font-bold text-stone-800">Carte gratuite</h4>
               </div>
               <p className="text-sm text-stone-600 mb-1">
-                Objectif : faire connaître le site et tester sans friction.
+                Valable 48 h. Essayez sans engagement.
               </p>
               <ul className="text-xs text-stone-600 space-y-1 list-disc list-inside">
-                <li>1 seule photo, mise en page classique carte postale</li>
-                <li>Texte limité (comme un tweet)</li>
-                <li>Filigrane &quot;Créé avec ❤️ sur cartepostale.cool&quot; au dos</li>
-                <li>Partage direct via lien public ou bouton social</li>
-                <li>Carte modifiable via le lien reçu par email (48 h)</li>
+                <li>1 carte postale (photo, texte)</li>
+                <li>Modifiable via le lien reçu par email</li>
+                <li>Prolongeable en carte payante à tout moment</li>
               </ul>
             </div>
-            {/* 2,50 € — Prix unique tout compris */}
+            {/* À l'unité 2,50 € — même plan que /pricing */}
             <div className="rounded-2xl border-2 border-teal-200 bg-teal-50/50 p-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className="inline-block w-3 h-3 rounded-full bg-teal-500" />
-                <h4 className="font-bold text-stone-800">2,50 € — Prix unique tout compris</h4>
+                <h4 className="font-bold text-stone-800">À l&apos;unité — 2,50 €</h4>
               </div>
               <p className="text-sm text-stone-600 mb-1">
                 Peu importe le contenu (Photo, Vidéo ou Message vocal), le prix reste le même.
               </p>
               <ul className="text-xs text-stone-600 space-y-1 list-disc list-inside">
+                <li>Envoi à un nombre illimité de destinataires par carte</li>
                 <li>Cartes 100 % virtuelles, avec statistiques de visite</li>
                 <li>Photos, vidéos, message vocal : même tarif</li>
+                <li>Programmation (ex. anniversaire à 8h00)</li>
                 <li>Modifiable depuis votre compte</li>
                 <li>Carte gratuite 48 h modifiable via le lien reçu par email</li>
               </ul>

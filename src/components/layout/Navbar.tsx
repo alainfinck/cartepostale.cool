@@ -469,7 +469,7 @@ export const Navbar = () => {
               active={pathname === '/pricing'}
               href="/pricing"
             >
-              <div className="p-2">
+              <div className="p-2 space-y-2">
                 {dropdownTarifs.map((item) => (
                   <Link
                     key={item.label}
@@ -712,7 +712,7 @@ export const Navbar = () => {
                 }
                 href="/pricing"
               >
-                <div className="space-y-1 pt-1 pb-2">
+                <div className="space-y-2 pt-1 pb-2">
                   {dropdownTarifs.map((item) => (
                     <Link
                       key={item.label}
