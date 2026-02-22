@@ -81,6 +81,8 @@ export interface Postcard {
   stickers?: StickerPlacement[]
   audioMessage?: string
   audioDuration?: number
+  backgroundMusic?: string
+  backgroundMusicTitle?: string
   allowComments?: boolean
   isPublic?: boolean
   password?: string

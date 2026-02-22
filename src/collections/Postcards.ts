@@ -258,7 +258,35 @@ export const Postcards: CollectionConfig = {
       type: 'checkbox',
       defaultValue: true,
       admin: {
-        description: 'Autoriser l’ajout de photos via le lien de contribution',
+        description: "Autoriser l'ajout de photos via le lien de contribution",
+      },
+    },
+    {
+      name: 'audioMessage',
+      type: 'text',
+      admin: {
+        description: "URL du message vocal enregistré par l'expéditeur",
+      },
+    },
+    {
+      name: 'audioDuration',
+      type: 'number',
+      admin: {
+        description: 'Durée du message vocal en secondes',
+      },
+    },
+    {
+      name: 'backgroundMusic',
+      type: 'text',
+      admin: {
+        description: "URL de la musique d'ambiance (upload ou bibliothèque libre de droits)",
+      },
+    },
+    {
+      name: 'backgroundMusicTitle',
+      type: 'text',
+      admin: {
+        description: "Titre de la musique pour l'affichage",
       },
     },
   ],

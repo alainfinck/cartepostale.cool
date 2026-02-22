@@ -24,6 +24,7 @@ import {
   BookOpen,
   Mic,
   Volume2,
+  Music,
   MoreHorizontal,
 } from 'lucide-react'
 import { cn, isCoordinate } from '@/lib/utils'
@@ -227,6 +228,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const [isActionsOpen, setIsActionsOpen] = useState(true)
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false)
+  const musicRef = useRef<HTMLAudioElement>(null)
+  const [isPlayingMusic, setIsPlayingMusic] = useState(false)
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -480,6 +483,17 @@ const PostcardView: React.FC<PostcardViewProps> = ({
       audioRef.current.pause()
     } else {
       audioRef.current.play().catch((err) => console.error('Audio play failed', err))
+    }
+  }
+
+  const toggleMusic = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!postcard.backgroundMusic || !musicRef.current) return
+
+    if (isPlayingMusic) {
+      musicRef.current.pause()
+    } else {
+      musicRef.current.play().catch((err) => console.error('Music play failed', err))
     }
   }
 
@@ -1205,6 +1219,32 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                               </span>
                             </button>
                           )}
+
+                          {/* Background Music Option */}
+                          {postcard.backgroundMusic && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                setIsTopMenuOpen(false)
+                                toggleMusic(e)
+                              }}
+                              className={cn(
+                                'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-left',
+                                isPlayingMusic
+                                  ? 'bg-violet-50 text-violet-600'
+                                  : 'hover:bg-stone-50 text-stone-600 hover:text-violet-600',
+                              )}
+                            >
+                              {isPlayingMusic ? (
+                                <Volume2 size={16} className="animate-pulse" />
+                              ) : (
+                                <Music size={16} />
+                              )}
+                              <span className="text-xs font-bold uppercase tracking-wider">
+                                {isPlayingMusic ? 'Arrêter la musique' : 'Musique d\'ambiance'}
+                              </span>
+                            </button>
+                          )}
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -1659,6 +1699,22 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </button>
               )}
 
+              {postcard.backgroundMusic && (
+                <button
+                  onClick={toggleMusic}
+                  className={cn(
+                    actionButtonBase,
+                    isPlayingMusic
+                      ? 'bg-violet-100 border-violet-300 text-violet-800'
+                      : 'bg-violet-50/80 border border-violet-200/70 text-violet-800 hover:bg-violet-100 hover:border-violet-300 hover:shadow',
+                  )}
+                  title="Musique d'ambiance"
+                >
+                  <Music size={10} className="text-violet-600 shrink-0" />
+                  <span>MUSIQUE</span>
+                </button>
+              )}
+
               {!isFullscreen && !hideFullscreenButton && (
                 <button
                   onClick={toggleFullscreen}
@@ -1735,6 +1791,18 @@ const PostcardView: React.FC<PostcardViewProps> = ({
           onEnded={() => setIsPlayingAudio(false)}
           onPause={() => setIsPlayingAudio(false)}
           onPlay={() => setIsPlayingAudio(true)}
+          className="hidden"
+        />
+      )}
+
+      {/* Background Music Element (hidden) */}
+      {postcard.backgroundMusic && (
+        <audio
+          ref={musicRef}
+          src={postcard.backgroundMusic}
+          loop
+          onPause={() => setIsPlayingMusic(false)}
+          onPlay={() => setIsPlayingMusic(true)}
           className="hidden"
         />
       )}
