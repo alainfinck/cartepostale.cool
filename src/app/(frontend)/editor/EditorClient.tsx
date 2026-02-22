@@ -96,6 +96,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { GoogleLoginButton } from '@/components/auth/GoogleLoginButton'
+import { useFacebookPixel } from '@/hooks/useFacebookPixel'
 
 const POSTCARD_ASPECT = 3 / 2
 const DEFAULT_FRONT_FILTER: FrontImageFilter = {
@@ -748,6 +749,10 @@ export default function EditorPage() {
   const [isRevolutRedirecting, setIsRevolutRedirecting] = useState(false)
   const [revolutError, setRevolutError] = useState<string | null>(null)
 
+  // Meta Facebook Pixel
+  const { trackInitiateCheckout, trackAddToCart, trackCompleteRegistration, trackViewContent } =
+    useFacebookPixel()
+
   const [password, setPassword] = useState('')
   const [isPasswordProtected, setIsPasswordProtected] = useState(false)
 
@@ -781,6 +786,8 @@ export default function EditorPage() {
     async (result: { success: boolean; role: string; email?: string }) => {
       if (result.success && result.email) {
         setSenderEmail(result.email)
+        // Meta Pixel — CompleteRegistration (connexion/inscription Google)
+        trackCompleteRegistration({ content_name: 'Google Login - Editor' })
         // Check if we have a postcard to link
         if (createdPostcardId) {
           setIsSendingEmail(true)
@@ -864,8 +871,39 @@ export default function EditorPage() {
     const success = searchParams.get('payment_success')
     if (success === 'true' && currentStep === 'payment') {
       setCurrentStep('preview')
+      // Meta Pixel — Purchase (côté serveur via Conversions API pour iOS safe)
+      const amount = getAlbumPrice()
+      if (amount > 0) {
+        fetch('/api/meta/event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventName: 'Purchase',
+            params: {
+              value: amount,
+              currency: 'EUR',
+              content_name: 'Carte Postale Premium CartePostale.cool',
+              content_type: 'product',
+            },
+            userEmail: currentUser?.email || senderEmail || undefined,
+          }),
+        }).catch(() => {})
+      }
     }
   }, [searchParams, currentStep])
+
+  // Meta Pixel — AddToCart quand le premier média premium est ajouté
+  const prevIsPremiumRef = useRef(false)
+  useEffect(() => {
+    if (isPremium && !prevIsPremiumRef.current && getAlbumPrice() > 0) {
+      trackAddToCart({
+        content_name: 'Carte Postale Premium CartePostale.cool',
+        value: getAlbumPrice(),
+        currency: 'EUR',
+      })
+    }
+    prevIsPremiumRef.current = isPremium
+  }, [isPremium])
 
   useEffect(() => {
     fetch('/api/users/me', { credentials: 'include' })
@@ -1875,6 +1913,13 @@ export default function EditorPage() {
     if (amount <= 0) return
     setRevolutError(null)
     setIsRevolutRedirecting(true)
+
+    // Meta Pixel — InitiateCheckout (ouverture du paiement)
+    trackInitiateCheckout({
+      value: amount,
+      currency: 'EUR',
+      content_name: 'Carte Postale Premium CartePostale.cool',
+    })
 
     try {
       // Ensure we have a createdPostcardId first

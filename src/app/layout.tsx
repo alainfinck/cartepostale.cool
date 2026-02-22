@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import Script from 'next/script'
+import { FacebookPixel } from '@/components/FacebookPixel'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -12,7 +13,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       {/* suppressHydrationWarning: Cursor IDE preview can inject data-cursor-element-id into the DOM, causing hydration mismatch. Test in a normal browser to confirm the app is fine. */}
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        {children}
+        {/* Meta Facebook Pixel — tracking sur toutes les pages */}
+        <Suspense fallback={null}>
+          <FacebookPixel />
+        </Suspense>
+      </body>
     </html>
   )
 }

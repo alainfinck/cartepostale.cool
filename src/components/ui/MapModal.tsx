@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { MapContainer, TileLayer, Marker, Popup, LayersControl, useMap } from 'react-leaflet'
-import { Camera, Eye, EyeOff, Loader2, Globe, X, Map as MapIcon } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Globe, X, Map as MapIcon } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 import { cn } from '@/lib/utils'
 import PhotoMarker, { PhotoLocation } from './PhotoMarker'
@@ -43,6 +44,21 @@ const MapModal: React.FC<MapModalProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPhotos, setShowPhotos] = useState(true)
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null)
+
+  useEffect(() => {
+    setPortalRoot(document.body)
+  }, [])
+
+  // Lock body scroll when modal open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = ''
+      }
+    }
+  }, [isOpen])
 
   useEffect(() => {
     async function geocode() {
@@ -80,11 +96,11 @@ const MapModal: React.FC<MapModalProps> = ({
     }
   }, [location, coords, isOpen])
 
-  if (!isOpen) return null
+  if (!isOpen || !portalRoot) return null
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[300] bg-black/20 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-[9999] bg-black/20 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
@@ -214,7 +230,8 @@ const MapModal: React.FC<MapModalProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    portalRoot,
   )
 }
 

@@ -7,6 +7,7 @@ import { LogIn, Mail, Lock, AlertCircle, UserPlus, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { GoogleLoginButton } from '@/components/auth/GoogleLoginButton'
+import { useFacebookPixel } from '@/hooks/useFacebookPixel'
 
 export default function ConnexionClient() {
   const router = useRouter()
@@ -19,6 +20,7 @@ export default function ConnexionClient() {
 
   const [flipped, setFlipped] = useState(initialFlipped)
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+  const { trackCompleteRegistration, trackLead } = useFacebookPixel()
 
   // Connexion
   const [email, setEmail] = useState('')
@@ -54,6 +56,8 @@ export default function ConnexionClient() {
         setLoading(false)
         return
       }
+      // Meta Pixel — Lead (connexion réussie)
+      trackLead({ content_name: 'Connexion Email' })
       router.push(callbackUrl)
       router.refresh()
     } catch {
@@ -98,6 +102,8 @@ export default function ConnexionClient() {
         setSignupLoading(false)
         return
       }
+      // Meta Pixel — CompleteRegistration (inscription réussie)
+      trackCompleteRegistration({ content_name: 'Inscription Email' })
       router.push(callbackUrl)
       router.refresh()
     } catch {
