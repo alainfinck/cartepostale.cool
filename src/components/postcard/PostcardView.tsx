@@ -288,14 +288,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     }
   }
 
-  const handleShareContribution = () => {
-    if (!postcard.contributionToken) return
-    const url = new URL(window.location.href)
-    url.searchParams.set('token', postcard.contributionToken)
-    navigator.clipboard.writeText(url.toString())
-    alert('Lien de participation copié ! Envoyez-le à vos amis.')
-  }
-
   // Calculate photo locations from EXIF data
   const photoLocations: PhotoLocation[] = React.useMemo(() => {
     if (!postcard.mediaItems) return []
@@ -603,8 +595,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     )
   }
 
+  const canContribute = postcard.contributionToken && postcard.isContributionEnabled !== false
+  const showAlbumOrContribute = hasMedia || canContribute
+
   const renderAlbumModal = () => {
-    if (!portalRoot || !isAlbumOpen || !hasMedia) return null
+    if (!portalRoot || !isAlbumOpen) return null
+    if (!showAlbumOrContribute) return null
 
     return createPortal(
       <div
@@ -623,7 +619,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
           </button>
 
           {/* Contribution Actions */}
-          {postcard.contributionToken && postcard.isContributionEnabled !== false && (
+          {canContribute && (
             <div className="absolute -top-12 left-0 flex gap-2 z-50">
               <button
                 onClick={handleUploadClick}
@@ -637,12 +633,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 )}
                 <span className="hidden sm:inline">Ajouter une photo</span>
               </button>
-              <button
-                onClick={handleShareContribution}
-                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg backdrop-blur-md border border-white/20 transition-all flex items-center gap-2"
-              >
-                <span className="hidden sm:inline">Inviter</span>
-              </button>
               <input
                 type="file"
                 ref={fileInputRef}
@@ -654,7 +644,15 @@ const PostcardView: React.FC<PostcardViewProps> = ({
           )}
 
           <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden shadow-2xl flex items-center justify-center mb-6">
-            {postcard.mediaItems![currentMediaIndex].type === 'video' ? (
+            {!hasMedia ? (
+              <div className="flex flex-col items-center justify-center gap-4 text-white/80 p-8 text-center">
+                <Camera size={48} className="opacity-60" />
+                <p className="text-lg font-semibold">Aucune photo pour le moment</p>
+                <p className="text-sm max-w-sm">
+                  Ajoutez la première photo ou partagez le lien pour inviter d&apos;autres personnes à contribuer.
+                </p>
+              </div>
+            ) : postcard.mediaItems![currentMediaIndex].type === 'video' ? (
               <video controls autoPlay className="max-w-full max-h-[70dvh]">
                 <source src={postcard.mediaItems![currentMediaIndex].url} />
               </video>
@@ -668,7 +666,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               />
             )}
 
-            {postcard.mediaItems!.length > 1 && (
+            {hasMedia && postcard.mediaItems!.length > 1 && (
               <>
                 <button
                   onClick={prevMedia}
@@ -687,7 +685,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
           </div>
 
           <div className="flex gap-4 overflow-x-auto max-w-full pb-4 px-2">
-            {postcard.mediaItems!.map((item, idx) => (
+            {(postcard.mediaItems || []).map((item, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentMediaIndex(idx)}
@@ -1076,17 +1074,17 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     </button>
                   </div>
 
-                  {/* Album Button */}
-                  {hasMedia && (
+                  {/* Album / Ajouter des photos Button */}
+                  {(hasMedia || canContribute) && (
                     <button
                       type="button"
                       onClick={openAlbum}
                       className="h-7 sm:h-9 px-3 sm:px-4 flex items-center gap-2 rounded-xl bg-white/80 backdrop-blur-md border border-stone-200 text-stone-600 hover:text-teal-600 hover:border-teal-300 transition-all shadow-sm"
-                      title="Album photos"
+                      title={hasMedia ? 'Album photos' : 'Ajouter des photos'}
                     >
                       <Camera size={16} strokeWidth={2} />
                       <span className="hidden sm:inline text-xs font-bold uppercase tracking-wider">
-                        Album
+                        {hasMedia ? 'Album' : 'Ajouter des photos'}
                       </span>
                     </button>
                   )}
@@ -1631,17 +1629,17 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             style={{ transformOrigin: 'top', transformStyle: 'preserve-3d' }}
           >
             <div className="flex items-stretch justify-center w-[98%] sm:w-[90%] flex-nowrap gap-1 sm:gap-3 rounded-b-xl border-x border-b border-stone-200 bg-white shadow-[0_6px_20px_rgba(0,0,0,0.08)] px-1 sm:px-4 py-1 sm:py-2 min-h-[36px]">
-              {hasMedia && (
+              {(hasMedia || canContribute) && (
                 <button
                   onClick={openAlbum}
-                  title="Voir les photos de la carte"
+                  title={hasMedia ? 'Voir les photos de la carte' : 'Ajouter des photos'}
                   className={cn(
                     actionButtonBase,
                     'bg-amber-50 border border-amber-200/90 text-amber-800 hover:bg-amber-100 hover:border-amber-300 hover:shadow',
                   )}
                 >
                   <Camera size={10} className="text-amber-600 shrink-0" />
-                  <span>ALBUM</span>
+                  <span>{hasMedia ? 'ALBUM' : 'AJOUTER DES PHOTOS'}</span>
                 </button>
               )}
 
