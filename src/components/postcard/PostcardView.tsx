@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { FrontImageFilter, Postcard } from '@/types'
+import { FrontCaptionPosition, FrontImageFilter, Postcard } from '@/types'
 import { PhotoLocation } from '@/components/ui/PhotoMarker'
 import {
   RotateCw,
@@ -70,6 +70,10 @@ interface PostcardViewProps {
 }
 
 const DEFAULT_CAPTION_POSITION = { x: 50, y: 85 }
+const CAPTION_MIN_BOUND = 10
+const CAPTION_MAX_BOUND = 90
+const CAPTION_SNAP_GUIDES = [20, 50, 80] as const
+const CAPTION_SNAP_THRESHOLD = 1.6
 
 const FALLBACK_FRONT_IMAGE =
   'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'
@@ -108,6 +112,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 }) => {
   const [isFlipped, setIsFlipped] = useState(flipped ?? false)
   const [isDraggingCaption, setIsDraggingCaption] = useState(false)
+  const [dragCaptionPos, setDragCaptionPos] = useState<FrontCaptionPosition | null>(null)
+  const [dragGuides, setDragGuides] = useState<{ x: number | null; y: number | null }>({
+    x: null,
+    y: null,
+  })
   const frontFaceRef = useRef<HTMLDivElement>(null)
   const [frontImageSrc, setFrontImageSrc] = useState(postcard.frontImage || FALLBACK_FRONT_IMAGE)
   const [isFrontImageLoading, setIsFrontImageLoading] = useState(!!postcard.frontImage)
@@ -115,33 +124,114 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null)
 
   const captionPos = postcard.frontCaptionPosition ?? DEFAULT_CAPTION_POSITION
+  const visibleCaptionPos = dragCaptionPos ?? captionPos
   const usePositionedCaption =
     postcard.frontCaptionPosition != null || onCaptionPositionChange != null
+  const dragStateRef = useRef<{
+    pos: FrontCaptionPosition
+    guides: { x: number | null; y: number | null }
+  } | null>(null)
+  const captionPosRef = useRef<FrontCaptionPosition>(captionPos)
+  const dragCaptionPosRef = useRef<FrontCaptionPosition | null>(null)
+  const dragRafRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    captionPosRef.current = captionPos
+  }, [captionPos.x, captionPos.y])
+
+  const clampCaptionValue = useCallback((value: number) => {
+    return Math.max(CAPTION_MIN_BOUND, Math.min(CAPTION_MAX_BOUND, value))
+  }, [])
+
+  const snapCaptionValue = useCallback((value: number) => {
+    for (const guide of CAPTION_SNAP_GUIDES) {
+      if (Math.abs(value - guide) <= CAPTION_SNAP_THRESHOLD) {
+        return { value: guide, guide }
+      }
+    }
+
+    return { value, guide: null as number | null }
+  }, [])
+
+  const handleCaptionPointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!onCaptionPositionChange) return
+      e.stopPropagation()
+      e.preventDefault()
+      const startPos = captionPosRef.current
+      dragCaptionPosRef.current = startPos
+      dragStateRef.current = { pos: startPos, guides: { x: null, y: null } }
+      setDragCaptionPos(startPos)
+      setDragGuides({ x: null, y: null })
+      setIsDraggingCaption(true)
+    },
+    [onCaptionPositionChange],
+  )
 
   useEffect(() => {
     if (!isDraggingCaption || !onCaptionPositionChange) return
+
+    const flushDragFrame = () => {
+      dragRafRef.current = null
+      if (!dragStateRef.current) return
+      dragCaptionPosRef.current = dragStateRef.current.pos
+      setDragCaptionPos(dragStateRef.current.pos)
+      setDragGuides(dragStateRef.current.guides)
+    }
+
     const onMove = (e: PointerEvent) => {
       const el = frontFaceRef.current
       if (!el) return
       const rect = el.getBoundingClientRect()
-      const xPct = ((e.clientX - rect.left) / rect.width) * 100
-      const yPct = ((e.clientY - rect.top) / rect.height) * 100
-      const x = Math.max(10, Math.min(90, xPct))
-      const y = Math.max(10, Math.min(90, yPct))
-      onCaptionPositionChange({ x, y })
+      if (!rect.width || !rect.height) return
+
+      const xPct = clampCaptionValue(((e.clientX - rect.left) / rect.width) * 100)
+      const yPct = clampCaptionValue(((e.clientY - rect.top) / rect.height) * 100)
+      const snappedX = snapCaptionValue(xPct)
+      const snappedY = snapCaptionValue(yPct)
+
+      dragStateRef.current = {
+        pos: { x: snappedX.value, y: snappedY.value },
+        guides: { x: snappedX.guide, y: snappedY.guide },
+      }
+
+      if (dragRafRef.current == null) {
+        dragRafRef.current = window.requestAnimationFrame(flushDragFrame)
+      }
     }
+
     const onUp = () => {
+      if (dragRafRef.current != null) {
+        window.cancelAnimationFrame(dragRafRef.current)
+        dragRafRef.current = null
+      }
+
+      const finalPos = dragStateRef.current?.pos ?? dragCaptionPosRef.current ?? captionPosRef.current
+      dragStateRef.current = null
+      dragCaptionPosRef.current = null
       setIsDraggingCaption(false)
+      setDragCaptionPos(null)
+      setDragGuides({ x: null, y: null })
+      onCaptionPositionChange(finalPos)
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
     }
-    window.addEventListener('pointermove', onMove)
+
+    window.addEventListener('pointermove', onMove, { passive: true })
     window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
+
     return () => {
+      if (dragRafRef.current != null) {
+        window.cancelAnimationFrame(dragRafRef.current)
+        dragRafRef.current = null
+      }
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
     }
-  }, [isDraggingCaption, onCaptionPositionChange])
+  }, [isDraggingCaption, onCaptionPositionChange, clampCaptionValue, snapCaptionValue])
 
   const [isFullscreen, setIsFullscreen] = useState(false)
   const frontImageFilterCss = buildFrontImageFilterCss(postcard.frontImageFilter)
@@ -951,30 +1041,45 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </div>
               )}
 
+              {isDraggingCaption && (
+                <div className="absolute inset-0 z-[19] pointer-events-none">
+                  {dragGuides.x != null && (
+                    <div
+                      className="absolute top-0 bottom-0 w-px bg-teal-300/80 shadow-[0_0_0_1px_rgba(255,255,255,0.35)]"
+                      style={{ left: `${dragGuides.x}%` }}
+                    />
+                  )}
+                  {dragGuides.y != null && (
+                    <div
+                      className="absolute left-0 right-0 h-px bg-teal-300/80 shadow-[0_0_0_1px_rgba(255,255,255,0.35)]"
+                      style={{ top: `${dragGuides.y}%` }}
+                    />
+                  )}
+                </div>
+              )}
+
               {/* Message démo au-dessus de la localisation (frontCaption sans frontEmoji) — déplaçable en mode éditeur */}
               {postcard.frontCaption?.trim() && !postcard.frontEmoji && (
                 <div
                   className={cn(
-                    'z-20 w-fit max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-3rem)] px-3 py-2 sm:px-4 sm:py-2.5 rounded-md border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300',
+                    'z-20 w-fit max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-3rem)] px-3 py-2 sm:px-4 sm:py-2.5 rounded-md border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)]',
+                    isDraggingCaption ? 'transition-none' : 'transition-all duration-200',
                     usePositionedCaption ? 'absolute' : 'absolute left-4 sm:left-6 bottom-14 sm:bottom-16',
                     onCaptionPositionChange && 'cursor-grab active:cursor-grabbing touch-none select-none',
                   )}
                   style={
                     usePositionedCaption
                       ? {
-                          left: `${captionPos.x}%`,
-                          top: `${captionPos.y}%`,
+                          left: `${visibleCaptionPos.x}%`,
+                          top: `${visibleCaptionPos.y}%`,
                           transform: 'translate(-50%, -50%)',
                           backgroundColor: frontTextBgColor,
+                          willChange: isDraggingCaption ? ('left, top' as const) : undefined,
                         }
                       : { backgroundColor: 'rgba(255,255,255,0.65)' }
                   }
                   {...(onCaptionPositionChange && {
-                    onPointerDown: (e: React.PointerEvent) => {
-                      e.stopPropagation()
-                      e.preventDefault()
-                      setIsDraggingCaption(true)
-                    },
+                    onPointerDown: handleCaptionPointerDown,
                     onClick: (e: React.MouseEvent) => e.stopPropagation(),
                   })}
                 >
@@ -1000,7 +1105,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {postcard.frontCaption?.trim() && postcard.frontEmoji && (
                 <div
                   className={cn(
-                    'z-20 flex items-center gap-3 rounded-2xl sm:rounded-3xl border border-white/50 px-5 py-3.5 sm:px-6 sm:py-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 w-fit max-w-[calc(100%-2rem)]',
+                    'z-20 flex items-center gap-3 rounded-2xl sm:rounded-3xl border border-white/50 px-5 py-3.5 sm:px-6 sm:py-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] w-fit max-w-[calc(100%-2rem)]',
+                    isDraggingCaption ? 'transition-none' : 'transition-all duration-200',
                     usePositionedCaption
                       ? 'absolute'
                       : 'absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6',
@@ -1010,19 +1116,16 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   style={
                     usePositionedCaption
                       ? {
-                          left: `${captionPos.x}%`,
-                          top: `${captionPos.y}%`,
+                          left: `${visibleCaptionPos.x}%`,
+                          top: `${visibleCaptionPos.y}%`,
                           transform: 'translate(-50%, -50%)',
                           backgroundColor: frontTextBgColor,
+                          willChange: isDraggingCaption ? ('left, top' as const) : undefined,
                         }
                       : { backgroundColor: frontTextBgColor }
                   }
                   {...(onCaptionPositionChange && {
-                    onPointerDown: (e: React.PointerEvent) => {
-                      e.stopPropagation()
-                      e.preventDefault()
-                      setIsDraggingCaption(true)
-                    },
+                    onPointerDown: handleCaptionPointerDown,
                     onClick: (e: React.MouseEvent) => e.stopPropagation(),
                   })}
                 >

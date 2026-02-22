@@ -644,6 +644,26 @@ const MESSAGE_EMOJIS = [
   '🏖️',
 ]
 
+const FRONT_CAPTION_MIN = 10
+const FRONT_CAPTION_MAX = 90
+const DEFAULT_FRONT_CAPTION_POSITION: FrontCaptionPosition = { x: 50, y: 85 }
+const FRONT_CAPTION_PRESETS: Array<{
+  id: string
+  label: string
+  x: number
+  y: number
+}> = [
+  { id: 'top-left', label: 'Haut gauche', x: 20, y: 20 },
+  { id: 'top-center', label: 'Haut centre', x: 50, y: 20 },
+  { id: 'top-right', label: 'Haut droite', x: 80, y: 20 },
+  { id: 'middle-left', label: 'Centre gauche', x: 20, y: 50 },
+  { id: 'middle', label: 'Centre', x: 50, y: 50 },
+  { id: 'middle-right', label: 'Centre droite', x: 80, y: 50 },
+  { id: 'bottom-left', label: 'Bas gauche', x: 20, y: 80 },
+  { id: 'bottom-center', label: 'Bas centre', x: 50, y: 85 },
+  { id: 'bottom-right', label: 'Bas droite', x: 80, y: 80 },
+]
+
 /** Un seul palier payant : prix unique tout compris (photo, vidéo, audio). */
 const ALBUM_TIERS = {
   paid: { photos: 50, videos: 10, price: 2.5 },
@@ -729,10 +749,9 @@ export default function EditorPage() {
   const [frontImage, setFrontImage] = useState('')
   const [frontCaption, setFrontCaption] = useState('')
   const [frontEmoji, setFrontEmoji] = useState('✨')
-  const [frontCaptionPosition, setFrontCaptionPosition] = useState<FrontCaptionPosition>({
-    x: 50,
-    y: 85,
-  })
+  const [frontCaptionPosition, setFrontCaptionPosition] = useState<FrontCaptionPosition>(
+    DEFAULT_FRONT_CAPTION_POSITION,
+  )
   const [frontTextBgOpacity, setFrontTextBgOpacity] = useState(90)
   const [message, setMessage] = useState(
     'Un petit coucou de mes vacances ! Tout se passe merveilleusement bien, les paysages sont magnifiques. On pense bien à vous !',
@@ -908,6 +927,31 @@ export default function EditorPage() {
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
   const [showBack, setShowBack] = useState(currentStep === 'redaction')
 
+  const clampFrontCaptionAxis = useCallback((value: number) => {
+    const rounded = Number(value.toFixed(1))
+    return Math.max(FRONT_CAPTION_MIN, Math.min(FRONT_CAPTION_MAX, rounded))
+  }, [])
+
+  const handleFrontCaptionPositionChange = useCallback(
+    (pos: FrontCaptionPosition) => {
+      setFrontCaptionPosition({
+        x: clampFrontCaptionAxis(pos.x),
+        y: clampFrontCaptionAxis(pos.y),
+      })
+    },
+    [clampFrontCaptionAxis],
+  )
+
+  const nudgeFrontCaption = useCallback(
+    (dx: number, dy: number) => {
+      setFrontCaptionPosition((prev) => ({
+        x: clampFrontCaptionAxis(prev.x + dx),
+        y: clampFrontCaptionAxis(prev.y + dy),
+      }))
+    },
+    [clampFrontCaptionAxis],
+  )
+
   // Sync showBack when step changes
   useEffect(() => {
     setShowBack(currentStep === 'redaction')
@@ -1074,11 +1118,15 @@ export default function EditorPage() {
     // Éviter de sauvegarder si vide (juste l'init)
     if (!frontImage && message.startsWith('Un petit coucou')) return
 
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave))
-    } catch (e) {
-      console.warn('LocalStorage full or error', e)
-    }
+    const timeoutId = window.setTimeout(() => {
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave))
+      } catch (e) {
+        console.warn('LocalStorage full or error', e)
+      }
+    }, 500)
+
+    return () => window.clearTimeout(timeoutId)
   }, [
     createdPostcardId,
     isPublishing,
@@ -2340,7 +2388,7 @@ export default function EditorPage() {
                   flipped={showBack}
                   frontTextBgOpacity={frontTextBgOpacity}
                   className="w-full h-auto aspect-[3/2] shadow-xl rounded-xl border border-stone-100"
-                  onCaptionPositionChange={setFrontCaptionPosition}
+                  onCaptionPositionChange={handleFrontCaptionPositionChange}
                 />
                 <StickerLayer
                   stickers={stickers}
@@ -2666,24 +2714,159 @@ export default function EditorPage() {
                       </p>
                     </div>
                     {frontCaption.trim().length > 0 && (
-                      <div>
-                        <div className="mb-1.5 flex items-center justify-between">
-                          <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider">
-                            Opacité du fond texte
-                          </label>
-                          <span className="text-xs font-medium text-stone-500 tabular-nums">
-                            {frontTextBgOpacity}%
-                          </span>
+                      <div className="space-y-3">
+                        <div>
+                          <div className="mb-1.5 flex items-center justify-between">
+                            <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                              Opacité du fond texte
+                            </label>
+                            <span className="text-xs font-medium text-stone-500 tabular-nums">
+                              {frontTextBgOpacity}%
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min={0}
+                            max={100}
+                            step={1}
+                            value={frontTextBgOpacity}
+                            onChange={(e) => setFrontTextBgOpacity(Number(e.target.value))}
+                            className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                          />
                         </div>
-                        <input
-                          type="range"
-                          min={0}
-                          max={100}
-                          step={1}
-                          value={frontTextBgOpacity}
-                          onChange={(e) => setFrontTextBgOpacity(Number(e.target.value))}
-                          className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
-                        />
+
+                        <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3 sm:p-4 space-y-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                              Position du texte
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleFrontCaptionPositionChange(DEFAULT_FRONT_CAPTION_POSITION)
+                              }
+                              className="text-[11px] font-semibold text-stone-500 hover:text-teal-600 transition-colors"
+                            >
+                              Réinitialiser
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-2">
+                            {FRONT_CAPTION_PRESETS.map((preset) => {
+                              const isActive =
+                                Math.abs(frontCaptionPosition.x - preset.x) < 0.2 &&
+                                Math.abs(frontCaptionPosition.y - preset.y) < 0.2
+
+                              return (
+                                <button
+                                  key={preset.id}
+                                  type="button"
+                                  onClick={() =>
+                                    handleFrontCaptionPositionChange({ x: preset.x, y: preset.y })
+                                  }
+                                  className={cn(
+                                    'rounded-lg border px-2 py-1.5 text-[11px] font-semibold transition-colors',
+                                    isActive
+                                      ? 'border-teal-500 bg-teal-50 text-teal-700'
+                                      : 'border-stone-200 bg-white text-stone-600 hover:border-teal-300 hover:text-teal-700',
+                                  )}
+                                >
+                                  {preset.label}
+                                </button>
+                              )
+                            })}
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-1.5 justify-items-center">
+                            <span />
+                            <button
+                              type="button"
+                              onClick={() => nudgeFrontCaption(0, -1)}
+                              className="h-8 w-8 rounded-lg border border-stone-200 bg-white text-stone-600 hover:border-teal-300 hover:text-teal-700 flex items-center justify-center"
+                              aria-label="Monter le texte"
+                            >
+                              <ChevronUp size={16} />
+                            </button>
+                            <span />
+                            <button
+                              type="button"
+                              onClick={() => nudgeFrontCaption(-1, 0)}
+                              className="h-8 w-8 rounded-lg border border-stone-200 bg-white text-stone-600 hover:border-teal-300 hover:text-teal-700 flex items-center justify-center"
+                              aria-label="Déplacer le texte à gauche"
+                            >
+                              <ChevronLeft size={16} />
+                            </button>
+                            <span className="h-8 px-2 rounded-lg border border-dashed border-stone-300 text-[10px] font-semibold text-stone-500 flex items-center justify-center">
+                              ±1%
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => nudgeFrontCaption(1, 0)}
+                              className="h-8 w-8 rounded-lg border border-stone-200 bg-white text-stone-600 hover:border-teal-300 hover:text-teal-700 flex items-center justify-center"
+                              aria-label="Déplacer le texte à droite"
+                            >
+                              <ChevronRight size={16} />
+                            </button>
+                            <span />
+                            <button
+                              type="button"
+                              onClick={() => nudgeFrontCaption(0, 1)}
+                              className="h-8 w-8 rounded-lg border border-stone-200 bg-white text-stone-600 hover:border-teal-300 hover:text-teal-700 flex items-center justify-center"
+                              aria-label="Descendre le texte"
+                            >
+                              <ChevronDown size={16} />
+                            </button>
+                            <span />
+                          </div>
+
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="w-4 text-[11px] font-bold text-stone-500">X</span>
+                              <input
+                                type="range"
+                                min={FRONT_CAPTION_MIN}
+                                max={FRONT_CAPTION_MAX}
+                                step={0.5}
+                                value={frontCaptionPosition.x}
+                                onChange={(e) =>
+                                  handleFrontCaptionPositionChange({
+                                    x: Number(e.target.value),
+                                    y: frontCaptionPosition.y,
+                                  })
+                                }
+                                className="w-full h-1.5 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                              />
+                              <span className="w-12 text-right text-[11px] font-medium text-stone-500 tabular-nums">
+                                {frontCaptionPosition.x.toFixed(1)}%
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="w-4 text-[11px] font-bold text-stone-500">Y</span>
+                              <input
+                                type="range"
+                                min={FRONT_CAPTION_MIN}
+                                max={FRONT_CAPTION_MAX}
+                                step={0.5}
+                                value={frontCaptionPosition.y}
+                                onChange={(e) =>
+                                  handleFrontCaptionPositionChange({
+                                    x: frontCaptionPosition.x,
+                                    y: Number(e.target.value),
+                                  })
+                                }
+                                className="w-full h-1.5 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                              />
+                              <span className="w-12 text-right text-[11px] font-medium text-stone-500 tabular-nums">
+                                {frontCaptionPosition.y.toFixed(1)}%
+                              </span>
+                            </div>
+                          </div>
+
+                          <p className="text-[11px] text-stone-500">
+                            Astuce : vous pouvez aussi glisser directement le texte sur l’aperçu de
+                            la carte.
+                          </p>
+                        </div>
                       </div>
                     )}
                     <div>
@@ -4563,7 +4746,7 @@ export default function EditorPage() {
                         postcard={postcardForPreview}
                         flipped={showBack}
                         frontTextBgOpacity={frontTextBgOpacity}
-                        onCaptionPositionChange={setFrontCaptionPosition}
+                        onCaptionPositionChange={handleFrontCaptionPositionChange}
                       />
                     </div>
                   </div>
@@ -4629,7 +4812,7 @@ export default function EditorPage() {
                   flipped={showBack}
                   frontTextBgOpacity={frontTextBgOpacity}
                   className="w-full max-w-[1700px] h-auto aspect-[3/2] shadow-2xl cursor-default"
-                  onCaptionPositionChange={setFrontCaptionPosition}
+                  onCaptionPositionChange={handleFrontCaptionPositionChange}
                 />
               </div>
             </div>
