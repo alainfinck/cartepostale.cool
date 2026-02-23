@@ -1610,95 +1610,87 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   {(postcard.coords || postcard.location) && (
                     <div
                       className={cn(
-                        'flex-1 w-full flex flex-row gap-1 min-h-0',
+                        'flex-1 w-full rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner min-h-0 relative',
                         isLarge
                           ? 'min-h-[100px] sm:min-h-[200px] md:min-h-[280px] max-h-[400px]'
                           : 'min-h-[80px] sm:min-h-[100px]',
                       )}
                     >
-                      {/* Map container */}
-                      <div className="flex-1 min-w-0 rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner relative">
-                        {postcard.coords ? (
-                          <div
-                            className="group/map relative w-full h-full flex flex-col items-center justify-center cursor-pointer overflow-hidden"
-                            onClick={openMap}
-                            role="button"
-                            tabIndex={0}
-                            title="Agrandir la carte"
-                          >
-                            {/* Leaflet MiniMap */}
-                            <div className="absolute inset-0 overflow-hidden bg-stone-100">
-                              <MiniMap
-                                coords={postcard.coords!}
-                                zoom={backMapZoom}
-                                onClick={openMap}
-                                photoLocations={photoLocations}
-                              />
-                            </div>
-                            {/* Loupe dans un coin sans overlay au hover */}
-                            <div className="absolute bottom-2 left-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
-                              <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/95 shadow-lg text-teal-600 border border-stone-100">
-                                <Search size={isLarge ? 20 : 16} strokeWidth={2.5} />
-                              </div>
-                            </div>
-                            <span className="sr-only">Agrandir la carte</span>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={openMap}
-                            className="group/map relative w-full h-full flex flex-col items-center justify-center gap-2 text-stone-500 hover:bg-stone-100/80 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-inset rounded-lg overflow-hidden"
-                            title="Voir la carte"
-                          >
-                            <MapPin
-                              size={isLarge ? 32 : 24}
-                              className="text-teal-500 transition-opacity group-hover/map:opacity-60"
-                            />
-                            <span className="text-xs sm:text-sm font-semibold text-teal-700 uppercase tracking-wide transition-opacity group-hover/map:opacity-60">
-                              Voir la carte
-                            </span>
-                            <div className="absolute bottom-2 left-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
-                              <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/95 shadow-lg text-teal-600 border border-stone-100">
-                                <Search size={isLarge ? 20 : 16} strokeWidth={2.5} />
-                              </div>
-                            </div>
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Boutons zoom +/- à droite de la map, en dehors */}
-                      {postcard.coords && (
+                      {postcard.coords ? (
                         <div
-                          className="flex flex-col justify-center gap-1 shrink-0"
-                          onClick={(e) => e.stopPropagation()}
+                          className="group/map relative w-full h-full flex flex-col items-center justify-center cursor-pointer overflow-hidden"
+                          onClick={openMap}
+                          role="button"
+                          tabIndex={0}
+                          title="Agrandir la carte"
                         >
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setBackMapZoom((z) => Math.min(18, z + 1))
-                            }}
-                            className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center bg-white hover:bg-stone-50 text-stone-500 hover:text-teal-600 border border-stone-200 rounded-sm shadow-sm transition-colors"
-                            aria-label="Zoom avant"
+                          {/* Leaflet MiniMap */}
+                          <div className="absolute inset-0 overflow-hidden bg-stone-100">
+                            <MiniMap
+                              coords={postcard.coords!}
+                              zoom={backMapZoom}
+                              onClick={openMap}
+                              photoLocations={photoLocations}
+                            />
+                          </div>
+                          {/* Boutons zoom +/- très petits en haut à droite */}
+                          <div
+                            className="absolute top-1 right-1 z-10 flex flex-col gap-px"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            <span className="text-[8px] sm:text-[9px] font-bold leading-none">
-                              +
-                            </span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setBackMapZoom((z) => Math.max(5, z - 1))
-                            }}
-                            className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center bg-white hover:bg-stone-50 text-stone-500 hover:text-teal-600 border border-stone-200 rounded-sm shadow-sm transition-colors"
-                            aria-label="Zoom arrière"
-                          >
-                            <span className="text-[8px] sm:text-[9px] font-bold leading-none">
-                              −
-                            </span>
-                          </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setBackMapZoom((z) => Math.min(18, z + 1))
+                              }}
+                              className="flex items-center justify-center bg-white/80 hover:bg-white/95 text-stone-600 hover:text-teal-600 border border-stone-300/60 rounded-full shadow transition-colors"
+                              style={{ width: 13, height: 13, minWidth: 13 }}
+                              aria-label="Zoom avant"
+                            >
+                              <span className="text-[9px] font-black leading-none">+</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setBackMapZoom((z) => Math.max(5, z - 1))
+                              }}
+                              className="flex items-center justify-center bg-white/80 hover:bg-white/95 text-stone-600 hover:text-teal-600 border border-stone-300/60 rounded-full shadow transition-colors"
+                              style={{ width: 13, height: 13, minWidth: 13 }}
+                              aria-label="Zoom arrière"
+                            >
+                              <span className="text-[9px] font-black leading-none">−</span>
+                            </button>
+                          </div>
+                          {/* Loupe dans un coin sans overlay au hover */}
+                          <div className="absolute bottom-2 left-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+                            <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/95 shadow-lg text-teal-600 border border-stone-100">
+                              <Search size={isLarge ? 20 : 16} strokeWidth={2.5} />
+                            </div>
+                          </div>
+                          <span className="sr-only">Agrandir la carte</span>
                         </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={openMap}
+                          className="group/map relative w-full h-full flex flex-col items-center justify-center gap-2 text-stone-500 hover:bg-stone-100/80 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-inset rounded-lg overflow-hidden"
+                          title="Voir la carte"
+                        >
+                          <MapPin
+                            size={isLarge ? 32 : 24}
+                            className="text-teal-500 transition-opacity group-hover/map:opacity-60"
+                          />
+                          <span className="text-xs sm:text-sm font-semibold text-teal-700 uppercase tracking-wide transition-opacity group-hover/map:opacity-60">
+                            Voir la carte
+                          </span>
+                          <div className="absolute bottom-2 left-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+                            <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/95 shadow-lg text-teal-600 border border-stone-100">
+                              <Search size={isLarge ? 20 : 16} strokeWidth={2.5} />
+                            </div>
+                          </div>
+                        </button>
                       )}
                     </div>
                   )}
