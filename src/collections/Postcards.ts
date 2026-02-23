@@ -343,5 +343,33 @@ export const Postcards: CollectionConfig = {
         condition: (data) => data.puzzleCardEnabled === true,
       },
     },
+    {
+      name: 'audioMessage',
+      type: 'text',
+      admin: {
+        description: 'Clé S3 ou URL du message audio enregistré',
+      },
+    },
+    {
+      name: 'audioDuration',
+      type: 'number',
+      admin: {
+        description: 'Durée du message audio en secondes',
+      },
+    },
+    {
+      name: 'backgroundMusic',
+      type: 'text',
+      admin: {
+        description: "URL de la musique d'ambiance (bibliothèque Freesound ou fichier uploadé)",
+      },
+    },
+    {
+      name: 'backgroundMusicTitle',
+      type: 'text',
+      admin: {
+        description: "Titre de la musique d'ambiance pour affichage",
+      },
+    },
   ],
 }

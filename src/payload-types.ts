@@ -396,6 +396,22 @@ export interface Postcard {
    * Nombre de pièces du puzzle (lignes × colonnes).
    */
   puzzleCardDifficulty?: ('3' | '4' | '5') | null;
+  /**
+   * Clé S3 ou URL du message audio enregistré
+   */
+  audioMessage?: string | null;
+  /**
+   * Durée du message audio en secondes
+   */
+  audioDuration?: number | null;
+  /**
+   * URL de la musique d'ambiance (bibliothèque Freesound ou fichier uploadé)
+   */
+  backgroundMusic?: string | null;
+  /**
+   * Titre de la musique d'ambiance pour affichage
+   */
+  backgroundMusicTitle?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1003,6 +1019,10 @@ export interface PostcardsSelect<T extends boolean = true> {
   scratchCardImage?: T;
   puzzleCardEnabled?: T;
   puzzleCardDifficulty?: T;
+  audioMessage?: T;
+  audioDuration?: T;
+  backgroundMusic?: T;
+  backgroundMusicTitle?: T;
   updatedAt?: T;
   createdAt?: T;
 }
