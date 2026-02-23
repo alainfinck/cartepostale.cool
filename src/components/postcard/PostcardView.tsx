@@ -534,7 +534,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const hasMedia = postcard.mediaItems && postcard.mediaItems.length > 0
 
   const actionButtonBase =
-    'flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 px-1 sm:px-4 py-1.5 rounded-lg text-[8px] min-[375px]:text-[9px] sm:text-[10px] md:text-xs font-black uppercase active:scale-95 transition-all shadow-sm border text-center whitespace-normal break-words min-h-[40px] sm:min-h-0'
+    'flex-none inline-flex flex-col items-center justify-center gap-1 px-2 sm:px-3 py-1.5 rounded-lg text-[8px] sm:text-[9px] font-black uppercase active:scale-95 transition-all shadow-sm border text-center min-h-[40px] sm:min-h-[44px] min-w-[52px] sm:min-w-[64px] max-w-[80px] sm:max-w-[90px] overflow-hidden'
 
   useEffect(() => {
     setPortalRoot(document.body)
@@ -1610,91 +1610,95 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   {(postcard.coords || postcard.location) && (
                     <div
                       className={cn(
-                        'flex-1 w-full rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner min-h-0',
+                        'flex-1 w-full flex flex-row gap-1 min-h-0',
                         isLarge
                           ? 'min-h-[100px] sm:min-h-[200px] md:min-h-[280px] max-h-[400px]'
                           : 'min-h-[80px] sm:min-h-[100px]',
                       )}
                     >
-                      {postcard.coords ? (
-                        <div
-                          className="group/map relative w-full h-full flex flex-col items-center justify-center cursor-pointer overflow-hidden"
-                          onClick={openMap}
-                          role="button"
-                          tabIndex={0}
-                          title="Agrandir la carte"
-                        >
-                          {/* Carte statique en tuiles OSM (zoom contrôlé par backMapZoom) */}
-                          {/* Leaflet MiniMap */}
-                          <div className="absolute inset-0 overflow-hidden bg-stone-100">
-                            <MiniMap
-                              coords={postcard.coords!}
-                              zoom={backMapZoom}
-                              onClick={openMap}
-                              photoLocations={photoLocations}
-                            />
-                          </div>
-                          {/* Boutons zoom + / - au-dessus de la carte, cliquables sans déclencher flip ni ouverture modal */}
+                      {/* Map container */}
+                      <div className="flex-1 min-w-0 rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner relative">
+                        {postcard.coords ? (
                           <div
-                            className="absolute top-1 right-1 z-10 flex flex-col gap-0 shadow-sm rounded-sm overflow-hidden"
-                            onClick={(e) => e.stopPropagation()}
+                            className="group/map relative w-full h-full flex flex-col items-center justify-center cursor-pointer overflow-hidden"
+                            onClick={openMap}
+                            role="button"
+                            tabIndex={0}
+                            title="Agrandir la carte"
                           >
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setBackMapZoom((z) => Math.min(18, z + 1))
-                              }}
-                              className="w-3 h-3 sm:w-5 sm:h-5 flex items-center justify-center bg-white/95 hover:bg-white text-stone-600 hover:text-teal-600 border border-stone-200/80 transition-colors"
-                              aria-label="Zoom avant"
-                            >
-                              <span className="text-[7px] sm:text-xs font-bold leading-none">
-                                +
-                              </span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setBackMapZoom((z) => Math.max(5, z - 1))
-                              }}
-                              className="w-3 h-3 sm:w-5 sm:h-5 flex items-center justify-center bg-white/95 hover:bg-white text-stone-600 hover:text-teal-600 border border-stone-200/80 transition-colors"
-                              aria-label="Zoom arrière"
-                            >
-                              <span className="text-[7px] sm:text-xs font-bold leading-none">
-                                −
-                              </span>
-                            </button>
-                          </div>
-                          {/* Loupe dans un coin sans overlay au hover */}
-                          <div className="absolute bottom-2 left-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
-                            <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/95 shadow-lg text-teal-600 border border-stone-100">
-                              <Search size={isLarge ? 20 : 16} strokeWidth={2.5} />
+                            {/* Leaflet MiniMap */}
+                            <div className="absolute inset-0 overflow-hidden bg-stone-100">
+                              <MiniMap
+                                coords={postcard.coords!}
+                                zoom={backMapZoom}
+                                onClick={openMap}
+                                photoLocations={photoLocations}
+                              />
                             </div>
+                            {/* Loupe dans un coin sans overlay au hover */}
+                            <div className="absolute bottom-2 left-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+                              <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/95 shadow-lg text-teal-600 border border-stone-100">
+                                <Search size={isLarge ? 20 : 16} strokeWidth={2.5} />
+                              </div>
+                            </div>
+                            <span className="sr-only">Agrandir la carte</span>
                           </div>
-                          <span className="sr-only">Agrandir la carte</span>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={openMap}
-                          className="group/map relative w-full h-full flex flex-col items-center justify-center gap-2 text-stone-500 hover:bg-stone-100/80 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-inset rounded-lg overflow-hidden"
-                          title="Voir la carte"
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={openMap}
+                            className="group/map relative w-full h-full flex flex-col items-center justify-center gap-2 text-stone-500 hover:bg-stone-100/80 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-inset rounded-lg overflow-hidden"
+                            title="Voir la carte"
+                          >
+                            <MapPin
+                              size={isLarge ? 32 : 24}
+                              className="text-teal-500 transition-opacity group-hover/map:opacity-60"
+                            />
+                            <span className="text-xs sm:text-sm font-semibold text-teal-700 uppercase tracking-wide transition-opacity group-hover/map:opacity-60">
+                              Voir la carte
+                            </span>
+                            <div className="absolute bottom-2 left-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+                              <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/95 shadow-lg text-teal-600 border border-stone-100">
+                                <Search size={isLarge ? 20 : 16} strokeWidth={2.5} />
+                              </div>
+                            </div>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Boutons zoom +/- à droite de la map, en dehors */}
+                      {postcard.coords && (
+                        <div
+                          className="flex flex-col justify-center gap-1 shrink-0"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <MapPin
-                            size={isLarge ? 32 : 24}
-                            className="text-teal-500 transition-opacity group-hover/map:opacity-60"
-                          />
-                          <span className="text-xs sm:text-sm font-semibold text-teal-700 uppercase tracking-wide transition-opacity group-hover/map:opacity-60">
-                            Voir la carte
-                          </span>
-                          {/* Loupe dans un coin sans overlay au hover */}
-                          <div className="absolute bottom-2 left-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
-                            <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/95 shadow-lg text-teal-600 border border-stone-100">
-                              <Search size={isLarge ? 20 : 16} strokeWidth={2.5} />
-                            </div>
-                          </div>
-                        </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setBackMapZoom((z) => Math.min(18, z + 1))
+                            }}
+                            className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center bg-white hover:bg-stone-50 text-stone-500 hover:text-teal-600 border border-stone-200 rounded-sm shadow-sm transition-colors"
+                            aria-label="Zoom avant"
+                          >
+                            <span className="text-[8px] sm:text-[9px] font-bold leading-none">
+                              +
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setBackMapZoom((z) => Math.max(5, z - 1))
+                            }}
+                            className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center bg-white hover:bg-stone-50 text-stone-500 hover:text-teal-600 border border-stone-200 rounded-sm shadow-sm transition-colors"
+                            aria-label="Zoom arrière"
+                          >
+                            <span className="text-[8px] sm:text-[9px] font-bold leading-none">
+                              −
+                            </span>
+                          </button>
+                        </div>
                       )}
                     </div>
                   )}
@@ -1734,7 +1738,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             className="w-full flex justify-center overflow-hidden"
             style={{ transformOrigin: 'top', transformStyle: 'preserve-3d' }}
           >
-            <div className="flex items-stretch justify-center w-[98%] sm:w-[90%] flex-nowrap gap-1.5 sm:gap-4 rounded-b-2xl border-x border-b border-stone-100 bg-white shadow-[0_10px_30px_rgba(0,0,0,0.04)] px-2 sm:px-6 py-1.5 sm:py-3 min-h-[40px] sm:min-h-[48px]">
+            <div className="flex items-center justify-center w-[98%] sm:w-[90%] flex-wrap gap-1.5 sm:gap-2 rounded-b-2xl border-x border-b border-stone-100 bg-white shadow-[0_10px_30px_rgba(0,0,0,0.04)] px-2 sm:px-4 py-1.5 sm:py-2 min-h-[40px] sm:min-h-[48px]">
               {(hasMedia || canContribute) && (
                 <button
                   onClick={openAlbum}
@@ -1745,7 +1749,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   )}
                 >
                   <Camera size={14} className="text-amber-600 shrink-0" />
-                  <span>{hasMedia ? 'ALBUM' : 'AJOUTER DES PHOTOS'}</span>
+                  <span className="truncate w-full text-center leading-tight">
+                    {hasMedia ? 'ALBUM' : '+ PHOTOS'}
+                  </span>
                 </button>
               )}
 
@@ -1831,12 +1837,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
           </motion.div>
 
           {!isActionsOpen && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setIsActionsOpen(true)
-            }}
-            className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-px h-6 w-24 min-h-0 py-0.5 bg-white/90 hover:bg-white/95 backdrop-blur-md rounded-b-full shadow-[0_3px_6px_rgba(0,0,0,0.12)] border border-t-0 border-stone-200/80 text-stone-500 hover:text-teal-600 transition-all z-30 cursor-pointer flex justify-center items-center group/toggle"
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsActionsOpen(true)
+              }}
+              className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-px h-6 w-24 min-h-0 py-0.5 bg-white/90 hover:bg-white/95 backdrop-blur-md rounded-b-full shadow-[0_3px_6px_rgba(0,0,0,0.12)] border border-t-0 border-stone-200/80 text-stone-500 hover:text-teal-600 transition-all z-30 cursor-pointer flex justify-center items-center group/toggle"
               title="Afficher les actions"
             >
               <ChevronDown
