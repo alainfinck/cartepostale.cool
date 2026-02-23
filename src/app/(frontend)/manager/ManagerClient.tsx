@@ -31,6 +31,9 @@ import {
   MessageCircle,
   Send,
   Gift,
+  CreditCard,
+  Sparkles,
+  Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -189,12 +192,19 @@ interface Props {
   useEspaceClientActions?: boolean
   /** When true, use agence Server Actions (getAgencyPostcards, etc.) instead of manager actions. */
   useAgenceActions?: boolean
+  /** For espace-client: display remaining credits and buy-credits CTA when set. */
+  initialCredits?: number
+  userId?: string | number
+  userEmail?: string | null
 }
 
 export default function ManagerClient({
   initialData,
   useEspaceClientActions,
   useAgenceActions,
+  initialCredits,
+  userId,
+  userEmail,
 }: Props) {
   const [data, setData] = useState(initialData)
   const [search, setSearch] = useState('')
@@ -216,7 +226,26 @@ export default function ManagerClient({
   const [promoCodeInput, setPromoCodeInput] = useState('')
   const [promoLoading, setPromoLoading] = useState(false)
   const [promoResult, setPromoResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [buyCreditsModalOpen, setBuyCreditsModalOpen] = useState(false)
+  const [buyCreditsPack, setBuyCreditsPack] = useState<string>('pack_20')
+  const [buyCreditsPromoCode, setBuyCreditsPromoCode] = useState('')
+  const [buyCreditsPromoResult, setBuyCreditsPromoResult] = useState<{
+    type: 'success' | 'error'
+    message: string
+  } | null>(null)
+  const [buyCreditsLoading, setBuyCreditsLoading] = useState(false)
+  const [buyCreditsError, setBuyCreditsError] = useState<string | null>(null)
   const maxAutoColumns = useEspaceClientActions ? 3 : 6
+
+  const CREDITS_PACKS = [
+    { id: 'pack_5', label: '5 cartes', credits: 5, price: 12 },
+    { id: 'pack_10', label: '10 cartes', credits: 10, price: 22 },
+    { id: 'pack_20', label: '20 cartes', credits: 20, price: 40, popular: true },
+    { id: 'pack_50', label: '50 cartes', credits: 50, price: 95 },
+    { id: 'pack_100', label: '100 cartes', credits: 100, price: 150 },
+    { id: 'pack_200', label: '200 cartes', credits: 200, price: 280 },
+  ]
+  const selectedPackInfo = CREDITS_PACKS.find((p) => p.id === buyCreditsPack) ?? CREDITS_PACKS[2]
 
   useEffect(() => {
     getUmamiPageStats().then(setUmamiStats)
@@ -465,34 +494,223 @@ export default function ManagerClient({
   return (
     <div className="space-y-6">
       <>
+        {/* Crédits (espace client) */}
+        {useEspaceClientActions && initialCredits != null && (
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-teal-200/60 bg-teal-50/40 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center text-teal-600">
+                <Sparkles size={20} />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-stone-500 uppercase tracking-wider">
+                  Mes crédits restants
+                </p>
+                <p className="text-2xl font-bold text-teal-700">{initialCredits}</p>
+              </div>
+            </div>
+            <Button
+              variant="default"
+              size="sm"
+              className="bg-teal-600 hover:bg-teal-700 text-white shadow-md"
+              onClick={() => {
+                setBuyCreditsModalOpen(true)
+                setBuyCreditsError(null)
+                setBuyCreditsPromoResult(null)
+                setBuyCreditsPromoCode('')
+              }}
+            >
+              <CreditCard size={16} className="mr-2" />
+              Acheter des crédits / cartes
+            </Button>
+          </div>
+        )}
+
+        {/* Modal Acheter des crédits */}
+        <Dialog open={buyCreditsModalOpen} onOpenChange={setBuyCreditsModalOpen}>
+          <DialogContent className="sm:max-w-md" onClick={(e) => e.stopPropagation()}>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Sparkles size={20} className="text-teal-600" />
+                Acheter des crédits / cartes
+              </DialogTitle>
+              <DialogDescription>
+                Choisissez un pack de cartes pré-payées. Vous pourrez les utiliser pour publier vos
+                cartes sans repasser par le paiement.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-2">
+              <div>
+                <p className="text-sm font-medium text-stone-700 mb-2">Choisir un pack</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {CREDITS_PACKS.map((pack) => (
+                    <button
+                      key={pack.id}
+                      type="button"
+                      onClick={() => setBuyCreditsPack(pack.id)}
+                      className={cn(
+                        'flex flex-col p-3 rounded-xl border-2 text-left transition-all',
+                        buyCreditsPack === pack.id
+                          ? 'border-teal-500 bg-teal-50 text-teal-800'
+                          : 'border-stone-200 hover:border-stone-300 bg-white text-stone-700',
+                      )}
+                    >
+                      <span className="font-bold text-stone-900">{pack.credits} cartes</span>
+                      <span className="text-sm font-semibold text-teal-600 mt-0.5">
+                        {pack.price} €
+                      </span>
+                      {pack.popular && (
+                        <span className="mt-1 text-[10px] font-bold text-teal-600 uppercase">
+                          Populaire
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center justify-between rounded-xl bg-stone-50 border border-stone-200 p-4">
+                <span className="font-medium text-stone-700">Total</span>
+                <span className="text-xl font-bold text-teal-700">
+                  {selectedPackInfo.price} €
+                </span>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-stone-700">Code promo (optionnel)</label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Ex. COOLOS"
+                    value={buyCreditsPromoCode}
+                    onChange={(e) =>
+                      setBuyCreditsPromoCode(e.target.value.toUpperCase().trim())
+                    }
+                    className="font-mono uppercase flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        redeemPromoCodeForCredits(buyCreditsPromoCode).then((res) => {
+                          if (res?.success) {
+                            setBuyCreditsPromoResult({
+                              type: 'success',
+                              message: `+${res.creditsAdded ?? 1} crédit ajouté !`,
+                            })
+                            refreshData()
+                            setBuyCreditsPromoCode('')
+                          } else {
+                            setBuyCreditsPromoResult({
+                              type: 'error',
+                              message: res?.error ?? 'Code invalide ou déjà utilisé.',
+                            })
+                          }
+                        })
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => {
+                      if (!buyCreditsPromoCode.trim()) return
+                      setBuyCreditsPromoResult(null)
+                      redeemPromoCodeForCredits(buyCreditsPromoCode).then((res) => {
+                        if (res?.success) {
+                          setBuyCreditsPromoResult({
+                            type: 'success',
+                            message: `+${res.creditsAdded ?? 1} crédit ajouté !`,
+                          })
+                          refreshData()
+                          setBuyCreditsPromoCode('')
+                        } else {
+                          setBuyCreditsPromoResult({
+                            type: 'error',
+                            message: res?.error ?? 'Code invalide ou déjà utilisé.',
+                          })
+                        }
+                      })
+                    }}
+                  >
+                    Appliquer
+                  </Button>
+                </div>
+                {buyCreditsPromoResult && (
+                  <p
+                    className={cn(
+                      'text-sm',
+                      buyCreditsPromoResult.type === 'success'
+                        ? 'text-teal-600 font-medium'
+                        : 'text-rose-600',
+                    )}
+                  >
+                    {buyCreditsPromoResult.message}
+                  </p>
+                )}
+              </div>
+              {buyCreditsError && (
+                <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl text-sm text-rose-600 font-medium">
+                  {buyCreditsError}
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setBuyCreditsModalOpen(false)}
+              >
+                Annuler
+              </Button>
+              <Button
+                className="bg-teal-600 hover:bg-teal-700"
+                disabled={buyCreditsLoading}
+                onClick={async () => {
+                  setBuyCreditsError(null)
+                  setBuyCreditsLoading(true)
+                  try {
+                    const res = await fetch('/api/revolut/create-order', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        amountEur: selectedPackInfo.price,
+                        description: `Pack ${selectedPackInfo.credits} cartes - CartePostale.cool`,
+                        customerEmail: userEmail ?? undefined,
+                        redirectPath: '/espace-client/cartes?payment_success=true',
+                        metadata: {
+                          userId: userId?.toString(),
+                          paymentType: selectedPackInfo.id,
+                        },
+                      }),
+                    })
+                    const data = await res.json()
+                    if (!res.ok) throw new Error(data.error || 'Erreur lors de la création du paiement')
+                    if (data.checkout_url) {
+                      window.location.href = data.checkout_url
+                    } else {
+                      throw new Error('URL de paiement manquante')
+                    }
+                  } catch (err: any) {
+                    setBuyCreditsError(err.message || 'Une erreur est survenue')
+                    setBuyCreditsLoading(false)
+                  }
+                }}
+              >
+                {buyCreditsLoading ? (
+                  <>
+                    <Loader2 size={16} className="mr-2 animate-spin" />
+                    Redirection...
+                  </>
+                ) : (
+                  <>
+                    Payer {selectedPackInfo.price} €
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <StatCard icon={<Mail size={18} />} label="Total" value={totalCards} />
-          <StatCard
-            icon={<FileText size={18} />}
-            label="Publiées"
-            value={publishedCount}
-            variant="success"
-          />
-          <StatCard
-            icon={<FileText size={18} />}
-            label="Brouillons"
-            value={draftCount}
-            variant="warning"
-          />
-          <StatCard
-            icon={<Archive size={18} />}
-            label="Archivées"
-            value={archivedCount}
-            variant="muted"
-          />
           <StatCard icon={<Eye size={18} />} label="Vues (Int)" value={totalViews} variant="info" />
-          <StatCard
-            icon={<BarChart3 size={18} />}
-            label="Vues Umami"
-            value={totalUmamiViews}
-            variant="success"
-          />
           <StatCard
             icon={<Share2 size={18} />}
             label="Partages"
@@ -606,22 +824,7 @@ export default function ManagerClient({
             </div>
           )}
 
-          {useEspaceClientActions && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-teal-200 text-teal-700 hover:bg-teal-50 hover:text-teal-800"
-              onClick={() => {
-                setPromoDialogOpen(true)
-                setPromoResult(null)
-                setPromoCodeInput('')
-              }}
-            >
-              <Gift size={16} className="mr-2" />
-              Code promo
-            </Button>
-          )}
-        </div>
+          </div>
 
         {/* Bulk actions bar */}
         {selectedIds.size > 0 && (
@@ -1217,82 +1420,90 @@ function GridCard({
                     </span>
                   </div>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="icon"
-                    className="h-7 w-7 text-stone-400 hover:text-teal-600 transition-colors rounded-full border border-border/30"
+                    className="h-8 w-8 text-stone-600 hover:text-teal-600 border-stone-200 bg-white shadow-sm"
                     onClick={toggleFlip}
                     title={isFlipped ? 'Retourner recto' : 'Voir le verso'}
                   >
-                    <RotateCcw size={12} />
+                    <RotateCcw size={14} />
                   </Button>
                 </div>
 
                 <div
-                  className="flex items-center justify-between gap-2"
+                  className="flex flex-wrap items-center justify-between gap-2"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <Link
                       href={`/carte/${postcard.publicId}`}
                       target="_blank"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="icon"
-                        className="h-8 w-8 text-stone-400 hover:text-teal-600 transition-colors rounded-full border border-border/30"
+                        className="h-9 w-9 text-stone-600 hover:text-teal-600 border-stone-200 bg-white shadow-sm"
                         title="Ouvrir dans un nouvel onglet"
                       >
-                        <ExternalLink size={14} />
+                        <ExternalLink size={16} />
                       </Button>
                     </Link>
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="icon"
                       onClick={(e) => {
                         e.stopPropagation()
                         onEdit()
                       }}
-                      className="h-8 w-8 text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-all rounded-full border border-border/30"
+                      className="h-9 w-9 text-stone-600 hover:text-teal-600 hover:bg-teal-50 border-teal-200 shadow-sm"
                       title="Modifier"
                     >
-                      <Pencil size={14} />
+                      <Pencil size={16} />
                     </Button>
-                    {onDuplicate && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onDuplicate()
-                        }}
-                        className="h-8 w-8 text-stone-400 hover:text-violet-600 hover:bg-violet-50 transition-all rounded-full border border-border/30"
-                        title="Dupliquer"
-                      >
-                        <Copy size={14} />
-                      </Button>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1.5">
                     <StatusDropdown
                       currentStatus={postcard.status || 'draft'}
                       onUpdate={onUpdateStatus}
                       postcardId={postcard.id}
                     />
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="icon"
                       onClick={(e) => {
                         e.stopPropagation()
                         onDelete(postcard.id)
                       }}
-                      className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 transition-all rounded-full border border-red-100/50 shadow-sm"
+                      className="h-9 w-9 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 shadow-sm"
                       title="Supprimer la carte"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={16} />
                     </Button>
                   </div>
                 </div>
+
+                {onDuplicate && (
+                  <div
+                    className="pt-3 border-t border-stone-100 space-y-1.5"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onDuplicate()
+                      }}
+                      className="w-full h-10 text-violet-700 border-violet-200 bg-violet-50/50 hover:bg-violet-100 hover:border-violet-300 font-medium shadow-sm"
+                      title="Dupliquer la carte pour modifier texte et photos"
+                    >
+                      <Copy size={16} className="mr-2 shrink-0" />
+                      Dupliquer la carte
+                    </Button>
+                    <p className="text-[11px] text-stone-500 leading-tight px-0.5">
+                      Modifiez le texte et les photos en repartant de la même base.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </Card>
@@ -1408,32 +1619,33 @@ function ListRow({
         <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
           <Link href={`/carte/${postcard.publicId}`} target="_blank">
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="h-8 w-8 text-stone-400 hover:text-teal-600 transition-colors rounded-full"
+              className="h-9 w-9 text-stone-600 hover:text-teal-600 border-stone-200 bg-white shadow-sm"
               title="Voir la carte"
             >
-              <ExternalLink size={14} />
+              <ExternalLink size={16} />
             </Button>
           </Link>
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="h-8 w-8 text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-all rounded-full"
+            className="h-9 w-9 text-stone-600 hover:text-teal-600 hover:bg-teal-50 border-teal-200 shadow-sm"
             onClick={() => onEdit()}
             title="Modifier"
           >
-            <Pencil size={14} />
+            <Pencil size={16} />
           </Button>
           {onDuplicate && (
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-stone-400 hover:text-violet-600 hover:bg-violet-50 transition-all rounded-full"
+              variant="outline"
+              size="sm"
+              className="h-9 px-3 text-violet-700 border-violet-200 bg-violet-50/50 hover:bg-violet-100 font-medium shadow-sm"
               onClick={() => onDuplicate()}
-              title="Dupliquer"
+              title="Dupliquer la carte"
             >
-              <Copy size={14} />
+              <Copy size={14} className="mr-1.5" />
+              Dupliquer
             </Button>
           )}
           <StatusDropdown
@@ -1442,13 +1654,13 @@ function ListRow({
             postcardId={postcard.id}
           />
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 transition-all rounded-full border border-red-100/30"
+            className="h-9 w-9 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 shadow-sm"
             onClick={() => onDelete(postcard.id)}
             title="Supprimer"
           >
-            <Trash2 size={14} />
+            <Trash2 size={16} />
           </Button>
         </div>
       </TableCell>

@@ -12,6 +12,7 @@ import {
   Plus,
   Globe,
   Image as ImageIcon,
+  Sparkles,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -26,6 +27,7 @@ const navItems = [
   { href: '/espace-client/cartes', label: 'Mes cartes', icon: Mail },
   { href: '/espace-client/galerie', label: 'Ma galerie', icon: ImageIcon },
   { href: '/espace-client/carte-du-monde', label: 'Carte du monde', icon: Globe },
+  { href: '/espace-client/credits', label: 'Gérer les crédits', icon: Sparkles },
   { href: '/espace-client/compte', label: 'Mon compte', icon: User },
 ]
 

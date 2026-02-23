@@ -9,7 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Sparkles,
+  Images,
   StickyNote,
   User,
   Heart,
@@ -23,7 +23,6 @@ import {
   Minimize2,
 } from 'lucide-react'
 import { CoolMode } from '@/components/ui/cool-mode'
-import ShimmerButton from '@/components/ui/shimmer-button'
 import { useSessionId } from '@/hooks/useSessionId'
 import { getReactions, getUserReactions, toggleReaction } from '@/actions/social-actions'
 import { cn } from '@/lib/utils'
@@ -473,7 +472,8 @@ export default function PhotoFeed({
       {!isVisible ? (
         <div className="text-center py-10 w-full max-w-full min-w-0">
           <CoolMode>
-            <ShimmerButton
+            <button
+              type="button"
               onClick={() => {
                 setIsVisible(true)
                 requestAnimationFrame(() => {
@@ -485,20 +485,34 @@ export default function PhotoFeed({
                   })
                 })
               }}
-              shimmerColor="#ffffff"
-              shimmerSize="0.1em"
-              shimmerDuration="2.5s"
-              borderRadius="16px"
-              background="linear-gradient(135deg, #09090b 0%, #18181b 100%)"
-              className="w-full max-w-full min-w-0 bg-stone-950 px-4 py-6 sm:px-12 sm:py-8 group transition-all hover:scale-105 active:scale-95 shadow-2xl"
+              className="w-full max-w-full min-w-0 group relative overflow-hidden rounded-2xl border-2 border-amber-200/80 bg-gradient-to-br from-amber-50 via-stone-100 to-amber-100/90 px-4 py-6 sm:px-10 sm:py-8 text-center transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] shadow-lg"
+              style={{
+                boxShadow:
+                  '0 4px 6px -1px rgba(180, 140, 90, 0.15), 0 10px 20px -5px rgba(120, 90, 50, 0.12), inset 0 1px 0 rgba(255,255,255,0.6)',
+              }}
             >
-              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-                <Sparkles className="w-5 h-5 text-emerald-400 group-hover:animate-pulse shrink-0" />
-                <span className="text-white font-bold text-sm sm:text-lg uppercase tracking-widest whitespace-normal text-center">
-                  Afficher l&apos;album photo, cliquez ici
-                </span>
+              {/* Couverture album : effet reliure à gauche */}
+              <div
+                className="absolute left-0 top-0 bottom-0 w-2 sm:w-3 rounded-l-xl opacity-90"
+                style={{
+                  background: 'linear-gradient(180deg, #d4a574 0%, #b8956a 50%, #a67c52 100%)',
+                  boxShadow: 'inset -1px 0 2px rgba(0,0,0,0.1)',
+                }}
+              />
+              <div className="relative flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4 pl-4 sm:pl-6">
+                <div className="flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white/80 border border-amber-200/60 shadow-inner ring-2 ring-amber-100/80 group-hover:ring-amber-200/80 transition-shadow">
+                  <Images className="w-7 h-7 sm:w-8 sm:h-8 text-amber-700/90" strokeWidth={1.8} />
+                </div>
+                <div className="flex flex-col items-center sm:items-start gap-0.5">
+                  <span className="font-serif text-stone-800 font-bold text-base sm:text-lg">
+                    Ouvrir l&apos;album photo
+                  </span>
+                  <span className="text-stone-500 text-xs sm:text-sm font-medium">
+                    {mediaItems.length} souvenir{mediaItems.length > 1 ? 's' : ''} à découvrir
+                  </span>
+                </div>
               </div>
-            </ShimmerButton>
+            </button>
           </CoolMode>
           <p className="text-stone-400 mt-6 text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 break-words px-1">
             Découvrir les souvenirs partagés

@@ -37,10 +37,10 @@ interface ViewPageTitleProps {
 
 export default function ViewPageTitle({ title, senderName, location, date }: ViewPageTitleProps) {
   useEffect(() => {
-    // Confettis après les autres animations (titre, expéditeur, bloc lieu + pin)
+    // Confettis une seule fois, après que le titre, l'expéditeur et le pin soient affichés
     const timer = setTimeout(() => {
       fireSideCannons()
-    }, 3200)
+    }, 3500)
     return () => clearTimeout(timer)
   }, [])
 
@@ -50,8 +50,8 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
         animation="blurInUp"
         by="word"
         duration={2}
+        startOnView={false}
         className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-800 leading-tight tracking-tight max-w-5xl mx-auto [-webkit-font-smoothing:antialiased]"
-        viewport={{ once: false, amount: 0 }}
       >
         {title}
       </TextAnimate>
@@ -59,8 +59,7 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
       <motion.div
         className="flex items-baseline justify-center gap-2 text-stone-500 mt-2 md:mt-4"
         initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-        whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        viewport={{ once: false, amount: 0 }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
         transition={{ delay: 1.8, duration: 1.2, ease: easeOut }}
       >
         <span className="text-lg md:text-xl font-medium tracking-wide whitespace-nowrap">
@@ -78,15 +77,13 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
       <motion.div
         className="mt-4 inline-flex items-center gap-3 px-4 py-3 rounded-2xl border border-stone-200/80 bg-gradient-to-br from-stone-50 to-teal-50/30 shadow-sm"
         initial={{ opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, amount: 0 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2.2, duration: 0.6, ease: easeOut }}
       >
         <motion.div
           className="relative flex items-center justify-center w-10 h-10 shrink-0 origin-bottom"
           initial={{ y: -56, opacity: 0, rotate: -14, scale: 0.6 }}
-          whileInView={{ y: 0, opacity: 1, rotate: 0, scale: 1 }}
-          viewport={{ once: false, amount: 0 }}
+          animate={{ y: 0, opacity: 1, rotate: 0, scale: 1 }}
           transition={{
             delay: 2.4,
             type: 'spring',

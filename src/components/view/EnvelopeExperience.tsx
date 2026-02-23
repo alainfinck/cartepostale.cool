@@ -28,11 +28,14 @@ export default function EnvelopeExperience({
   const handleOpen = () => {
     if (!isRevealed && !isOpening) {
       setIsOpening(true)
-      // Duration of the zoom animation
+      // Durée de l'animation d'ouverture de l'enveloppe
       setTimeout(() => {
         setIsRevealed(true)
         setIsOpening(false)
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        // Scroll en haut au prochain frame pour que le hero soit visible tout de suite (après le rendu)
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+        })
       }, 800)
     }
   }

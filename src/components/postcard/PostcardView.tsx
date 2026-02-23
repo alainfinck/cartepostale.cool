@@ -475,6 +475,13 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
   const openAlbum = (e: React.MouseEvent) => {
     e.stopPropagation()
+    const albumSection = document.getElementById('photo-feed')
+    // Sur la page carte/view : uniquement scroll vers la section album, pas de modal
+    if (albumSection) {
+      albumSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+    // Ailleurs (ex. éditeur) : ouvrir le modal + confettis
     fireConfetti({
       particleCount: 100,
       spread: 70,

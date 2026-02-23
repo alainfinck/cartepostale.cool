@@ -50,6 +50,7 @@ import {
   Search,
   Square,
   Play,
+  Pause,
   Trash2,
   Volume2,
   Loader2,
@@ -901,6 +902,22 @@ export default function EditorPage() {
   const [backgroundMusic, setBackgroundMusic] = useState<string | undefined>(undefined)
   const [backgroundMusicTitle, setBackgroundMusicTitle] = useState<string | undefined>(undefined)
   const [showMusicModal, setShowMusicModal] = useState(false)
+  const [isPlayingEditorMusic, setIsPlayingEditorMusic] = useState(false)
+  const editorMusicAudioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Arrêter la lecture quand la musique sélectionnée change ou au démontage
+  useEffect(() => {
+    return () => {
+      editorMusicAudioRef.current?.pause()
+      editorMusicAudioRef.current = null
+      setIsPlayingEditorMusic(false)
+    }
+  }, [])
+  useEffect(() => {
+    editorMusicAudioRef.current?.pause()
+    editorMusicAudioRef.current = null
+    setIsPlayingEditorMusic(false)
+  }, [backgroundMusic])
 
   const handleGoogleSuccess = useCallback(
     async (result: { success: boolean; role: string; email?: string }) => {
@@ -3791,13 +3808,36 @@ export default function EditorPage() {
                         <button
                           type="button"
                           onClick={() => {
+                            if (isPlayingEditorMusic && editorMusicAudioRef.current) {
+                              editorMusicAudioRef.current.pause()
+                              setIsPlayingEditorMusic(false)
+                              return
+                            }
+                            if (editorMusicAudioRef.current) {
+                              editorMusicAudioRef.current.pause()
+                              editorMusicAudioRef.current = null
+                            }
                             const a = new Audio(backgroundMusic)
-                            a.play().catch(() => {})
+                            editorMusicAudioRef.current = a
+                            a.onended = () => {
+                              setIsPlayingEditorMusic(false)
+                              editorMusicAudioRef.current = null
+                            }
+                            a.onpause = () => setIsPlayingEditorMusic(false)
+                            a.play().catch(() => {
+                              setIsPlayingEditorMusic(false)
+                              editorMusicAudioRef.current = null
+                            })
+                            setIsPlayingEditorMusic(true)
                           }}
                           className="w-9 h-9 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center hover:bg-violet-200 transition-colors shrink-0"
-                          title="Écouter"
+                          title={isPlayingEditorMusic ? 'Pause' : 'Lecture'}
                         >
-                          <Play size={16} fill="currentColor" />
+                          {isPlayingEditorMusic ? (
+                            <Pause size={16} fill="currentColor" />
+                          ) : (
+                            <Play size={16} fill="currentColor" />
+                          )}
                         </button>
                         <span className="flex-1 text-sm text-stone-700 font-medium truncate">
                           {backgroundMusicTitle || 'Musique sélectionnée'}
@@ -3812,6 +3852,11 @@ export default function EditorPage() {
                         <button
                           type="button"
                           onClick={() => {
+                            if (editorMusicAudioRef.current) {
+                              editorMusicAudioRef.current.pause()
+                              editorMusicAudioRef.current = null
+                              setIsPlayingEditorMusic(false)
+                            }
                             setBackgroundMusic(undefined)
                             setBackgroundMusicTitle(undefined)
                           }}

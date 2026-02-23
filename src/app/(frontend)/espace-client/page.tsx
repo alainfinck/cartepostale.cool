@@ -8,7 +8,6 @@ import { getCurrentUser } from '@/lib/auth'
 import { getMyPostcards } from '@/actions/espace-client-actions'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import type { Postcard, Media } from '@/payload-types'
-import { CreditsCard } from '@/components/espace-client/CreditsCard'
 
 export const metadata: Metadata = {
   title: 'Mon espace',
@@ -47,6 +46,16 @@ export default async function EspaceClientDashboardPage() {
         </h1>
         <p className="text-stone-600 mt-1">
           Bienvenue dans votre espace client. Gérez vos cartes postales et votre compte.
+        </p>
+        <p className="mt-3 text-sm text-stone-500">
+          <span className="font-medium text-stone-700">{user.credits ?? 0} crédits</span>
+          {' '}disponibles —{' '}
+          <Link
+            href="/espace-client/credits"
+            className="font-medium text-teal-600 hover:text-teal-700 underline underline-offset-2"
+          >
+            gérer les crédits
+          </Link>
         </p>
       </div>
 
@@ -173,9 +182,6 @@ export default async function EspaceClientDashboardPage() {
             </span>
           </div>
         </Link>
-
-        {/* Crédits */}
-        <CreditsCard initialCredits={user.credits || 0} userId={user.id} userEmail={user.email} />
       </div>
 
       <div className="p-6 rounded-2xl bg-stone-50 border border-stone-100">
