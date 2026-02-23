@@ -6,6 +6,28 @@ import { Heart } from 'lucide-react'
 import { fireSideCannons } from '@/components/ui/confetti'
 import { TextAnimate } from '@/components/ui/text-animate'
 
+/** Épingle rouge type Google Maps — SVG drop shape */
+function GooglePinIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 36"
+      className={className}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M12 0C5.373 0 0 5.373 0 12c0 9 12 24 12 24s12-15 12-24C24 5.373 18.627 0 12 0z"
+        fill="#EA4335"
+        stroke="#C5221F"
+        strokeWidth="0.8"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="12" r="4" fill="white" fillOpacity="0.9" />
+    </svg>
+  )
+}
+
 interface ViewPageTitleProps {
   title: string
   senderName: string
@@ -15,10 +37,10 @@ interface ViewPageTitleProps {
 
 export default function ViewPageTitle({ title, senderName, location, date }: ViewPageTitleProps) {
   useEffect(() => {
-    // Fire confetti on mount
+    // Confettis après les autres animations (titre, expéditeur, bloc lieu + pin)
     const timer = setTimeout(() => {
       fireSideCannons()
-    }, 2000) // Slight delay to sync with text appearance
+    }, 3200)
     return () => clearTimeout(timer)
   }, [])
 
@@ -51,13 +73,35 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
           />
         </span>
       </motion.div>
-      <p className="font-handwriting text-lg md:text-2xl text-stone-500 mt-2">
-        {location
-          ? `Carte postale envoyée depuis ${location}${date ? `, le ${date}` : ''}`
-          : date
-          ? `Carte postale envoyée le ${date}`
-          : 'Carte postale envoyée avec amour'}
-      </p>
+      {/* Bloc lieu / date — pin rouge type Google qui se « plante » */}
+      <motion.div
+        className="mt-4 inline-flex items-center gap-3 px-4 py-3 rounded-2xl border border-stone-200/80 bg-gradient-to-br from-stone-50 to-teal-50/30 shadow-sm"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 2.2, duration: 0.6, ease: easeOut }}
+      >
+        <motion.div
+          className="relative flex items-center justify-center w-10 h-10 shrink-0 origin-bottom"
+          initial={{ y: -56, opacity: 0, rotate: -14, scale: 0.6 }}
+          animate={{ y: 0, opacity: 1, rotate: 0, scale: 1 }}
+          transition={{
+            delay: 2.4,
+            type: 'spring',
+            stiffness: 380,
+            damping: 14,
+            mass: 0.8,
+          }}
+        >
+          <GooglePinIcon className="w-8 h-12 drop-shadow-md" />
+        </motion.div>
+        <p className="font-sans text-base md:text-lg text-stone-600 font-medium">
+          {location
+            ? `Carte postale envoyée depuis ${location}${date ? `, le ${date}` : ''}`
+            : date
+            ? `Carte postale envoyée le ${date}`
+            : 'Carte postale envoyée avec amour'}
+        </p>
+      </motion.div>
     </div>
   )
 }
