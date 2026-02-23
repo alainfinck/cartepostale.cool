@@ -5,7 +5,8 @@ import dynamic from 'next/dynamic'
 import { Postcard } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
 import MobilePostcardView from '@/components/view/MobilePostcardView'
-import { Eye, MapPin, Search, Smartphone, CreditCard } from 'lucide-react'
+import { MapPin, Search, Smartphone, CreditCard, Eye } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { NumberTicker } from '@/components/ui/number-ticker'
 import type { PhotoLocation } from '@/components/ui/PhotoMarker'
 
@@ -110,7 +111,10 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
 
       {/* Map sous la carte — même largeur que la carte dans les deux modes */}
       {hasMap && (
-        <div style={{ width: CARD_WIDTH, maxWidth: '100%' }} className="mx-auto mt-8">
+        <div
+          className={cn('mx-auto mt-8 w-full', isMobileView ? 'max-w-2xl px-4' : 'max-w-none')}
+          style={!isMobileView ? { width: CARD_WIDTH, maxWidth: '100%' } : {}}
+        >
           <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
             <div className="px-4 py-3 border-b border-stone-100 flex items-center justify-between">
               <div className="flex items-center gap-2 text-stone-700">

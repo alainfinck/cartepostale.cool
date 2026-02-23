@@ -77,7 +77,14 @@
     }
   }
 
+  @keyframes border-beam {
+    100% {
+      offset-distance: 100%;
+    }
+  }
+
   --animate-shimmer-btn-shimmer: shimmer-btn-shimmer var(--speed) linear infinite;
+  --animate-border-beam: border-beam var(--duration, 15s) infinite linear;
 }
 
 @plugin "tailwindcss-animate";

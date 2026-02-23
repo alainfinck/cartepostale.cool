@@ -1,22 +1,22 @@
-"use client"
+'use client'
 
-import { ElementType, memo } from "react"
-import { AnimatePresence, motion, MotionProps, Variants } from "motion/react"
+import { ElementType, memo } from 'react'
+import { AnimatePresence, motion, MotionProps, Variants } from 'motion/react'
 
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 
-type AnimationType = "text" | "word" | "character" | "line"
+type AnimationType = 'text' | 'word' | 'character' | 'line'
 type AnimationVariant =
-  | "fadeIn"
-  | "blurIn"
-  | "blurInUp"
-  | "blurInDown"
-  | "slideUp"
-  | "slideDown"
-  | "slideLeft"
-  | "slideRight"
-  | "scaleUp"
-  | "scaleDown"
+  | 'fadeIn'
+  | 'blurIn'
+  | 'blurInUp'
+  | 'blurInDown'
+  | 'slideUp'
+  | 'slideDown'
+  | 'slideLeft'
+  | 'slideRight'
+  | 'scaleUp'
+  | 'scaleDown'
 
 interface TextAnimateProps extends MotionProps {
   /**
@@ -67,6 +67,10 @@ interface TextAnimateProps extends MotionProps {
    * Whether to enable accessibility features (default: true)
    */
   accessible?: boolean
+  /**
+   * Additional viewport options for the animation
+   */
+  viewport?: Omit<MotionProps['viewport'], 'once'>
 }
 
 const staggerTimings: Record<AnimationType, number> = {
@@ -129,17 +133,17 @@ const defaultItemAnimationVariants: Record<
   blurIn: {
     container: defaultContainerVariants,
     item: {
-      hidden: { opacity: 0, filter: "blur(10px)" },
+      hidden: { opacity: 0, filter: 'blur(10px)' },
       show: {
         opacity: 1,
-        filter: "blur(0px)",
+        filter: 'blur(0px)',
         transition: {
           duration: 0.3,
         },
       },
       exit: {
         opacity: 0,
-        filter: "blur(10px)",
+        filter: 'blur(10px)',
         transition: { duration: 0.3 },
       },
     },
@@ -147,10 +151,10 @@ const defaultItemAnimationVariants: Record<
   blurInUp: {
     container: defaultContainerVariants,
     item: {
-      hidden: { opacity: 0, filter: "blur(10px)", y: 20 },
+      hidden: { opacity: 0, filter: 'blur(10px)', y: 20 },
       show: {
         opacity: 1,
-        filter: "blur(0px)",
+        filter: 'blur(0px)',
         y: 0,
         transition: {
           y: { duration: 0.4 },
@@ -160,7 +164,7 @@ const defaultItemAnimationVariants: Record<
       },
       exit: {
         opacity: 0,
-        filter: "blur(10px)",
+        filter: 'blur(10px)',
         y: 20,
         transition: {
           y: { duration: 0.3 },
@@ -173,10 +177,10 @@ const defaultItemAnimationVariants: Record<
   blurInDown: {
     container: defaultContainerVariants,
     item: {
-      hidden: { opacity: 0, filter: "blur(10px)", y: -20 },
+      hidden: { opacity: 0, filter: 'blur(10px)', y: -20 },
       show: {
         opacity: 1,
-        filter: "blur(0px)",
+        filter: 'blur(0px)',
         y: 0,
         transition: {
           y: { duration: 0.3 },
@@ -264,7 +268,7 @@ const defaultItemAnimationVariants: Record<
         transition: {
           duration: 0.3,
           scale: {
-            type: "spring",
+            type: 'spring',
             damping: 15,
             stiffness: 300,
           },
@@ -287,7 +291,7 @@ const defaultItemAnimationVariants: Record<
         transition: {
           duration: 0.3,
           scale: {
-            type: "spring",
+            type: 'spring',
             damping: 15,
             stiffness: 300,
           },
@@ -309,28 +313,29 @@ const TextAnimateBase = ({
   variants,
   className,
   segmentClassName,
-  as: Component = "p",
+  as: Component = 'p',
   startOnView = true,
   once = false,
-  by = "word",
-  animation = "fadeIn",
+  by = 'word',
+  animation = 'fadeIn',
   accessible = true,
+  viewport,
   ...props
 }: TextAnimateProps) => {
   const MotionComponent = motion.create(Component)
 
   let segments: string[] = []
   switch (by) {
-    case "word":
+    case 'word':
       segments = children.split(/(\s+)/)
       break
-    case "character":
-      segments = children.split("")
+    case 'character':
+      segments = children.split('')
       break
-    case "line":
-      segments = children.split("\n")
+    case 'line':
+      segments = children.split('\n')
       break
-    case "text":
+    case 'text':
     default:
       segments = [children]
       break
@@ -338,47 +343,47 @@ const TextAnimateBase = ({
 
   const finalVariants = variants
     ? {
-      container: {
-        hidden: { opacity: 0 },
-        show: {
-          opacity: 1,
-          transition: {
-            opacity: { duration: 0.01, delay },
-            delayChildren: delay,
-            staggerChildren: duration / segments.length,
-          },
-        },
-        exit: {
-          opacity: 0,
-          transition: {
-            staggerChildren: duration / segments.length,
-            staggerDirection: -1,
-          },
-        },
-      },
-      item: variants,
-    }
-    : animation
-      ? {
         container: {
-          ...defaultItemAnimationVariants[animation].container,
+          hidden: { opacity: 0 },
           show: {
-            ...defaultItemAnimationVariants[animation].container.show,
+            opacity: 1,
             transition: {
+              opacity: { duration: 0.01, delay },
               delayChildren: delay,
               staggerChildren: duration / segments.length,
             },
           },
           exit: {
-            ...defaultItemAnimationVariants[animation].container.exit,
+            opacity: 0,
             transition: {
               staggerChildren: duration / segments.length,
               staggerDirection: -1,
             },
           },
         },
-        item: defaultItemAnimationVariants[animation].item,
+        item: variants,
       }
+    : animation
+      ? {
+          container: {
+            ...defaultItemAnimationVariants[animation].container,
+            show: {
+              ...defaultItemAnimationVariants[animation].container.show,
+              transition: {
+                delayChildren: delay,
+                staggerChildren: duration / segments.length,
+              },
+            },
+            exit: {
+              ...defaultItemAnimationVariants[animation].container.exit,
+              transition: {
+                staggerChildren: duration / segments.length,
+                staggerDirection: -1,
+              },
+            },
+          },
+          item: defaultItemAnimationVariants[animation].item,
+        }
       : { container: defaultContainerVariants, item: defaultItemVariants }
 
   return (
@@ -386,11 +391,11 @@ const TextAnimateBase = ({
       <MotionComponent
         variants={finalVariants.container as Variants}
         initial="hidden"
-        whileInView={startOnView ? "show" : undefined}
-        animate={startOnView ? undefined : "show"}
+        whileInView={startOnView ? 'show' : undefined}
+        animate={startOnView ? undefined : 'show'}
         exit="exit"
-        className={cn("whitespace-pre-wrap", className)}
-        viewport={{ once }}
+        className={cn('whitespace-pre-wrap', className)}
+        viewport={{ once, ...viewport }}
         aria-label={accessible ? children : undefined}
         {...props}
       >
@@ -401,9 +406,9 @@ const TextAnimateBase = ({
             variants={finalVariants.item}
             custom={i * staggerTimings[by]}
             className={cn(
-              by === "line" ? "block" : "inline-block whitespace-pre",
-              by === "character" && "",
-              segmentClassName
+              by === 'line' ? 'block' : 'inline-block whitespace-pre',
+              by === 'character' && '',
+              segmentClassName,
             )}
             aria-hidden={accessible ? true : undefined}
           >
