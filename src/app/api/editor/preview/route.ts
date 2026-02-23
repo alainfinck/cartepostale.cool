@@ -28,11 +28,11 @@ export async function POST(request: NextRequest) {
       VALID_SLUG.test(existingSlug)
 
     if (canReuse) {
-      setEditorPreview(existingSlug, postcardData)
+      await setEditorPreview(existingSlug, postcardData)
       return NextResponse.json({ slug: existingSlug })
     }
     const token = generatePreviewToken()
-    setEditorPreview(token, postcardData)
+    await setEditorPreview(token, postcardData)
     return NextResponse.json({ slug: token })
   } catch (e) {
     console.error('[API] editor/preview:', e)

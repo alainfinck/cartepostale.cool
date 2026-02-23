@@ -20,20 +20,21 @@ export function FrontendLayoutWrapper({
   const pathname = usePathname()
   const isManager = pathname?.startsWith('/manager')
   const isEspaceClient = pathname?.startsWith('/espace-client')
+  const isPostcardView = pathname?.startsWith('/carte/')
 
   if (isManager) {
     return <>{children}</>
   }
 
-  const showExitIntent = !isEspaceClient && exitIntentEnabled
+  const showExitIntent = !isEspaceClient && !isPostcardView && exitIntentEnabled
 
   return (
     <>
       <ServiceWorkerRegistration />
-      <Navbar />
+      {!isPostcardView && <Navbar />}
       <main className="flex-grow">{children}</main>
-      <Footer />
-      <ScrollToTopButton />
+      {!isPostcardView && <Footer />}
+      {!isPostcardView && <ScrollToTopButton />}
       {showExitIntent && <ExitIntentPopup />}
     </>
   )

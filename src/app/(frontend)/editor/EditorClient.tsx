@@ -114,6 +114,12 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { GoogleLoginButton } from '@/components/auth/GoogleLoginButton'
 import { useFacebookPixel } from '@/hooks/useFacebookPixel'
 import { MusicLibraryModal } from '@/components/editor/MusicLibraryModal'
@@ -759,7 +765,7 @@ export default function EditorPage() {
   const [message, setMessage] = useState(
     'Un petit coucou de mes vacances ! Tout se passe merveilleusement bien, les paysages sont magnifiques. On pense bien à vous !',
   )
-  const [recipientName, setRecipientName] = useState('Maman & Papa')
+  const [recipientName, setRecipientName] = useState('')
   const [senderName, setSenderName] = useState('Sarah')
   const [senderEmail, setSenderEmail] = useState('')
   const [location, setLocation] = useState('Antibes, France')
@@ -1011,7 +1017,9 @@ export default function EditorPage() {
         const frontUrl =
           doc.frontImageURL ||
           (doc.frontImage?.url
-            ? (doc.frontImage.url.startsWith('http') ? doc.frontImage.url : origin + doc.frontImage.url)
+            ? doc.frontImage.url.startsWith('http')
+              ? doc.frontImage.url
+              : origin + doc.frontImage.url
             : '')
         if (frontUrl) setFrontImage(frontUrl)
         if (doc.message != null) setMessage(doc.message)
@@ -1026,8 +1034,10 @@ export default function EditorPage() {
             y: doc.frontCaptionPosition.y ?? 85,
           })
         }
-        if (doc.frontCaptionFontFamily != null) setFrontCaptionFontFamily(doc.frontCaptionFontFamily)
-        if (doc.frontCaptionFontSize != null) setFrontCaptionFontSize(Number(doc.frontCaptionFontSize))
+        if (doc.frontCaptionFontFamily != null)
+          setFrontCaptionFontFamily(doc.frontCaptionFontFamily)
+        if (doc.frontCaptionFontSize != null)
+          setFrontCaptionFontSize(Number(doc.frontCaptionFontSize))
         if (doc.frontCaptionColor != null) setFrontCaptionColor(doc.frontCaptionColor)
         if (doc.frontTextBgOpacity != null) setFrontTextBgOpacity(Number(doc.frontTextBgOpacity))
         if (doc.stampStyle != null) setStampStyle(doc.stampStyle)
@@ -1037,7 +1047,9 @@ export default function EditorPage() {
           const items = doc.mediaItems.map((item: any) => {
             const media = item.media
             const url = media?.url
-              ? (String(media.url).startsWith('http') ? media.url : origin + media.url)
+              ? String(media.url).startsWith('http')
+                ? media.url
+                : origin + media.url
               : ''
             return {
               id: item.id || Math.random().toString(36).slice(2),
@@ -2534,9 +2546,7 @@ export default function EditorPage() {
                     <Eye size={16} className="shrink-0" />
                   )}
                   <span>
-                    {previewRecipientLoading
-                      ? 'Génération...'
-                      : 'Voir comme un destinataire'}
+                    {previewRecipientLoading ? 'Génération...' : 'Voir comme un destinataire'}
                   </span>
                 </Button>
               </div>
@@ -4155,23 +4165,40 @@ export default function EditorPage() {
                         ))}
                       </div>
                     </div>
-                    {/* Quick suggestions */}
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      {[
-                        'Le temps est magnifique, on pense bien à vous !',
-                        'Un petit coucou depuis le bout du monde...',
-                        'Si vous étiez là, ce serait parfait !',
-                        'Les paysages sont à couper le souffle.',
-                      ].map((s) => (
-                        <button
-                          key={s}
-                          onClick={() => setMessage(s)}
-                          className="px-3 py-1.5 bg-white hover:bg-indigo-50 text-stone-500 hover:text-indigo-700 rounded-full text-xs transition-colors border border-indigo-100 hover:border-indigo-200"
+                    {/* Messages pré-écrits : un bouton qui ouvre les choix */}
+                    <div className="mt-4">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 rounded-full border-indigo-100 bg-white text-indigo-700 hover:bg-indigo-50 hover:border-indigo-200 text-xs font-semibold"
+                          >
+                            <Sparkles size={14} className="text-indigo-500" />
+                            Messages pré-écrits
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="start"
+                          className="min-w-[280px] max-w-[min(90vw,360px)]"
                         >
-                          <Sparkles size={10} className="inline mr-1 text-indigo-400" />
-                          {s}
-                        </button>
-                      ))}
+                          {[
+                            'Le temps est magnifique, on pense bien à vous !',
+                            'Un petit coucou depuis le bout du monde...',
+                            'Si vous étiez là, ce serait parfait !',
+                            'Les paysages sont à couper le souffle.',
+                          ].map((s) => (
+                            <DropdownMenuItem
+                              key={s}
+                              onClick={() => setMessage(s)}
+                              className="cursor-pointer py-2.5 text-sm text-stone-700 focus:bg-indigo-50 focus:text-indigo-900"
+                            >
+                              <span className="line-clamp-2">{s}</span>
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </section>
 
@@ -4336,7 +4363,12 @@ export default function EditorPage() {
                         >
                           <div className="relative aspect-square overflow-hidden">
                             {item.type === 'video' ? (
-                              <video src={item.url} className="w-full h-full object-cover" />
+                              <video
+                                src={item.url}
+                                className="w-full h-full object-cover"
+                                playsInline
+                                muted
+                              />
                             ) : (
                               <img
                                 src={getOptimizedImageUrl(item.url, {
@@ -5080,9 +5112,7 @@ export default function EditorPage() {
                         <Eye size={16} className="shrink-0" />
                       )}
                       <span>
-                        {previewRecipientLoading
-                          ? 'Génération...'
-                          : 'Voir comme un destinataire'}
+                        {previewRecipientLoading ? 'Génération...' : 'Voir comme un destinataire'}
                       </span>
                     </Button>
                   </div>
@@ -5206,11 +5236,12 @@ export default function EditorPage() {
           if (!open) setPreviewRecipientUrl(null)
         }}
       >
-        <DialogContent className="max-w-6xl w-[95vw] h-[90vh] p-0 gap-0 overflow-hidden bg-stone-100 rounded-2xl border border-stone-200 shadow-2xl flex flex-col">
-          <DialogHeader className="shrink-0 px-4 py-3 border-b border-stone-200 bg-white flex flex-row items-center justify-between">
-            <DialogTitle className="text-base font-semibold text-stone-800">
-              Aperçu comme le destinataire — URL /carte (valide 5 min)
-            </DialogTitle>
+        <DialogContent
+          hideCloseButton
+          className="max-w-6xl w-[95vw] h-[90vh] p-0 gap-0 overflow-hidden bg-stone-100 rounded-2xl border border-stone-200 shadow-2xl flex flex-col"
+        >
+          <DialogHeader className="shrink-0 px-3 py-2 border-b border-stone-200 bg-white flex flex-row items-center justify-end min-h-0">
+            <DialogTitle className="sr-only">Aperçu comme le destinataire</DialogTitle>
             <Button
               variant="ghost"
               size="sm"
@@ -5218,9 +5249,9 @@ export default function EditorPage() {
                 setPreviewRecipientModalOpen(false)
                 setPreviewRecipientUrl(null)
               }}
-              className="rounded-full"
+              className="rounded-full h-8 w-8 p-0"
             >
-              <X size={20} />
+              <X size={18} />
             </Button>
           </DialogHeader>
           <div className="flex-1 min-h-0 relative bg-white">

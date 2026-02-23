@@ -88,7 +88,12 @@ export default function PhotoAlbum({ mediaItems, senderName }: PhotoAlbumProps) 
               >
                 {item.type === 'video' ? (
                   <div className="w-full h-full relative">
-                    <video src={item.url} className="w-full h-full object-cover" />
+                    <video
+                      src={item.url}
+                      className="w-full h-full object-cover"
+                      playsInline
+                      muted
+                    />
                     <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                       <div className="w-12 h-12 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center">
                         <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent ml-1" />

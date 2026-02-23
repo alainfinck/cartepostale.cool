@@ -54,7 +54,10 @@ export default function AlbumPolaroidLightbox({
 
   useEffect(() => {
     const updateWidth = () => {
-      const w = typeof window !== 'undefined' ? window.innerWidth * (window.devicePixelRatio || 1) : DISPLAY_MAX_WIDTH
+      const w =
+        typeof window !== 'undefined'
+          ? window.innerWidth * (window.devicePixelRatio || 1)
+          : DISPLAY_MAX_WIDTH
       setDisplayWidth(Math.min(DISPLAY_MAX_WIDTH, Math.round(w)))
     }
     updateWidth()
@@ -156,7 +159,9 @@ export default function AlbumPolaroidLightbox({
           aria-label="Mode d'affichage"
           className={cn(
             'absolute z-[100001] flex rounded-full bg-black/40 backdrop-blur-md border border-white/20 p-1 shadow-xl',
-            extraTopLeft ? 'top-10 left-6 md:top-12 md:left-12 mt-14 md:mt-0 md:left-48' : 'top-10 left-6 md:top-12 md:left-12',
+            extraTopLeft
+              ? 'top-10 left-6 md:top-12 md:left-12 mt-14 md:mt-0 md:left-48'
+              : 'top-10 left-6 md:top-12 md:left-12',
           )}
         >
           <button
@@ -257,9 +262,7 @@ export default function AlbumPolaroidLightbox({
                 transformStyle: 'preserve-3d',
                 transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
                 maxHeight: '85vh',
-                ...(viewMode === 'diapo'
-                  ? { aspectRatio: '4/5' }
-                  : {}),
+                ...(viewMode === 'diapo' ? { aspectRatio: '4/5' } : {}),
               }}
             >
               {/* FRONT FACE — image */}
@@ -272,6 +275,8 @@ export default function AlbumPolaroidLightbox({
                     <video
                       src={current.url}
                       controls
+                      playsInline
+                      muted
                       autoPlay
                       className="w-full h-full object-cover"
                     />
@@ -294,6 +299,8 @@ export default function AlbumPolaroidLightbox({
                     <video
                       src={current.url}
                       controls
+                      playsInline
+                      muted
                       autoPlay
                       className="block max-h-[85vh] max-w-[95vw] object-contain"
                       style={{ maxHeight: 'calc(85vh - 20px)', maxWidth: 'calc(95vw - 20px)' }}

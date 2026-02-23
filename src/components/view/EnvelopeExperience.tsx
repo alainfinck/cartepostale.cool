@@ -50,7 +50,7 @@ export default function EnvelopeExperience({
   }, [overlayActive])
 
   return (
-    <div className="relative min-h-screen bg-[#fdfbf7] overflow-hidden">
+    <div className="relative min-h-screen bg-[#fdfbf7] overflow-x-hidden">
       <AnimatePresence>
         {overlayActive ? (
           <motion.div

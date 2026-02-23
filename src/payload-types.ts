@@ -84,6 +84,7 @@ export interface Config {
     posts: Post;
     'email-templates': EmailTemplate;
     feedback: Feedback;
+    'editor-previews': EditorPreview;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -108,6 +109,7 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     'email-templates': EmailTemplatesSelect<false> | EmailTemplatesSelect<true>;
     feedback: FeedbackSelect<false> | FeedbackSelect<true>;
+    'editor-previews': EditorPreviewsSelect<false> | EditorPreviewsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -718,6 +720,26 @@ export interface Feedback {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "editor-previews".
+ */
+export interface EditorPreview {
+  id: number;
+  token: string;
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  expiresAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -807,6 +829,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'feedback';
         value: number | Feedback;
+      } | null)
+    | ({
+        relationTo: 'editor-previews';
+        value: number | EditorPreview;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1207,6 +1233,17 @@ export interface FeedbackSelect<T extends boolean = true> {
   pageUrl?: T;
   user?: T;
   status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "editor-previews_select".
+ */
+export interface EditorPreviewsSelect<T extends boolean = true> {
+  token?: T;
+  data?: T;
+  expiresAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -97,9 +97,24 @@ const DEFAULT_FRONT_FILTER: FrontImageFilter = {
 
 /** Polices disponibles pour le message au verso */
 const BACK_MESSAGE_FONTS = [
-  { id: 'dancing' as const, name: 'Dancing Script', fontFamily: "'Dancing Script', cursive", className: 'font-handwriting' },
-  { id: 'greatVibes' as const, name: 'Great Vibes', fontFamily: "'Great Vibes', cursive", className: 'font-handwriting-greatvibes' },
-  { id: 'parisienne' as const, name: 'Parisienne', fontFamily: "'Parisienne', cursive", className: 'font-handwriting-parisienne' },
+  {
+    id: 'dancing' as const,
+    name: 'Dancing Script',
+    fontFamily: "'Dancing Script', cursive",
+    className: 'font-handwriting',
+  },
+  {
+    id: 'greatVibes' as const,
+    name: 'Great Vibes',
+    fontFamily: "'Great Vibes', cursive",
+    className: 'font-handwriting-greatvibes',
+  },
+  {
+    id: 'parisienne' as const,
+    name: 'Parisienne',
+    fontFamily: "'Parisienne', cursive",
+    className: 'font-handwriting-parisienne',
+  },
 ]
 
 const buildFrontImageFilterCss = (filter?: FrontImageFilter): string => {
@@ -280,8 +295,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null)
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0)
   const [messageModalFontSize, setMessageModalFontSize] = useState(2)
-  // Slider de taille du texte au verso (0.7 = petit, 2.2 = grand)
-  const [backTextScale, setBackTextScale] = useState(isLarge ? 1.2 : 1)
+  // Slider de taille du texte au verso (0.7 = petit, 2.2 = grand) — défaut réduit pour aperçu global
+  const [backTextScale, setBackTextScale] = useState(isLarge ? 0.95 : 0.78)
   // Police du message au verso (dancing = défaut, greatVibes, parisienne)
   const [backMessageFont, setBackMessageFont] = useState<'dancing' | 'greatVibes' | 'parisienne'>(
     'dancing',
@@ -833,6 +848,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
       `}</style>
       <div
         className="flex flex-col items-center gap-2 select-none w-full max-w-full"
+        style={{ height }}
         suppressHydrationWarning
       >
         <motion.div
@@ -1350,7 +1366,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             >
                               <Camera size={16} />
                               <span className="text-xs font-bold uppercase tracking-wider">
-                                {hasMedia ? 'Voir l\'album photos' : 'Ajouter des photos'}
+                                {hasMedia ? "Voir l'album photos" : 'Ajouter des photos'}
                               </span>
                             </button>
                           )}
@@ -1479,33 +1495,50 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     isLarge ? 'flex-[2]' : 'flex-[1.5]',
                   )}
                 >
-                  <div
-                    ref={messageContainerRef}
-                    className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 pl-1 sm:pl-2 flex flex-col justify-center"
-                    onClick={openMessage}
-                  >
-                    <p
-                      ref={messageTextRef}
-                      className="text-stone-700 leading-[1.2] text-left whitespace-pre-wrap w-full max-w-full break-words pl-2 sm:pl-3"
-                      style={{
-                        fontSize: `${autoFontSize * backTextScale}rem`,
-                        fontFamily:
-                          BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily ??
-                          "'Dancing Script', cursive",
-                      }}
+                  <div className="flex flex-1 min-h-0 gap-1.5 sm:gap-2 items-stretch">
+                    {/* Petite loupe à gauche pour indiquer le zoom */}
+                    <div className="flex flex-col justify-center shrink-0 pt-2" aria-hidden>
+                      <Search
+                        size={isLarge ? 18 : 14}
+                        className="text-teal-500/80 shrink-0"
+                        strokeWidth={2}
+                      />
+                    </div>
+                    <div
+                      ref={messageContainerRef}
+                      className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 pl-1 sm:pl-2 flex flex-col justify-center"
+                      onClick={openMessage}
                     >
-                      {postcard.message}
-                    </p>
+                      <p
+                        ref={messageTextRef}
+                        className="text-stone-700 leading-[1.2] text-left whitespace-pre-wrap w-full max-w-full break-words pl-2 sm:pl-3"
+                        style={{
+                          fontSize: `${autoFontSize * backTextScale}rem`,
+                          fontFamily:
+                            BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily ??
+                            "'Dancing Script', cursive",
+                        }}
+                      >
+                        {postcard.message}
+                      </p>
 
-                    {/* Zoom hint - shown when hovering */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover/msg:opacity-100 transition-opacity duration-300">
-                      <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-stone-200 shadow-xl flex items-center gap-2 transform scale-75 sm:scale-100">
-                        <Search size={14} className="text-teal-600" />
-                        <span className="text-[10px] font-bold text-stone-600 uppercase tracking-widest">
-                          Agrandir
-                        </span>
+                      {/* Hint zoom au survol */}
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover/msg:opacity-100 transition-opacity duration-300">
+                        <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-stone-200 shadow-xl flex items-center gap-2 transform scale-75 sm:scale-100">
+                          <Search size={14} className="text-teal-600" />
+                          <span className="text-[10px] font-bold text-stone-600 uppercase tracking-widest">
+                            Cliquez pour zoomer
+                          </span>
+                        </div>
                       </div>
                     </div>
+                  </div>
+                  {/* Texte explicite sous la zone message : cliquer pour zoomer */}
+                  <div className="flex items-center gap-1.5 mt-1 px-1 text-stone-400" aria-hidden>
+                    <Search size={12} className="shrink-0 text-teal-500/70" strokeWidth={2} />
+                    <span className="text-[9px] sm:text-[10px] font-medium uppercase tracking-wider">
+                      Cliquez sur le texte pour agrandir
+                    </span>
                   </div>
                   {postcard.senderName && (
                     <div className="mt-auto -mt-2 self-start transform -rotate-2 pt-2 pb-1 px-4 relative">
@@ -1526,6 +1559,16 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
                 {/* Right Side: Stamp + Map */}
                 <div className="flex-1 h-full flex flex-col relative min-w-0 pt-0 min-h-[8rem] sm:min-h-[10rem]">
+                  {/* Petite loupe sur la carte (côté droit) pour rappeler le zoom */}
+                  <div
+                    className="absolute top-0 right-0 flex items-center gap-1 px-1.5 py-1 rounded-lg bg-white/60 border border-stone-200/80 shadow-sm z-10"
+                    aria-hidden
+                  >
+                    <Search size={12} className="text-teal-500/80 shrink-0" strokeWidth={2} />
+                    <span className="text-[8px] sm:text-[9px] font-semibold text-stone-500 uppercase tracking-wider whitespace-nowrap">
+                      Cliquez pour zoomer
+                    </span>
+                  </div>
                   {/* Top Section: Stamp — remonté pour alignement visuel */}
                   <div className="flex-none flex justify-end items-start mb-0.5 gap-2 min-h-[4.5rem] sm:min-h-[5.5rem] -mt-6 sm:-mt-8 -mr-1 sm:-mr-3">
                     {/* Stamp - plus petit et plus réaliste */}
@@ -2067,52 +2110,57 @@ const PostcardView: React.FC<PostcardViewProps> = ({
       {isFullscreen &&
         portalRoot &&
         createPortal(
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center overflow-hidden"
-            style={{
-              padding: 'max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left))',
-            }}
-          >
-            {/* Croix fermer en haut à droite */}
-            <button
-              type="button"
-              onClick={() => setIsFullscreen(false)}
-              className="fixed z-[210] flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white shadow-xl text-stone-700 hover:bg-stone-100 hover:rotate-90 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-stone-900"
-              style={{
-                top: 'max(1rem, env(safe-area-inset-top))',
-                right: 'max(1rem, env(safe-area-inset-right))',
-              }}
-              aria-label="Fermer le plein écran"
-            >
-              <X size={24} className="sm:w-7 sm:h-7" strokeWidth={2.5} />
-            </button>
+          <AnimatePresence>
+            {isFullscreen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[999] bg-black/90 flex items-center justify-center overflow-hidden"
+                style={{
+                  padding:
+                    'max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left))',
+                }}
+              >
+                {/* Croix fermer en haut à droite */}
+                <button
+                  type="button"
+                  onClick={() => setIsFullscreen(false)}
+                  className="fixed z-[210] flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white shadow-xl text-stone-700 hover:bg-stone-100 hover:rotate-90 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-stone-900"
+                  style={{
+                    top: 'max(1rem, env(safe-area-inset-top))',
+                    right: 'max(1rem, env(safe-area-inset-right))',
+                  }}
+                  aria-label="Fermer le plein écran"
+                >
+                  <X size={24} className="sm:w-7 sm:h-7" strokeWidth={2.5} />
+                </button>
 
-            {/* Conteneur carte : centrée, marges, ne dépasse pas (portrait = 90vw, paysage = hauteur dispo × 1.5) */}
-            <div
-              className="flex items-center justify-center shrink-0 max-w-full max-h-full"
-              style={{
-                width: 'min(90vw, calc((100vh - 4rem) * 1.5))',
-                aspectRatio: '3/2',
-                maxHeight: 'calc(100vh - 4rem)',
-              }}
-            >
-              <PostcardView
-                postcard={postcard}
-                flipped={isFlipped}
-                isLarge={true}
-                width="100%"
-                height="100%"
-                className="shadow-2xl rounded-2xl overflow-hidden"
-                hideFullscreenButton={true}
-                hideFlipHints={true}
-                isInsideFullscreen={true}
-                onExitFullscreen={() => setIsFullscreen(false)}
-              />
-            </div>
-          </motion.div>,
+                {/* Conteneur carte : centrée, marges, ne dépasse pas (portrait = 90vw, paysage = hauteur dispo × 1.5) */}
+                <div
+                  className="flex items-center justify-center shrink-0 max-w-full max-h-full"
+                  style={{
+                    width: 'min(90vw, calc((100vh - 4rem) * 1.5))',
+                    aspectRatio: '3/2',
+                    maxHeight: 'calc(100vh - 4rem)',
+                  }}
+                >
+                  <PostcardView
+                    postcard={postcard}
+                    flipped={isFlipped}
+                    isLarge={true}
+                    width="100%"
+                    height="100%"
+                    className="shadow-2xl rounded-2xl overflow-hidden"
+                    hideFullscreenButton={true}
+                    hideFlipHints={true}
+                    isInsideFullscreen={true}
+                    onExitFullscreen={() => setIsFullscreen(false)}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
           portalRoot,
         )}
     </>

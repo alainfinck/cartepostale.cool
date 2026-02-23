@@ -486,12 +486,18 @@ export default function PhotoFeed({
 
             <div className="flex flex-col gap-10">
               {sortedMediaItems.map((item, index) => {
-                const rotateVariation = (index % 3) === 0 ? -2 : (index % 3) === 1 ? 1.5 : -1
+                const rotateVariation = index % 3 === 0 ? -2 : index % 3 === 1 ? 1.5 : -1
                 return (
                   <motion.div
                     key={item.id}
                     className="relative"
-                    initial={{ opacity: 0, y: 72, rotate: rotateVariation + 8, scale: 0.92, filter: 'blur(6px)' }}
+                    initial={{
+                      opacity: 0,
+                      y: 72,
+                      rotate: rotateVariation + 8,
+                      scale: 0.92,
+                      filter: 'blur(6px)',
+                    }}
                     whileInView={{
                       opacity: 1,
                       y: 0,
@@ -588,7 +594,9 @@ export default function PhotoFeed({
                 {sortedMediaItems[selectedIndex]?.type !== 'video' && (
                   <button
                     type="button"
-                    aria-label={viewMode === 'diapo' ? 'Afficher image entière' : 'Afficher en diapo'}
+                    aria-label={
+                      viewMode === 'diapo' ? 'Afficher image entière' : 'Afficher en diapo'
+                    }
                     className="absolute top-10 left-6 md:top-12 md:left-12 z-[100001] p-3 rounded-full bg-white/10 hover:bg-white/20 text-white/90 hover:text-white border border-white/20 transition-all shadow-2xl backdrop-blur-md flex items-center gap-2"
                     onClick={(e) => {
                       e.stopPropagation()
@@ -694,6 +702,8 @@ export default function PhotoFeed({
                             <video
                               src={sortedMediaItems[selectedIndex].url}
                               controls
+                              playsInline
+                              muted
                               autoPlay
                               className="w-full h-full object-cover"
                             />
@@ -729,71 +739,72 @@ export default function PhotoFeed({
                           </div>
                         )}
 
-                    {/* BACK FACE */}
-                    <div
-                      className="absolute inset-0 rounded-sm overflow-hidden flex flex-col items-center justify-center p-8 shadow-inner"
-                      style={{
-                        backfaceVisibility: 'hidden',
-                        transform: 'rotateY(180deg)',
-                        background:
-                          'linear-gradient(145deg, #fef3c7 0%, #fffbeb 30%, #fefce8 60%, #fef9c3 100%)',
-                      }}
-                    >
-                      <div
-                        className="absolute inset-0 opacity-[0.06]"
-                        style={{
-                          backgroundImage:
-                            'repeating-linear-gradient(0deg, transparent, transparent 31px, #92400e 31px, #92400e 32px)',
-                        }}
-                      />
-                      <div className="relative z-10 max-w-md text-center">
-                        <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 text-amber-600 rounded-full mb-6 shadow-sm">
-                          <StickyNote size={24} />
-                        </div>
-                        <p className="text-xl md:text-2xl font-serif text-stone-800 leading-relaxed italic">
-                          &ldquo;
-                          {sortedMediaItems[selectedIndex].note || 'Pas de note pour cette photo.'}
-                          &rdquo;
-                        </p>
-                        <p className="mt-6 text-sm text-stone-500 font-bold uppercase tracking-wider">
-                          — {senderName}
-                        </p>
-                      </div>
-                      <div className="absolute top-4 right-4 opacity-20">
-                        <div className="w-16 h-20 border-2 border-dashed border-amber-800 rounded-sm flex items-center justify-center">
-                          <span className="text-2xl">📮</span>
-                        </div>
-                      </div>
-
-                      <div className="absolute bottom-4 sm:bottom-6 left-0 right-0 flex justify-center z-20">
-                        <button
-                          onClick={() => setIsFlipped(false)}
-                          className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-sm font-bold shadow-lg transition-all hover:scale-105 active:scale-95"
+                        {/* BACK FACE */}
+                        <div
+                          className="absolute inset-0 rounded-sm overflow-hidden flex flex-col items-center justify-center p-8 shadow-inner"
+                          style={{
+                            backfaceVisibility: 'hidden',
+                            transform: 'rotateY(180deg)',
+                            background:
+                              'linear-gradient(145deg, #fef3c7 0%, #fffbeb 30%, #fefce8 60%, #fef9c3 100%)',
+                          }}
                         >
-                          <StickyNote size={14} />
-                          <span>Voir la photo</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
+                          <div
+                            className="absolute inset-0 opacity-[0.06]"
+                            style={{
+                              backgroundImage:
+                                'repeating-linear-gradient(0deg, transparent, transparent 31px, #92400e 31px, #92400e 32px)',
+                            }}
+                          />
+                          <div className="relative z-10 max-w-md text-center">
+                            <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 text-amber-600 rounded-full mb-6 shadow-sm">
+                              <StickyNote size={24} />
+                            </div>
+                            <p className="text-xl md:text-2xl font-serif text-stone-800 leading-relaxed italic">
+                              &ldquo;
+                              {sortedMediaItems[selectedIndex].note ||
+                                'Pas de note pour cette photo.'}
+                              &rdquo;
+                            </p>
+                            <p className="mt-6 text-sm text-stone-500 font-bold uppercase tracking-wider">
+                              — {senderName}
+                            </p>
+                          </div>
+                          <div className="absolute top-4 right-4 opacity-20">
+                            <div className="w-16 h-20 border-2 border-dashed border-amber-800 rounded-sm flex items-center justify-center">
+                              <span className="text-2xl">📮</span>
+                            </div>
+                          </div>
 
-            {/* Swipe hint (mobile only, first time) */}
-            {sortedMediaItems.length > 1 && (
-              <motion.p
-                initial={{ opacity: 0.7 }}
-                animate={{ opacity: 0 }}
-                transition={{ delay: 2, duration: 1 }}
-                className="absolute bottom-20 text-white/40 text-xs font-medium md:hidden pointer-events-none"
-              >
-                ← Glissez pour naviguer →
-              </motion.p>
+                          <div className="absolute bottom-4 sm:bottom-6 left-0 right-0 flex justify-center z-20">
+                            <button
+                              onClick={() => setIsFlipped(false)}
+                              className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-sm font-bold shadow-lg transition-all hover:scale-105 active:scale-95"
+                            >
+                              <StickyNote size={14} />
+                              <span>Voir la photo</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* Swipe hint (mobile only, first time) */}
+                {sortedMediaItems.length > 1 && (
+                  <motion.p
+                    initial={{ opacity: 0.7 }}
+                    animate={{ opacity: 0 }}
+                    transition={{ delay: 2, duration: 1 }}
+                    className="absolute bottom-20 text-white/40 text-xs font-medium md:hidden pointer-events-none"
+                  >
+                    ← Glissez pour naviguer →
+                  </motion.p>
+                )}
+              </motion.div>
             )}
-          </motion.div>
-        )}
-      </AnimatePresence>,
+          </AnimatePresence>,
           document.body,
         )}
     </section>

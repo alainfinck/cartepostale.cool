@@ -227,7 +227,10 @@ export default function ManagerClient({
   const [promoDialogOpen, setPromoDialogOpen] = useState(false)
   const [promoCodeInput, setPromoCodeInput] = useState('')
   const [promoLoading, setPromoLoading] = useState(false)
-  const [promoResult, setPromoResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [promoResult, setPromoResult] = useState<{
+    type: 'success' | 'error'
+    message: string
+  } | null>(null)
   const [buyCreditsModalOpen, setBuyCreditsModalOpen] = useState(false)
   const [buyCreditsPack, setBuyCreditsPack] = useState<string>('pack_20')
   const [buyCreditsPromoCode, setBuyCreditsPromoCode] = useState('')
@@ -574,9 +577,7 @@ export default function ManagerClient({
               </div>
               <div className="flex items-center justify-between rounded-xl bg-stone-50 border border-stone-200 p-4">
                 <span className="font-medium text-stone-700">Total</span>
-                <span className="text-xl font-bold text-teal-700">
-                  {selectedPackInfo.price} €
-                </span>
+                <span className="text-xl font-bold text-teal-700">{selectedPackInfo.price} €</span>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-stone-700">Code promo (optionnel)</label>
@@ -584,9 +585,7 @@ export default function ManagerClient({
                   <Input
                     placeholder="Ex. COOLOS"
                     value={buyCreditsPromoCode}
-                    onChange={(e) =>
-                      setBuyCreditsPromoCode(e.target.value.toUpperCase().trim())
-                    }
+                    onChange={(e) => setBuyCreditsPromoCode(e.target.value.toUpperCase().trim())}
                     className="font-mono uppercase flex-1"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -657,10 +656,7 @@ export default function ManagerClient({
               )}
             </div>
             <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setBuyCreditsModalOpen(false)}
-              >
+              <Button variant="outline" onClick={() => setBuyCreditsModalOpen(false)}>
                 Annuler
               </Button>
               <Button
@@ -685,7 +681,8 @@ export default function ManagerClient({
                       }),
                     })
                     const data = await res.json()
-                    if (!res.ok) throw new Error(data.error || 'Erreur lors de la création du paiement')
+                    if (!res.ok)
+                      throw new Error(data.error || 'Erreur lors de la création du paiement')
                     if (data.checkout_url) {
                       window.location.href = data.checkout_url
                     } else {
@@ -703,9 +700,7 @@ export default function ManagerClient({
                     Redirection...
                   </>
                 ) : (
-                  <>
-                    Payer {selectedPackInfo.price} €
-                  </>
+                  <>Payer {selectedPackInfo.price} €</>
                 )}
               </Button>
             </DialogFooter>
@@ -828,8 +823,7 @@ export default function ManagerClient({
               </Button>
             </div>
           )}
-
-          </div>
+        </div>
 
         {/* Bulk actions bar */}
         {selectedIds.size > 0 && (
@@ -932,6 +926,14 @@ export default function ManagerClient({
                 onUpdateStatus={handleUpdateStatus}
                 onDelete={(id) => setDeleteConfirm(id)}
                 umamiViews={umamiStats[`/carte/${postcard.publicId}`] || 0}
+                onOpenShareContribution={
+                  useEspaceClientActions
+                    ? () => {
+                        setSelectedPostcard(postcard)
+                        setShareContributionModalOpen(true)
+                      }
+                    : undefined
+                }
               />
             ))}
           </div>
@@ -987,6 +989,14 @@ export default function ManagerClient({
                       onDelete={(id) => setDeleteConfirm(id)}
                       formatDate={formatDate}
                       umamiViews={umamiStats[`/carte/${postcard.publicId}`] || 0}
+                      onOpenShareContribution={
+                        useEspaceClientActions
+                          ? () => {
+                              setSelectedPostcard(postcard)
+                              setShareContributionModalOpen(true)
+                            }
+                          : undefined
+                      }
                     />
                   ))}
                 </TableBody>
@@ -1383,6 +1393,7 @@ function GridCard({
   onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
   onDelete: (id: number) => void
   umamiViews?: number
+  onOpenShareContribution?: () => void
 }) {
   const imageUrl = getFrontImageUrl(postcard)
   const [isFlipped, setIsFlipped] = useState(false)
@@ -1546,6 +1557,20 @@ function GridCard({
                         Éditeur
                       </Button>
                     )}
+                    {onOpenShareContribution && postcard.contributionToken && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onOpenShareContribution()
+                        }}
+                        className="h-9 w-9 text-purple-600 hover:text-purple-700 hover:bg-purple-50 border-purple-200 shadow-sm"
+                        title="Partager le lien de contribution (photos)"
+                      >
+                        <Users size={16} />
+                      </Button>
+                    )}
                     <StatusDropdown
                       currentStatus={postcard.status || 'draft'}
                       onUpdate={onUpdateStatus}
@@ -1640,6 +1665,7 @@ function ListRow({
   onDelete: (id: number) => void
   formatDate: (d: string) => string
   umamiViews?: number
+  onOpenShareContribution?: () => void
 }) {
   const imageUrl = getFrontImageUrl(postcard)
 
@@ -1745,6 +1771,18 @@ function ListRow({
             >
               <Copy size={14} className="mr-1.5" />
               Dupliquer
+            </Button>
+          )}
+          {onOpenShareContribution && postcard.contributionToken && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 px-3 text-purple-700 border-purple-200 bg-purple-50/50 hover:bg-purple-100 font-medium shadow-sm"
+              onClick={() => onOpenShareContribution()}
+              title="Partager le lien de contribution (photos)"
+            >
+              <Users size={14} className="mr-1.5" />
+              Contribuer
             </Button>
           )}
           <StatusDropdown

@@ -25,6 +25,7 @@ import { Stickers } from './collections/Stickers'
 import { Posts } from './collections/Posts'
 import { EmailTemplates } from './collections/EmailTemplates'
 import { Feedback } from './collections/Feedback'
+import { EditorPreviews } from './collections/EditorPreviews'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -119,6 +120,7 @@ export default buildConfig({
     Posts,
     EmailTemplates,
     Feedback,
+    EditorPreviews,
   ],
   globals: [Settings],
   editor: lexicalEditor(),

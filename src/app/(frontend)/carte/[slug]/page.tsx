@@ -215,6 +215,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
+import EnvelopeHero from '@/components/view/EnvelopeHero'
+
 export default async function PostcardPage({ params, searchParams }: PageProps) {
   const { slug } = await params
   const resolvedSearchParams = (await (searchParams ?? Promise.resolve({}))) as SearchParams
@@ -254,7 +256,14 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
     frontendPostcard.isContributionEnabled = payloadPostcardAny.isContributionEnabled ?? true
   }
 
-  const heroSection = (
+  const heroSection = showEnvelope ? (
+    <EnvelopeHero
+      senderName={frontendPostcard.senderName}
+      location={frontendPostcard.location}
+      date={frontendPostcard.date}
+      coords={frontendPostcard.coords}
+    />
+  ) : (
     <ViewPageTitle
       title="Vous avez reçu une carte postale !"
       senderName={frontendPostcard.senderName}

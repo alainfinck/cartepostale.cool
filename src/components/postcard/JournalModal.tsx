@@ -117,6 +117,8 @@ const JournalEntry: React.FC<{ item: MediaItem; index: number }> = ({ item, inde
           <video
             src={item.url}
             controls
+            playsInline
+            muted
             className="w-full h-auto max-h-[500px] object-contain bg-black"
           />
         ) : (

@@ -4,7 +4,7 @@ import { Metadata } from 'next'
 import { getEditorPreview } from '@/lib/editor-preview-store'
 import ScratchCardWrapper from '@/components/view/ScratchCardWrapper'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Sparkles, Clock } from 'lucide-react'
+import { ArrowRight, Sparkles } from 'lucide-react'
 import { Postcard as FrontendPostcard } from '@/types'
 import { RotateDevicePrompt } from '@/components/ui/rotate-device-prompt'
 import ViewPageTitle from '@/components/view/ViewPageTitle'
@@ -19,7 +19,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { token } = await params
-  const data = getEditorPreview(token)
+  const data = await getEditorPreview(token)
   if (!data) {
     return { title: 'Aperçu expiré' }
   }
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function PreviewPostcardPage({ params }: PageProps) {
   const { token } = await params
-  const data = getEditorPreview(token)
+  const data = await getEditorPreview(token)
   if (!data) {
     notFound()
   }
@@ -50,14 +50,6 @@ export default async function PreviewPostcardPage({ params }: PageProps) {
   const pageContent = (
     <div className="min-h-screen bg-[#fdfbf7] pt-9 md:pt-0 flex flex-col items-center overflow-x-hidden landscape:justify-center landscape:pt-4 landscape:pb-4">
       <RotateDevicePrompt />
-
-      {/* Bandeau aperçu — lien temporaire */}
-      <div className="w-full bg-amber-50 border-b border-amber-200/80 py-2 px-4 flex items-center justify-center gap-2 text-amber-800 text-sm font-medium">
-        <Clock size={16} className="shrink-0" />
-        <span>
-          Aperçu — ce lien expire dans 5 min. Le lien définitif sera activé après paiement.
-        </span>
-      </div>
 
       <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-0 px-2 md:px-4 min-h-[70vh] md:min-h-[80vh] justify-center">
         <ScratchCardWrapper postcard={frontendPostcard} views={0} />
