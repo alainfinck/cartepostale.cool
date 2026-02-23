@@ -48,6 +48,11 @@ const MiniMap = dynamic(() => import('@/components/postcard/MiniMap'), {
   loading: () => <div className="w-full h-full bg-stone-100 animate-pulse" />,
 })
 
+const AlbumPolaroidLightbox = dynamic(
+  () => import('@/components/view/AlbumPolaroidLightbox').then((m) => m.default),
+  { ssr: false },
+)
+
 // Dynamic import for JournalModal
 const JournalModal = dynamic(() => import('@/components/postcard/JournalModal'), {
   ssr: false,
@@ -672,6 +677,47 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     if (!portalRoot || !isAlbumOpen) return null
     if (!showAlbumOrContribute) return null
 
+    // Avec photos : lightbox diapo polaroid (même expérience qu'en bas sur la page carte)
+    if (hasMedia && postcard.mediaItems) {
+      return createPortal(
+        <AnimatePresence>
+          <AlbumPolaroidLightbox
+            mediaItems={postcard.mediaItems}
+            senderName={postcard.senderName}
+            initialIndex={currentMediaIndex}
+            onClose={() => setIsAlbumOpen(false)}
+            extraTopLeft={
+              canContribute ? (
+                <>
+                  <button
+                    onClick={handleUploadClick}
+                    disabled={isUploading}
+                    className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isUploading ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <Camera size={16} />
+                    )}
+                    <span className="hidden sm:inline">Ajouter une photo</span>
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                </>
+              ) : undefined
+            }
+          />
+        </AnimatePresence>,
+        portalRoot,
+      )
+    }
+
+    // Sans photos : overlay vide + contribution
     return createPortal(
       <div
         className="fixed inset-0 z-[999] bg-black/98 backdrop-blur-xl flex items-center justify-center p-4 md:p-8"
@@ -687,8 +733,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
           >
             <X size={28} />
           </button>
-
-          {/* Contribution Actions */}
           {canContribute && (
             <div className="absolute -top-12 left-0 flex gap-2 z-50">
               <button
@@ -712,50 +756,14 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               />
             </div>
           )}
-
-          <div className="relative w-full h-[70vh] md:h-[80vh] bg-transparent flex items-center justify-center">
-            {!hasMedia ? (
-              <div className="flex flex-col items-center justify-center gap-4 text-white/80 p-8 text-center">
-                <Camera size={48} className="opacity-60" />
-                <p className="text-lg font-semibold">Aucune photo pour le moment</p>
-                <p className="text-sm max-w-sm">
-                  Ajoutez la première photo ou partagez le lien pour inviter d&apos;autres personnes
-                  à contribuer.
-                </p>
-              </div>
-            ) : postcard.mediaItems![currentMediaIndex].type === 'video' ? (
-              <video controls autoPlay className="max-w-full max-h-full object-contain">
-                <source src={postcard.mediaItems![currentMediaIndex].url} />
-              </video>
-            ) : (
-              <img
-                src={getOptimizedImageUrl(postcard.mediaItems![currentMediaIndex].url, {
-                  width: 1600,
-                })}
-                className="max-w-full max-h-full object-contain"
-                alt="Album item"
-              />
-            )}
-
-            {hasMedia && postcard.mediaItems!.length > 1 && (
-              <>
-                <button
-                  onClick={prevMedia}
-                  className="absolute left-4 bg-white/10 hover:bg-white/20 p-2 rounded-full text-white backdrop-blur-md transition-all"
-                >
-                  <ChevronLeft size={32} />
-                </button>
-                <button
-                  onClick={nextMedia}
-                  className="absolute right-4 bg-white/10 hover:bg-white/20 p-2 rounded-full text-white backdrop-blur-md transition-all"
-                >
-                  <ChevronRight size={32} />
-                </button>
-              </>
-            )}
+          <div className="flex flex-col items-center justify-center gap-4 text-white/80 p-8 text-center">
+            <Camera size={48} className="opacity-60" />
+            <p className="text-lg font-semibold">Aucune photo pour le moment</p>
+            <p className="text-sm max-w-sm">
+              Ajoutez la première photo ou partagez le lien pour inviter d&apos;autres personnes à
+              contribuer.
+            </p>
           </div>
-
-          {/* Thumbnail list removed per user request ("retire les points sous les photos") */}
         </div>
       </div>,
       portalRoot,

@@ -215,6 +215,7 @@ export default function ManagerClient({
   const [isPending, startTransition] = useTransition()
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
   const [editingPostcard, setEditingPostcard] = useState<PayloadPostcard | null>(null)
+  const [editingIsDuplicate, setEditingIsDuplicate] = useState(false)
   const [columns, setColumns] = useState(3)
   const [isAuto, setIsAuto] = useState(true)
   const [trackingLinks, setTrackingLinks] = useState<PostcardTrackingLink[]>([])
@@ -399,6 +400,7 @@ export default function ManagerClient({
       if (result.success) {
         if (result.postcard) {
           setSelectedPostcard(result.postcard)
+          setEditingIsDuplicate(true)
           setEditingPostcard(result.postcard)
         }
         refreshData()
@@ -918,7 +920,10 @@ export default function ManagerClient({
                 selected={selectedIds.has(postcard.id)}
                 onToggleSelect={() => toggleSelect(postcard.id)}
                 onSelect={() => setSelectedPostcard(postcard)}
-                onEdit={() => setEditingPostcard(postcard)}
+                onEdit={() => {
+                  setEditingIsDuplicate(false)
+                  setEditingPostcard(postcard)
+                }}
                 onDuplicate={canDuplicatePostcard ? () => handleDuplicate(postcard.id) : undefined}
                 onUpdateStatus={handleUpdateStatus}
                 onDelete={(id) => setDeleteConfirm(id)}
@@ -966,7 +971,10 @@ export default function ManagerClient({
                       selected={selectedIds.has(postcard.id)}
                       onToggleSelect={() => toggleSelect(postcard.id)}
                       onSelect={() => setSelectedPostcard(postcard)}
-                      onEdit={() => setEditingPostcard(postcard)}
+                      onEdit={() => {
+                  setEditingIsDuplicate(false)
+                  setEditingPostcard(postcard)
+                }}
                       onDuplicate={
                         canDuplicatePostcard ? () => handleDuplicate(postcard.id) : undefined
                       }
@@ -989,7 +997,10 @@ export default function ManagerClient({
           umamiDetails={detailedUmamiStats}
           isOpen={!!selectedPostcard}
           onClose={() => setSelectedPostcard(null)}
-          onEdit={() => setEditingPostcard(selectedPostcard)}
+          onEdit={() => {
+            setEditingIsDuplicate(false)
+            setEditingPostcard(selectedPostcard)
+          }}
           onDuplicate={canDuplicatePostcard ? handleDuplicate : undefined}
           onSetPublicVisibility={canTogglePublicVisibility ? handleSetPublicVisibility : undefined}
           onUpdateStatus={handleUpdateStatus}
@@ -1016,7 +1027,11 @@ export default function ManagerClient({
         <EditPostcardDialog
           postcard={editingPostcard}
           isOpen={!!editingPostcard}
-          onClose={() => setEditingPostcard(null)}
+          isDuplicateMode={editingIsDuplicate}
+          onClose={() => {
+            setEditingPostcard(null)
+            setEditingIsDuplicate(false)
+          }}
           onSuccess={() => {
             refreshData()
             if (selectedPostcard?.id === editingPostcard?.id) {

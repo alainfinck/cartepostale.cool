@@ -25,6 +25,8 @@ interface EditPostcardDialogProps {
     isOpen: boolean
     onClose: () => void
     onSuccess: () => void
+    /** When true, show a "duplication" title instead of "Modifier la carte". */
+    isDuplicateMode?: boolean
     /** When provided, used instead of the default admin updatePostcard (e.g. for espace client). */
     updatePostcardFn?: UpdatePostcardFn
     /** When true, show the "Client (Auteur)" field so the manager can change the user associated with the card. */
@@ -41,7 +43,7 @@ function getFrontImageUrl(postcard: Postcard): string {
     return 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'
 }
 
-export default function EditPostcardDialog({ postcard, isOpen, onClose, onSuccess, updatePostcardFn, allowChangeAuthor = false }: EditPostcardDialogProps) {
+export default function EditPostcardDialog({ postcard, isOpen, onClose, onSuccess, isDuplicateMode = false, updatePostcardFn, allowChangeAuthor = false }: EditPostcardDialogProps) {
     const [isPending, startTransition] = useTransition()
     const [formData, setFormData] = useState({
         senderName: '',
@@ -192,7 +194,11 @@ export default function EditPostcardDialog({ postcard, isOpen, onClose, onSucces
         <Dialog open={isOpen} onOpenChange={(open) => !open && !isPending && onClose()}>
             <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Modifier la carte #{postcard.publicId}</DialogTitle>
+                    <DialogTitle>
+                      {isDuplicateMode
+                        ? "Vous dupliquez cette carte — modifiez le texte et les photos"
+                        : `Modifier la carte #${postcard.publicId}`}
+                    </DialogTitle>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-6 py-4">
