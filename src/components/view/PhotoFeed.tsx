@@ -617,24 +617,54 @@ export default function PhotoFeed({
                   </button>
                 )}
 
+                {/* Mobile Swipe Hint (Ephemeral) */}
+                <AnimatePresence>
+                  {selectedIndex !== null && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ delay: 1, duration: 0.5 }}
+                      className="absolute top-24 left-1/2 -translate-x-1/2 z-[100002] md:hidden pointer-events-none"
+                    >
+                      <motion.div
+                        initial={{ opacity: 1 }}
+                        animate={{ opacity: 0 }}
+                        transition={{ delay: 4, duration: 1 }}
+                        className="bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 flex items-center gap-2"
+                      >
+                        <motion.div
+                          animate={{ x: [-10, 10, -10] }}
+                          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                        >
+                          <Share2 size={16} className="text-white/80 rotate-90" />
+                        </motion.div>
+                        <span className="text-white/90 text-xs font-bold uppercase tracking-widest whitespace-nowrap">
+                          Faites glisser pour défiler
+                        </span>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 {/* Nav arrows (side only, no dots) */}
                 {sortedMediaItems.length > 1 && (
                   <>
                     <button
                       type="button"
                       aria-label="Photo précédente"
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 p-3 z-[100001] transition-colors"
+                      className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-3 z-[100001] transition-all hover:scale-110 active:scale-90 bg-white/5 hover:bg-white/10 rounded-full backdrop-blur-sm"
                       onClick={handlePrev}
                     >
-                      <ChevronLeft size={40} />
+                      <ChevronLeft size={48} strokeWidth={1.5} />
                     </button>
                     <button
                       type="button"
                       aria-label="Photo suivante"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 p-3 z-[100001] transition-colors"
+                      className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-3 z-[100001] transition-all hover:scale-110 active:scale-90 bg-white/5 hover:bg-white/10 rounded-full backdrop-blur-sm"
                       onClick={handleNext}
                     >
-                      <ChevronRight size={40} />
+                      <ChevronRight size={48} strokeWidth={1.5} />
                     </button>
                   </>
                 )}
@@ -792,17 +822,7 @@ export default function PhotoFeed({
                   </AnimatePresence>
                 </div>
 
-                {/* Swipe hint (mobile only, first time) */}
-                {sortedMediaItems.length > 1 && (
-                  <motion.p
-                    initial={{ opacity: 0.7 }}
-                    animate={{ opacity: 0 }}
-                    transition={{ delay: 2, duration: 1 }}
-                    className="absolute bottom-20 text-white/40 text-xs font-medium md:hidden pointer-events-none"
-                  >
-                    ← Glissez pour naviguer →
-                  </motion.p>
-                )}
+                {/* Bottom hint removed as it's now at the top for better visibility */}
               </motion.div>
             )}
           </AnimatePresence>,
