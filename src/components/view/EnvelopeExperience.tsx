@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode, isValidElement, cloneElement } from 'react'
 import { Heart } from 'lucide-react'
 
 interface EnvelopeExperienceProps {
@@ -58,10 +58,10 @@ export default function EnvelopeExperience({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.6, ease: 'easeInOut' } }}
-            className="fixed inset-0 z-50 flex items-center justify-center px-5 pb-8 bg-gradient-to-br from-[#fffdf7] via-[#f7f2ea] to-[#f1e8d6] backdrop-blur-3xl"
+            className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-br from-[#fffdf7] via-[#f7f2ea] to-[#f1e8d6] backdrop-blur-3xl"
           >
             <div
-              className={`w-full max-w-3xl text-center flex flex-col items-center gap-6 transition-opacity duration-500 ${isOpening ? 'opacity-0' : 'opacity-100'}`}
+              className={`min-h-full w-full flex flex-col items-center justify-center py-12 px-5 transition-opacity duration-500 ${isOpening ? 'opacity-0' : 'opacity-100'}`}
             >
               <motion.button
                 type="button"
@@ -153,7 +153,7 @@ export default function EnvelopeExperience({
                   transition={{ duration: 0.5, delay: 0.3 }}
                   className="px-4"
                 >
-                  {hero}
+                  {isValidElement(hero) ? cloneElement(hero as any, { isOpened: false }) : hero}
                 </motion.div>
               )}
             </div>
@@ -175,7 +175,7 @@ export default function EnvelopeExperience({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
           >
-            {hero}
+            {isValidElement(hero) ? cloneElement(hero as any, { isOpened: true }) : hero}
           </motion.div>
         )}
 
