@@ -1723,7 +1723,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               damping: 35,
               opacity: { duration: 0.2 },
             }}
-            className="w-full flex justify-center overflow-hidden"
+            className="w-full flex justify-center overflow-hidden relative"
             style={{ transformOrigin: 'top', transformStyle: 'preserve-3d' }}
           >
             <div className="flex items-center justify-center w-[98%] sm:w-[90%] flex-wrap gap-1.5 sm:gap-2 rounded-b-2xl border-x border-b border-stone-100 bg-white shadow-[0_10px_30px_rgba(0,0,0,0.04)] px-2 sm:px-4 py-1.5 sm:py-2 min-h-[40px] sm:min-h-[48px]">
@@ -1810,16 +1810,16 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 <span>RETOURNER</span>
               </button>
 
-              {/* Close Button Integration */}
+              {/* Close Button — absolu à droite de la barre */}
               <button
                 onClick={(e) => {
                   e.stopPropagation()
                   setIsActionsOpen(false)
                 }}
-                className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/80 text-stone-600 hover:text-stone-800 transition-colors ml-1"
+                className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-colors"
                 title="Masquer la barre"
               >
-                <ChevronUp size={22} strokeWidth={2.5} className="shrink-0" />
+                <ChevronUp size={18} strokeWidth={2.5} className="shrink-0" />
               </button>
             </div>
           </motion.div>
@@ -1830,11 +1830,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 e.stopPropagation()
                 setIsActionsOpen(true)
               }}
-              className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-px h-6 w-24 min-h-0 py-0.5 bg-white/90 hover:bg-white/95 backdrop-blur-md rounded-b-full shadow-[0_3px_6px_rgba(0,0,0,0.12)] border border-t-0 border-stone-200/80 text-stone-500 hover:text-teal-600 transition-all z-30 cursor-pointer flex justify-center items-center group/toggle"
+              className="absolute top-0 right-3 -translate-y-px h-6 w-10 min-h-0 py-0.5 bg-white/90 hover:bg-white/95 backdrop-blur-md rounded-b-full shadow-[0_3px_6px_rgba(0,0,0,0.12)] border border-t-0 border-stone-200/80 text-stone-500 hover:text-teal-600 transition-all z-30 cursor-pointer flex justify-center items-center group/toggle"
               title="Afficher les actions"
             >
               <ChevronDown
-                size={18}
+                size={16}
                 strokeWidth={2.5}
                 className="group-hover/toggle:translate-y-0.5 transition-transform shrink-0"
               />

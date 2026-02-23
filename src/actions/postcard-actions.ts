@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { Postcard } from '@/payload-types'
 import { getCurrentUser } from '@/lib/auth'
+import { sendEmail, generateCreatorConfirmationEmail } from '@/lib/email-service'
 
 // Simple ID generator for public URLs (shorter than UUID)
 function generatePublicId(length = 4) {
@@ -28,9 +29,7 @@ function isHeifUploadError(err: unknown): boolean {
   return /heif|Bitstream not supported|decoder/i.test(msg)
 }
 
-export async function createPostcard(
-  data: any,
-): Promise<{
+export async function createPostcard(data: any): Promise<{
   success: boolean
   id?: number | string
   publicId?: string
@@ -225,7 +224,9 @@ export async function createPostcard(
       backgroundMusicURL = data.backgroundMusic
     } else if (data.backgroundMusicKey) {
       const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')
-      backgroundMusicURL = base ? `${base}/${data.backgroundMusicKey}` : `/media/${encodeURIComponent(data.backgroundMusicKey)}`
+      backgroundMusicURL = base
+        ? `${base}/${data.backgroundMusicKey}`
+        : `/media/${encodeURIComponent(data.backgroundMusicKey)}`
     }
 
     // Remove processed fields from spread data to avoid validation errors (author comes from server only)
@@ -326,6 +327,55 @@ export async function createPostcard(
         // In a real app, you would integrate Resend/Twilio here
       }
 
+      // Send creation confirmation email to the creator
+      if (currentUser?.email) {
+        ;(async () => {
+          try {
+            const { randomBytes } = await import('crypto')
+            const { headers } = await import('next/headers')
+            const headersList = await headers()
+            const host = headersList.get('host') || 'localhost:3000'
+            const protocol = host.includes('localhost') ? 'http' : 'https'
+            const baseUrl = `${protocol}://${host}`
+
+            // Generate a magic link token (valid 24 hours)
+            const token = randomBytes(32).toString('hex')
+            const expires = new Date(Date.now() + 24 * 3600 * 1000)
+
+            await payload.update({
+              collection: 'users',
+              id: currentUser.id,
+              data: {
+                magicLinkToken: token,
+                magicLinkExpires: expires.toISOString(),
+              } as any,
+            })
+
+            const postcardPublicUrl = `${baseUrl}/view/${publicId}`
+            const espaceClientUrl = `${baseUrl}/espace-client`
+            // Magic link redirects to the editor for this specific card
+            const editMagicLinkUrl = `${baseUrl}/api/magic-login?token=${token}&redirect=/editor/${publicId}`
+
+            const html = generateCreatorConfirmationEmail({
+              creatorName: currentUser.name ?? null,
+              recipientName: data.recipientName ?? null,
+              postcardPublicUrl,
+              postcardImageUrl: frontImageURL ?? null,
+              espaceClientUrl,
+              editMagicLinkUrl,
+            })
+
+            await sendEmail({
+              to: currentUser.email,
+              subject: '✅ Votre carte postale est prête !',
+              html,
+            })
+          } catch (err) {
+            console.error('[EMAIL] Failed to send creator confirmation email:', err)
+          }
+        })()
+      }
+
       const token = (newPostcard as { contributionToken?: string }).contributionToken
       return { success: true, id: newPostcard.id, publicId, contributionToken: token }
     }
@@ -348,9 +398,7 @@ export async function createPostcard(
   }
 }
 
-export async function getContributionTokenForPostcard(
-  publicId: string,
-): Promise<string | null> {
+export async function getContributionTokenForPostcard(publicId: string): Promise<string | null> {
   try {
     const payload = await getPayload({ config })
     const result = await payload.find({

@@ -232,6 +232,129 @@ export function generateTrackingLinkEmail(
   `.trim()
 }
 
+/**
+ * HTML for "your postcard was created" confirmation email sent to the creator.
+ * Includes a button to view the card exactly as the recipient will see it.
+ */
+export function generateCreatorConfirmationEmail({
+  creatorName,
+  recipientName,
+  postcardPublicUrl,
+  postcardImageUrl,
+  espaceClientUrl,
+  editMagicLinkUrl,
+}: {
+  creatorName?: string | null
+  recipientName?: string | null
+  postcardPublicUrl: string
+  postcardImageUrl?: string | null
+  espaceClientUrl: string
+  editMagicLinkUrl?: string | null
+}) {
+  const baseUrl = postcardPublicUrl.split('/v/')[0].split('/view/')[0]
+  const greeting = creatorName?.trim() ? `Bonjour ${creatorName} 👋` : 'Bonjour 👋'
+  const dedicaceeLine = recipientName?.trim()
+    ? `Votre carte pour <strong>${recipientName}</strong> a bien été créée.`
+    : 'Votre carte postale a bien été créée.'
+
+  const previewSrc = postcardImageUrl?.startsWith('http')
+    ? postcardImageUrl
+    : postcardImageUrl
+      ? `${baseUrl}${postcardImageUrl}`
+      : `https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg`
+
+  return `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Votre carte postale est prête !</title>
+  <style>
+    body { ${EMAIL_BASE_STYLES.body} }
+    .container { ${EMAIL_BASE_STYLES.container} }
+    .header { ${EMAIL_BASE_STYLES.header} }
+    .logo { ${EMAIL_BASE_STYLES.logo} }
+    .content { ${EMAIL_BASE_STYLES.content} }
+    .h1 { ${EMAIL_BASE_STYLES.h1} }
+    .p { ${EMAIL_BASE_STYLES.p} }
+    .card-preview { ${EMAIL_BASE_STYLES.cardPreview} }
+    .card-image { ${EMAIL_BASE_STYLES.cardImage} }
+    .btn-primary { ${EMAIL_BASE_STYLES.btnPrimary} }
+    .btn-secondary { ${EMAIL_BASE_STYLES.btnSecondary} }
+    .footer { ${EMAIL_BASE_STYLES.footer} }
+    .cta-block { text-align: center; margin: 28px 0; }
+    .cta-primary { margin-bottom: 16px; }
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #0d9488, #0891b2);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 4px 12px;
+      border-radius: 50px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body style="${EMAIL_BASE_STYLES.body}">
+  <div class="container" style="${EMAIL_BASE_STYLES.container}">
+    <div class="header" style="${EMAIL_BASE_STYLES.header}">
+      <a href="${baseUrl}" style="${EMAIL_BASE_STYLES.logo}">CartePostale.cool</a>
+    </div>
+    <div class="content" style="${EMAIL_BASE_STYLES.content}">
+      <p style="text-align:center;margin:0 0 8px 0;">
+        <span class="badge">✅ Carte créée</span>
+      </p>
+      <h1 class="h1" style="${EMAIL_BASE_STYLES.h1}">${greeting}</h1>
+      <p class="p" style="${EMAIL_BASE_STYLES.p}">${dedicaceeLine}</p>
+      <p class="p" style="${EMAIL_BASE_STYLES.p}; font-size: 14px; color: #64748b;">
+        Cliquez sur le bouton ci-dessous pour voir votre carte exactement comme la verra le destinataire.
+      </p>
+
+      <div class="card-preview" style="${EMAIL_BASE_STYLES.cardPreview}">
+        <img src="${previewSrc}" alt="Aperçu de votre carte postale" class="card-image" style="${EMAIL_BASE_STYLES.cardImage}" width="280" />
+      </div>
+
+      <div class="cta-block">
+        <p class="cta-primary">
+          <a href="${postcardPublicUrl}" class="btn-primary" style="${EMAIL_BASE_STYLES.btnPrimary}">
+            👁️ Voir ma carte comme le destinataire
+          </a>
+        </p>
+        ${
+          editMagicLinkUrl
+            ? `
+        <p style="margin: 20px 0 8px 0; font-size: 14px; color: #64748b; text-align: center;">
+          Vous souhaitez modifier votre carte ?
+        </p>
+        <p style="margin-bottom: 20px;">
+          <a href="${editMagicLinkUrl}" style="display:inline-block;background-color:#f0fdfa;color:#0d9488 !important;border:2px solid #0d9488;padding:13px 28px;border-radius:50px;text-decoration:none;font-weight:600;font-size:15px;">
+            ✏️ Modifier ma carte
+          </a>
+        </p>`
+            : ''
+        }
+        <p style="margin: 20px 0 8px 0; font-size: 14px; color: #64748b; text-align: center;">
+          Gérer vos cartes et statistiques :
+        </p>
+        <a href="${espaceClientUrl}" class="btn-secondary" style="${EMAIL_BASE_STYLES.btnSecondary}">
+          Accéder à mon espace →
+        </a>
+      </div>
+    </div>
+    <div class="footer" style="${EMAIL_BASE_STYLES.footer}">
+      <p style="margin: 0 0 8px 0;">Vous recevez cet email car vous venez de créer une carte sur CartePostale.cool.</p>
+      <p style="margin: 0;">© ${new Date().getFullYear()} CartePostale.cool</p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim()
+}
+
 /** HTML for "welcome / account created" email. */
 export function generateWelcomeEmail(name?: string | null) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.cartepostale.cool'
