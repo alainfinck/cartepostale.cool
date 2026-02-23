@@ -832,6 +832,9 @@ export default function EditorPage() {
 
   const [showCopyToast, setShowCopyToast] = useState(false)
   const [hasConfettiFired, setHasConfettiFired] = useState(false)
+  const [previewRecipientModalOpen, setPreviewRecipientModalOpen] = useState(false)
+  const [previewRecipientUrl, setPreviewRecipientUrl] = useState<string | null>(null)
+  const [previewRecipientLoading, setPreviewRecipientLoading] = useState(false)
   const [isSendingEmail, setIsSendingEmail] = useState(false)
   const [isEmailSent, setIsEmailSent] = useState(false)
   const [recipients, setRecipients] = useState<EditorRecipient[]>([
@@ -2210,6 +2213,36 @@ export default function EditorPage() {
     }
   }
 
+  const openPreviewAsRecipient = async () => {
+    setPreviewRecipientLoading(true)
+    setPreviewRecipientUrl(null)
+    try {
+      const payload = JSON.parse(
+        JSON.stringify({
+          ...postcardForPreview,
+          id: postcardForPreview.id || 'preview',
+        }),
+      )
+      const res = await fetch('/api/editor/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erreur')
+      const slug = data.slug
+      if (slug && typeof window !== 'undefined') {
+        setPreviewRecipientUrl(`${window.location.origin}/carte/preview/${slug}`)
+        setPreviewRecipientModalOpen(true)
+      }
+    } catch (e) {
+      console.error('Preview as recipient:', e)
+      alert("Impossible de générer l'aperçu. Réessayez dans un instant.")
+    } finally {
+      setPreviewRecipientLoading(false)
+    }
+  }
+
   const handlePayWithRevolut = async () => {
     const amount = getAlbumPrice()
     if (amount <= 0) return
@@ -2483,6 +2516,26 @@ export default function EditorPage() {
                   onRemove={removeSticker}
                   isActive={!showBack && currentStep === 'photo'} // Only interactive on front in step 1
                 />
+              </div>
+              <div className="mt-3 flex justify-center lg:flex">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 text-teal-700 border-teal-200 hover:bg-teal-50 hover:border-teal-300"
+                  disabled={previewRecipientLoading}
+                  onClick={openPreviewAsRecipient}
+                >
+                  {previewRecipientLoading ? (
+                    <Loader2 size={16} className="animate-spin shrink-0" />
+                  ) : (
+                    <Eye size={16} className="shrink-0" />
+                  )}
+                  <span>
+                    {previewRecipientLoading
+                      ? 'Génération...'
+                      : 'Voir comme un destinataire'}
+                  </span>
+                </Button>
               </div>
             </div>
           </div>
@@ -5010,6 +5063,26 @@ export default function EditorPage() {
                       />
                     </div>
                   </div>
+                  <div className="mt-4 flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 text-teal-700 border-teal-200 hover:bg-teal-50 hover:border-teal-300"
+                      disabled={previewRecipientLoading}
+                      onClick={openPreviewAsRecipient}
+                    >
+                      {previewRecipientLoading ? (
+                        <Loader2 size={16} className="animate-spin shrink-0" />
+                      ) : (
+                        <Eye size={16} className="shrink-0" />
+                      )}
+                      <span>
+                        {previewRecipientLoading
+                          ? 'Génération...'
+                          : 'Voir comme un destinataire'}
+                      </span>
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Navigation Buttons */}
@@ -5121,6 +5194,43 @@ export default function EditorPage() {
           </div>
         </div>
       )}
+
+      {/* Modal "Voir comme un destinataire" — iframe /carte/preview/[token] */}
+      <Dialog
+        open={previewRecipientModalOpen}
+        onOpenChange={(open) => {
+          setPreviewRecipientModalOpen(open)
+          if (!open) setPreviewRecipientUrl(null)
+        }}
+      >
+        <DialogContent className="max-w-6xl w-[95vw] h-[90vh] p-0 gap-0 overflow-hidden bg-stone-100 rounded-2xl border border-stone-200 shadow-2xl flex flex-col">
+          <DialogHeader className="shrink-0 px-4 py-3 border-b border-stone-200 bg-white flex flex-row items-center justify-between">
+            <DialogTitle className="text-base font-semibold text-stone-800">
+              Aperçu comme le destinataire — URL /carte (valide 5 min)
+            </DialogTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setPreviewRecipientModalOpen(false)
+                setPreviewRecipientUrl(null)
+              }}
+              className="rounded-full"
+            >
+              <X size={20} />
+            </Button>
+          </DialogHeader>
+          <div className="flex-1 min-h-0 relative bg-white">
+            {previewRecipientUrl && (
+              <iframe
+                src={previewRecipientUrl}
+                title="Aperçu comme destinataire"
+                className="absolute inset-0 w-full h-full border-0 rounded-b-2xl"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={showImageEditModal}
