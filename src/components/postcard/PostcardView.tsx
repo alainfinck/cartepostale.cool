@@ -534,7 +534,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const hasMedia = postcard.mediaItems && postcard.mediaItems.length > 0
 
   const actionButtonBase =
-    'flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 px-1 sm:px-4 py-1.5 rounded-lg text-[8px] min-[375px]:text-[9px] sm:text-[10px] md:text-xs font-black uppercase active:scale-95 transition-all shadow-sm border text-center whitespace-nowrap min-h-[40px] sm:min-h-0'
+    'flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 px-1 sm:px-4 py-1.5 rounded-lg text-[8px] min-[375px]:text-[9px] sm:text-[10px] md:text-xs font-black uppercase active:scale-95 transition-all shadow-sm border text-center whitespace-normal break-words min-h-[40px] sm:min-h-0'
 
   useEffect(() => {
     setPortalRoot(document.body)
@@ -1706,7 +1706,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
         <div
           className={cn(
-            'flex flex-col items-center relative z-0',
+            'flex flex-col items-center relative z-0 pb-12',
             !width &&
               !height &&
               (isLarge
@@ -1714,7 +1714,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 : 'w-full max-w-full sm:w-[552px]'),
           )}
           style={{
-            marginTop: -8, // On colle au bas de la carte
+            marginTop: -12, // Collé au bas de la carte (languette barre et barre d’actions)
           }}
         >
           <motion.div
@@ -1831,12 +1831,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
           </motion.div>
 
           {!isActionsOpen && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                setIsActionsOpen(true)
-              }}
-              className="absolute top-full left-1/2 -translate-x-1/2 h-6 w-24 min-h-0 py-0.5 bg-white/80 hover:bg-white/95 backdrop-blur-md rounded-b-full shadow-[0_3px_6px_rgba(0,0,0,0.12)] border border-stone-200/80 text-stone-500 hover:text-teal-600 transition-all z-[-1] cursor-pointer flex justify-center items-center group/toggle"
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsActionsOpen(true)
+            }}
+            className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-px h-6 w-24 min-h-0 py-0.5 bg-white/90 hover:bg-white/95 backdrop-blur-md rounded-b-full shadow-[0_3px_6px_rgba(0,0,0,0.12)] border border-t-0 border-stone-200/80 text-stone-500 hover:text-teal-600 transition-all z-30 cursor-pointer flex justify-center items-center group/toggle"
               title="Afficher les actions"
             >
               <ChevronDown

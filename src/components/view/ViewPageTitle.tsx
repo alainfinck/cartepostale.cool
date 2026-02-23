@@ -24,18 +24,6 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
 
   return (
     <div className="text-center mb-6 md:mb-8 px-4 mt-8 md:mt-12 pt-8 landscape:mb-2 landscape:mt-2.5 landscape:pt-0 relative z-10 flex flex-col items-center gap-2">
-      <div className="mb-4">
-        <TextAnimate
-          by="character"
-          animation="blurIn"
-          duration={3}
-          className="text-stone-400 text-[10px] md:text-sm font-bold uppercase tracking-[0.2em]"
-        >
-          {`Envoyée avec amour${location?.trim() ? ` de ${location.trim()}` : ''}${
-            date ? `, le ${date}` : ''
-          }`}
-        </TextAnimate>
-      </div>
 
       <TextAnimate
         animation="blurInUp"
@@ -63,6 +51,13 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
           />
         </span>
       </motion.div>
+      <p className="font-handwriting text-lg md:text-2xl text-stone-500 mt-2">
+        {location
+          ? `Carte postale envoyée depuis ${location}${date ? `, le ${date}` : ''}`
+          : date
+          ? `Carte postale envoyée le ${date}`
+          : 'Carte postale envoyée avec amour'}
+      </p>
     </div>
   )
 }

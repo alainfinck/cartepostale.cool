@@ -267,11 +267,11 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
     <div className="min-h-screen bg-[#fdfbf7] pt-9 md:pt-0 flex flex-col items-center overflow-x-hidden landscape:justify-center landscape:pt-4 landscape:pb-4">
       <RotateDevicePrompt />
 
-      <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-4 md:mb-6 px-2 md:px-4">
+      <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-0 px-2 md:px-4 min-h-[70vh] md:min-h-[80vh] justify-center">
         <ScratchCardWrapper postcard={frontendPostcard} views={payloadPostcard.views || 0} />
       </div>
 
-      {/* Cible pour la barre de réactions (rendue ici par SocialBar via portal) */}
+      {/* Cible pour la barre de réactions (rendue ici par SocialBar via portal) — collée à la carte / languette */}
       <div id="reactions-under-card" className="w-full" />
 
       {/* Galerie photo (avant le livre d'or) */}

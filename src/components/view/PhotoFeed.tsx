@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MediaItem } from '@/types'
@@ -18,6 +19,8 @@ import {
   Flag,
   Share2,
   Link2,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react'
 import { CoolMode } from '@/components/ui/cool-mode'
 import ShimmerButton from '@/components/ui/shimmer-button'
@@ -343,6 +346,7 @@ export default function PhotoFeed({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [isFlipped, setIsFlipped] = useState(false)
   const [slideDirection, setSlideDirection] = useState(0)
+  const [viewMode, setViewMode] = useState<'diapo' | 'full'>('diapo')
 
   const sessionId = useSessionId()
   const [counts, setCounts] = useState<Record<string, number>>({})
@@ -581,125 +585,176 @@ export default function PhotoFeed({
         </motion.div>
       )}
 
-      {/* Fullscreen Polaroid Lightbox with swipe */}
-      <AnimatePresence>
-        {selectedIndex !== null && (
-          <motion.div
-            key="lightbox-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[10000] bg-black/98 backdrop-blur-2xl flex flex-col items-center justify-center overflow-hidden"
-            onClick={() => setSelectedIndex(null)}
-          >
-            {/* Close button */}
-            <button
-              type="button"
-              aria-label="Fermer (Échap)"
-              className="absolute top-10 right-6 md:top-12 md:right-12 z-[10001] p-3 rounded-full bg-white/10 hover:bg-white/20 text-white/90 hover:text-white border border-white/20 transition-all shadow-2xl backdrop-blur-md"
-              onClick={(e) => {
-                e.stopPropagation()
-                setSelectedIndex(null)
-              }}
-            >
-              <X size={32} strokeWidth={2} />
-            </button>
-
-            {/* Nav arrows (desktop) */}
-            {sortedMediaItems.length > 1 && (
-              <>
+      {/* Fullscreen Polaroid Lightbox with swipe — rendered in portal so backdrop covers navbar & scroll-to-top */}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {selectedIndex !== null && (
+              <motion.div
+                key="lightbox-overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[99999] bg-black/98 backdrop-blur-2xl flex flex-col items-center justify-center overflow-hidden min-h-screen"
+                onClick={() => setSelectedIndex(null)}
+              >
+                {/* Close button */}
                 <button
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 p-3 z-[10001] transition-colors hidden md:block"
-                  onClick={handlePrev}
-                >
-                  <ChevronLeft size={40} />
-                </button>
-                <button
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 p-3 z-[10001] transition-colors hidden md:block"
-                  onClick={handleNext}
-                >
-                  <ChevronRight size={40} />
-                </button>
-              </>
-            )}
-
-            {/* Polaroid card container */}
-            <div
-              className="relative flex-1 w-full max-w-md md:max-w-lg lg:max-w-xl flex items-center justify-center overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
-                <motion.div
-                  key={selectedIndex}
-                  custom={slideDirection}
-                  variants={polaroidVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  transition={{ type: 'spring', stiffness: 180, damping: 26 }}
-                  drag={!isFlipped && sortedMediaItems.length > 1 ? 'x' : false}
-                  dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={0.7}
-                  onDragEnd={(_, info) => {
-                    const power = Math.abs(info.offset.x) * Math.abs(info.velocity.x)
-                    if (power > 5000 || Math.abs(info.offset.x) > 80) {
-                      paginate(info.offset.x > 0 ? -1 : 1)
-                    }
+                  type="button"
+                  aria-label="Fermer (Échap)"
+                  className="absolute top-10 right-6 md:top-12 md:right-12 z-[100001] p-3 rounded-full bg-white/10 hover:bg-white/20 text-white/90 hover:text-white border border-white/20 transition-all shadow-2xl backdrop-blur-md"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedIndex(null)
                   }}
-                  className="w-full px-4 cursor-grab active:cursor-grabbing select-none"
-                  style={{ maxHeight: '85vh' }}
                 >
-                  {/* Polaroid frame */}
-                  <div
-                    className="relative w-full transition-transform duration-700 ease-in-out bg-white p-3 sm:p-4 pb-16 sm:pb-20 shadow-2xl rounded-sm"
-                    style={{
-                      transformStyle: 'preserve-3d',
-                      transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                      maxHeight: '85vh',
-                      aspectRatio: '4/5',
+                  <X size={32} strokeWidth={2} />
+                </button>
+
+                {/* Toggle diapo / image entière */}
+                {sortedMediaItems[selectedIndex]?.type !== 'video' && (
+                  <button
+                    type="button"
+                    aria-label={viewMode === 'diapo' ? 'Afficher image entière' : 'Afficher en diapo'}
+                    className="absolute top-10 left-6 md:top-12 md:left-12 z-[100001] p-3 rounded-full bg-white/10 hover:bg-white/20 text-white/90 hover:text-white border border-white/20 transition-all shadow-2xl backdrop-blur-md flex items-center gap-2"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setViewMode((m) => (m === 'diapo' ? 'full' : 'diapo'))
                     }}
                   >
-                    {/* FRONT FACE */}
-                    <div
-                      className="absolute top-3 left-3 right-3 bottom-16 sm:top-4 sm:left-4 sm:right-4 sm:bottom-20 bg-stone-100 overflow-hidden"
-                      style={{ backfaceVisibility: 'hidden' }}
-                    >
-                      {sortedMediaItems[selectedIndex].type === 'video' ? (
-                        <video
-                          src={sortedMediaItems[selectedIndex].url}
-                          controls
-                          autoPlay
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Image
-                          src={sortedMediaItems[selectedIndex].url}
-                          alt={`Full photo ${selectedIndex + 1}`}
-                          fill
-                          className="object-cover"
-                          priority
-                        />
-                      )}
-                    </div>
+                    {viewMode === 'diapo' ? (
+                      <>
+                        <Maximize2 size={24} />
+                        <span className="text-sm font-medium hidden sm:inline">Image entière</span>
+                      </>
+                    ) : (
+                      <>
+                        <Minimize2 size={24} />
+                        <span className="text-sm font-medium hidden sm:inline">Diapo</span>
+                      </>
+                    )}
+                  </button>
+                )}
 
-                    {/* FRONT BOTTOM CONTROLS */}
-                    <div
-                      className="absolute bottom-0 left-0 right-0 h-16 sm:h-20 flex items-center justify-between px-4 sm:px-6 z-10"
-                      style={{ backfaceVisibility: 'hidden' }}
+                {/* Nav arrows (side only, no dots) */}
+                {sortedMediaItems.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      aria-label="Photo précédente"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 p-3 z-[100001] transition-colors"
+                      onClick={handlePrev}
                     >
-                      <span className="text-stone-400 font-bold text-sm">
-                        {selectedIndex + 1} / {sortedMediaItems.length}
-                      </span>
-                      {sortedMediaItems[selectedIndex].note && (
-                        <button
-                          onClick={() => setIsFlipped(true)}
-                          className="flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-full text-xs font-bold transition-all shadow-sm hover:scale-105 active:scale-95"
-                        >
-                          <StickyNote size={14} />
-                          <span>Lire la note</span>
-                        </button>
+                      <ChevronLeft size={40} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Photo suivante"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 p-3 z-[100001] transition-colors"
+                      onClick={handleNext}
+                    >
+                      <ChevronRight size={40} />
+                    </button>
+                  </>
+                )}
+
+                {/* Polaroid card container — centered vertically */}
+                <div
+                  className="relative flex-1 w-full max-w-md md:max-w-lg lg:max-w-xl flex items-center justify-center min-h-0 overflow-hidden px-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
+                    <motion.div
+                      key={selectedIndex}
+                      custom={slideDirection}
+                      variants={polaroidVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      transition={{ type: 'spring', stiffness: 180, damping: 26 }}
+                      drag={!isFlipped && sortedMediaItems.length > 1 ? 'x' : false}
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={0.7}
+                      onDragEnd={(_, info) => {
+                        const power = Math.abs(info.offset.x) * Math.abs(info.velocity.x)
+                        if (power > 5000 || Math.abs(info.offset.x) > 80) {
+                          paginate(info.offset.x > 0 ? -1 : 1)
+                        }
+                      }}
+                      className={cn(
+                        'w-full cursor-grab active:cursor-grabbing select-none flex items-center justify-center',
+                        viewMode === 'full' && 'max-w-2xl',
                       )}
-                    </div>
+                      style={{ maxHeight: '85vh' }}
+                    >
+                      {/* Polaroid frame — diapo: crop 4/5 + bande basse; full: marge blanche uniforme */}
+                      <div
+                        className={cn(
+                          'relative w-full transition-transform duration-700 ease-in-out bg-white shadow-2xl rounded-sm',
+                          viewMode === 'diapo' ? 'p-3 sm:p-4 pb-16 sm:pb-20' : 'p-6 sm:p-8',
+                        )}
+                        style={{
+                          transformStyle: 'preserve-3d',
+                          transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                          maxHeight: '85vh',
+                          ...(viewMode === 'diapo'
+                            ? { aspectRatio: '4/5' }
+                            : {
+                                maxWidth: 'min(90vw, 900px)',
+                                minHeight: '70vh',
+                                height: '85vh',
+                              }),
+                        }}
+                      >
+                        {/* FRONT FACE — image : diapo = zone 4/5, full = marge uniforme */}
+                        <div
+                          className={cn(
+                            'absolute overflow-hidden',
+                            viewMode === 'diapo' ? 'bg-stone-100' : 'bg-white',
+                            viewMode === 'diapo'
+                              ? 'top-3 left-3 right-3 bottom-16 sm:top-4 sm:left-4 sm:right-4 sm:bottom-20'
+                              : 'top-6 left-6 right-6 bottom-6 sm:top-8 sm:left-8 sm:right-8 sm:bottom-8',
+                          )}
+                          style={{ backfaceVisibility: 'hidden' }}
+                        >
+                          {sortedMediaItems[selectedIndex].type === 'video' ? (
+                            <video
+                              src={sortedMediaItems[selectedIndex].url}
+                              controls
+                              autoPlay
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Image
+                              src={sortedMediaItems[selectedIndex].url}
+                              alt={`Full photo ${selectedIndex + 1}`}
+                              fill
+                              className={viewMode === 'diapo' ? 'object-cover' : 'object-contain'}
+                              priority
+                            />
+                          )}
+                        </div>
+
+                        {/* FRONT BOTTOM CONTROLS — diapo: barre en bas; full: bouton flottant sur la marge */}
+                        {sortedMediaItems[selectedIndex].note && (
+                          <div
+                            className={cn(
+                              'absolute z-10 flex items-center justify-end',
+                              viewMode === 'diapo'
+                                ? 'bottom-0 left-0 right-0 h-16 sm:h-20 px-4 sm:px-6'
+                                : 'bottom-6 right-6 sm:bottom-8 sm:right-8',
+                            )}
+                            style={{ backfaceVisibility: 'hidden' }}
+                          >
+                            <button
+                              onClick={() => setIsFlipped(true)}
+                              className="flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-full text-xs font-bold transition-all shadow-sm hover:scale-105 active:scale-95"
+                            >
+                              <StickyNote size={14} />
+                              <span>Lire la note</span>
+                            </button>
+                          </div>
+                        )}
 
                     {/* BACK FACE */}
                     <div
@@ -752,8 +807,6 @@ export default function PhotoFeed({
               </AnimatePresence>
             </div>
 
-            {/* Photo counter dots removed per user request */}
-
             {/* Swipe hint (mobile only, first time) */}
             {sortedMediaItems.length > 1 && (
               <motion.p
@@ -767,7 +820,9 @@ export default function PhotoFeed({
             )}
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+          document.body,
+        )}
     </section>
   )
 }
