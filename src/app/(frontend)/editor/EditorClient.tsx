@@ -835,6 +835,8 @@ export default function EditorPage() {
   const [previewRecipientModalOpen, setPreviewRecipientModalOpen] = useState(false)
   const [previewRecipientUrl, setPreviewRecipientUrl] = useState<string | null>(null)
   const [previewRecipientLoading, setPreviewRecipientLoading] = useState(false)
+  /** Dernier slug d’aperçu — réutilisé pour réactiver le même lien (TTL 5 min) */
+  const [lastPreviewSlug, setLastPreviewSlug] = useState<string | null>(null)
   const [isSendingEmail, setIsSendingEmail] = useState(false)
   const [isEmailSent, setIsEmailSent] = useState(false)
   const [recipients, setRecipients] = useState<EditorRecipient[]>([
@@ -2215,12 +2217,12 @@ export default function EditorPage() {
 
   const openPreviewAsRecipient = async () => {
     setPreviewRecipientLoading(true)
-    setPreviewRecipientUrl(null)
     try {
       const payload = JSON.parse(
         JSON.stringify({
           ...postcardForPreview,
           id: postcardForPreview.id || 'preview',
+          ...(lastPreviewSlug && { slug: lastPreviewSlug }),
         }),
       )
       const res = await fetch('/api/editor/preview', {
@@ -2232,6 +2234,7 @@ export default function EditorPage() {
       if (!res.ok) throw new Error(data.error || 'Erreur')
       const slug = data.slug
       if (slug && typeof window !== 'undefined') {
+        setLastPreviewSlug(slug)
         setPreviewRecipientUrl(`${window.location.origin}/carte/preview/${slug}`)
         setPreviewRecipientModalOpen(true)
       }
@@ -2517,7 +2520,7 @@ export default function EditorPage() {
                   isActive={!showBack && currentStep === 'photo'} // Only interactive on front in step 1
                 />
               </div>
-              <div className="mt-3 flex justify-center lg:flex">
+              <div className="mt-2 flex justify-center">
                 <Button
                   variant="outline"
                   size="sm"
@@ -5053,7 +5056,7 @@ export default function EditorPage() {
                       )}
                     </div>
                   </div>
-                  <div className="flex justify-center -mb-8 sm:mb-0 w-full px-1 sm:px-0">
+                  <div className="flex justify-center w-full px-1 sm:px-0 mb-0">
                     <div className="transform scale-100 sm:scale-[0.85] origin-top w-full max-w-full">
                       <PostcardView
                         postcard={postcardForPreview}
@@ -5063,7 +5066,7 @@ export default function EditorPage() {
                       />
                     </div>
                   </div>
-                  <div className="mt-4 flex justify-center">
+                  <div className="mt-2 flex justify-center">
                     <Button
                       variant="outline"
                       size="sm"

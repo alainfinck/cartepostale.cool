@@ -13,9 +13,9 @@ export default function PreviewExpiredNotFound() {
           Lien d&apos;aperçu expiré
         </h1>
         <p className="text-stone-600">
-          Ce lien était valide 5 minutes. Retournez dans l&apos;éditeur et cliquez à nouveau sur
-          « Voir comme un destinataire » pour générer un nouvel aperçu. Le lien définitif sera
-          activé après paiement.
+          Ce lien était valide 5 minutes. Retournez dans l&apos;éditeur et cliquez sur
+          « Voir comme un destinataire » : le même lien sera réactivé pour 5 minutes. Le lien
+          définitif sera activé après paiement.
         </p>
         <Link href="/editor">
           <Button className="bg-teal-600 hover:bg-teal-700 text-white">
