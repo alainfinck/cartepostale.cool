@@ -217,10 +217,10 @@ const InstaCard = ({
         )}
       </div>
 
-      {/* Actions + reactions */}
+      {/* Actions + reactions — plus compact en mobile pour tenir sur une ligne */}
       <div className="px-3 pt-3 pb-2">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-nowrap sm:flex-wrap min-w-0">
             <CoolMode
               options={{
                 particle: '❤️',
@@ -234,29 +234,29 @@ const InstaCard = ({
             >
               <button
                 onClick={() => handleToggleReaction('❤️')}
-                className="flex items-center gap-1.5 transition-transform duration-300 ease-out hover:scale-110 active:scale-95"
+                className="flex items-center gap-1 sm:gap-1.5 transition-transform duration-300 ease-out hover:scale-110 active:scale-95 shrink-0"
               >
                 <Heart
                   size={24}
                   className={cn(
-                    'transition-all duration-500 ease-out shrink-0',
+                    'w-5 h-5 sm:w-6 sm:h-6 transition-all duration-500 ease-out shrink-0',
                     userReactions['❤️'] ? 'fill-red-500 text-red-500 scale-110' : 'text-stone-900',
                   )}
                   strokeWidth={userReactions['❤️'] ? 0 : 2}
                 />
                 {canShowReactions && (counts['❤️'] ?? 0) > 0 && (
-                  <span className="text-sm font-semibold text-stone-700 tabular-nums">
+                  <span className="text-xs sm:text-sm font-semibold text-stone-700 tabular-nums">
                     {counts['❤️']}
                   </span>
                 )}
               </button>
             </CoolMode>
             <button
-              className="hover:text-stone-600 transition-colors"
+              className="hover:text-stone-600 transition-colors shrink-0"
               type="button"
               aria-label="Envoyer"
             >
-              <Send size={24} className="text-stone-900 -mt-1 rotate-12" />
+              <Send className="w-5 h-5 sm:w-6 sm:h-6 text-stone-900 -mt-1 rotate-12" />
             </button>
             {canShowReactions &&
               ['🔥', '😂', '😮'].map((emoji) => {
@@ -277,13 +277,13 @@ const InstaCard = ({
                       type="button"
                       onClick={() => handleToggleReaction(emoji)}
                       className={cn(
-                        'flex items-center gap-1.5 text-lg transition-all duration-300 ease-out hover:scale-110 active:scale-95 opacity-70 hover:opacity-100',
+                        'flex items-center gap-0.5 sm:gap-1.5 text-base sm:text-lg transition-all duration-300 ease-out hover:scale-110 active:scale-95 opacity-70 hover:opacity-100 shrink-0',
                         userReactions[emoji] && 'opacity-100 scale-110',
                       )}
                     >
-                      <span>{emoji}</span>
+                      <span className="leading-none">{emoji}</span>
                       {n > 0 && (
-                        <span className="text-sm font-semibold text-stone-700 tabular-nums">
+                        <span className="text-xs sm:text-sm font-semibold text-stone-700 tabular-nums">
                           {n}
                         </span>
                       )}
@@ -294,10 +294,10 @@ const InstaCard = ({
           </div>
           <button
             type="button"
-            className="hover:text-stone-600 transition-colors"
+            className="hover:text-stone-600 transition-colors shrink-0"
             aria-label="Enregistrer"
           >
-            <Bookmark size={24} className="text-stone-900" />
+            <Bookmark className="w-5 h-5 sm:w-6 sm:h-6 text-stone-900" />
           </button>
         </div>
 
