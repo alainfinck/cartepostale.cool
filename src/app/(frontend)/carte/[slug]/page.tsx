@@ -279,7 +279,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
   )
 
   const pageContent = (
-    <div className="min-h-screen bg-[#fdfbf7] pt-9 md:pt-0 flex flex-col items-center overflow-x-hidden landscape:justify-center landscape:pt-4 landscape:pb-4">
+    <div className="w-full bg-[#fdfbf7] pt-9 md:pt-0 flex flex-col items-center landscape:justify-center landscape:pt-4 landscape:pb-4">
       <RotateDevicePrompt />
 
       <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-0 px-2 md:px-4 min-h-[70vh] md:min-h-[80vh] justify-center">

@@ -459,7 +459,7 @@ export default function PhotoFeed({
     <section
       id="photo-feed"
       aria-labelledby="photo-feed-heading"
-      className="w-full max-w-xl mx-auto mt-12 mb-20 px-3 sm:px-4 flex flex-col items-center overflow-x-hidden min-w-0"
+      className="w-full max-w-xl mx-auto mt-12 mb-20 px-3 sm:px-4 flex flex-col items-center min-w-0"
     >
       <h2
         id="photo-feed-heading"

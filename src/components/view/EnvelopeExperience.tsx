@@ -50,7 +50,7 @@ export default function EnvelopeExperience({
   }, [overlayActive])
 
   return (
-    <div className="relative min-h-screen bg-[#fdfbf7] overflow-x-hidden">
+    <div className="relative min-h-screen bg-[#fdfbf7] flex flex-col">
       <AnimatePresence>
         {overlayActive ? (
           <motion.div
@@ -180,7 +180,7 @@ export default function EnvelopeExperience({
         )}
 
         <motion.div
-          className={`${overlayActive ? 'pointer-events-none opacity-0' : 'pointer-events-auto opacity-100'} transition-[opacity] duration-500`}
+          className={overlayActive ? 'hidden' : 'flex flex-col w-full flex-1'}
           aria-hidden={overlayActive}
         >
           {children}
