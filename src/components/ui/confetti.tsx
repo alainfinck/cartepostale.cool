@@ -9,7 +9,7 @@ interface ConfettiOptions extends confetti.Options {
     gravity?: number;
     drift?: number;
     ticks?: number;
-    origin?: { x: number; y: number };
+    origin?: { x?: number; y?: number };
     colors?: string[];
     shapes?: confetti.Shape[];
     scalar?: number;
