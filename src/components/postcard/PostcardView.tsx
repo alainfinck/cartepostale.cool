@@ -1822,10 +1822,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   e.stopPropagation()
                   setIsActionsOpen(false)
                 }}
-                className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/80 text-stone-400 hover:text-stone-600 transition-colors ml-1"
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/80 text-stone-600 hover:text-stone-800 transition-colors ml-1"
                 title="Masquer la barre"
               >
-                <ChevronUp size={16} />
+                <ChevronUp size={22} strokeWidth={2.5} className="shrink-0" />
               </button>
             </div>
           </motion.div>
