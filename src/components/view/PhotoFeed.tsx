@@ -713,6 +713,7 @@ export default function PhotoFeed({
                               alt={`Full photo ${selectedIndex + 1}`}
                               fill
                               className={viewMode === 'diapo' ? 'object-cover' : 'object-contain'}
+                              sizes="(max-width: 1024px) 100vw, (max-width: 1920px) 1920px, 1920px"
                               priority
                             />
                           )}

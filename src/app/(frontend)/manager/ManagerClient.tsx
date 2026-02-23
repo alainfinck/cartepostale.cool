@@ -1382,6 +1382,7 @@ function GridCard({
   onUpdateStatus,
   onDelete,
   umamiViews,
+  onOpenShareContribution,
 }: {
   postcard: PayloadPostcard
   selected: boolean
@@ -1653,6 +1654,7 @@ function ListRow({
   onDelete,
   formatDate,
   umamiViews,
+  onOpenShareContribution,
 }: {
   postcard: PayloadPostcard
   selected: boolean

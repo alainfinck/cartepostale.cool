@@ -2,10 +2,14 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Metadata } from 'next'
 import { getPostcardByPublicId } from '@/actions/postcard-actions'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import ScratchCardWrapper from '@/components/view/ScratchCardWrapper'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { MapPin, Mail, Share2, Heart, Plus, RotateCw, ArrowRight, Sparkles } from 'lucide-react'
 import { Postcard as PayloadPostcard, Media } from '@/payload-types'
+import { getOptimizedImageUrl } from '@/lib/image-processing'
+import * as motion from 'motion/react-client'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import { RotateDevicePrompt } from '@/components/ui/rotate-device-prompt'
 import SocialBar from '@/components/social/SocialBar'
@@ -15,7 +19,6 @@ import EnvelopeExperience from '@/components/view/EnvelopeExperience'
 import { getCurrentUser } from '@/lib/auth'
 import { PostcardTracking } from '@/components/analytics/PostcardTracking'
 import { TextAnimate } from '@/components/ui/text-animate'
-import * as motion from 'motion/react-client'
 
 type SearchParams = {
   [key: string]: string | string[] | undefined
@@ -101,9 +104,12 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
   frontImageUrl = normalizeMediaUrl(frontImageUrl)
 
   // Fallback if no image found (shouldn't happen for valid cards)
-  if (!frontImageUrl) {
+  if (!frontImageUrl || frontImageUrl.includes('placeholder')) {
     frontImageUrl = 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'
   }
+
+  // Optimization for main display
+  frontImageUrl = getOptimizedImageUrl(frontImageUrl, { width: 1920 })
 
   const mediaItems: MediaItem[] = []
   for (const item of (payloadPostcard.mediaItems || []) as any[]) {
@@ -394,20 +400,45 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
         </div>
       </motion.section>
 
-      <div className="py-24 text-center space-y-10">
-        <Link
-          href="/"
-          className="text-stone-400 hover:text-stone-600 text-lg md:text-xl font-bold transition-colors border-b-2 border-transparent hover:border-stone-300 pb-2"
-        >
-          {'Retour au site'}
-        </Link>
-        <p className="text-stone-500 text-lg md:text-2xl leading-relaxed max-w-xl mx-auto font-medium">
-          Merci de faire vivre les cartes postales numériques. Chaque envoi compte.
-        </p>
-        <p className="text-stone-400 text-sm md:text-base font-black tracking-[0.3em] uppercase">
-          — L&apos;équipe cartepostale.cool
-        </p>
-      </div>
+      <footer className="py-24 border-t border-stone-200/60 bg-white/30">
+        <div className="max-w-4xl mx-auto px-4 text-center space-y-12">
+          {/* Retour au site */}
+          <Link
+            href="/"
+            className="group inline-flex items-center gap-2 text-stone-500 hover:text-teal-600 font-bold transition-all duration-300"
+          >
+            <span className="text-lg md:text-xl border-b-2 border-transparent group-hover:border-teal-600 pb-1">
+              Retour au site
+            </span>
+            <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+          </Link>
+
+          {/* Message de remerciement */}
+          <div className="space-y-4">
+            <p className="text-stone-600 text-lg md:text-2xl leading-relaxed max-w-2xl mx-auto font-medium font-serif italic">
+              « Merci de faire vivre les cartes postales numériques. Chaque envoi compte. »
+            </p>
+          </div>
+
+          {/* Logo et Signature */}
+          <div className="pt-4 flex flex-col items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="relative bg-gradient-to-r from-pink-500 to-orange-400 p-2 rounded-xl flex items-center justify-center shadow-lg shadow-pink-500/20">
+                <Mail className="text-white" size={24} />
+                <div className="absolute -top-1 -right-1 rounded-full bg-white p-[2px]">
+                  <Heart className="text-rose-500" size={16} />
+                </div>
+              </div>
+              <span className="font-bold text-stone-800 text-xl md:text-2xl tracking-tighter">
+                cartepostale.cool
+              </span>
+            </div>
+            <p className="text-stone-400 text-xs md:text-sm font-black tracking-[0.4em] uppercase">
+              — L&apos;ÉQUIPE CARTEPOSTALE.COOL
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 

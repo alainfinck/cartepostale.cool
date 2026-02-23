@@ -848,12 +848,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
       `}</style>
       <div
         className="flex flex-col items-center gap-2 select-none w-full max-w-full"
-        style={{ height }}
         suppressHydrationWarning
       >
         <motion.div
           className={cn(
-            'perspective-1000 group transition-shadow duration-300 relative z-10', // z-10 for layering; no cursor-grab so card only flips via button
+            'perspective-1000 group transition-shadow duration-300 relative z-10 flex-shrink-0', // z-10 for layering; no cursor-grab so card only flips via button
             !width &&
               !height &&
               (isLarge
