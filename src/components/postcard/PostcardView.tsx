@@ -28,6 +28,7 @@ import {
   Volume2,
   Music,
   MoreHorizontal,
+  Link2,
 } from 'lucide-react'
 import { cn, isCoordinate } from '@/lib/utils'
 import { AnimatePresence, motion, useSpring, useMotionValue, useTransform } from 'framer-motion'
@@ -58,6 +59,11 @@ const JournalModal = dynamic(() => import('@/components/postcard/JournalModal'),
   loading: () => null,
 })
 
+const ShareContributionModal = dynamic(
+  () => import('@/components/postcard/ShareContributionModal').then((m) => m.default),
+  { ssr: false },
+)
+
 interface PostcardViewProps {
   postcard: Postcard
   isPreview?: boolean
@@ -76,7 +82,8 @@ interface PostcardViewProps {
   onCaptionPositionChange?: (pos: { x: number; y: number }) => void
 }
 
-const DEFAULT_CAPTION_POSITION = { x: 50, y: 85 }
+/** Position par défaut du texte d'accroche : en bas à gauche, au-dessus de la localisation */
+const DEFAULT_CAPTION_POSITION = { x: 18, y: 88 }
 
 const FALLBACK_FRONT_IMAGE =
   'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'
@@ -291,6 +298,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isTopMenuOpen, setIsTopMenuOpen] = useState(false)
+  const [isShareContributionOpen, setIsShareContributionOpen] = useState(false)
 
   const handleUploadClick = () => {
     fileInputRef.current?.click()
@@ -745,7 +753,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             <X size={28} />
           </button>
           {canContribute && (
-            <div className="absolute -top-12 left-0 flex gap-2 z-50">
+            <div className="absolute -top-12 left-0 right-0 flex flex-wrap justify-center gap-2 z-50">
               <button
                 onClick={handleUploadClick}
                 disabled={isUploading}
@@ -758,6 +766,18 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 )}
                 <span className="hidden sm:inline">Ajouter une photo</span>
               </button>
+              {postcard.contributionToken && (
+                <button
+                  onClick={() => {
+                    setIsAlbumOpen(false)
+                    setIsShareContributionOpen(true)
+                  }}
+                  className="bg-white/20 hover:bg-white/30 text-white border border-white/40 px-4 py-2 rounded-full text-sm font-bold shadow-lg transition-all flex items-center gap-2"
+                >
+                  <Link2 size={16} />
+                  <span className="hidden sm:inline">Partager le lien</span>
+                </button>
+              )}
               <input
                 type="file"
                 ref={fileInputRef}
@@ -1367,54 +1387,73 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             </button>
                           )}
 
-                          {/* Audio Option */}
-                          {postcard.audioMessage && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                setIsTopMenuOpen(false)
-                                toggleAudio(e)
-                              }}
-                              className={cn(
-                                'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-left',
-                                isPlayingAudio
-                                  ? 'bg-rose-50 text-rose-600'
-                                  : 'hover:bg-stone-50 text-stone-600 hover:text-rose-600',
+                          {/* Message vocal et Musique d'ambiance côte à côte */}
+                          {(postcard.audioMessage || postcard.backgroundMusic) && (
+                            <div className="flex gap-2 w-full">
+                              {postcard.audioMessage && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    setIsTopMenuOpen(false)
+                                    toggleAudio(e)
+                                  }}
+                                  className={cn(
+                                    'flex-1 min-w-0 flex items-center justify-center gap-2 px-2.5 py-2.5 rounded-xl transition-colors text-left sm:justify-start sm:px-3',
+                                    isPlayingAudio
+                                      ? 'bg-rose-50 text-rose-600'
+                                      : 'hover:bg-stone-50 text-stone-600 hover:text-rose-600',
+                                  )}
+                                >
+                                  {isPlayingAudio ? (
+                                    <Volume2 size={16} className="animate-pulse shrink-0" />
+                                  ) : (
+                                    <Mic size={16} className="shrink-0" />
+                                  )}
+                                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">
+                                    {isPlayingAudio ? "Arrêter l'audio" : 'Message vocal'}
+                                  </span>
+                                </button>
                               )}
-                            >
-                              {isPlayingAudio ? (
-                                <Volume2 size={16} className="animate-pulse" />
-                              ) : (
-                                <Mic size={16} />
+                              {postcard.backgroundMusic && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    setIsTopMenuOpen(false)
+                                    toggleMusic(e)
+                                  }}
+                                  className={cn(
+                                    'flex-1 min-w-0 flex items-center justify-center gap-2 px-2.5 py-2.5 rounded-xl transition-colors text-left sm:justify-start sm:px-3',
+                                    isPlayingMusic
+                                      ? 'bg-violet-50 text-violet-600'
+                                      : 'hover:bg-stone-50 text-stone-600 hover:text-violet-600',
+                                  )}
+                                >
+                                  {isPlayingMusic ? (
+                                    <Volume2 size={16} className="animate-pulse shrink-0" />
+                                  ) : (
+                                    <Music size={16} className="shrink-0" />
+                                  )}
+                                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">
+                                    {isPlayingMusic ? 'Arrêter la musique' : "Musique d'ambiance"}
+                                  </span>
+                                </button>
                               )}
-                              <span className="text-xs font-bold uppercase tracking-wider">
-                                {isPlayingAudio ? "Arrêter l'audio" : 'Message vocal'}
-                              </span>
-                            </button>
+                            </div>
                           )}
 
-                          {/* Background Music Option */}
-                          {postcard.backgroundMusic && (
+                          {/* Partager le lien pour que d'autres ajoutent des photos */}
+                          {canContribute && postcard.contributionToken && (
                             <button
                               type="button"
-                              onClick={(e) => {
+                              onClick={() => {
                                 setIsTopMenuOpen(false)
-                                toggleMusic(e)
+                                setIsShareContributionOpen(true)
                               }}
-                              className={cn(
-                                'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-left',
-                                isPlayingMusic
-                                  ? 'bg-violet-50 text-violet-600'
-                                  : 'hover:bg-stone-50 text-stone-600 hover:text-violet-600',
-                              )}
+                              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-50 text-stone-600 hover:text-teal-600 transition-colors text-left"
                             >
-                              {isPlayingMusic ? (
-                                <Volume2 size={16} className="animate-pulse" />
-                              ) : (
-                                <Music size={16} />
-                              )}
+                              <Link2 size={16} className="shrink-0" />
                               <span className="text-xs font-bold uppercase tracking-wider">
-                                {isPlayingMusic ? 'Arrêter la musique' : "Musique d'ambiance"}
+                                Partager le lien pour ajouter des photos
                               </span>
                             </button>
                           )}
@@ -1970,6 +2009,17 @@ const PostcardView: React.FC<PostcardViewProps> = ({
       {renderAlbumModal()}
       {renderMessageModal()}
       {renderJournalModal()}
+      {isShareContributionOpen && postcard.contributionToken && (
+        <ShareContributionModal
+          isOpen={isShareContributionOpen}
+          onClose={() => setIsShareContributionOpen(false)}
+          contributeUrl={
+            typeof window !== 'undefined'
+              ? `${window.location.origin}/carte/${postcard.id}?token=${postcard.contributionToken}`
+              : ''
+          }
+        />
+      )}
 
       {/* Audio Element (hidden) */}
       {postcard.audioMessage && (

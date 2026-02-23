@@ -57,6 +57,7 @@ import {
   ChevronUp,
   Wand2,
   Move,
+  Link2,
 } from 'lucide-react'
 import {
   Postcard,
@@ -4035,6 +4036,11 @@ export default function EditorPage() {
                       <Info size={12} className="shrink-0 mt-0.5" />
                       Ce lieu apparaîtra sur le timbre et la carte au verso.
                     </p>
+                    <p className="mt-4 text-[11px] text-teal-600 flex items-start gap-1.5 bg-teal-50/80 rounded-xl px-3 py-2 border border-teal-100/80">
+                      <Link2 size={12} className="shrink-0 mt-0.5" />
+                      Une fois la carte créée, vous pourrez partager un lien pour que d&apos;autres
+                      personnes ajoutent leurs photos à la carte.
+                    </p>
                   </section>
 
                   <div className="h-px bg-stone-100" />
@@ -4685,6 +4691,11 @@ export default function EditorPage() {
                                 <span>Créer une variante de cette carte</span>
                               </Button>
                             </div>
+                            <p className="mt-6 text-[11px] text-teal-600 flex items-center justify-center gap-1.5 flex-wrap text-center px-4">
+                              <Link2 size={12} className="shrink-0" />
+                              Sur la page de la carte, menu ⋮ puis « Partager le lien pour ajouter
+                              des photos » pour inviter d&apos;autres à contribuer.
+                            </p>
                           </>
                         ) : (
                           <div className="py-6 text-center">

@@ -113,6 +113,7 @@ import {
 } from '@/actions/agence-actions'
 import { redeemPromoCodeForCredits } from '@/actions/leads-actions'
 import PostcardView from '@/components/postcard/PostcardView'
+import ShareContributionModal from '@/components/postcard/ShareContributionModal'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import EditPostcardDialog from './EditPostcardDialog'
 
@@ -237,6 +238,7 @@ export default function ManagerClient({
   const [buyCreditsLoading, setBuyCreditsLoading] = useState(false)
   const [buyCreditsError, setBuyCreditsError] = useState<string | null>(null)
   const [editorModalPostcard, setEditorModalPostcard] = useState<PayloadPostcard | null>(null)
+  const [shareContributionModalOpen, setShareContributionModalOpen] = useState(false)
   const maxAutoColumns = useEspaceClientActions ? 3 : 6
 
   const CREDITS_PACKS = [
@@ -1027,6 +1029,9 @@ export default function ManagerClient({
             }
           }}
           umamiViews={selectedPostcard ? umamiStats[`/carte/${selectedPostcard.publicId}`] || 0 : 0}
+          onOpenShareContribution={
+            useEspaceClientActions ? () => setShareContributionModalOpen(true) : undefined
+          }
         />
 
         {/* Edit Dialog */}
@@ -1053,6 +1058,21 @@ export default function ManagerClient({
           updatePostcardFn={updatePostcardFn}
           allowChangeAuthor={!useEspaceClientActions && !useAgenceActions}
         />
+
+        {/* Modal partage lien contribution (espace client) */}
+        {shareContributionModalOpen &&
+          selectedPostcard?.contributionToken &&
+          selectedPostcard.isContributionEnabled !== false && (
+            <ShareContributionModal
+              isOpen={shareContributionModalOpen}
+              onClose={() => setShareContributionModalOpen(false)}
+              contributeUrl={
+                typeof window !== 'undefined'
+                  ? `${window.location.origin}/carte/${selectedPostcard.publicId}?token=${selectedPostcard.contributionToken}`
+                  : ''
+              }
+            />
+          )}
 
         {/* Modal Éditeur (iframe) */}
         {editorModalPostcard && (
@@ -1763,6 +1783,7 @@ function DetailsSheet(props: {
   useAgenceActions?: boolean
   trackingLinks?: PostcardTrackingLink[]
   onRefreshTrackingLinks?: () => void
+  onOpenShareContribution?: () => void
   umamiViews?: number
   umamiDetails?: DetailedUmamiStats | null
 }) {
@@ -1778,6 +1799,7 @@ function DetailsSheet(props: {
     onUpdateStatus,
     onDelete,
     formatDate,
+    onOpenShareContribution,
     useEspaceClientActions,
     useAgenceActions,
     trackingLinks,
@@ -1929,6 +1951,33 @@ function DetailsSheet(props: {
                     </div>
                   </div>
                 )}
+
+                {/* Lien pour ajouter des photos (espace client uniquement) */}
+                {useEspaceClientActions &&
+                  postcard?.contributionToken &&
+                  postcard.isContributionEnabled !== false &&
+                  onOpenShareContribution && (
+                    <div className="space-y-3">
+                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">
+                        Lien pour ajouter des photos
+                      </h4>
+                      <div className="p-4 bg-teal-50/50 rounded-xl border border-teal-100/80 space-y-2">
+                        <p className="text-sm text-stone-600">
+                          Partagez ce lien pour permettre à d&apos;autres personnes d&apos;ajouter
+                          leurs photos à cette carte (même lien pour toute la carte).
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full gap-2 border-teal-200 text-teal-700 hover:bg-teal-50 hover:border-teal-300"
+                          onClick={onOpenShareContribution}
+                        >
+                          <Link2 size={14} />
+                          Partager le lien pour ajouter des photos
+                        </Button>
+                      </div>
+                    </div>
+                  )}
 
                 {/* Liens de tracking (espace client uniquement) */}
                 {useEspaceClientActions && (
