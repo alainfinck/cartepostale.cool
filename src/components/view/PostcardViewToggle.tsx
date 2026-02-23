@@ -44,7 +44,7 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
 
   const hasMap = Boolean(postcard.coords || postcard.location)
   const CARD_WIDTH = 'min(95vw, 960px)'
-  const CARD_HEIGHT = 'min(90vh, 760px)'
+  const CARD_HEIGHT = 'min(65vh, 640px)'
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -76,7 +76,10 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
 
       {/* Card view + compteur de vues (languette vues en bas à droite sur le côté de la carte) */}
       <div className="w-full flex flex-col items-center">
-        <div className="relative flex justify-center" style={{ width: CARD_WIDTH, maxWidth: '100%' }}>
+        <div
+          className="relative flex justify-center"
+          style={{ width: CARD_WIDTH, maxWidth: '100%' }}
+        >
           {isMobileView ? (
             <MobilePostcardView postcard={postcard} />
           ) : (
@@ -102,7 +105,7 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
 
       {/* Map sous la carte (affichée en mode Carte et en mode Lecture) */}
       {hasMap && (
-        <div className="w-full max-w-[95vw] sm:max-w-[552px] md:max-w-[660px] lg:max-w-[780px] xl:max-w-[840px] mx-auto mt-8 px-0 sm:px-0">
+        <div style={{ width: CARD_WIDTH, maxWidth: '100%' }} className="mx-auto mt-8">
           <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
             <div className="px-4 py-3 border-b border-stone-100 flex items-center justify-between">
               <div className="flex items-center gap-2 text-stone-700">

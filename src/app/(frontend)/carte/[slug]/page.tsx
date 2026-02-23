@@ -298,7 +298,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
       </div>
 
       {/* Signature de l'expéditeur + lieu et date stylisés */}
-      <div className="w-full py-16 md:py-24 text-center space-y-10">
+      <div className="w-full py-8 md:py-12 text-center space-y-10">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -332,7 +332,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-100px' }}
         transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full bg-gradient-to-b from-white to-[#fdfbf7] py-24 md:py-40 px-4 relative"
+        className="w-full bg-gradient-to-b from-white to-[#fdfbf7] pt-12 pb-24 md:pt-16 md:pb-40 px-4 relative"
       >
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-stone-200 to-transparent" />
 
