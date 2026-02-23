@@ -1703,11 +1703,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         <div
           className={cn(
             'flex flex-col items-center relative z-0 pb-12',
-            !width &&
-              !height &&
-              (isLarge
-                ? 'w-[95vw] max-w-[460px] sm:w-[552px] sm:max-w-none md:w-[736px] lg:w-[920px]'
-                : 'w-full max-w-full sm:w-[552px]'),
+            !width && !height && 'w-full max-w-full sm:w-[552px]',
           )}
           style={{
             marginTop: -12, // Collé au bas de la carte (languette barre et barre d’actions)

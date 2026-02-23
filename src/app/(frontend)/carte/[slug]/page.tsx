@@ -342,16 +342,16 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
             <div className="absolute bottom-0 left-0 w-80 h-80 bg-orange-50/50 rounded-full blur-3xl -ml-40 -mb-40" />
 
             <div className="relative z-10 text-center">
-              <div className="inline-flex items-center justify-center w-24 h-24 bg-orange-50 text-orange-500 rounded-[2rem] rotate-6 mb-12 shadow-sm border border-orange-100/50 group hover:rotate-12 transition-transform duration-500">
-                <Sparkles size={48} className="group-hover:scale-110 transition-transform" />
+              <div className="inline-flex items-center justify-center w-14 h-14 bg-orange-50 text-orange-500 rounded-2xl rotate-6 mb-6 shadow-sm border border-orange-100/50 group hover:rotate-12 transition-transform duration-500">
+                <Sparkles size={28} className="group-hover:scale-110 transition-transform" />
               </div>
 
-              <h3 className="font-serif font-bold text-4xl md:text-6xl text-stone-800 mb-10 tracking-tight leading-tight">
+              <h3 className="font-serif font-bold text-2xl md:text-3xl text-stone-800 mb-4 tracking-tight leading-tight">
                 Envoyez le <br className="sm:hidden" />
                 même bonheur
               </h3>
 
-              <p className="text-stone-500 text-xl md:text-2xl mb-16 leading-relaxed max-w-xl mx-auto font-medium">
+              <p className="text-stone-500 text-base md:text-lg mb-8 leading-relaxed max-w-xl mx-auto font-medium">
                 Créez vos propres cartes postales numériques et partagez vos meilleurs moments avec
                 vos proches.
               </p>

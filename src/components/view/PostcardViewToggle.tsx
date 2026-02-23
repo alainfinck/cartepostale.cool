@@ -11,6 +11,7 @@ import type { PhotoLocation } from '@/components/ui/PhotoMarker'
 
 const MiniMap = dynamic(() => import('@/components/postcard/MiniMap'), { ssr: false })
 const MapModal = dynamic(() => import('@/components/ui/MapModal'), { ssr: false })
+const ARButton = dynamic(() => import('@/components/ar/ARButton'), { ssr: false })
 
 interface PostcardViewToggleProps {
   postcard: Postcard
@@ -44,7 +45,7 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
 
   const hasMap = Boolean(postcard.coords || postcard.location)
   const CARD_WIDTH = 'min(95vw, 960px)'
-  const CARD_HEIGHT = 'min(65vh, 640px)'
+  const CARD_HEIGHT = 'min(63.33vw, 640px)' // ratio 3:2 exact : width × 2/3
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -72,6 +73,10 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
           <Smartphone size={13} />
           <span>Lecture</span>
         </button>
+        <ARButton
+          postcard={postcard}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all text-stone-500 hover:text-stone-700 hover:bg-stone-50"
+        />
       </div>
 
       {/* Card view + compteur de vues (languette vues en bas à droite sur le côté de la carte) */}
@@ -103,7 +108,7 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
         </div>
       </div>
 
-      {/* Map sous la carte (affichée en mode Carte et en mode Lecture) */}
+      {/* Map sous la carte — même largeur que la carte dans les deux modes */}
       {hasMap && (
         <div style={{ width: CARD_WIDTH, maxWidth: '100%' }} className="mx-auto mt-8">
           <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
