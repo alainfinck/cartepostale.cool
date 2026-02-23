@@ -306,7 +306,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
           transition={{ duration: 1, ease: 'easeOut' }}
           className="relative inline-block"
         >
-          <p className="font-handwriting text-teal-700 text-4xl sm:text-5xl md:text-6xl -rotate-2 drop-shadow-sm tracking-tight">
+          <p className="font-serif font-bold text-teal-700 text-4xl sm:text-5xl md:text-6xl -rotate-2 drop-shadow-sm tracking-tight">
             — {frontendPostcard.senderName}
           </p>
           <div className="absolute -bottom-3 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-teal-300/40 to-transparent" />

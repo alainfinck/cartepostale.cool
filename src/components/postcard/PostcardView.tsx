@@ -5,7 +5,6 @@ import { createPortal } from 'react-dom'
 import { FrontImageFilter, Postcard } from '@/types'
 import { getCaptionStyle } from '@/lib/caption-style'
 import { PhotoLocation } from '@/components/ui/PhotoMarker'
-import { BorderBeam } from '@/components/ui/border-beam'
 import fireConfetti from '@/components/ui/confetti'
 import {
   RotateCw,
@@ -626,7 +625,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 <MapPin size={12} className="text-teal-600 shrink-0" />
                 {postcard.location}
               </p>
-              <p className="font-handwriting text-teal-700 text-xl md:hidden rotate-[-2deg] mt-1">
+              <p className="font-handwriting font-semibold text-teal-700 text-xl md:hidden rotate-[-2deg] mt-1">
                 - {postcard.senderName}
               </p>
             </div>
@@ -660,7 +659,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 {Math.round(messageModalFontSize * 100)}%
               </span>
             </div>
-            <p className="font-handwriting text-teal-700 text-2xl md:text-3xl rotate-[-2deg] shrink-0 text-right order-2 md:order-3 hidden md:block">
+            <p className="font-handwriting font-semibold text-teal-700 text-2xl md:text-3xl rotate-[-2deg] shrink-0 text-right order-2 md:order-3 hidden md:block">
               - {postcard.senderName}
             </p>
           </div>
@@ -1176,28 +1175,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     </button>
                   </div>
 
-                  {/* Album / Ajouter des photos Button */}
-                  {(hasMedia || canContribute) && (
-                    <button
-                      type="button"
-                      onClick={openAlbum}
-                      className="relative overflow-hidden h-8 sm:h-10 px-4 sm:px-6 flex items-center gap-2 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white font-black uppercase tracking-wider shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300"
-                      title={hasMedia ? 'Album photos' : 'Ajouter des photos'}
-                    >
-                      <BorderBeam
-                        size={40}
-                        duration={6}
-                        colorFrom="#fff"
-                        colorTo="#fbbf24"
-                        borderWidth={1.5}
-                      />
-                      <Camera size={16} strokeWidth={3} className="drop-shadow-sm" />
-                      <span className="hidden sm:inline text-[10px] sm:text-xs drop-shadow-sm">
-                        {hasMedia ? 'Album' : 'Ajouter des photos'}
-                      </span>
-                    </button>
-                  )}
-
                   {/* Actions Dropdown */}
                   <div className="relative">
                     <button
@@ -1370,6 +1347,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                       className="font-handwriting text-stone-700 leading-[1.2] text-left whitespace-pre-wrap w-full max-w-full break-words pl-2 sm:pl-3"
                       style={{
                         fontSize: `${autoFontSize * backTextScale}rem`,
+                        fontFamily: "var(--font-handwriting)",
                       }}
                     >
                       {postcard.message}
@@ -1388,7 +1366,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   {postcard.senderName && (
                     <div className="mt-auto -mt-2 self-start transform -rotate-2 pt-2 pb-1 px-4 relative">
                       <div className="absolute inset-0 bg-teal-50/30 blur-md rounded-full -rotate-3"></div>
-                      <p className="font-handwriting text-teal-700 text-xl sm:text-3xl relative z-10 font-bold drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]">
+                      <p
+                        className="font-handwriting text-teal-700 text-xl sm:text-3xl relative z-10 font-bold drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]"
+                        style={{ fontFamily: 'var(--font-handwriting)' }}
+                      >
                         - {postcard.senderName}
                       </p>
                     </div>
@@ -1629,6 +1610,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           'font-handwriting text-stone-700 whitespace-pre-wrap break-words leading-tight',
                           isLarge ? 'text-sm sm:text-lg' : 'text-xs sm:text-sm',
                         )}
+                        style={{ fontFamily: 'var(--font-handwriting)' }}
                       >
                         {postcard.recipientName}
                       </p>
@@ -1762,18 +1744,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   title={hasMedia ? 'Voir les photos de la carte' : 'Ajouter des photos'}
                   className={cn(
                     actionButtonBase,
-                    'relative overflow-hidden bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 border-none text-white shadow-[0_4px_15px_rgba(245,158,11,0.4)] hover:shadow-[0_6px_25px_rgba(245,158,11,0.5)] hover:scale-105 transition-all duration-300 font-black px-4 sm:px-6 min-w-[75px] sm:min-w-[95px] !rounded-xl',
+                    'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100 hover:border-amber-300 transition-colors',
                   )}
                 >
-                  <BorderBeam
-                    size={60}
-                    duration={8}
-                    colorFrom="#fff"
-                    colorTo="#fbbf24"
-                    borderWidth={1.5}
-                  />
-                  <Camera size={16} className="text-white shrink-0 drop-shadow-sm mb-0.5" />
-                  <span className="truncate w-full text-center leading-tight drop-shadow-sm text-[10px] sm:text-[11px]">
+                  <Camera size={14} className="text-amber-700 shrink-0" />
+                  <span className="truncate w-full text-center leading-tight text-[10px] sm:text-[11px] font-semibold">
                     {hasMedia ? 'ALBUM' : '+ PHOTOS'}
                   </span>
                 </button>

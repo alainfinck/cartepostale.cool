@@ -64,11 +64,6 @@ export default function Home() {
     mediaItems: [
       { id: 'h1', type: 'image', url: 'https://img.cartepostale.cool/demo/photo-1502602898657-3e91760cbb34.jpg' },
       { id: 'h2', type: 'image', url: 'https://img.cartepostale.cool/demo/photo-1499856871958-5b9627545d1a.jpg' },
-      {
-        id: 'h3',
-        type: 'video',
-        url: 'https://assets.mixkit.co/videos/preview/mixkit-paris-eiffel-tower-tourist-view-4455-large.mp4',
-      },
     ],
   }
 

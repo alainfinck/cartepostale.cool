@@ -1,11 +1,11 @@
 'use client'
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
-import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MediaItem } from '@/types'
-import { ChevronLeft, ChevronRight, X, StickyNote, Maximize2, Minimize2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X, StickyNote } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getOptimizedImageUrl, DISPLAY_MAX_WIDTH } from '@/lib/image-processing'
 
 export interface AlbumPolaroidLightboxProps {
   mediaItems: MediaItem[]
@@ -50,6 +50,17 @@ export default function AlbumPolaroidLightbox({
   const [isFlipped, setIsFlipped] = useState(false)
   const [slideDirection, setSlideDirection] = useState(0)
   const [viewMode, setViewMode] = useState<'diapo' | 'full'>('diapo')
+  const [displayWidth, setDisplayWidth] = useState(DISPLAY_MAX_WIDTH)
+
+  useEffect(() => {
+    const updateWidth = () => {
+      const w = typeof window !== 'undefined' ? window.innerWidth * (window.devicePixelRatio || 1) : DISPLAY_MAX_WIDTH
+      setDisplayWidth(Math.min(DISPLAY_MAX_WIDTH, Math.round(w)))
+    }
+    updateWidth()
+    window.addEventListener('resize', updateWidth)
+    return () => window.removeEventListener('resize', updateWidth)
+  }, [])
 
   const sortedMediaItems = useMemo(() => {
     const items = [...mediaItems]
@@ -138,32 +149,47 @@ export default function AlbumPolaroidLightbox({
         </div>
       )}
 
-      {/* Toggle diapo / image entière */}
+      {/* Toggle Pola / Photo entière */}
       {current?.type !== 'video' && (
-        <button
-          type="button"
-          aria-label={viewMode === 'diapo' ? 'Afficher image entière' : 'Afficher en diapo'}
+        <div
+          role="group"
+          aria-label="Mode d'affichage"
           className={cn(
-            'absolute z-[100001] p-3 rounded-full bg-white/10 hover:bg-white/20 text-white/90 hover:text-white border border-white/20 transition-all shadow-2xl backdrop-blur-md flex items-center gap-2',
+            'absolute z-[100001] flex rounded-full bg-black/40 backdrop-blur-md border border-white/20 p-1 shadow-xl',
             extraTopLeft ? 'top-10 left-6 md:top-12 md:left-12 mt-14 md:mt-0 md:left-48' : 'top-10 left-6 md:top-12 md:left-12',
           )}
-          onClick={(e) => {
-            e.stopPropagation()
-            setViewMode((m) => (m === 'diapo' ? 'full' : 'diapo'))
-          }}
         >
-          {viewMode === 'diapo' ? (
-            <>
-              <Maximize2 size={24} />
-              <span className="text-sm font-medium hidden sm:inline">Image entière</span>
-            </>
-          ) : (
-            <>
-              <Minimize2 size={24} />
-              <span className="text-sm font-medium hidden sm:inline">Diapo</span>
-            </>
-          )}
-        </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setViewMode('diapo')
+            }}
+            className={cn(
+              'px-4 py-2.5 rounded-full text-sm font-bold transition-all',
+              viewMode === 'diapo'
+                ? 'bg-white/25 text-white shadow-inner'
+                : 'text-white/70 hover:text-white',
+            )}
+          >
+            Pola
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setViewMode('full')
+            }}
+            className={cn(
+              'px-4 py-2.5 rounded-full text-sm font-bold transition-all',
+              viewMode === 'full'
+                ? 'bg-white/25 text-white shadow-inner'
+                : 'text-white/70 hover:text-white',
+            )}
+          >
+            Photo entière
+          </button>
+        </div>
       )}
 
       {/* Nav arrows */}
@@ -188,9 +214,12 @@ export default function AlbumPolaroidLightbox({
         </>
       )}
 
-      {/* Polaroid card container */}
+      {/* Polaroid card container (plus large en mode photo entière) */}
       <div
-        className="relative flex-1 w-full max-w-md md:max-w-lg lg:max-w-xl flex items-center justify-center min-h-0 overflow-hidden px-4"
+        className={cn(
+          'relative flex-1 w-full flex items-center justify-center min-h-0 overflow-hidden px-4',
+          viewMode === 'diapo' ? 'max-w-md md:max-w-lg lg:max-w-xl' : 'max-w-[95vw]',
+        )}
         onClick={(e) => e.stopPropagation()}
       >
         <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
@@ -213,14 +242,16 @@ export default function AlbumPolaroidLightbox({
             }}
             className={cn(
               'w-full cursor-grab active:cursor-grabbing select-none flex items-center justify-center',
-              viewMode === 'full' && 'max-w-2xl',
+              viewMode === 'full' ? 'max-w-[95vw]' : '',
             )}
             style={{ maxHeight: '85vh' }}
           >
             <div
               className={cn(
-                'relative w-full transition-transform duration-700 ease-in-out bg-white shadow-2xl rounded-sm',
-                viewMode === 'diapo' ? 'p-3 sm:p-4 pb-16 sm:pb-20' : 'p-6 sm:p-8',
+                'relative w-full transition-transform duration-700 ease-in-out',
+                viewMode === 'diapo'
+                  ? 'bg-white shadow-2xl rounded-sm p-3 sm:p-4 pb-16 sm:pb-20'
+                  : 'inline-flex max-h-[85vh] max-w-[95vw] items-center justify-center',
               )}
               style={{
                 transformStyle: 'preserve-3d',
@@ -228,51 +259,72 @@ export default function AlbumPolaroidLightbox({
                 maxHeight: '85vh',
                 ...(viewMode === 'diapo'
                   ? { aspectRatio: '4/5' }
-                  : {
-                      maxWidth: 'min(90vw, 900px)',
-                      minHeight: '70vh',
-                      height: '85vh',
-                    }),
+                  : {}),
               }}
             >
               {/* FRONT FACE — image */}
-              <div
-                className={cn(
-                  'absolute overflow-hidden',
-                  viewMode === 'diapo' ? 'bg-stone-100' : 'bg-white',
-                  viewMode === 'diapo'
-                    ? 'top-3 left-3 right-3 bottom-16 sm:top-4 sm:left-4 sm:right-4 sm:bottom-20'
-                    : 'top-6 left-6 right-6 bottom-6 sm:top-8 sm:left-8 sm:right-8 sm:bottom-8',
-                )}
-                style={{ backfaceVisibility: 'hidden' }}
-              >
-                {current.type === 'video' ? (
-                  <video
-                    src={current.url}
-                    controls
-                    autoPlay
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <Image
-                    src={current.url}
-                    alt={`Photo ${selectedIndex + 1}`}
-                    fill
-                    className={viewMode === 'diapo' ? 'object-cover' : 'object-contain'}
-                    priority
-                  />
-                )}
-              </div>
-
-              {/* FRONT BOTTOM — Lire la note */}
-              {current.note && (
+              {viewMode === 'diapo' ? (
                 <div
-                  className={cn(
-                    'absolute z-10 flex items-center justify-end',
-                    viewMode === 'diapo'
-                      ? 'bottom-0 left-0 right-0 h-16 sm:h-20 px-4 sm:px-6'
-                      : 'bottom-6 right-6 sm:bottom-8 sm:right-8',
+                  className="absolute overflow-hidden bg-stone-100 top-3 left-3 right-3 bottom-16 sm:top-4 sm:left-4 sm:right-4 sm:bottom-20"
+                  style={{ backfaceVisibility: 'hidden' }}
+                >
+                  {current.type === 'video' ? (
+                    <video
+                      src={current.url}
+                      controls
+                      autoPlay
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={getOptimizedImageUrl(current.url, { width: displayWidth })}
+                      alt={`Photo ${selectedIndex + 1}`}
+                      className="w-full h-full object-cover"
+                    />
                   )}
+                </div>
+              ) : (
+                /* Mode photo entière : bordure blanche épaisse uniquement autour de la photo */
+                <div
+                  className="relative rounded-sm border-[10px] border-white bg-white shadow-2xl inline-block max-h-[85vh] max-w-[95vw] overflow-hidden"
+                  style={{ backfaceVisibility: 'hidden' }}
+                >
+                  {current.type === 'video' ? (
+                    <video
+                      src={current.url}
+                      controls
+                      autoPlay
+                      className="block max-h-[85vh] max-w-[95vw] object-contain"
+                      style={{ maxHeight: 'calc(85vh - 20px)', maxWidth: 'calc(95vw - 20px)' }}
+                    />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={getOptimizedImageUrl(current.url, { width: displayWidth })}
+                      alt={`Photo ${selectedIndex + 1}`}
+                      className="block max-h-[85vh] max-w-[95vw] object-contain"
+                      style={{ maxHeight: 'calc(85vh - 20px)', maxWidth: 'calc(95vw - 20px)' }}
+                    />
+                  )}
+                  {current.note && (
+                    <div className="absolute bottom-3 right-3 z-10">
+                      <button
+                        onClick={() => setIsFlipped(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-black/60 hover:bg-black/80 text-white rounded-full text-xs font-bold transition-all backdrop-blur-sm border border-white/20"
+                      >
+                        <StickyNote size={14} />
+                        <span>Lire la note</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* FRONT BOTTOM — Lire la note (diapo only) */}
+              {viewMode === 'diapo' && current.note && (
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-16 sm:h-20 px-4 sm:px-6 z-10 flex items-center justify-end"
                   style={{ backfaceVisibility: 'hidden' }}
                 >
                   <button

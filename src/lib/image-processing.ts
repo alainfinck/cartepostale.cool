@@ -100,6 +100,9 @@ export function readFileAsDataUrl(file: File): Promise<string> {
     })
 }
 
+/** Largeur max raisonnable pour l'affichage écran (évite 4K/3840 inutile). */
+export const DISPLAY_MAX_WIDTH = 1920
+
 /**
  * Retourne une URL d'image optimisée via Cloudflare Image Resizing (cdn-cgi/image).
  * Format cible: https://img.domain.com/cdn-cgi/image/params/path/to/image

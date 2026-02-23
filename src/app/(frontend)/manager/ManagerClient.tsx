@@ -37,7 +37,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Pencil, RotateCcw } from 'lucide-react'
+import { Pencil, PenTool, RotateCcw } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import Image from 'next/image'
@@ -236,6 +236,7 @@ export default function ManagerClient({
   } | null>(null)
   const [buyCreditsLoading, setBuyCreditsLoading] = useState(false)
   const [buyCreditsError, setBuyCreditsError] = useState<string | null>(null)
+  const [editorModalPostcard, setEditorModalPostcard] = useState<PayloadPostcard | null>(null)
   const maxAutoColumns = useEspaceClientActions ? 3 : 6
 
   const CREDITS_PACKS = [
@@ -924,6 +925,7 @@ export default function ManagerClient({
                   setEditingIsDuplicate(false)
                   setEditingPostcard(postcard)
                 }}
+                onEditInEditor={() => setEditorModalPostcard(postcard)}
                 onDuplicate={canDuplicatePostcard ? () => handleDuplicate(postcard.id) : undefined}
                 onUpdateStatus={handleUpdateStatus}
                 onDelete={(id) => setDeleteConfirm(id)}
@@ -972,9 +974,10 @@ export default function ManagerClient({
                       onToggleSelect={() => toggleSelect(postcard.id)}
                       onSelect={() => setSelectedPostcard(postcard)}
                       onEdit={() => {
-                  setEditingIsDuplicate(false)
-                  setEditingPostcard(postcard)
-                }}
+                        setEditingIsDuplicate(false)
+                        setEditingPostcard(postcard)
+                      }}
+                      onEditInEditor={() => setEditorModalPostcard(postcard)}
                       onDuplicate={
                         canDuplicatePostcard ? () => handleDuplicate(postcard.id) : undefined
                       }
@@ -1001,6 +1004,9 @@ export default function ManagerClient({
             setEditingIsDuplicate(false)
             setEditingPostcard(selectedPostcard)
           }}
+          onEditInEditor={
+            selectedPostcard ? () => setEditorModalPostcard(selectedPostcard) : undefined
+          }
           onDuplicate={canDuplicatePostcard ? handleDuplicate : undefined}
           onSetPublicVisibility={canTogglePublicVisibility ? handleSetPublicVisibility : undefined}
           onUpdateStatus={handleUpdateStatus}
@@ -1047,6 +1053,33 @@ export default function ManagerClient({
           updatePostcardFn={updatePostcardFn}
           allowChangeAuthor={!useEspaceClientActions && !useAgenceActions}
         />
+
+        {/* Modal Éditeur (iframe) */}
+        {editorModalPostcard && (
+          <div className="fixed inset-0 z-50 flex flex-col bg-stone-900">
+            <div className="flex items-center justify-between px-4 py-2 bg-stone-800 border-b border-stone-700 shrink-0">
+              <span className="text-sm font-medium text-stone-200">
+                Édition : {editorModalPostcard.recipientName || editorModalPostcard.publicId}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-stone-300 hover:text-white hover:bg-stone-700"
+                onClick={() => {
+                  setEditorModalPostcard(null)
+                  refreshData()
+                }}
+              >
+                Fermer
+              </Button>
+            </div>
+            <iframe
+              title="Éditeur de carte"
+              src={`/editor?edit=${encodeURIComponent(editorModalPostcard.publicId)}&embed=1`}
+              className="flex-1 w-full border-0"
+            />
+          </div>
+        )}
 
         {/* Delete confirmation (single) */}
         <Dialog
@@ -1314,6 +1347,7 @@ function GridCard({
   onToggleSelect,
   onSelect,
   onEdit,
+  onEditInEditor,
   onDuplicate,
   onUpdateStatus,
   onDelete,
@@ -1324,6 +1358,7 @@ function GridCard({
   onToggleSelect: () => void
   onSelect: () => void
   onEdit: () => void
+  onEditInEditor?: () => void
   onDuplicate?: () => void
   onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
   onDelete: (id: number) => void
@@ -1476,6 +1511,21 @@ function GridCard({
                     >
                       <Pencil size={16} />
                     </Button>
+                    {onEditInEditor && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onEditInEditor()
+                        }}
+                        className="h-9 px-2.5 text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-100 font-medium shadow-sm"
+                        title="Ouvrir dans l’éditeur"
+                      >
+                        <PenTool size={14} className="mr-1.5 shrink-0" />
+                        Éditeur
+                      </Button>
+                    )}
                     <StatusDropdown
                       currentStatus={postcard.status || 'draft'}
                       onUpdate={onUpdateStatus}
@@ -1552,6 +1602,7 @@ function ListRow({
   onToggleSelect,
   onSelect,
   onEdit,
+  onEditInEditor,
   onDuplicate,
   onUpdateStatus,
   onDelete,
@@ -1563,6 +1614,7 @@ function ListRow({
   onToggleSelect: () => void
   onSelect: () => void
   onEdit: () => void
+  onEditInEditor?: () => void
   onDuplicate?: () => void
   onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
   onDelete: (id: number) => void
@@ -1651,6 +1703,18 @@ function ListRow({
           >
             <Pencil size={16} />
           </Button>
+          {onEditInEditor && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 px-2.5 text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-100 font-medium shadow-sm"
+              onClick={() => onEditInEditor()}
+              title="Ouvrir dans l’éditeur"
+            >
+              <PenTool size={14} className="mr-1.5" />
+              Éditeur
+            </Button>
+          )}
           {onDuplicate && (
             <Button
               variant="outline"
@@ -1689,6 +1753,7 @@ function DetailsSheet(props: {
   isOpen: boolean
   onClose: () => void
   onEdit: () => void
+  onEditInEditor?: () => void
   onDuplicate?: (id: number) => void
   onSetPublicVisibility?: (id: number, isPublic: boolean) => void
   onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
@@ -1707,6 +1772,7 @@ function DetailsSheet(props: {
     isOpen,
     onClose,
     onEdit,
+    onEditInEditor,
     onDuplicate,
     onSetPublicVisibility,
     onUpdateStatus,
@@ -2232,6 +2298,18 @@ function DetailsSheet(props: {
               >
                 <Pencil size={18} />
               </Button>
+              {onEditInEditor && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onEditInEditor}
+                  className="h-12 px-4 text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-100 rounded-xl font-medium"
+                  title="Ouvrir dans l’éditeur"
+                >
+                  <PenTool size={18} className="mr-2" />
+                  Éditeur
+                </Button>
+              )}
               {onDuplicate && (
                 <Button
                   variant="outline"

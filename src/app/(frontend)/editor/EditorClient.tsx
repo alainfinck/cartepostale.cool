@@ -825,6 +825,9 @@ export default function EditorPage() {
   const [internalPostcardId, setInternalPostcardId] = useState<number | null>(null)
   const [shareError, setShareError] = useState<string | null>(null)
   const [showEmailPromptModal, setShowEmailPromptModal] = useState(false)
+  /** When editing an existing card (?edit=publicId), this is set so createPostcard updates instead of create. */
+  const [editingPublicId, setEditingPublicId] = useState<string | null>(null)
+  const [editModeLoading, setEditModeLoading] = useState(false)
 
   const [showCopyToast, setShowCopyToast] = useState(false)
   const [hasConfettiFired, setHasConfettiFired] = useState(false)
@@ -983,6 +986,66 @@ export default function EditorPage() {
         window.history.replaceState({}, '', url.pathname + (url.search || ''))
       }
     }
+  }, [searchParams])
+
+  // Mode édition : charger la carte depuis l’API (?edit=publicId)
+  useEffect(() => {
+    const editId = searchParams.get('edit')
+    if (!editId || typeof editId !== 'string') return
+
+    setEditingPublicId(editId)
+    setEditModeLoading(true)
+    fetch(`/api/postcards/edit/${encodeURIComponent(editId)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Carte non trouvée')
+        return res.json()
+      })
+      .then((doc: Record<string, any>) => {
+        const origin = typeof window !== 'undefined' ? window.location.origin : ''
+        const frontUrl =
+          doc.frontImageURL ||
+          (doc.frontImage?.url
+            ? (doc.frontImage.url.startsWith('http') ? doc.frontImage.url : origin + doc.frontImage.url)
+            : '')
+        if (frontUrl) setFrontImage(frontUrl)
+        if (doc.message != null) setMessage(doc.message)
+        if (doc.recipientName != null) setRecipientName(doc.recipientName)
+        if (doc.senderName != null) setSenderName(doc.senderName)
+        if (doc.location != null) setLocation(doc.location)
+        if (doc.frontCaption != null) setFrontCaption(doc.frontCaption)
+        if (doc.frontEmoji != null) setFrontEmoji(doc.frontEmoji)
+        if (doc.frontCaptionPosition?.x != null || doc.frontCaptionPosition?.y != null) {
+          setFrontCaptionPosition({
+            x: doc.frontCaptionPosition.x ?? 50,
+            y: doc.frontCaptionPosition.y ?? 85,
+          })
+        }
+        if (doc.frontCaptionFontFamily != null) setFrontCaptionFontFamily(doc.frontCaptionFontFamily)
+        if (doc.frontCaptionFontSize != null) setFrontCaptionFontSize(Number(doc.frontCaptionFontSize))
+        if (doc.frontCaptionColor != null) setFrontCaptionColor(doc.frontCaptionColor)
+        if (doc.frontTextBgOpacity != null) setFrontTextBgOpacity(Number(doc.frontTextBgOpacity))
+        if (doc.stampStyle != null) setStampStyle(doc.stampStyle)
+        if (doc.stampLabel != null) setStampLabel(doc.stampLabel)
+        if (doc.stampYear != null) setStampYear(String(doc.stampYear))
+        if (Array.isArray(doc.mediaItems) && doc.mediaItems.length > 0) {
+          const items = doc.mediaItems.map((item: any) => {
+            const media = item.media
+            const url = media?.url
+              ? (String(media.url).startsWith('http') ? media.url : origin + media.url)
+              : ''
+            return {
+              id: item.id || Math.random().toString(36).slice(2),
+              type: item.type === 'video' ? ('video' as const) : ('image' as const),
+              url: url || '',
+            }
+          })
+          setMediaItems(items)
+        }
+        setCreatedPostcardId(editId)
+        setShareUrl(`${origin}/carte/${editId}`)
+      })
+      .catch(() => setShareError('Impossible de charger la carte à modifier.'))
+      .finally(() => setEditModeLoading(false))
   }, [searchParams])
 
   useEffect(() => {
@@ -1161,8 +1224,8 @@ export default function EditorPage() {
 
   // Restauration de la sauvegarde locale au montage
   useEffect(() => {
-    // Seulement si on n'a pas d'ID dans l'URL (création neuve) et pas de cover imposée
-    if (searchParams.get('id') || searchParams.get('cover')) return
+    // Seulement si on n'a pas d'ID dans l'URL (création neuve), pas de cover, pas de mode édition
+    if (searchParams.get('id') || searchParams.get('cover') || searchParams.get('edit')) return
 
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY)
     if (saved) {
@@ -2087,6 +2150,7 @@ export default function EditorPage() {
       // Strip large Base64 strings if we have an R2 key (sendKey/item.key)
       const result = await createPostcard({
         ...currentPostcard,
+        ...(editingPublicId && { id: editingPublicId }),
         frontImage: sendKey ? undefined : finalFrontImage,
         mediaItems: currentPostcard.mediaItems?.map((item) => ({
           ...item,
@@ -2201,6 +2265,7 @@ export default function EditorPage() {
 
         const result = await createPostcard({
           ...currentPostcard,
+          ...(editingPublicId && { id: editingPublicId }),
           frontImage: frontImageKey ? undefined : finalFrontImage,
           mediaItems: currentPostcard.mediaItems?.map((item) => ({
             ...item,
