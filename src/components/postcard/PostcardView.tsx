@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom'
 import { FrontImageFilter, Postcard } from '@/types'
 import { getCaptionStyle } from '@/lib/caption-style'
 import { PhotoLocation } from '@/components/ui/PhotoMarker'
+import { BorderBeam } from '@/components/ui/border-beam'
+import fireConfetti from '@/components/ui/confetti'
 import {
   RotateCw,
   MapPin,
@@ -473,6 +475,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
   const openAlbum = (e: React.MouseEvent) => {
     e.stopPropagation()
+    fireConfetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+    })
     setIsAlbumOpen(true)
   }
 
@@ -1159,11 +1166,18 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     <button
                       type="button"
                       onClick={openAlbum}
-                      className="h-7 sm:h-9 px-3 sm:px-4 flex items-center gap-2 rounded-xl bg-white/80 backdrop-blur-md border border-stone-200 text-stone-600 hover:text-teal-600 hover:border-teal-300 transition-all shadow-sm"
+                      className="relative overflow-hidden h-8 sm:h-10 px-4 sm:px-6 flex items-center gap-2 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white font-black uppercase tracking-wider shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300"
                       title={hasMedia ? 'Album photos' : 'Ajouter des photos'}
                     >
-                      <Camera size={16} strokeWidth={2} />
-                      <span className="hidden sm:inline text-xs font-bold uppercase tracking-wider">
+                      <BorderBeam
+                        size={40}
+                        duration={6}
+                        colorFrom="#fff"
+                        colorTo="#fbbf24"
+                        borderWidth={1.5}
+                      />
+                      <Camera size={16} strokeWidth={3} className="drop-shadow-sm" />
+                      <span className="hidden sm:inline text-[10px] sm:text-xs drop-shadow-sm">
                         {hasMedia ? 'Album' : 'Ajouter des photos'}
                       </span>
                     </button>
@@ -1723,7 +1737,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               damping: 35,
               opacity: { duration: 0.2 },
             }}
-            className="w-full flex justify-center overflow-hidden relative"
+            className="w-full flex justify-center overflow-hidden"
             style={{ transformOrigin: 'top', transformStyle: 'preserve-3d' }}
           >
             <div className="flex items-center justify-center w-[98%] sm:w-[90%] flex-wrap gap-1.5 sm:gap-2 rounded-b-2xl border-x border-b border-stone-100 bg-white shadow-[0_10px_30px_rgba(0,0,0,0.04)] px-2 sm:px-4 py-1.5 sm:py-2 min-h-[40px] sm:min-h-[48px]">
@@ -1733,11 +1747,18 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   title={hasMedia ? 'Voir les photos de la carte' : 'Ajouter des photos'}
                   className={cn(
                     actionButtonBase,
-                    'bg-amber-100 border-amber-200 text-amber-900 hover:bg-amber-200 transition-all',
+                    'relative overflow-hidden bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 border-none text-white shadow-[0_4px_15px_rgba(245,158,11,0.4)] hover:shadow-[0_6px_25px_rgba(245,158,11,0.5)] hover:scale-105 transition-all duration-300 font-black px-4 sm:px-6 min-w-[75px] sm:min-w-[95px] !rounded-xl',
                   )}
                 >
-                  <Camera size={14} className="text-amber-600 shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">
+                  <BorderBeam
+                    size={60}
+                    duration={8}
+                    colorFrom="#fff"
+                    colorTo="#fbbf24"
+                    borderWidth={1.5}
+                  />
+                  <Camera size={16} className="text-white shrink-0 drop-shadow-sm mb-0.5" />
+                  <span className="truncate w-full text-center leading-tight drop-shadow-sm text-[10px] sm:text-[11px]">
                     {hasMedia ? 'ALBUM' : '+ PHOTOS'}
                   </span>
                 </button>
@@ -1810,16 +1831,16 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 <span>RETOURNER</span>
               </button>
 
-              {/* Close Button — absolu à droite de la barre */}
+              {/* Close Button Integration */}
               <button
                 onClick={(e) => {
                   e.stopPropagation()
                   setIsActionsOpen(false)
                 }}
-                className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-colors"
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/80 text-stone-600 hover:text-stone-800 transition-colors ml-1"
                 title="Masquer la barre"
               >
-                <ChevronUp size={18} strokeWidth={2.5} className="shrink-0" />
+                <ChevronUp size={22} strokeWidth={2.5} className="shrink-0" />
               </button>
             </div>
           </motion.div>
@@ -1830,11 +1851,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 e.stopPropagation()
                 setIsActionsOpen(true)
               }}
-              className="absolute top-0 right-3 -translate-y-px h-6 w-10 min-h-0 py-0.5 bg-white/90 hover:bg-white/95 backdrop-blur-md rounded-b-full shadow-[0_3px_6px_rgba(0,0,0,0.12)] border border-t-0 border-stone-200/80 text-stone-500 hover:text-teal-600 transition-all z-30 cursor-pointer flex justify-center items-center group/toggle"
+              className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-px h-6 w-24 min-h-0 py-0.5 bg-white/90 hover:bg-white/95 backdrop-blur-md rounded-b-full shadow-[0_3px_6px_rgba(0,0,0,0.12)] border border-t-0 border-stone-200/80 text-stone-500 hover:text-teal-600 transition-all z-30 cursor-pointer flex justify-center items-center group/toggle"
               title="Afficher les actions"
             >
               <ChevronDown
-                size={16}
+                size={18}
                 strokeWidth={2.5}
                 className="group-hover/toggle:translate-y-0.5 transition-transform shrink-0"
               />

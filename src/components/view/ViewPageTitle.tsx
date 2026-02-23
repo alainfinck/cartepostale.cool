@@ -46,12 +46,12 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
 
   return (
     <div className="text-center mb-6 md:mb-8 px-4 mt-8 md:mt-12 pt-8 landscape:mb-2 landscape:mt-2.5 landscape:pt-0 relative z-10 flex flex-col items-center gap-2">
-
       <TextAnimate
         animation="blurInUp"
         by="word"
         duration={2}
         className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-800 leading-tight tracking-tight max-w-5xl mx-auto [-webkit-font-smoothing:antialiased]"
+        viewport={{ once: false, amount: 0 }}
       >
         {title}
       </TextAnimate>
@@ -59,7 +59,8 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
       <motion.div
         className="flex items-baseline justify-center gap-2 text-stone-500 mt-2 md:mt-4"
         initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        viewport={{ once: false, amount: 0 }}
         transition={{ delay: 1.8, duration: 1.2, ease: easeOut }}
       >
         <span className="text-lg md:text-xl font-medium tracking-wide whitespace-nowrap">
@@ -77,13 +78,15 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
       <motion.div
         className="mt-4 inline-flex items-center gap-3 px-4 py-3 rounded-2xl border border-stone-200/80 bg-gradient-to-br from-stone-50 to-teal-50/30 shadow-sm"
         initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false, amount: 0 }}
         transition={{ delay: 2.2, duration: 0.6, ease: easeOut }}
       >
         <motion.div
           className="relative flex items-center justify-center w-10 h-10 shrink-0 origin-bottom"
           initial={{ y: -56, opacity: 0, rotate: -14, scale: 0.6 }}
-          animate={{ y: 0, opacity: 1, rotate: 0, scale: 1 }}
+          whileInView={{ y: 0, opacity: 1, rotate: 0, scale: 1 }}
+          viewport={{ once: false, amount: 0 }}
           transition={{
             delay: 2.4,
             type: 'spring',
@@ -98,8 +101,8 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
           {location
             ? `Carte postale envoyée depuis ${location}${date ? `, le ${date}` : ''}`
             : date
-            ? `Carte postale envoyée le ${date}`
-            : 'Carte postale envoyée avec amour'}
+              ? `Carte postale envoyée le ${date}`
+              : 'Carte postale envoyée avec amour'}
         </p>
       </motion.div>
     </div>

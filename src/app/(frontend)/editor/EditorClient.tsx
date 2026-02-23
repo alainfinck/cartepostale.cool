@@ -114,6 +114,8 @@ import {
 } from '@/components/ui/dialog'
 import { GoogleLoginButton } from '@/components/auth/GoogleLoginButton'
 import { useFacebookPixel } from '@/hooks/useFacebookPixel'
+import { MusicLibraryModal } from '@/components/editor/MusicLibraryModal'
+import type { MusicTrack } from '@/components/editor/MusicLibraryModal'
 import { PACK_TIERS } from '@/components/pricing/PacksSlider'
 
 const POSTCARD_ASPECT = 3 / 2
@@ -894,6 +896,11 @@ export default function EditorPage() {
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null)
   const [recordingTime, setRecordingTime] = useState(0)
   const [showScrollTop, setShowScrollTop] = useState(false)
+
+  // Background music state
+  const [backgroundMusic, setBackgroundMusic] = useState<string | undefined>(undefined)
+  const [backgroundMusicTitle, setBackgroundMusicTitle] = useState<string | undefined>(undefined)
+  const [showMusicModal, setShowMusicModal] = useState(false)
 
   const handleGoogleSuccess = useCallback(
     async (result: { success: boolean; role: string; email?: string }) => {
@@ -1835,6 +1842,8 @@ export default function EditorPage() {
     scratchCardEnabled,
     puzzleCardEnabled,
     puzzleCardDifficulty,
+    backgroundMusic,
+    backgroundMusicTitle,
   }
 
   /** Aperçu : à l'étape Rédaction, si un modèle verso est choisi, on affiche le verso avec son style (timbre, message, lieu). */
@@ -3595,7 +3604,9 @@ export default function EditorPage() {
                             {scratchCardEnabled && <Check size={14} strokeWidth={3} />}
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-bold text-stone-700">Carte à gratter</span>
+                            <span className="text-sm font-bold text-stone-700">
+                              Carte à gratter
+                            </span>
                             <span className="text-[10px] text-stone-400 uppercase tracking-wider font-medium">
                               {scratchCardEnabled
                                 ? 'Le destinataire grattera pour découvrir'
@@ -3759,6 +3770,72 @@ export default function EditorPage() {
                         </div>
                       )}
                     </div>
+                  </section>
+
+                  {/* SECTION MUSIQUE D'AMBIANCE */}
+                  <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600">
+                        <Volume2 size={16} />
+                      </div>
+                      <h3 className="font-semibold text-stone-800">Musique d&apos;ambiance</h3>
+                      {backgroundMusic && (
+                        <span className="ml-auto text-xs bg-violet-100 text-violet-700 font-medium px-2.5 py-1 rounded-full flex items-center gap-1">
+                          🎵 {backgroundMusicTitle || 'Musique choisie'}
+                        </span>
+                      )}
+                    </div>
+
+                    {backgroundMusic ? (
+                      <div className="flex items-center gap-3 bg-violet-50 border border-violet-200 rounded-xl p-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const a = new Audio(backgroundMusic)
+                            a.play().catch(() => {})
+                          }}
+                          className="w-9 h-9 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center hover:bg-violet-200 transition-colors shrink-0"
+                          title="Écouter"
+                        >
+                          <Play size={16} fill="currentColor" />
+                        </button>
+                        <span className="flex-1 text-sm text-stone-700 font-medium truncate">
+                          {backgroundMusicTitle || 'Musique sélectionnée'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setShowMusicModal(true)}
+                          className="text-xs text-violet-600 hover:text-violet-800 font-semibold px-3 py-1.5 rounded-lg hover:bg-violet-100 transition-colors"
+                        >
+                          Changer
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setBackgroundMusic(undefined)
+                            setBackgroundMusicTitle(undefined)
+                          }}
+                          className="p-1.5 text-stone-400 hover:text-red-500 transition-colors"
+                          title="Supprimer"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-3 p-5 border-2 border-dashed border-stone-200 rounded-xl bg-stone-50">
+                        <p className="text-sm text-stone-500 text-center">
+                          Ajoutez une musique qui se jouera en fond quand le destinataire ouvre la
+                          carte
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setShowMusicModal(true)}
+                          className="flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-full font-medium transition-colors shadow-sm"
+                        >
+                          <Volume2 size={18} /> Choisir une musique
+                        </button>
+                      </div>
+                    )}
                   </section>
 
                   {/* Lieu du souvenir — en bas à gauche */}
@@ -5621,6 +5698,17 @@ export default function EditorPage() {
               return [...(prev || []), newItem]
             })
           }
+        }}
+      />
+
+      {/* Bibliothèque de musique d'ambiance */}
+      <MusicLibraryModal
+        isOpen={showMusicModal}
+        onClose={() => setShowMusicModal(false)}
+        onSelect={(track: MusicTrack) => {
+          setBackgroundMusic(track.url)
+          setBackgroundMusicTitle(track.title)
+          setShowMusicModal(false)
         }}
       />
 
