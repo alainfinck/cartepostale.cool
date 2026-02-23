@@ -1495,14 +1495,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   )}
                 >
                   <div className="flex flex-1 min-h-0 gap-1.5 sm:gap-2 items-stretch">
-                    {/* Petite loupe à gauche pour indiquer le zoom */}
-                    <div className="flex flex-col justify-center shrink-0 pt-2" aria-hidden>
-                      <Search
-                        size={isLarge ? 18 : 14}
-                        className="text-teal-500/80 shrink-0"
-                        strokeWidth={2}
-                      />
-                    </div>
+                    {/* Removed individual loupe here */}
                     <div
                       ref={messageContainerRef}
                       className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 pl-1 sm:pl-2 flex flex-col justify-center"
@@ -1521,24 +1514,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                         {postcard.message}
                       </p>
 
-                      {/* Hint zoom au survol */}
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover/msg:opacity-100 transition-opacity duration-300">
-                        <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-stone-200 shadow-xl flex items-center gap-2 transform scale-75 sm:scale-100">
-                          <Search size={14} className="text-teal-600" />
-                          <span className="text-[10px] font-bold text-stone-600 uppercase tracking-widest">
-                            Cliquez pour zoomer
-                          </span>
-                        </div>
-                      </div>
+                      {/* Hint zoom au survol - removed internal message as it's now handled globally below */}
                     </div>
                   </div>
-                  {/* Texte explicite sous la zone message : cliquer pour zoomer */}
-                  <div className="flex items-center gap-1.5 mt-1 px-1 text-stone-400" aria-hidden>
-                    <Search size={12} className="shrink-0 text-teal-500/70" strokeWidth={2} />
-                    <span className="text-[9px] sm:text-[10px] font-medium uppercase tracking-wider">
-                      Cliquez sur le texte pour agrandir
-                    </span>
-                  </div>
+                  {/* Texte explicite sous la zone message : supprimé car unifié ci-dessous */}
                   {postcard.senderName && (
                     <div className="mt-auto -mt-2 self-start transform -rotate-2 pt-2 pb-1 px-4 relative">
                       <div className="absolute inset-0 bg-teal-50/30 blur-md rounded-full -rotate-3"></div>
@@ -1558,16 +1537,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
                 {/* Right Side: Stamp + Map */}
                 <div className="flex-1 h-full flex flex-col relative min-w-0 pt-0 min-h-[8rem] sm:min-h-[10rem]">
-                  {/* Petite loupe sur la carte (côté droit) pour rappeler le zoom */}
-                  <div
-                    className="absolute top-0 right-0 flex items-center gap-1 px-1.5 py-1 rounded-lg bg-white/60 border border-stone-200/80 shadow-sm z-10"
-                    aria-hidden
-                  >
-                    <Search size={12} className="text-teal-500/80 shrink-0" strokeWidth={2} />
-                    <span className="text-[8px] sm:text-[9px] font-semibold text-stone-500 uppercase tracking-wider whitespace-nowrap">
-                      Cliquez pour zoomer
-                    </span>
-                  </div>
+                  {/* Removed individual loupe on map */}
                   {/* Top Section: Stamp — remonté pour alignement visuel */}
                   <div className="flex-none flex justify-end items-start mb-0.5 gap-2 min-h-[4.5rem] sm:min-h-[5.5rem] -mt-6 sm:-mt-8 -mr-1 sm:-mr-3">
                     {/* Stamp - plus petit et plus réaliste */}
@@ -1899,6 +1869,16 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                       )}
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* Unified Zoom Hint at the absolute bottom of the card content */}
+              <div className="absolute bottom-2 left-0 right-0 flex justify-center pointer-events-none z-20">
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/40 backdrop-blur-[2px] border border-stone-200/30 text-stone-400 transition-opacity">
+                  <Search size={12} className="shrink-0 text-teal-500/60" strokeWidth={2.5} />
+                  <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.15em] whitespace-nowrap">
+                    Cliquez sur le texte ou la carte pour agrandir
+                  </span>
                 </div>
               </div>
             </motion.div>
