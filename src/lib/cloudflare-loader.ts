@@ -28,7 +28,8 @@ export default function cloudflareLoader({
   }
 
   const params = []
-  if (width) params.push(`width=${width}`)
+  const cappedWidth = Math.min(width, 1920)
+  if (cappedWidth) params.push(`width=${cappedWidth}`)
   params.push(`quality=${quality || 80}`)
   params.push('format=auto')
 
