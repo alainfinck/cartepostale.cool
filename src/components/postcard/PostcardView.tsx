@@ -88,6 +88,13 @@ const DEFAULT_FRONT_FILTER: FrontImageFilter = {
   grayscale: 0,
 }
 
+/** Polices disponibles pour le message au verso */
+const BACK_MESSAGE_FONTS = [
+  { id: 'dancing' as const, name: 'Dancing Script', fontFamily: "'Dancing Script', cursive", className: 'font-handwriting' },
+  { id: 'greatVibes' as const, name: 'Great Vibes', fontFamily: "'Great Vibes', cursive", className: 'font-handwriting-greatvibes' },
+  { id: 'parisienne' as const, name: 'Parisienne', fontFamily: "'Parisienne', cursive", className: 'font-handwriting-parisienne' },
+]
+
 const buildFrontImageFilterCss = (filter?: FrontImageFilter): string => {
   const f = filter ?? DEFAULT_FRONT_FILTER
   return [
@@ -268,6 +275,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const [messageModalFontSize, setMessageModalFontSize] = useState(2)
   // Slider de taille du texte au verso (0.7 = petit, 2.2 = grand)
   const [backTextScale, setBackTextScale] = useState(isLarge ? 1.2 : 1)
+  // Police du message au verso (dancing = défaut, greatVibes, parisienne)
+  const [backMessageFont, setBackMessageFont] = useState<'dancing' | 'greatVibes' | 'parisienne'>(
+    'dancing',
+  )
+  const [isFontMenuOpen, setIsFontMenuOpen] = useState(false)
   // Zoom de la mini-carte au verso (pour que + / - fonctionnent sans déclencher le flip)
   const [backMapZoom, setBackMapZoom] = useState(6)
   const [isActionsOpen, setIsActionsOpen] = useState(true)
@@ -1142,10 +1154,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 )}
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* All Controls grouped to the left */}
-                <div className="flex items-center gap-2">
+                {/* All Controls grouped to the left — same height for zoom, font, more */}
+                <div className="flex items-stretch gap-2">
                   {/* Zoom Controls */}
-                  <div className="h-7 sm:h-9 flex items-center bg-white/80 backdrop-blur-md rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+                  <div className="h-7 sm:h-9 flex shrink-0 items-center bg-white/80 backdrop-blur-md rounded-xl border border-stone-200 shadow-sm overflow-hidden">
                     <button
                       type="button"
                       onClick={(e) => {
@@ -1175,19 +1187,92 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     </button>
                   </div>
 
-                  {/* Actions Dropdown */}
-                  <div className="relative">
+                  {/* Font selector for message */}
+                  <div className="relative flex">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation()
+                        setIsFontMenuOpen((o) => !o)
+                        setIsTopMenuOpen(false)
+                      }}
+                      className={cn(
+                        'h-full min-h-[1.75rem] sm:min-h-[2.25rem] px-2.5 sm:px-3 flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-stone-200 shadow-sm transition-all backdrop-blur-md',
+                        isFontMenuOpen
+                          ? 'bg-teal-50 border-teal-300 text-teal-700'
+                          : 'bg-white/80 text-stone-600 hover:text-teal-600 hover:border-stone-300',
+                      )}
+                      title="Changer la police du message"
+                    >
+                      <span
+                        className="text-sm font-bold select-none"
+                        style={{
+                          fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)
+                            ?.fontFamily,
+                        }}
+                      >
+                        Aa
+                      </span>
+                    </button>
+                    <AnimatePresence>
+                      {isFontMenuOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-[64]"
+                            onClick={() => setIsFontMenuOpen(false)}
+                            aria-hidden
+                          />
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 4 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 4 }}
+                            className="absolute left-0 mt-2 w-44 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-stone-200 overflow-hidden z-[70] py-1.5"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {BACK_MESSAGE_FONTS.map((font) => (
+                              <button
+                                key={font.id}
+                                type="button"
+                                onClick={() => {
+                                  setBackMessageFont(font.id)
+                                  setIsFontMenuOpen(false)
+                                }}
+                                className={cn(
+                                  'w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-colors',
+                                  backMessageFont === font.id
+                                    ? 'bg-teal-50 text-teal-700'
+                                    : 'hover:bg-stone-50 text-stone-600',
+                                )}
+                              >
+                                <span
+                                  className="text-base font-bold"
+                                  style={{ fontFamily: font.fontFamily }}
+                                >
+                                  Aa
+                                </span>
+                                <span className="text-xs font-medium truncate">{font.name}</span>
+                              </button>
+                            ))}
+                          </motion.div>
+                        </>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Actions Dropdown */}
+                  <div className="relative flex">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIsFontMenuOpen(false)
                         setIsTopMenuOpen(!isTopMenuOpen)
                       }}
                       className={cn(
-                        'h-7 sm:h-9 w-7 sm:w-9 flex items-center justify-center rounded-xl backdrop-blur-md border transition-all shadow-sm',
+                        'h-full min-h-[1.75rem] sm:min-h-[2.25rem] w-7 sm:w-9 flex shrink-0 items-center justify-center rounded-xl backdrop-blur-md border border-stone-200 transition-all shadow-sm',
                         isTopMenuOpen
                           ? 'bg-teal-50 border-teal-300 text-teal-600 shadow-inner'
-                          : 'bg-white/80 border-stone-200 text-stone-600 hover:text-teal-600',
+                          : 'bg-white/80 text-stone-600 hover:text-teal-600',
                       )}
                       title="Plus d'actions"
                     >
@@ -1229,6 +1314,24 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                   </span>
                                 </>
                               )}
+                            </button>
+                          )}
+
+                          {/* Album photos */}
+                          {(hasMedia || canContribute) && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setIsTopMenuOpen(false)
+                                openAlbum(e)
+                              }}
+                              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-50 text-stone-600 hover:text-amber-600 transition-colors text-left"
+                            >
+                              <Camera size={16} />
+                              <span className="text-xs font-bold uppercase tracking-wider">
+                                {hasMedia ? 'Voir l\'album photos' : 'Ajouter des photos'}
+                              </span>
                             </button>
                           )}
 
@@ -1344,10 +1447,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   >
                     <p
                       ref={messageTextRef}
-                      className="font-handwriting text-stone-700 leading-[1.2] text-left whitespace-pre-wrap w-full max-w-full break-words pl-2 sm:pl-3"
+                      className="text-stone-700 leading-[1.2] text-left whitespace-pre-wrap w-full max-w-full break-words pl-2 sm:pl-3"
                       style={{
                         fontSize: `${autoFontSize * backTextScale}rem`,
-                        fontFamily: "var(--font-handwriting)",
+                        fontFamily:
+                          BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily ??
+                          "'Dancing Script', cursive",
                       }}
                     >
                       {postcard.message}
@@ -1367,8 +1472,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     <div className="mt-auto -mt-2 self-start transform -rotate-2 pt-2 pb-1 px-4 relative">
                       <div className="absolute inset-0 bg-teal-50/30 blur-md rounded-full -rotate-3"></div>
                       <p
-                        className="font-handwriting text-teal-700 text-xl sm:text-3xl relative z-10 font-bold drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]"
-                        style={{ fontFamily: 'var(--font-handwriting)' }}
+                        className="text-teal-700 text-xl sm:text-3xl relative z-10 font-bold drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]"
+                        style={{
+                          fontFamily:
+                            BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily ??
+                            "'Dancing Script', cursive",
+                        }}
                       >
                         - {postcard.senderName}
                       </p>
@@ -1607,10 +1716,14 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                       </p>
                       <p
                         className={cn(
-                          'font-handwriting text-stone-700 whitespace-pre-wrap break-words leading-tight',
+                          'text-stone-700 whitespace-pre-wrap break-words leading-tight',
                           isLarge ? 'text-sm sm:text-lg' : 'text-xs sm:text-sm',
                         )}
-                        style={{ fontFamily: 'var(--font-handwriting)' }}
+                        style={{
+                          fontFamily:
+                            BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily ??
+                            "'Dancing Script', cursive",
+                        }}
                       >
                         {postcard.recipientName}
                       </p>
@@ -1900,7 +2013,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
           portalRoot,
         )}
 
-      {/* Modal de plein écran */}
+      {/* Modal de plein écran : fond sombre, carte centrée avec marges, adapté portrait/paysage */}
       {isFullscreen &&
         portalRoot &&
         createPortal(
@@ -1908,23 +2021,41 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-[#fdfbf7] flex items-center justify-center p-4 md:p-8 overflow-hidden"
+            className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center overflow-hidden"
+            style={{
+              padding: 'max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left))',
+            }}
           >
+            {/* Croix fermer en haut à droite */}
             <button
+              type="button"
               onClick={() => setIsFullscreen(false)}
-              className="fixed top-6 right-6 z-[210] bg-white/90 p-4 rounded-full shadow-2xl border border-stone-200 text-stone-600 hover:text-stone-900 transition-all hover:rotate-90"
+              className="fixed z-[210] flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white shadow-xl text-stone-700 hover:bg-stone-100 hover:rotate-90 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-stone-900"
+              style={{
+                top: 'max(1rem, env(safe-area-inset-top))',
+                right: 'max(1rem, env(safe-area-inset-right))',
+              }}
+              aria-label="Fermer le plein écran"
             >
-              <X size={32} />
+              <X size={24} className="sm:w-7 sm:h-7" strokeWidth={2.5} />
             </button>
 
-            <div className="w-full h-full flex flex-col items-center justify-center">
+            {/* Conteneur carte : centrée, marges, ne dépasse pas (portrait = 90vw, paysage = hauteur dispo × 1.5) */}
+            <div
+              className="flex items-center justify-center shrink-0 max-w-full max-h-full"
+              style={{
+                width: 'min(90vw, calc((100vh - 4rem) * 1.5))',
+                aspectRatio: '3/2',
+                maxHeight: 'calc(100vh - 4rem)',
+              }}
+            >
               <PostcardView
                 postcard={postcard}
                 flipped={isFlipped}
                 isLarge={true}
-                width="min(95vw, 1100px)"
-                height="min(63.3vw, 733px)"
-                className="shadow-[0_40px_100px_rgba(0,0,0,0.3)]"
+                width="100%"
+                height="100%"
+                className="shadow-2xl rounded-2xl overflow-hidden"
                 hideFullscreenButton={true}
                 hideFlipHints={true}
                 isInsideFullscreen={true}

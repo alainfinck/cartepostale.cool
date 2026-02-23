@@ -9,7 +9,6 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Images,
   StickyNote,
   User,
   Heart,
@@ -341,7 +340,6 @@ export default function PhotoFeed({
   postcardId,
   postcardDate,
 }: PhotoFeedProps) {
-  const [isVisible, setIsVisible] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [isFlipped, setIsFlipped] = useState(false)
   const [slideDirection, setSlideDirection] = useState(0)
@@ -469,92 +467,54 @@ export default function PhotoFeed({
       >
         Album photo{senderName ? ` de ${senderName}` : ''}
       </h2>
-      {!isVisible ? (
-        <div className="text-center py-10 w-full max-w-full min-w-0">
-          <CoolMode>
-            <button
-              type="button"
-              onClick={() => {
-                setIsVisible(true)
-                requestAnimationFrame(() => {
-                  requestAnimationFrame(() => {
-                    document.getElementById('photo-feed')?.scrollIntoView({
-                      behavior: 'smooth',
-                      block: 'start',
-                    })
-                  })
-                })
-              }}
-              className="w-full max-w-full min-w-0 group relative overflow-hidden rounded-2xl border-2 border-amber-200/80 bg-gradient-to-br from-amber-50 via-stone-100 to-amber-100/90 px-4 py-6 sm:px-10 sm:py-8 text-center transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] shadow-lg"
-              style={{
-                boxShadow:
-                  '0 4px 6px -1px rgba(180, 140, 90, 0.15), 0 10px 20px -5px rgba(120, 90, 50, 0.12), inset 0 1px 0 rgba(255,255,255,0.6)',
-              }}
-            >
-              {/* Couverture album : effet reliure à gauche */}
-              <div
-                className="absolute left-0 top-0 bottom-0 w-2 sm:w-3 rounded-l-xl opacity-90"
-                style={{
-                  background: 'linear-gradient(180deg, #d4a574 0%, #b8956a 50%, #a67c52 100%)',
-                  boxShadow: 'inset -1px 0 2px rgba(0,0,0,0.1)',
-                }}
-              />
-              <div className="relative flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4 pl-4 sm:pl-6">
-                <div className="flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white/80 border border-amber-200/60 shadow-inner ring-2 ring-amber-100/80 group-hover:ring-amber-200/80 transition-shadow">
-                  <Images className="w-7 h-7 sm:w-8 sm:h-8 text-amber-700/90" strokeWidth={1.8} />
-                </div>
-                <div className="flex flex-col items-center sm:items-start gap-0.5">
-                  <span className="font-serif text-stone-800 font-bold text-base sm:text-lg">
-                    Ouvrir l&apos;album photo
-                  </span>
-                  <span className="text-stone-500 text-xs sm:text-sm font-medium">
-                    {mediaItems.length} souvenir{mediaItems.length > 1 ? 's' : ''} à découvrir
-                  </span>
-                </div>
-              </div>
-            </button>
-          </CoolMode>
-          <p className="text-stone-400 mt-6 text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 break-words px-1">
-            Découvrir les souvenirs partagés
-          </p>
-        </div>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="w-full flex flex-col gap-6"
-        >
-          {/* Timeline Layout */}
-          <div className="relative w-full max-w-[470px] mx-auto">
-            {/* Timeline date header */}
-            {postcardDate && (
-              <div className="flex items-center gap-3 mb-8 pl-0.5">
-                <div className="w-3.5 h-3.5 rounded-full bg-teal-500 shadow-sm shadow-teal-200 ring-4 ring-teal-50 shrink-0" />
-                <span className="text-xs font-bold text-teal-600 uppercase tracking-wider">
-                  {postcardDate}
-                </span>
-                <div className="flex-1 h-px bg-gradient-to-r from-teal-200 to-transparent" />
-              </div>
-            )}
 
-            {/* Timeline items */}
-            <div className="relative pl-7">
-              {/* Vertical timeline line */}
-              <div className="absolute left-[6px] top-0 bottom-0 w-px bg-gradient-to-b from-teal-200 via-stone-200 to-transparent" />
+      <div className="w-full flex flex-col gap-6">
+        {/* Timeline Layout — photos apparaissent au scroll comme des dispos */}
+        <div className="relative w-full max-w-[470px] mx-auto">
+          {postcardDate && (
+            <div className="flex items-center gap-3 mb-8 pl-0.5">
+              <div className="w-3.5 h-3.5 rounded-full bg-teal-500 shadow-sm shadow-teal-200 ring-4 ring-teal-50 shrink-0" />
+              <span className="text-xs font-bold text-teal-600 uppercase tracking-wider">
+                {postcardDate}
+              </span>
+              <div className="flex-1 h-px bg-gradient-to-r from-teal-200 to-transparent" />
+            </div>
+          )}
 
-              <div className="flex flex-col gap-10">
-                {sortedMediaItems.map((item, index) => (
-                  <div key={item.id} className="relative">
-                    {/* Timeline dot */}
+          <div className="relative pl-7">
+            <div className="absolute left-[6px] top-0 bottom-0 w-px bg-gradient-to-b from-teal-200 via-stone-200 to-transparent" />
+
+            <div className="flex flex-col gap-10">
+              {sortedMediaItems.map((item, index) => {
+                const rotateVariation = (index % 3) === 0 ? -2 : (index % 3) === 1 ? 1.5 : -1
+                return (
+                  <motion.div
+                    key={item.id}
+                    className="relative"
+                    initial={{ opacity: 0, y: 72, rotate: rotateVariation + 8, scale: 0.92, filter: 'blur(6px)' }}
+                    whileInView={{
+                      opacity: 1,
+                      y: 0,
+                      rotate: rotateVariation,
+                      scale: 1,
+                      filter: 'blur(0px)',
+                    }}
+                    viewport={{ once: true, margin: '-80px 0px -60px 0px', amount: 0.35 }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 120,
+                      damping: 22,
+                      mass: 0.8,
+                    }}
+                  >
                     <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: index * 0.1 + 0.2, type: 'spring', stiffness: 300 }}
                       className="absolute -left-7 top-5 w-[13px] h-[13px] rounded-full bg-white border-2 border-teal-300 shadow-sm z-10"
+                      initial={{ scale: 0, opacity: 0 }}
+                      whileInView={{ scale: 1, opacity: 1 }}
+                      viewport={{ once: true, margin: '-40px 0px', amount: 0.2 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.1 }}
                     />
 
-                    {/* Date/label for this item */}
                     <div className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                       {item.exif?.dateTime ? (
                         <span className="text-teal-600">
@@ -583,21 +543,20 @@ export default function PhotoFeed({
                       onReactionUpdate={handleReactionUpdate}
                       onImageClick={() => setSelectedIndex(index)}
                     />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Timeline end dot */}
-            <div className="flex items-center gap-3 mt-8 pl-0.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-stone-300 shrink-0" />
-              <span className="text-[10px] font-medium text-stone-400 uppercase tracking-wider">
-                Fin de l&apos;album
-              </span>
+                  </motion.div>
+                )
+              })}
             </div>
           </div>
-        </motion.div>
-      )}
+
+          <div className="flex items-center gap-3 mt-8 pl-0.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-stone-300 shrink-0" />
+            <span className="text-[10px] font-medium text-stone-400 uppercase tracking-wider">
+              Fin de l&apos;album
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* Fullscreen Polaroid Lightbox with swipe — rendered in portal so backdrop covers navbar & scroll-to-top */}
       {typeof document !== 'undefined' &&
