@@ -2,19 +2,35 @@
 
 import React, { useState, useRef } from 'react'
 import { Image as ImageIcon, Loader2, CheckCircle } from 'lucide-react'
-import { verifyAndAddMobileGalleryImage } from '@/actions/mobile-upload-actions'
+import {
+  verifyAndAddMobileGalleryImage,
+  validateMobileToken,
+} from '@/actions/mobile-upload-actions'
 import { fileToProcessedDataUrl, dataUrlToBlob } from '@/lib/image-processing'
 import { extractExifData } from '@/lib/extract-exif'
 import Image from 'next/image'
 
 export default function MobileUploadClient({ token }: { token: string }) {
   const [isUploading, setIsUploading] = useState(false)
+  const [isValidating, setIsValidating] = useState(true)
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>(
     'idle',
   )
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  React.useEffect(() => {
+    async function checkToken() {
+      const { success } = await validateMobileToken(token)
+      if (!success) {
+        setErrorMessage('Code invalide ou expiré. Scannez à nouveau le QR code.')
+        setUploadStatus('error')
+      }
+      setIsValidating(false)
+    }
+    checkToken()
+  }, [token])
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -143,8 +159,16 @@ export default function MobileUploadClient({ token }: { token: string }) {
         </div>
       )}
 
+      {/* Validation loading state */}
+      {isValidating && (
+        <div className="flex flex-col items-center justify-center p-12 text-stone-400">
+          <Loader2 className="h-10 w-10 animate-spin mb-4" />
+          <p className="font-medium">Vérification du code...</p>
+        </div>
+      )}
+
       {/* Idle / Uploading State */}
-      {(uploadStatus === 'idle' || uploadStatus === 'uploading') && (
+      {!isValidating && (uploadStatus === 'idle' || uploadStatus === 'uploading') && (
         <>
           <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
             <p className="text-stone-600 text-center mb-6 font-medium leading-relaxed">
