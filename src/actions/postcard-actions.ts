@@ -423,26 +423,42 @@ export async function getPostcardByPublicId(publicId: string): Promise<Postcard 
       collection: 'postcards',
       where: {
         and: [
-          {
-            publicId: {
-              equals: publicId,
-            },
-          },
-          {
-            isPublic: {
-              equals: true,
-            },
-          },
+          { publicId: { equals: publicId } },
+          { isPublic: { equals: true } },
         ],
       },
-      depth: 2, // Ensure we get media details
+      depth: 2,
+      limit: 1,
       overrideAccess: true,
     })
 
-    if (result.totalDocs > 0) {
-      return result.docs[0] as unknown as Postcard
+    if (result.totalDocs === 0) return null
+    const doc = result.docs[0] as Postcard & { mediaItems?: Array<{ media?: number | unknown; type?: string; note?: string; id?: string }> }
+
+    // If mediaItems.media are IDs (number), populate them so the carte page can build gallery URLs
+    if (doc.mediaItems?.length) {
+      const populated = await Promise.all(
+        doc.mediaItems.map(async (item) => {
+          const mediaRef = item.media
+          if (typeof mediaRef === 'number') {
+            try {
+              const mediaDoc = await payload.findByID({
+                collection: 'media',
+                id: mediaRef,
+                depth: 0,
+              })
+              return { ...item, media: mediaDoc }
+            } catch {
+              return item
+            }
+          }
+          return item
+        }),
+      )
+      ;(doc as { mediaItems: typeof populated }).mediaItems = populated
     }
-    return null
+
+    return doc as Postcard
   } catch (error) {
     console.error('Error fetching postcard:', error)
     return null
