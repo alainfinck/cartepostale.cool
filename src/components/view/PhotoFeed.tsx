@@ -698,73 +698,105 @@ export default function PhotoFeed({
                       }}
                       className={cn(
                         'w-full cursor-grab active:cursor-grabbing select-none flex items-center justify-center',
-                        viewMode === 'full' && 'max-w-2xl',
+                        viewMode === 'full' ? 'max-w-[95vw]' : '',
                       )}
                       style={{ maxHeight: '85vh' }}
                     >
                       {/* Polaroid frame — diapo: crop 4/5 + bande basse; full: marge blanche uniforme */}
                       <div
                         className={cn(
-                          'relative w-full transition-transform duration-700 ease-in-out bg-white shadow-2xl rounded-sm',
-                          viewMode === 'diapo' ? 'p-3 sm:p-4 pb-16 sm:pb-20' : 'p-6 sm:p-8',
+                          'relative w-full transition-transform duration-700 ease-in-out',
+                          viewMode === 'diapo'
+                            ? 'bg-white shadow-2xl rounded-sm p-3 sm:p-4 pb-16 sm:pb-20'
+                            : 'inline-flex max-h-[85vh] max-w-[95vw] items-center justify-center',
                         )}
                         style={{
                           transformStyle: 'preserve-3d',
                           transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
                           maxHeight: '85vh',
-                          ...(viewMode === 'diapo'
-                            ? { aspectRatio: '4/5' }
-                            : {
-                                maxWidth: 'min(90vw, 900px)',
-                                minHeight: '70vh',
-                                height: '85vh',
-                              }),
+                          ...(viewMode === 'diapo' ? { aspectRatio: '4/5' } : {}),
                         }}
                       >
-                        {/* FRONT FACE — image : diapo = zone 4/5, full = marge uniforme */}
-                        <div
-                          className={cn(
-                            'absolute overflow-hidden',
-                            viewMode === 'diapo' ? 'bg-stone-100' : 'bg-white',
-                            viewMode === 'diapo'
-                              ? 'top-3 left-3 right-3 bottom-16 sm:top-4 sm:left-4 sm:right-4 sm:bottom-20'
-                              : 'top-6 left-6 right-6 bottom-6 sm:top-8 sm:left-8 sm:right-8 sm:bottom-8',
-                          )}
-                          style={{ backfaceVisibility: 'hidden' }}
-                        >
-                          {sortedMediaItems[selectedIndex].type === 'video' ? (
-                            <video
-                              src={sortedMediaItems[selectedIndex].url}
-                              controls
-                              playsInline
-                              muted
-                              autoPlay
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <Image
-                              loader={({ src, width, quality }) =>
-                                getOptimizedImageUrl(src, { width, quality: quality || 80 })
-                              }
-                              src={sortedMediaItems[selectedIndex].url}
-                              alt={`Full photo ${selectedIndex + 1}`}
-                              fill
-                              className={viewMode === 'diapo' ? 'object-cover' : 'object-contain'}
-                              sizes="(max-width: 1024px) 100vw, (max-width: 1920px) 1920px, 1920px"
-                              priority
-                            />
-                          )}
-                        </div>
-
-                        {/* FRONT BOTTOM CONTROLS — diapo: barre en bas; full: bouton flottant sur la marge */}
-                        {sortedMediaItems[selectedIndex].note && (
+                        {/* FRONT FACE — image */}
+                        {viewMode === 'diapo' ? (
                           <div
-                            className={cn(
-                              'absolute z-10 flex items-center justify-end',
-                              viewMode === 'diapo'
-                                ? 'bottom-0 left-0 right-0 h-16 sm:h-20 px-4 sm:px-6'
-                                : 'bottom-6 right-6 sm:bottom-8 sm:right-8',
+                            className="absolute overflow-hidden bg-stone-100 top-3 left-3 right-3 bottom-16 sm:top-4 sm:left-4 sm:right-4 sm:bottom-20"
+                            style={{ backfaceVisibility: 'hidden' }}
+                          >
+                            {sortedMediaItems[selectedIndex].type === 'video' ? (
+                              <video
+                                src={sortedMediaItems[selectedIndex].url}
+                                controls
+                                playsInline
+                                muted
+                                autoPlay
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <Image
+                                loader={({ src, width, quality }) =>
+                                  getOptimizedImageUrl(src, { width, quality: quality || 80 })
+                                }
+                                src={sortedMediaItems[selectedIndex].url}
+                                alt={`Full photo ${selectedIndex + 1}`}
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 1024px) 100vw, (max-width: 1920px) 1920px, 1920px"
+                                priority
+                              />
                             )}
+                          </div>
+                        ) : (
+                          /* Mode photo entière : bordure blanche épaisse uniquement autour de la photo */
+                          <div
+                            className="relative rounded-sm border-[10px] border-white bg-white shadow-2xl inline-block max-h-[85vh] max-w-[95vw] overflow-hidden"
+                            style={{ backfaceVisibility: 'hidden' }}
+                          >
+                            {sortedMediaItems[selectedIndex].type === 'video' ? (
+                              <video
+                                src={sortedMediaItems[selectedIndex].url}
+                                controls
+                                playsInline
+                                muted
+                                autoPlay
+                                className="block max-h-[85vh] max-w-[95vw] object-contain"
+                                style={{
+                                  maxHeight: 'calc(85vh - 20px)',
+                                  maxWidth: 'calc(95vw - 20px)',
+                                }}
+                              />
+                            ) : (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={getOptimizedImageUrl(sortedMediaItems[selectedIndex].url, {
+                                  width: 1920,
+                                })}
+                                alt={`Full photo ${selectedIndex + 1}`}
+                                className="block max-h-[85vh] max-w-[95vw] object-contain"
+                                style={{
+                                  maxHeight: 'calc(85vh - 20px)',
+                                  maxWidth: 'calc(95vw - 20px)',
+                                }}
+                              />
+                            )}
+                            {sortedMediaItems[selectedIndex].note && (
+                              <div className="absolute bottom-3 right-3 z-10">
+                                <button
+                                  onClick={() => setIsFlipped(true)}
+                                  className="flex items-center gap-2 px-4 py-2 bg-black/60 hover:bg-black/80 text-white rounded-full text-xs font-bold transition-all backdrop-blur-sm border border-white/20"
+                                >
+                                  <StickyNote size={14} />
+                                  <span>Lire la note</span>
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* FRONT BOTTOM CONTROLS — Lire la note (diapo only) */}
+                        {viewMode === 'diapo' && sortedMediaItems[selectedIndex].note && (
+                          <div
+                            className="absolute bottom-0 left-0 right-0 h-16 sm:h-20 px-4 sm:px-6 z-10 flex items-center justify-end"
                             style={{ backfaceVisibility: 'hidden' }}
                           >
                             <button
