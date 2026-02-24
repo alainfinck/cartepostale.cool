@@ -147,12 +147,6 @@ export default async function PreviewPostcardPage({ params }: PageProps) {
       </motion.section>
 
       <div className="py-24 text-center space-y-10">
-        <Link
-          href="/"
-          className="text-stone-400 hover:text-stone-600 text-lg md:text-xl font-bold transition-colors border-b-2 border-transparent hover:border-stone-300 pb-2"
-        >
-          {'Retour au site'}
-        </Link>
         <p className="text-stone-500 text-lg md:text-2xl leading-relaxed max-w-xl mx-auto font-medium">
           Merci de faire vivre les cartes postales numériques. Chaque envoi compte.
         </p>

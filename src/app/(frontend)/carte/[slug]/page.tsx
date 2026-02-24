@@ -577,17 +577,6 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
 
       <footer className="py-24 border-t border-stone-200/60 bg-white/30">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-12">
-          {/* Retour au site */}
-          <Link
-            href="/"
-            className="group inline-flex items-center gap-2 text-stone-500 hover:text-teal-600 font-bold transition-all duration-300"
-          >
-            <span className="text-lg md:text-xl border-b-2 border-transparent group-hover:border-teal-600 pb-1">
-              Retour au site
-            </span>
-            <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
-
           {/* Message de remerciement */}
           <div className="space-y-4">
             <p className="text-stone-600 text-lg md:text-2xl leading-relaxed max-w-2xl mx-auto font-medium font-serif italic">
