@@ -2216,8 +2216,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         )}
 
       {/* Modal de plein écran : fond sombre, carte centrée avec marges, adapté portrait/paysage */}
-      {isFullscreen &&
-        portalRoot &&
+      {portalRoot &&
         createPortal(
           <AnimatePresence>
             {isFullscreen && (
@@ -2234,7 +2233,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 {/* Croix fermer en haut à droite */}
                 <button
                   type="button"
-                  onClick={() => setIsFullscreen(false)}
+                  onClick={() => {
+                    if (document.fullscreenElement) {
+                      document.exitFullscreen().catch(() => {})
+                    }
+                    setIsFullscreen(false)
+                  }}
                   className="fixed z-[210] flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white shadow-xl text-stone-700 hover:bg-stone-100 hover:rotate-90 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-stone-900"
                   style={{
                     top: 'max(1rem, env(safe-area-inset-top))',
@@ -2247,11 +2251,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
                 {/* Conteneur carte : centrée, marges, ne dépasse pas (portrait = 90vw, paysage = hauteur dispo × 1.5) */}
                 <div
-                  className="flex items-center justify-center shrink-0 max-w-full max-h-full"
+                  className="flex items-center justify-center shrink-0 max-w-full max-h-full relative"
                   style={{
-                    width: 'min(90vw, calc((100vh - 4rem) * 1.5))',
-                    aspectRatio: '3/2',
-                    maxHeight: 'calc(100vh - 4rem)',
+                    width: 'min(90vw, calc((100dvh - 4rem) * 1.5))',
+                    height: 'min(calc(90vw / 1.5), calc(100dvh - 4rem))',
                   }}
                 >
                   <PostcardView
@@ -2264,7 +2267,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     hideFullscreenButton={true}
                     hideFlipHints={true}
                     isInsideFullscreen={true}
-                    onExitFullscreen={() => setIsFullscreen(false)}
+                    onExitFullscreen={() => {
+                      if (document.fullscreenElement) {
+                        document.exitFullscreen().catch(() => {})
+                      }
+                      setIsFullscreen(false)
+                    }}
                   />
                 </div>
               </motion.div>

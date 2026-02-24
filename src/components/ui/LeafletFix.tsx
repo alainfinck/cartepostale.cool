@@ -7,6 +7,10 @@ export default function LeafletFix() {
   useEffect(() => {
     // Check if we are in a browser environment
     if (typeof window !== 'undefined') {
+      // Fix Leaflet marker behavior when inside a CSS 3D transformed container (like rotateY)
+      // @ts-ignore
+      L.Browser.any3d = false
+
       // Fix default icon issue in Leaflet
       // @ts-ignore
       delete L.Icon.Default.prototype._getIconUrl
