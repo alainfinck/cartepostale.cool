@@ -900,6 +900,25 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         className="flex flex-col items-center gap-2 select-none w-full max-w-full"
         suppressHydrationWarning
       >
+        <AnimatePresence>
+          {isFlipped && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ delay: 0.1 }}
+              className="flex justify-center pointer-events-none z-20 w-full mb-1 sm:mb-2"
+            >
+              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 backdrop-blur-sm border border-stone-200/80 text-teal-700 shadow-sm">
+                <Search size={12} className="shrink-0 text-teal-500/80" strokeWidth={2.5} />
+                <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.1em] whitespace-nowrap">
+                  Cliquez sur le texte ou la carte pour agrandir
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <motion.div
           className={cn(
             'perspective-1000 group transition-shadow duration-300 relative z-10 flex-shrink-0', // z-10 for layering; no cursor-grab so card only flips via button
@@ -2130,27 +2149,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               />
             </button>
           )}
-
-          <AnimatePresence>
-            {isFlipped && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className={cn(
-                  'flex justify-center pointer-events-none z-20',
-                  isActionsOpen ? 'mt-4' : 'mt-8',
-                )}
-              >
-                <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/50 backdrop-blur-[2px] border border-stone-200/50 text-stone-500 shadow-sm">
-                  <Search size={12} className="shrink-0 text-teal-500/60" strokeWidth={2.5} />
-                  <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.1em] whitespace-nowrap">
-                    Cliquez sur le texte ou la carte pour agrandir
-                  </span>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </div>
 
