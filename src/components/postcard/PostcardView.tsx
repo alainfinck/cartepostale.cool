@@ -491,7 +491,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     // Recherche binaire précise en pixels
     // Pour les textes courts, on peut aller beaucoup plus haut pour l'effet "gros texte"
     const wordCount = children.split(/\s+/).length
-    let low = 8
+    let low = 6
     let high = wordCount < 10 ? (isLarge ? 120 : 90) : isLarge ? 80 : 60
     let best = 16
 
@@ -520,7 +520,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     const finalSizeRem = best / 16
 
     // Sécurité
-    const minSize = isLarge ? 1.5 : 0.8
+    const minSize = isLarge ? 1.0 : 0.5
     setAutoFontSize(Math.max(finalSizeRem, minSize))
   }, [isLarge, backTextScale]) // backTextScale ajouté en dépendance pour recalculer si l'utilisateur bouge le slider
 
@@ -1632,7 +1632,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     {/* Removed individual loupe here */}
                     <div
                       ref={messageContainerRef}
-                      className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 pl-1 sm:pl-2 flex flex-col justify-center"
+                      className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 pl-1 sm:pl-2 flex flex-col justify-start"
                       onClick={openMessage}
                     >
                       <p
