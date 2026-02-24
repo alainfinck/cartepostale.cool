@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { MapContainer, TileLayer, Marker, Popup, LayersControl, useMap } from 'react-leaflet'
+import L from 'leaflet'
 import { Eye, EyeOff, Loader2, Globe, X, Map as MapIcon } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 import { cn } from '@/lib/utils'
@@ -268,7 +269,21 @@ const MapModal: React.FC<MapModalProps> = ({
                 </LayersControl.BaseLayer>
               </LayersControl>
 
-              <Marker position={position}>
+              <Marker
+                position={position}
+                icon={
+                  new L.Icon({
+                    iconUrl:
+                      'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                    shadowUrl:
+                      'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41],
+                  })
+                }
+              >
                 <Popup className="custom-popup" minWidth={240} maxWidth={320}>
                   <div className="flex flex-col gap-3 p-1">
                     <div className="w-full aspect-video rounded-xl overflow-hidden bg-stone-100 border-2 border-white shadow-md">

@@ -1440,8 +1440,11 @@ function GridCard({
                 className="object-cover group-hover:scale-105 transition-transform duration-700"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
-              <div className="absolute top-3 left-10 flex gap-2">
+              <div className="absolute top-3 left-10 flex gap-2 items-center">
                 <StatusBadge status={postcard.status || 'draft'} />
+                <span className="bg-black/40 backdrop-blur-md text-white/90 text-[10px] px-1.5 py-0.5 rounded-md font-mono border border-white/10">
+                  #{postcard.publicId}
+                </span>
               </div>
               {postcard.isPremium && (
                 <div className="absolute top-3 right-3 bg-amber-400/90 backdrop-blur-sm text-amber-950 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30">
@@ -1704,7 +1707,14 @@ function ListRow({
           />
         </div>
       </TableCell>
-      <TableCell className="font-semibold text-stone-800">{postcard.senderName}</TableCell>
+      <TableCell className="font-semibold text-stone-800">
+        <div className="flex flex-col">
+          <span>{postcard.senderName}</span>
+          <span className="text-[10px] text-stone-400 font-mono font-normal">
+            #{postcard.publicId}
+          </span>
+        </div>
+      </TableCell>
       <TableCell className="text-stone-600">{postcard.recipientName}</TableCell>
       <TableCell className="text-stone-500 max-w-[140px] truncate text-xs">
         {typeof postcard.author === 'object' && postcard.author
