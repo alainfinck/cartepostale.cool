@@ -370,20 +370,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       type: 'article',
       url: `https://cartepostale.cool/carte/${slug}`,
       siteName: 'CartePostale.cool',
-      images: [
-        {
-          url: '/media/enveloppe-social2.jpg',
-          width: 1200,
-          height: 630,
-          alt: 'cartepostale.cool - Une carte postale vous attend',
-        },
-      ],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: ['/media/enveloppe-social2.jpg'],
     },
   }
 }
