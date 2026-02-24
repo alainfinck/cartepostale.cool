@@ -18,7 +18,7 @@ import { UpdatePostcardFn } from './EditPostcardDialog'
 
 function getItemUrl(item: any): string {
   if (item.tempUrl) return item.tempUrl
-  if (typeof item.media === 'object' && item.media) {
+  if (typeof item.media === 'object' && item.media !== null) {
     let url = item.media.url || ''
     if (!url && item.media.filename) {
       url = `/media/${item.media.filename}`

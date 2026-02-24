@@ -69,8 +69,39 @@ export async function getAllPostcards(filters?: PostcardFilters): Promise<Postca
       depth: 2,
     })
 
+    // Populate mediaItems.media when Payload returns IDs (so AlbumDialog can display images)
+    const docs = await Promise.all(
+      result.docs.map(async (doc) => {
+        const postcard = doc as Postcard & {
+          mediaItems?: Array<{ media?: number | unknown; type?: string; note?: string; id?: string }>
+        }
+        if (postcard.mediaItems?.length) {
+          const populated = await Promise.all(
+            postcard.mediaItems.map(async (item) => {
+              const mediaRef = item.media
+              if (typeof mediaRef === 'number') {
+                try {
+                  const mediaDoc = await payload.findByID({
+                    collection: 'media',
+                    id: mediaRef,
+                    depth: 0,
+                  })
+                  return { ...item, media: mediaDoc }
+                } catch {
+                  return item
+                }
+              }
+              return item
+            }),
+          )
+          return { ...postcard, mediaItems: populated }
+        }
+        return postcard
+      }),
+    )
+
     return {
-      docs: result.docs as Postcard[],
+      docs: docs as Postcard[],
       totalDocs: result.totalDocs,
       totalPages: result.totalPages,
       page: result.page ?? 1,
