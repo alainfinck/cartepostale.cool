@@ -95,7 +95,7 @@ import {
   JPEG_QUALITY,
 } from '@/lib/image-processing'
 import { extractExifData, ExifData } from '@/lib/extract-exif'
-import { CAPTION_FONT_FAMILY, CAPTION_COLOR, CAPTION_PRESETS, getCaptionExtraStyle } from '@/lib/caption-style'
+import { CAPTION_PRESETS, getCaptionExtraStyle } from '@/lib/caption-style'
 import { UnsplashSearchModal } from '@/components/UnsplashSearchModal'
 import {
   AiImageGeneratorModal,
@@ -763,6 +763,7 @@ export default function EditorPage() {
   const [frontCaptionColor, setFrontCaptionColor] = useState<FrontCaptionColor>('stone-900')
   const [frontTextBgOpacity, setFrontTextBgOpacity] = useState(90)
   const [frontCaptionPreset, setFrontCaptionPreset] = useState('classic')
+  const [frontCaptionWidth, setFrontCaptionWidth] = useState<number | undefined>(undefined)
   const [message, setMessage] = useState(
     'Un petit coucou de mes vacances ! Tout se passe merveilleusement bien, les paysages sont magnifiques. On pense bien à vous !',
   )
@@ -1045,6 +1046,7 @@ export default function EditorPage() {
         if (doc.frontCaptionColor != null) setFrontCaptionColor(doc.frontCaptionColor)
         if (doc.frontTextBgOpacity != null) setFrontTextBgOpacity(Number(doc.frontTextBgOpacity))
         if (doc.frontCaptionPreset != null) setFrontCaptionPreset(doc.frontCaptionPreset)
+        if (doc.frontCaptionWidth != null) setFrontCaptionWidth(Number(doc.frontCaptionWidth))
         if (doc.stampStyle != null) setStampStyle(doc.stampStyle)
         if (doc.stampLabel != null) setStampLabel(doc.stampLabel)
         if (doc.stampYear != null) setStampYear(String(doc.stampYear))
@@ -1194,6 +1196,7 @@ export default function EditorPage() {
       frontCaptionColor,
       frontTextBgOpacity,
       frontCaptionPreset,
+      frontCaptionWidth,
       message,
       recipientName,
       senderName,
@@ -1278,6 +1281,7 @@ export default function EditorPage() {
           if (data.frontCaptionColor) setFrontCaptionColor(data.frontCaptionColor)
           if (data.frontTextBgOpacity != null) setFrontTextBgOpacity(data.frontTextBgOpacity)
           if (data.frontCaptionPreset) setFrontCaptionPreset(data.frontCaptionPreset)
+          if (data.frontCaptionWidth != null) setFrontCaptionWidth(data.frontCaptionWidth)
           if (data.message) setMessage(data.message)
           if (data.recipientName) setRecipientName(data.recipientName)
           if (data.senderName) setSenderName(data.senderName)
@@ -1927,6 +1931,7 @@ export default function EditorPage() {
     frontCaptionColor,
     frontTextBgOpacity,
     frontCaptionPreset: frontCaptionPreset !== 'classic' ? frontCaptionPreset : undefined,
+    frontCaptionWidth: frontCaptionWidth,
     message: message || '',
     recipientName: recipientName || '',
     senderName: senderName || '',
@@ -1954,7 +1959,7 @@ export default function EditorPage() {
   }), [
     createdPostcardId, frontImage, frontImageCrop, frontImageFilter, frontCaption,
     frontEmoji, frontCaptionPosition, frontCaptionFontFamily, frontCaptionFontSize,
-    frontCaptionColor, frontTextBgOpacity, frontCaptionPreset, message, recipientName, senderName,
+    frontCaptionColor, frontTextBgOpacity, frontCaptionPreset, frontCaptionWidth, message, recipientName, senderName,
     senderEmail, location, stampStyle, stampLabel, stampYear, postmarkText,
     isPremium, stickers, mediaItems, coords, scratchCardEnabled, puzzleCardEnabled,
     puzzleCardDifficulty, backgroundMusic, backgroundMusicTitle,
@@ -3182,11 +3187,41 @@ export default function EditorPage() {
                       frontEmoji={frontEmoji}
                       frontCaptionPosition={frontCaptionPosition}
                       frontTextBgOpacity={frontTextBgOpacity}
+                      frontCaptionWidth={frontCaptionWidth}
                       location={location}
                       stickers={stickers}
                       onCaptionPositionChange={setFrontCaptionPosition}
                       className="w-full"
                     />
+                    {/* Largeur du bloc texte */}
+                    <div className="mt-4">
+                      <div className="mb-1.5 flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                          Largeur du bloc
+                        </label>
+                        <span className="text-xs font-medium text-stone-500 tabular-nums">
+                          {frontCaptionWidth != null ? `${frontCaptionWidth}%` : 'Auto'}
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={20}
+                        max={95}
+                        step={5}
+                        value={frontCaptionWidth ?? 70}
+                        onChange={(e) => setFrontCaptionWidth(Number(e.target.value))}
+                        className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                      />
+                      {frontCaptionWidth != null && (
+                        <button
+                          type="button"
+                          onClick={() => setFrontCaptionWidth(undefined)}
+                          className="mt-1.5 text-[11px] font-semibold text-stone-500 hover:text-teal-600 transition-colors"
+                        >
+                          Réinitialiser (auto)
+                        </button>
+                      )}
+                    </div>
                   </section>
                 )}
 

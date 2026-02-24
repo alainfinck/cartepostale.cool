@@ -79,6 +79,8 @@ export interface Postcard {
   frontTextBgOpacity?: number
   /** Preset de style du texte accroche (ex: 'classic', 'elegant', 'bd'…). */
   frontCaptionPreset?: string
+  /** Largeur du bloc caption en % de la carte (ex: 70 = 70%). */
+  frontCaptionWidth?: number
   message: string
   recipientName: string
   senderName: string

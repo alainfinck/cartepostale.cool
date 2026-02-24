@@ -318,6 +318,10 @@ export interface Postcard {
    * Preset de style du texte accroche (ex: classic, elegant, bd…)
    */
   frontCaptionPreset?: string | null;
+  /**
+   * Largeur du bloc caption en % de la carte (ex: 70)
+   */
+  frontCaptionWidth?: number | null;
   message: string;
   recipients?:
     | {
@@ -1002,6 +1006,7 @@ export interface PostcardsSelect<T extends boolean = true> {
   frontCaptionColor?: T;
   frontTextBgOpacity?: T;
   frontCaptionPreset?: T;
+  frontCaptionWidth?: T;
   message?: T;
   recipients?:
     | T

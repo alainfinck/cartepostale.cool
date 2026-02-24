@@ -20,6 +20,7 @@ interface FrontFaceEditorProps {
   frontEmoji?: string
   frontCaptionPosition: FrontCaptionPosition
   frontTextBgOpacity: number
+  frontCaptionWidth?: number
   location?: string
   stickers?: StickerPlacement[]
   onCaptionPositionChange: (pos: FrontCaptionPosition) => void
@@ -65,6 +66,7 @@ export default function FrontFaceEditor({
   frontEmoji,
   frontCaptionPosition,
   frontTextBgOpacity,
+  frontCaptionWidth,
   location,
   stickers,
   onCaptionPositionChange,
@@ -385,6 +387,7 @@ export default function FrontFaceEditor({
               transform: captionTransform,
               backgroundColor: frontTextBgColor,
               willChange: isDragging ? 'transform, left, top' : 'auto',
+              ...(frontCaptionWidth != null && { width: `${frontCaptionWidth}%` }),
             }}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
@@ -430,6 +433,7 @@ export default function FrontFaceEditor({
               transform: captionTransform,
               backgroundColor: frontTextBgColor,
               willChange: isDragging ? 'transform, left, top' : 'auto',
+              ...(frontCaptionWidth != null && { width: `${frontCaptionWidth}%` }),
             }}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}

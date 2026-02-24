@@ -1097,8 +1097,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           transform: 'translate(-50%, -50%)',
                           backgroundColor: frontTextBgColor,
                           willChange: isDraggingCaption ? 'transform, left, top' : 'auto',
+                          ...(postcard.frontCaptionWidth != null && { width: `${postcard.frontCaptionWidth}%` }),
                         }
-                      : { backgroundColor: 'rgba(255,255,255,0.65)' }
+                      : {
+                          backgroundColor: 'rgba(255,255,255,0.65)',
+                          ...(postcard.frontCaptionWidth != null && { width: `${postcard.frontCaptionWidth}%` }),
+                        }
                   }
                   {...(onCaptionPositionChange && {
                     onPointerDown: (e: React.PointerEvent) => {
@@ -1159,8 +1163,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           transform: 'translate(-50%, -50%)',
                           backgroundColor: frontTextBgColor,
                           willChange: isDraggingCaption ? 'transform, left, top' : 'auto',
+                          ...(postcard.frontCaptionWidth != null && { width: `${postcard.frontCaptionWidth}%` }),
                         }
-                      : { backgroundColor: frontTextBgColor }
+                      : {
+                          backgroundColor: frontTextBgColor,
+                          ...(postcard.frontCaptionWidth != null && { width: `${postcard.frontCaptionWidth}%` }),
+                        }
                   }
                   {...(onCaptionPositionChange && {
                     onPointerDown: (e: React.PointerEvent) => {

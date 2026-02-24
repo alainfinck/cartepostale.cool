@@ -112,6 +112,13 @@ export const Postcards: CollectionConfig = {
       admin: { description: 'Preset de style du texte accroche (ex: classic, elegant, bd…)' },
     },
     {
+      name: 'frontCaptionWidth',
+      type: 'number',
+      admin: { description: 'Largeur du bloc caption en % de la carte (ex: 70)' },
+      min: 20,
+      max: 95,
+    },
+    {
       name: 'message',
       type: 'textarea',
       required: true,
