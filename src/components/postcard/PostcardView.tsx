@@ -526,7 +526,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
   // Ajustement automatique : au flip et au changement de message/échelle
   useLayoutEffect(() => {
-    if (!isFlipped) return
     computeAutoFontSize()
     // En plein écran : recalculer après layout (conteneur peut avoir 0 au premier paint)
     if (isLarge) {
@@ -1635,7 +1634,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   </div>
                   {/* Texte explicite sous la zone message : supprimé car unifié ci-dessous */}
                   {postcard.senderName && (
-                    <div className="mt-auto -mt-2 self-start transform -rotate-2 pt-2 pb-1 px-4 relative">
+                    <div className="mt-auto -mt-2 self-start transform -rotate-2 pt-2 pb-1 px-2 sm:px-4 relative shrink-0">
                       <div className="absolute inset-0 bg-teal-50/30 blur-md rounded-full -rotate-3"></div>
                       <p
                         className="text-teal-700 text-xl sm:text-3xl relative z-10 font-bold drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]"
@@ -1987,16 +1986,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   )}
                 </div>
               </div>
-
-              {/* Unified Zoom Hint at the absolute bottom of the card content */}
-              <div className="absolute bottom-2 left-0 right-0 flex justify-center pointer-events-none z-20">
-                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/40 backdrop-blur-[2px] border border-stone-200/30 text-stone-400 transition-opacity">
-                  <Search size={12} className="shrink-0 text-teal-500/60" strokeWidth={2.5} />
-                  <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.15em] whitespace-nowrap">
-                    Cliquez sur le texte ou la carte pour agrandir
-                  </span>
-                </div>
-              </div>
             </motion.div>
           </motion.div>
         </motion.div>
@@ -2141,6 +2130,27 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               />
             </button>
           )}
+
+          <AnimatePresence>
+            {isFlipped && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className={cn(
+                  'flex justify-center pointer-events-none z-20',
+                  isActionsOpen ? 'mt-4' : 'mt-8',
+                )}
+              >
+                <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/50 backdrop-blur-[2px] border border-stone-200/50 text-stone-500 shadow-sm">
+                  <Search size={12} className="shrink-0 text-teal-500/60" strokeWidth={2.5} />
+                  <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.1em] whitespace-nowrap">
+                    Cliquez sur le texte ou la carte pour agrandir
+                  </span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
