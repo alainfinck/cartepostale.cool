@@ -169,42 +169,47 @@ function isMedia(media: any): media is Media {
   return media && typeof media === 'object' && ('url' in media || 'filename' in media)
 }
 
-// Build media URL (Payload stores in public/media, Next.js serves at /media/)
+// Encode path for R2 (same logic as payload.config generateFileURL)
+function encodeR2Path(path: string): string {
+  return path.split('/').map(encodeURIComponent).join('/')
+}
+
+// Build media URL (Payload stores in public/media or R2; R2 uses R2_PUBLIC_BASE_URL)
 function mediaUrl(media: Media | null | undefined): string {
   if (!media || typeof media !== 'object') return ''
-  if (media.url) return media.url
+  if (media.url && typeof media.url === 'string' && media.url.startsWith('http')) return media.url
   if (media.filename) {
     const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')
-    if (base) return `${base}/${media.filename}`
-    return `/media/${media.filename}`
+    if (base) return `${base}/${encodeR2Path(media.filename)}`
+    return `/media/${encodeR2Path(media.filename)}`
   }
   return ''
 }
 
-// Normalize legacy API URLs to static /media/ URLs (fixes 400 on public page)
+// Normalize legacy API URLs to static /media/ or R2 URLs (fixes 400 on public page)
 function normalizeMediaUrl(url: string): string {
   if (!url) return ''
 
-  // Si c'est déjà une URL absolue, ne rien faire
   if (url.startsWith('http')) return url
 
   const base = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')
 
   const apiMatch = url.match(/^\/api\/media\/file\/(.+)$/)
   if (apiMatch) {
-    if (base) return `${base}/${apiMatch[1]}`
-    return `/media/${apiMatch[1]}`
+    const path = decodeURIComponent(apiMatch[1])
+    if (base) return `${base}/${encodeR2Path(path)}`
+    return `/media/${encodeR2Path(path)}`
   }
 
   const mediaMatch = url.match(/^\/media\/(.+)$/)
   if (mediaMatch) {
-    if (base) return `${base}/${mediaMatch[1]}`
+    const path = decodeURIComponent(mediaMatch[1])
+    if (base) return `${base}/${encodeR2Path(path)}`
     return url
   }
 
-  // Si c'est juste le nom du fichier
   if (!url.startsWith('/') && base) {
-    return `${base}/${url}`
+    return `${base}/${encodeR2Path(url)}`
   }
 
   return url
