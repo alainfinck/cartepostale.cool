@@ -15,7 +15,6 @@ import { Label } from '@/components/ui/label'
 import { Postcard, Media, User } from '@/payload-types'
 import { updatePostcard, getAllUsers } from '@/actions/manager-actions'
 import { Camera, Loader2, Save, X, User as UserIcon, Search } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { fileToProcessedDataUrl, dataUrlToBlob } from '@/lib/image-processing'
 
 export type UpdatePostcardFn = (
@@ -64,7 +63,6 @@ export default function EditPostcardDialog({
     frontCaption: '',
     frontEmoji: '',
     frontImage: '',
-    mediaItems: [] as any[],
   })
   const [author, setAuthor] = useState<User | null>(null)
   const [userSearch, setUserSearch] = useState('')
@@ -74,7 +72,6 @@ export default function EditPostcardDialog({
   const [frontImageKey, setFrontImageKey] = useState<string | null>(null)
   const [frontImageMimeType, setFrontImageMimeType] = useState<string | null>(null)
   const [frontImageFilesize, setFrontImageFilesize] = useState<number | null>(null)
-  const [isUploadingAlbum, setIsUploadingAlbum] = useState(false)
 
   useEffect(() => {
     if (postcard) {
@@ -86,7 +83,6 @@ export default function EditPostcardDialog({
         frontCaption: postcard.frontCaption || '',
         frontEmoji: postcard.frontEmoji || '',
         frontImage: '',
-        mediaItems: postcard.mediaItems ? [...postcard.mediaItems] : [],
       })
       setAuthor(typeof postcard.author === 'object' ? postcard.author : null)
       setUserSearch('')
@@ -165,60 +161,6 @@ export default function EditPostcardDialog({
     setFormData((prev) => ({ ...prev, frontImage: dataUrl }))
   }
 
-  const handleAlbumImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
-    setIsUploadingAlbum(true)
-
-    const newItems: any[] = []
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-      const dataUrl = await fileToProcessedDataUrl(file).catch(() => null)
-      if (!dataUrl) continue
-
-      const blob = await dataUrlToBlob(dataUrl)
-      const safeName = `postcard-album-${Date.now()}-${i}.jpg`
-
-      try {
-        const presignedRes = await fetch('/api/upload-presigned', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            filename: safeName,
-            mimeType: 'image/jpeg',
-            filesize: blob.size,
-          }),
-        })
-        if (presignedRes.ok) {
-          const { url, key } = await presignedRes.json()
-          const putRes = await fetch(url, {
-            method: 'PUT',
-            body: blob,
-            headers: { 'Content-Type': 'image/jpeg' },
-          })
-          if (putRes.ok) {
-            newItems.push({
-              tempUrl: dataUrl,
-              newKey: key,
-              mimeType: 'image/jpeg',
-              filesize: blob.size,
-              type: 'image',
-            })
-            continue
-          }
-        }
-      } catch (_) {}
-      newItems.push({
-        tempUrl: dataUrl,
-        newBase64: dataUrl,
-        type: 'image',
-      })
-    }
-
-    setFormData((prev) => ({ ...prev, mediaItems: [...prev.mediaItems, ...newItems] }))
-    setIsUploadingAlbum(false)
-  }
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!postcard) return
@@ -231,14 +173,6 @@ export default function EditPostcardDialog({
         message: formData.message,
         frontCaption: formData.frontCaption,
         frontEmoji: formData.frontEmoji,
-        mediaItems: formData.mediaItems.map((item) => {
-          // Normalize existing media back to its ID or keep new file info
-          if (item.newKey || item.newBase64) return item
-          if (typeof item.media === 'object' && item.media !== null) {
-            return { media: item.media.id, type: item.type, note: item.note }
-          }
-          return item
-        }),
       }
 
       if (frontImageKey) {
@@ -310,73 +244,6 @@ export default function EditPostcardDialog({
                   />
                 </label>
               )}
-            </div>
-          </div>
-
-          {/* Album section */}
-          <div className="space-y-4 pt-4 border-t border-border/50">
-            <Label>Album photo de la carte ({formData.mediaItems.length})</Label>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-              {formData.mediaItems.map((item, idx) => {
-                let url = item.tempUrl || ''
-                if (!url && typeof item.media === 'object' && item.media) {
-                  url =
-                    item.media.url || (item.media.filename ? `/media/${item.media.filename}` : '')
-                }
-                return (
-                  <div
-                    key={idx}
-                    className="relative aspect-square rounded-lg overflow-hidden border border-border group"
-                  >
-                    {url ? (
-                      <img
-                        src={url}
-                        alt={`Album img ${idx}`}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-muted flex items-center justify-center text-xs">
-                        Erreur
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFormData((prev) => {
-                          const newArr = [...prev.mediaItems]
-                          newArr.splice(idx, 1)
-                          return { ...prev, mediaItems: newArr }
-                        })
-                      }}
-                      className="absolute top-1 right-1 w-6 h-6 bg-black/50 hover:bg-red-500/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                )
-              })}
-
-              <label
-                className={cn(
-                  'flex flex-col items-center justify-center aspect-square rounded-lg border-2 border-dashed border-border/50 hover:border-teal-500/50 hover:text-teal-600 transition-colors cursor-pointer bg-muted/20 text-muted-foreground',
-                  isUploadingAlbum && 'opacity-50 cursor-not-allowed',
-                )}
-              >
-                {isUploadingAlbum ? (
-                  <Loader2 size={20} className="animate-spin" />
-                ) : (
-                  <Camera size={20} />
-                )}
-                <span className="text-[10px] mt-1 font-medium select-none">Ajouter</span>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*,.heic,.heif,.avif,.webp,.tiff,.bmp"
-                  className="hidden"
-                  onChange={handleAlbumImageChange}
-                  disabled={isUploadingAlbum}
-                />
-              </label>
             </div>
           </div>
 

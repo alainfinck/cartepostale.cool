@@ -116,6 +116,7 @@ import PostcardView from '@/components/postcard/PostcardView'
 import ShareContributionModal from '@/components/postcard/ShareContributionModal'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import EditPostcardDialog from './EditPostcardDialog'
+import AlbumDialog from './AlbumDialog'
 
 export type StatusFilter = 'all' | 'published' | 'draft' | 'archived'
 type ViewMode = 'grid' | 'list'
@@ -222,6 +223,7 @@ export default function ManagerClient({
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
   const [editingPostcard, setEditingPostcard] = useState<PayloadPostcard | null>(null)
   const [editingIsDuplicate, setEditingIsDuplicate] = useState(false)
+  const [albumPostcard, setAlbumPostcard] = useState<PayloadPostcard | null>(null)
   const [columns, setColumns] = useState(3)
   const [isAuto, setIsAuto] = useState(true)
   const [trackingLinks, setTrackingLinks] = useState<PostcardTrackingLink[]>([])
@@ -926,6 +928,7 @@ export default function ManagerClient({
                   setEditingIsDuplicate(false)
                   setEditingPostcard(postcard)
                 }}
+                onEditAlbum={() => setAlbumPostcard(postcard)}
                 onEditInEditor={() => setEditorModalPostcard(postcard)}
                 onDuplicate={canDuplicatePostcard ? () => handleDuplicate(postcard.id) : undefined}
                 onUpdateStatus={handleUpdateStatus}
@@ -986,6 +989,7 @@ export default function ManagerClient({
                         setEditingIsDuplicate(false)
                         setEditingPostcard(postcard)
                       }}
+                      onEditAlbum={() => setAlbumPostcard(postcard)}
                       onEditInEditor={() => setEditorModalPostcard(postcard)}
                       onDuplicate={
                         canDuplicatePostcard ? () => handleDuplicate(postcard.id) : undefined
@@ -1072,6 +1076,26 @@ export default function ManagerClient({
           }}
           updatePostcardFn={updatePostcardFn}
           allowChangeAuthor={!useEspaceClientActions && !useAgenceActions}
+        />
+
+        {/* Album Dialog */}
+        <AlbumDialog
+          postcard={albumPostcard}
+          isOpen={!!albumPostcard}
+          onClose={() => setAlbumPostcard(null)}
+          onSuccess={() => {
+            refreshData()
+            if (selectedPostcard?.id === albumPostcard?.id) {
+              fetchPostcards({
+                search: search,
+                status: statusFilter !== 'all' ? statusFilter : undefined,
+              }).then((res) => {
+                const updated = res.docs.find((p) => p.id === albumPostcard?.id)
+                if (updated) setSelectedPostcard(updated)
+              })
+            }
+          }}
+          updatePostcardFn={updatePostcardFn}
         />
 
         {/* Modal partage lien contribution (espace client) */}
@@ -1382,6 +1406,7 @@ function GridCard({
   onToggleSelect,
   onSelect,
   onEdit,
+  onEditAlbum,
   onEditInEditor,
   onDuplicate,
   onUpdateStatus,
@@ -1394,6 +1419,7 @@ function GridCard({
   onToggleSelect: () => void
   onSelect: () => void
   onEdit: () => void
+  onEditAlbum?: () => void
   onEditInEditor?: () => void
   onDuplicate?: () => void
   onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
@@ -1551,6 +1577,20 @@ function GridCard({
                     >
                       <Pencil size={14} />
                     </Button>
+                    {onEditAlbum && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onEditAlbum()
+                        }}
+                        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200 shadow-sm"
+                        title="Gérer l'album photo"
+                      >
+                        <ImageIcon size={14} />
+                      </Button>
+                    )}
                     {onEditInEditor && (
                       <Button
                         variant="outline"
@@ -1667,6 +1707,7 @@ function ListRow({
   onToggleSelect,
   onSelect,
   onEdit,
+  onEditAlbum,
   onEditInEditor,
   onDuplicate,
   onUpdateStatus,
@@ -1680,6 +1721,7 @@ function ListRow({
   onToggleSelect: () => void
   onSelect: () => void
   onEdit: () => void
+  onEditAlbum?: () => void
   onEditInEditor?: () => void
   onDuplicate?: () => void
   onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
@@ -1780,6 +1822,17 @@ function ListRow({
           >
             <Pencil size={14} />
           </Button>
+          {onEditAlbum && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200 shadow-sm"
+              onClick={() => onEditAlbum()}
+              title="Gérer l'album photo"
+            >
+              <ImageIcon size={14} />
+            </Button>
+          )}
           {onEditInEditor && (
             <Button
               variant="outline"
