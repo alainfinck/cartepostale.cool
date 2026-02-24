@@ -1,7 +1,8 @@
 /**
  * Répare la carte W0QG : tous les mediaItems ont media: null.
- * On assigne les N Media les plus récents (créés après la carte) aux N premiers slots.
- * Usage: pnpm exec tsx scripts/repair-postcard-w0qg.ts
+ * 1) Tente d’assigner les Media créés après la carte aux slots.
+ * 2) Si aucun Media trouvé après la carte, nettoie les slots vides (mediaItems → []).
+ * Usage: pnpm exec tsx scripts/repair-postcard-w0qg-media.ts
  */
 import 'dotenv/config'
 import { getPayload } from 'payload'
@@ -42,28 +43,31 @@ async function main() {
     .reverse()
     .slice(0, count)
 
-  if (afterCard.length < count) {
+  if (afterCard.length > 0) {
+    const mediaIds = afterCard.map((m: any) => m.id)
+    const newMediaItems = postcard.mediaItems.map((item: any, i: number) => ({
+      ...item,
+      media: mediaIds[i] ?? item.media,
+      type: item.type || 'image',
+      note: item.note ?? undefined,
+    }))
+    await payload.update({
+      collection: 'postcards',
+      id: postcardId,
+      data: { mediaItems: newMediaItems },
+    })
+    console.log('Carte', PUBLIC_ID, 'mise à jour:', mediaIds.length, 'media reliés.')
+  } else {
+    await payload.update({
+      collection: 'postcards',
+      id: postcardId,
+      data: { mediaItems: [] },
+    })
     console.log(
-      `Seulement ${afterCard.length} Media trouvés après ${createdAt}, il en faut ${count}.`,
+      'Aucun Media créé après la carte. Les 50 slots vides (media: null) ont été supprimés.',
     )
-    console.log('On assigne ceux disponibles.')
+    console.log('Carte', PUBLIC_ID, ': mediaItems = []. Rechargez l’album depuis l’éditeur si besoin.')
   }
-
-  const mediaIds = afterCard.map((m: any) => m.id)
-  const newMediaItems = postcard.mediaItems.map((item: any, i: number) => ({
-    ...item,
-    media: mediaIds[i] ?? item.media,
-    type: item.type || 'image',
-    note: item.note ?? undefined,
-  }))
-
-  await payload.update({
-    collection: 'postcards',
-    id: postcardId,
-    data: { mediaItems: newMediaItems },
-  })
-
-  console.log('Carte', PUBLIC_ID, 'mise à jour:', mediaIds.length, 'media reliés.')
   process.exit(0)
 }
 
