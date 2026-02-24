@@ -104,10 +104,10 @@ const MiniMap: React.FC<MiniMapProps> = ({
         center={[20, 0]}
         zoom={1}
         zoomControl={false}
-        scrollWheelZoom={false}
-        dragging={false}
-        doubleClickZoom={false}
-        touchZoom={false}
+        scrollWheelZoom={true}
+        dragging={true}
+        doubleClickZoom={true}
+        touchZoom={true}
         attributionControl={false}
         style={{ width: '100%', height: '100%' }}
       >
@@ -142,11 +142,6 @@ const MiniMap: React.FC<MiniMapProps> = ({
           />
         ))}
       </MapContainer>
-
-      {/* Overlay to prevent interactions if we want it to be strictly a static-like view that opens modal on click
-          Leaflet captures clicks, so we might need a transparent overlay to capture the 'onClick' for the parent modal 
-      */}
-      <div className="absolute inset-0 z-[1000] cursor-pointer" onClick={onClick} />
     </div>
   )
 }

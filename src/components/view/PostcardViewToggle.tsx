@@ -174,7 +174,6 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
                   <MiniMap
                     coords={postcard.coords}
                     zoom={mapZoom}
-                    onClick={() => setIsMapOpen(true)}
                     photoLocations={showMapPhotos ? photoLocations : []}
                   />
                   <div

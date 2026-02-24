@@ -20,6 +20,7 @@ import {
   Link2,
   Maximize2,
   Minimize2,
+  Loader2,
 } from 'lucide-react'
 import { CoolMode } from '@/components/ui/cool-mode'
 import { useSessionId } from '@/hooks/useSessionId'
@@ -353,6 +354,7 @@ export default function PhotoFeed({
   const [counts, setCounts] = useState<Record<string, number>>({})
   const [userReactions, setUserReactions] = useState<Record<string, boolean>>({})
   const [reactionsLoaded, setReactionsLoaded] = useState(false)
+  const [isImageLoading, setIsImageLoading] = useState(true)
 
   const sortedMediaItems = useMemo(() => {
     const items = [...mediaItems]
@@ -393,7 +395,8 @@ export default function PhotoFeed({
 
   useEffect(() => {
     setIsFlipped(false)
-  }, [selectedIndex])
+    setIsImageLoading(true)
+  }, [selectedIndex, viewMode])
 
   const paginate = useCallback(
     (direction: number) => {
@@ -673,6 +676,20 @@ export default function PhotoFeed({
                   </>
                 )}
 
+                {/* Loading indicator */}
+                <AnimatePresence>
+                  {isImageLoading && sortedMediaItems[selectedIndex]?.type !== 'video' && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 flex items-center justify-center z-[100001] pointer-events-none"
+                    >
+                      <Loader2 size={48} className="text-white/40 animate-spin" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 {/* Polaroid card container — centered vertically */}
                 <div
                   className="relative flex-1 w-full max-w-md md:max-w-lg lg:max-w-xl flex items-center justify-center min-h-0 overflow-hidden px-4"
@@ -741,7 +758,8 @@ export default function PhotoFeed({
                                 alt={`Full photo ${selectedIndex + 1}`}
                                 fill
                                 className="object-cover"
-                                sizes="(max-width: 1024px) 100vw, (max-width: 1920px) 1920px, 1920px"
+                                sizes="(max-width: 1024px) 100vw, 900px"
+                                onLoadingComplete={() => setIsImageLoading(false)}
                                 priority
                               />
                             )}
@@ -749,8 +767,10 @@ export default function PhotoFeed({
                         ) : (
                           /* Mode photo entière : bordure blanche épaisse uniquement autour de la photo */
                           <div
-                            className="relative rounded-sm border-[10px] border-white bg-white shadow-2xl inline-block max-h-[85vh] max-w-[95vw] overflow-hidden"
-                            style={{ backfaceVisibility: 'hidden' }}
+                            className="relative rounded-sm border-[12px] sm:border-[20px] border-white bg-white shadow-2xl inline-block overflow-hidden"
+                            style={{
+                              backfaceVisibility: 'hidden',
+                            }}
                           >
                             {sortedMediaItems[selectedIndex].type === 'video' ? (
                               <video
@@ -759,24 +779,17 @@ export default function PhotoFeed({
                                 playsInline
                                 muted
                                 autoPlay
-                                className="block max-h-[85vh] max-w-[95vw] object-contain"
-                                style={{
-                                  maxHeight: 'calc(85vh - 20px)',
-                                  maxWidth: 'calc(95vw - 20px)',
-                                }}
+                                className="block w-auto h-auto max-h-[70vh] sm:max-h-[80vh] max-w-[85vw] sm:max-w-[75vw] object-contain"
                               />
                             ) : (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 src={getOptimizedImageUrl(sortedMediaItems[selectedIndex].url, {
-                                  width: 1920,
+                                  width: 900,
                                 })}
                                 alt={`Full photo ${selectedIndex + 1}`}
-                                className="block max-h-[85vh] max-w-[95vw] object-contain"
-                                style={{
-                                  maxHeight: 'calc(85vh - 20px)',
-                                  maxWidth: 'calc(95vw - 20px)',
-                                }}
+                                className="block w-auto h-auto max-h-[70vh] sm:max-h-[80vh] max-w-[85vw] sm:max-w-[75vw] object-contain"
+                                onLoad={() => setIsImageLoading(false)}
                               />
                             )}
                             {sortedMediaItems[selectedIndex].note && (
