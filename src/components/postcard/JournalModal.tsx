@@ -147,14 +147,16 @@ const JournalEntry: React.FC<{ item: MediaItem; index: number }> = ({ item, inde
           <span>{item.type === 'video' ? 'Vidéo' : 'Photo'}</span>
         </div>
 
-        {item.exif?.gps && (
-          <div className="flex items-center gap-1">
-            <MapPin size={12} />
-            <span>
-              {item.exif.gps.latitude.toFixed(4)}, {item.exif.gps.longitude.toFixed(4)}
-            </span>
-          </div>
-        )}
+        {item.exif?.gps &&
+          typeof item.exif.gps.latitude === 'number' &&
+          typeof item.exif.gps.longitude === 'number' && (
+            <div className="flex items-center gap-1">
+              <MapPin size={12} />
+              <span>
+                {item.exif.gps.latitude.toFixed(4)}, {item.exif.gps.longitude.toFixed(4)}
+              </span>
+            </div>
+          )}
       </div>
     </motion.div>
   )

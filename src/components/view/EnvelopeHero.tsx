@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import { Heart } from 'lucide-react'
+import { fireSideCannons } from '@/components/ui/confetti'
 
 const MiniMap = dynamic(() => import('@/components/postcard/MiniMap'), {
   ssr: false,
@@ -49,18 +50,18 @@ export default function EnvelopeHero({
   coords,
   isOpened = false,
 }: EnvelopeHeroProps) {
-  const [zoom, setZoom] = useState(1) // Start even further back
-
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setZoom(6) // Wider final zoom
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [])
+    if (isOpened) {
+      const timer = setTimeout(() => {
+        fireSideCannons()
+      }, 500) // fire confetti shortly after opening
+      return () => clearTimeout(timer)
+    }
+  }, [isOpened])
 
   return (
     <div
-      className={`flex flex-col items-center gap-6 w-full max-w-2xl mx-auto px-4 ${isOpened ? 'mt-12 md:mt-24 pt-12' : ''}`}
+      className={`flex flex-col items-center gap-2 w-full max-w-2xl mx-auto px-4 ${isOpened ? 'mt-2 md:mt-4 pt-2' : ''}`}
     >
       {/* Title & Sender */}
       <div className="text-center space-y-4">
@@ -91,7 +92,7 @@ export default function EnvelopeHero({
         <div className="w-full max-w-sm aspect-video rounded-3xl overflow-hidden shadow-xl border-4 border-white relative mt-2">
           {coords ? (
             <div className="w-full h-full relative">
-              <MiniMap coords={coords} zoom={zoom} className="w-full h-full" />
+              <MiniMap coords={coords} zoom={5} className="w-full h-full" />
 
               {/* Animated Pin Overlay */}
               <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
@@ -118,23 +119,6 @@ export default function EnvelopeHero({
           )}
         </div>
       )}
-
-      {/* Info text */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: isOpened ? 0.3 : 2.2 }}
-        className="text-center space-y-1 bg-white/50 backdrop-blur-sm px-6 py-3 rounded-full border border-white/50 shadow-sm"
-      >
-        <p className="text-sm md:text-base text-stone-600 font-medium">
-          Envoyée de <span className="text-stone-900 font-bold">{location || 'quelque part'}</span>
-          {date && (
-            <span>
-              , le <span className="text-stone-900 font-bold">{date}</span>
-            </span>
-          )}
-        </p>
-      </motion.div>
     </div>
   )
 }

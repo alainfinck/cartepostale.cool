@@ -212,6 +212,11 @@ export default function ManagerClient({
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [selectedPostcard, setSelectedPostcard] = useState<PayloadPostcard | null>(null)
+  const [origin, setOrigin] = useState('')
+
+  useEffect(() => {
+    setOrigin(window.location.origin)
+  }, [])
   const [viewStats, setViewStats] = useState<PostcardViewStats | null>(null)
   const [isPending, startTransition] = useTransition()
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
@@ -1077,8 +1082,8 @@ export default function ManagerClient({
               isOpen={shareContributionModalOpen}
               onClose={() => setShareContributionModalOpen(false)}
               contributeUrl={
-                typeof window !== 'undefined'
-                  ? `${window.location.origin}/carte/${selectedPostcard.publicId}?token=${selectedPostcard.contributionToken}`
+                origin
+                  ? `${origin}/carte/${selectedPostcard.publicId}?token=${selectedPostcard.contributionToken}`
                   : ''
               }
             />
@@ -1875,7 +1880,7 @@ function DetailsSheet(props: {
   if (!postcard) return null
   const frontendPostcard = mapToFrontend(postcard)
   const publicUrl = `/carte/${postcard.publicId}`
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+  const baseUrl = origin
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -2062,7 +2067,7 @@ function DetailsSheet(props: {
                                     size="sm"
                                     className="h-8 gap-1.5 text-xs"
                                     onClick={() => {
-                                      const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/v/${t.token}`
+                                      const url = `${origin}/v/${t.token}`
                                       void navigator.clipboard
                                         .writeText(url)
                                         .then(() => alert('Lien copié !'))
@@ -2083,7 +2088,7 @@ function DetailsSheet(props: {
                                     <Mail size={12} /> Email
                                   </Button>
                                   <a
-                                    href={`https://wa.me/?text=${encodeURIComponent(shareText + (typeof window !== 'undefined' ? window.location.origin : '') + '/v/' + t.token)}`}
+                                    href={`https://wa.me/?text=${encodeURIComponent(shareText + origin + '/v/' + t.token)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
@@ -2096,7 +2101,7 @@ function DetailsSheet(props: {
                                     </Button>
                                   </a>
                                   <a
-                                    href={`sms:?body=${encodeURIComponent(shareText + (typeof window !== 'undefined' ? window.location.origin : '') + '/v/' + t.token)}`}
+                                    href={`sms:?body=${encodeURIComponent(shareText + origin + '/v/' + t.token)}`}
                                   >
                                     <Button
                                       variant="outline"

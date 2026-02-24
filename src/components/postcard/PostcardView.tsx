@@ -29,9 +29,18 @@ import {
   Music,
   MoreHorizontal,
   Link2,
+  Heart,
 } from 'lucide-react'
+import { fireSideCannons } from '@/components/ui/confetti'
 import { cn, isCoordinate } from '@/lib/utils'
-import { AnimatePresence, motion, useSpring, useMotionValue, useTransform } from 'framer-motion'
+import {
+  AnimatePresence,
+  motion,
+  useSpring,
+  useMotionValue,
+  useTransform,
+  animate,
+} from 'framer-motion'
 import dynamic from 'next/dynamic'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import { uploadContribution } from '@/actions/contribute-actions'
@@ -300,7 +309,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
   // Motion values for rotation
   const rotateY = useMotionValue(flipped ? 180 : 0)
-  const springRotateY = useSpring(rotateY, { stiffness: 80, damping: 26 })
+  // Slightly more responsive spring so the keyframed animation isn't over-smoothed
+  const springRotateY = useSpring(rotateY, { stiffness: 40, damping: 25 })
 
   // Derived opacity for faces to avoid ghosting in Safari/Chrome during 3D flip
   // Values derived from springRotateY to sync with animation and avoid "flash"
@@ -315,20 +325,22 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     }
   }, [flipped, rotateY])
 
-  // Small wiggle animation to invite user to flip the card on first load
+  // Intro animation: one-time 360-degree spin with variable speed
   useEffect(() => {
-    if (!hasBeenFlipped && !isFlipped && !isPreview) {
-      const timer = setTimeout(() => {
-        rotateY.set(6)
-        setTimeout(() => {
-          rotateY.set(-3)
-          setTimeout(() => {
-            rotateY.set(0)
-          }, 400)
-        }, 400)
-      }, 2500)
-      return () => clearTimeout(timer)
-    }
+    if (hasBeenFlipped || isFlipped || isPreview) return
+
+    const timer = setTimeout(() => {
+      // Use animate with keyframes:
+      // 0 to 180 (reveal back) — takes 80% of duration (very slow)
+      // 180 to 360 (return to front) — takes 20% of duration (snappy)
+      animate(rotateY, [0, 180, 360], {
+        duration: 6, // Total duration: slightly faster but still smooth
+        times: [0, 0.82, 1], // Hits 180 degrees at 82% of time (~4.9s)
+        ease: ['easeOut', 'easeIn'], // Natural feel
+      })
+    }, 4500) // Delay to match envelope opening + text appearance
+
+    return () => clearTimeout(timer)
   }, [hasBeenFlipped, isFlipped, rotateY, isPreview])
 
   const [isMessageOpen, setIsMessageOpen] = useState(false)
@@ -416,22 +428,19 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
   // Calculate photo locations from EXIF data
   const photoLocations: PhotoLocation[] = React.useMemo(() => {
-    if (!postcard.mediaItems) return []
-
-    // Group by location (approximate to 4 decimal places ? or exact?)
-    // Let's use exact for now, or maybe small radius.
-    // Simpler: group by exact lat/lng strings
+    if (!postcard.mediaItems || !Array.isArray(postcard.mediaItems)) return []
 
     const groups: Record<string, PhotoLocation> = {}
 
     postcard.mediaItems.forEach((item) => {
-      if (item.exif?.gps) {
-        const key = `${item.exif.gps.latitude.toFixed(4)},${item.exif.gps.longitude.toFixed(4)}`
+      const gps = item.exif?.gps
+      if (gps && typeof gps.latitude === 'number' && typeof gps.longitude === 'number') {
+        const key = `${gps.latitude.toFixed(4)},${gps.longitude.toFixed(4)}`
         if (!groups[key]) {
           groups[key] = {
             id: key,
-            lat: item.exif.gps.latitude,
-            lng: item.exif.gps.longitude,
+            lat: gps.latitude,
+            lng: gps.longitude,
             mediaItems: [],
           }
         }
@@ -651,7 +660,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         <motion.div
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
-          className="w-full max-w-[95vw] md:max-w-2xl max-h-[85dvh] md:max-h-[75vh] md:h-auto min-h-0 bg-[#fafaf9] rounded-3xl shadow-2xl p-6 md:p-10 relative overflow-hidden flex flex-col items-center text-center border-8 border-white/50"
+          className="w-full max-w-[95vw] md:max-w-2xl max-h-[85dvh] md:max-h-[75vh] md:h-auto min-h-0 bg-[#fafaf9] rounded-2xl shadow-2xl p-4 md:p-6 relative overflow-hidden flex flex-col items-center text-center border-4 border-white/50"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Background decorations */}
@@ -660,28 +669,28 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
           <button
             onClick={() => setIsMessageOpen(false)}
-            className="absolute top-2 right-2 md:top-4 md:right-4 z-[100] bg-white hover:bg-stone-100 text-stone-500 hover:text-stone-800 p-2 md:p-2.5 rounded-full transition-all shadow-lg border border-stone-200 group/close"
+            className="absolute top-2 right-2 md:top-3 md:right-3 z-[100] bg-white hover:bg-stone-100 text-stone-500 hover:text-stone-800 p-1.5 md:p-2 rounded-full transition-all shadow-md border border-stone-200 group/close"
           >
             <X
-              size={20}
-              className="md:w-6 md:h-6 group-hover/close:rotate-90 transition-transform duration-300"
+              size={18}
+              className="md:w-5 md:h-5 group-hover/close:rotate-90 transition-transform duration-300"
             />
           </button>
 
-          {/* Header : lieu bien visible en haut */}
-          <div className="absolute top-4 left-4 right-14 md:left-10 md:right-16 z-[90] pointer-events-none flex flex-col gap-1">
+          {/* Header compact */}
+          <div className="w-full flex flex-col items-center gap-0.5 pointer-events-none z-[90] pb-2">
             {postcard.location && (
-              <p className="text-sm md:text-base font-semibold text-teal-700 flex items-center justify-center gap-1.5">
-                <MapPin size={16} className="text-teal-500 shrink-0" />
+              <p className="text-xs md:text-sm font-semibold text-teal-700 flex items-center justify-center gap-1">
+                <MapPin size={14} className="text-teal-500 shrink-0" />
                 {postcard.location}
               </p>
             )}
-            <p className="text-[10px] md:text-xs font-bold text-stone-400 uppercase tracking-widest">
+            <p className="text-[9px] md:text-[10px] font-bold text-stone-400 uppercase tracking-widest">
               Carte reçue de {postcard.senderName || '…'}
             </p>
           </div>
 
-          <div className="w-24 h-1.5 bg-stone-100 rounded-full mb-4 opacity-50 shrink-0"></div>
+          <div className="w-16 h-1 bg-stone-100 rounded-full mb-3 opacity-50 shrink-0"></div>
 
           <div className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden custom-scrollbar px-4 flex flex-col pt-0">
             <p
@@ -692,36 +701,33 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             </p>
           </div>
 
-          <div className="w-full h-px bg-stone-100 my-4 md:my-6 shrink-0"></div>
+          <div className="w-full h-px bg-stone-100 my-3 shrink-0"></div>
 
-          {/* Mobile : Envoyé de + signature en bas à gauche ; desktop : layout en ligne */}
-          <div className="w-full flex flex-col md:flex-row flex-wrap items-stretch md:items-end justify-between gap-3 md:gap-4 shrink-0 pb-2">
-            <div className="flex flex-col gap-0.5 md:gap-1 order-1 md:order-1 text-left shrink-0">
-              <p className="text-[9px] md:text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+          {/* Footer compact : Envoyé de + Contrôle Taille + Signature alignés */}
+          <div className="w-full flex flex-row items-center justify-between gap-2 shrink-0 pb-1 px-1">
+            <div className="flex flex-col text-left shrink-0">
+              <p className="text-[8px] font-bold text-stone-400 uppercase tracking-widest leading-tight">
                 Envoyé de
               </p>
-              <p className="text-stone-600 font-medium flex items-center gap-1 text-xs md:text-sm uppercase">
-                <MapPin size={12} className="text-teal-600 shrink-0" />
+              <p className="text-stone-600 font-medium flex items-center gap-1 text-[10px] md:text-xs uppercase leading-tight">
+                <MapPin size={10} className="text-teal-600 shrink-0" />
                 {postcard.location}
-              </p>
-              <p className="font-handwriting font-semibold text-teal-700 text-xl md:hidden rotate-[-2deg] mt-1">
-                - {postcard.senderName}
               </p>
             </div>
 
-            {/* Map Button */}
-            <div className="flex items-center gap-3 min-w-0 flex-1 justify-center max-w-xs mx-auto order-3 md:order-2">
+            {/* Size Controls */}
+            <div className="flex items-center gap-1.5 shrink-0 bg-stone-50/50 p-1 rounded-full border border-stone-100">
               <button
                 type="button"
                 onClick={() =>
                   setMessageModalFontSize((s) => Math.max(1, Number((s - 0.1).toFixed(1))))
                 }
-                className="p-1.5 rounded-full hover:bg-stone-200 text-stone-600 transition-colors border border-stone-200 bg-white"
-                title="Diminuer la taille du texte"
+                className="p-1 rounded-full hover:bg-stone-200 text-stone-600 transition-colors bg-white shadow-sm"
+                title="Diminuer la taille"
               >
-                <Minus size={14} />
+                <Minus size={12} />
               </button>
-              <span className="text-[9px] md:text-[10px] font-bold text-stone-400 uppercase tracking-widest whitespace-nowrap px-2">
+              <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">
                 Taille
               </span>
               <button
@@ -729,16 +735,17 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 onClick={() =>
                   setMessageModalFontSize((s) => Math.min(4, Number((s + 0.1).toFixed(1))))
                 }
-                className="p-1.5 rounded-full hover:bg-stone-200 text-stone-600 transition-colors border border-stone-200 bg-white"
-                title="Augmenter la taille du texte"
+                className="p-1 rounded-full hover:bg-stone-200 text-stone-600 transition-colors bg-white shadow-sm"
+                title="Augmenter la taille"
               >
-                <Plus size={14} />
+                <Plus size={12} />
               </button>
-              <span className="ml-2 text-[9px] md:text-[10px] font-medium text-stone-500 tabular-nums w-8 shrink-0 text-left">
+              <span className="text-[9px] font-medium text-stone-500 tabular-nums w-6 text-right">
                 {Math.round(messageModalFontSize * 100)}%
               </span>
             </div>
-            <p className="font-handwriting font-semibold text-teal-700 text-2xl md:text-3xl rotate-[-2deg] shrink-0 text-right order-2 md:order-3 hidden md:block">
+
+            <p className="font-handwriting font-semibold text-teal-700 text-lg md:text-2xl rotate-[-2deg] shrink-0 text-right">
               - {postcard.senderName}
             </p>
           </div>
@@ -1107,11 +1114,22 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
               {/* Message "Cliquer pour retourner" au survol (Front) — masqué en fullscreen, en mode éditeur (pour pouvoir déplacer le texte), ou via prop */}
               {!isFullscreen && !hideFlipHints && !onCaptionPositionChange && (
-                <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
-                  <div className="bg-stone-800/95 backdrop-blur-md px-3 py-2.5 rounded-xl border border-stone-600/50 shadow-xl flex items-center gap-2 transform scale-95 group-hover:scale-100 transition-all duration-300">
-                    <RotateCw size={16} className="text-white shrink-0" strokeWidth={2} />
+                <div
+                  className={cn(
+                    'absolute top-3 right-3 z-30 transition-all duration-500 pointer-events-none',
+                    !hasBeenFlipped
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0',
+                  )}
+                >
+                  <div className="bg-stone-800/95 backdrop-blur-md px-3 py-2.5 rounded-xl border border-stone-600/50 shadow-xl flex items-center gap-2 transform transition-all duration-300">
+                    <RotateCw
+                      size={16}
+                      className={cn('text-white shrink-0', !hasBeenFlipped && 'animate-spin-slow')}
+                      strokeWidth={2}
+                    />
                     <span className="text-white font-bold uppercase tracking-wider text-[9px] sm:text-[10px] md:text-xs whitespace-nowrap">
-                      Retourner la carte postale
+                      {!hasBeenFlipped ? 'Cliquez pour retourner' : 'Retourner la carte'}
                     </span>
                   </div>
                 </div>
@@ -1980,24 +1998,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </div>
               </div>
             </motion.div>
-
-            {/* Hint to flip the card (disappears after first flip) */}
-            <AnimatePresence>
-              {!hasBeenFlipped && !isFlipped && !isPreview && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, x: '-50%' }}
-                  animate={{ opacity: 1, y: 0, x: '-50%' }}
-                  exit={{ opacity: 0, y: 10, x: '-50%' }}
-                  className="absolute -bottom-14 left-1/2 -translate-x-1/2 z-50 bg-teal-600 text-white px-5 py-2.5 rounded-2xl font-black uppercase tracking-wider text-[10px] sm:text-xs shadow-2xl flex items-center gap-3 whitespace-nowrap border-2 border-white/20 select-none cursor-pointer"
-                  onClick={handleFlip}
-                >
-                  <div className="bg-white/20 p-1.5 rounded-lg">
-                    <RotateCw size={14} className="text-white" />
-                  </div>
-                  Cliquez pour retourner
-                </motion.div>
-              )}
-            </AnimatePresence>
           </motion.div>
         </motion.div>
 

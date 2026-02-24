@@ -257,6 +257,8 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
         type: item.type === 'video' ? 'video' : 'image',
         url,
         note: item.note || undefined,
+        location: (item.media as any).location || undefined,
+        exif: (item.media as any).exif || undefined,
       })
     }
   }
@@ -516,20 +518,6 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
           </p>
           <div className="absolute -bottom-3 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-teal-300/40 to-transparent" />
         </motion.div>
-
-        <div className="max-w-2xl mx-auto px-8 py-10 rounded-[2.5rem] bg-white border border-stone-100 shadow-[0_20px_60px_rgba(0,0,0,0.03)] relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-2 h-full bg-teal-500/20" />
-          <TextAnimate
-            by="character"
-            animation="blurIn"
-            duration={3}
-            className="text-stone-600 text-lg sm:text-xl md:text-2xl leading-relaxed font-semibold italic md:px-6"
-          >
-            {`Carte postale envoyée avec amour${
-              frontendPostcard.location?.trim() ? ` de ${frontendPostcard.location.trim()}` : ''
-            }${frontendPostcard.date ? `, le ${frontendPostcard.date}` : ''}.`}
-          </TextAnimate>
-        </div>
       </div>
 
       <motion.section

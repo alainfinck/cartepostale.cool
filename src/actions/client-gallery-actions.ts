@@ -132,6 +132,26 @@ export async function addUserGalleryImage(
       return { success: true, id: existingMedia.docs[0].id as number }
     }
 
+    // Reverse geocode GPS coordinates if available
+    let locationName: string | undefined
+    const gps = exif?.gps
+    if (gps?.latitude && gps?.longitude) {
+      try {
+        const geoRes = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${gps.latitude}&lon=${gps.longitude}&zoom=10`,
+          { headers: { 'User-Agent': 'CartePostaleCool/1.0' } },
+        )
+        const geoData = await geoRes.json()
+        if (geoData.address) {
+          const { city, town, village, county, country } = geoData.address
+          const parts = [city || town || village || county, country].filter(Boolean)
+          if (parts.length) locationName = parts.join(', ')
+        }
+      } catch (err) {
+        console.error('Reverse geocoding failed:', err)
+      }
+    }
+
     const media = await payload.create({
       collection: 'media',
       data: {
@@ -141,6 +161,7 @@ export async function addUserGalleryImage(
         filesize: filesize || 0,
         author: user.id,
         ...(exif ? { exif } : {}),
+        ...(locationName ? { location: locationName } : {}),
       },
     })
 

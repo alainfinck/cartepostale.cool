@@ -45,7 +45,7 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
   }, [])
 
   return (
-    <div className="text-center mb-6 md:mb-8 px-4 mt-12 md:mt-24 pt-12 landscape:mb-2 landscape:mt-2.5 landscape:pt-0 relative z-10 flex flex-col items-center gap-4">
+    <div className="text-center mb-4 md:mb-6 px-4 mt-2 md:mt-4 pt-2 landscape:mb-1 landscape:mt-1 landscape:pt-0 relative z-10 flex flex-col items-center gap-2">
       <TextAnimate
         animation="fadeIn"
         by="character"
@@ -55,7 +55,6 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
       >
         {`Vous avez reçu une carte postale de la part de`}
       </TextAnimate>
-
       <motion.div
         className="flex items-center justify-center text-stone-500"
         initial={{ opacity: 0, y: 30, filter: 'blur(10px)' }}
@@ -65,36 +64,7 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
         <span className="font-handwriting text-teal-600 flex items-center justify-center text-5xl md:text-7xl lg:text-8xl whitespace-nowrap py-2">
           {senderName}
         </span>
-      </motion.div>
-      {/* Bloc lieu / date — pin rouge type Google qui se « plante » */}
-      <motion.div
-        className="mt-4 inline-flex items-center gap-3 px-4 py-3 rounded-2xl border border-stone-200/80 bg-gradient-to-br from-stone-50 to-teal-50/30 shadow-sm"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 2.2, duration: 0.6, ease: easeOut }}
-      >
-        <motion.div
-          className="relative flex items-center justify-center w-10 h-10 shrink-0 origin-bottom"
-          initial={{ y: -56, opacity: 0, rotate: -14, scale: 0.6 }}
-          animate={{ y: 0, opacity: 1, rotate: 0, scale: 1 }}
-          transition={{
-            delay: 2.4,
-            type: 'spring',
-            stiffness: 380,
-            damping: 14,
-            mass: 0.8,
-          }}
-        >
-          <GooglePinIcon className="w-8 h-12 drop-shadow-md" />
-        </motion.div>
-        <p className="font-sans text-base md:text-lg text-stone-600 font-medium">
-          {location
-            ? `Carte postale envoyée depuis ${location}${date ? `, le ${date}` : ''}`
-            : date
-              ? `Carte postale envoyée le ${date}`
-              : 'Carte postale envoyée avec amour'}
-        </p>
-      </motion.div>
+      </motion.div>{' '}
     </div>
   )
 }

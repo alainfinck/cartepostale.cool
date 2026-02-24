@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { Postcard } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
 import MobilePostcardView from '@/components/view/MobilePostcardView'
-import { MapPin, Search, Smartphone, CreditCard, Eye } from 'lucide-react'
+import { MapPin, Search, Smartphone, CreditCard, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { NumberTicker } from '@/components/ui/number-ticker'
 import type { PhotoLocation } from '@/components/ui/PhotoMarker'
@@ -23,18 +23,20 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
   const [isMobileView, setIsMobileView] = useState(false)
   const [isMapOpen, setIsMapOpen] = useState(false)
   const [mapZoom, setMapZoom] = useState(10)
+  const [showMapPhotos, setShowMapPhotos] = useState(true)
 
   const photoLocations: PhotoLocation[] = useMemo(() => {
-    if (!postcard.mediaItems) return []
+    if (!postcard.mediaItems || !Array.isArray(postcard.mediaItems)) return []
     const groups: Record<string, PhotoLocation> = {}
     postcard.mediaItems.forEach((item) => {
-      if (item.exif?.gps) {
-        const key = `${item.exif.gps.latitude.toFixed(4)},${item.exif.gps.longitude.toFixed(4)}`
+      const gps = item.exif?.gps
+      if (gps && typeof gps.latitude === 'number' && typeof gps.longitude === 'number') {
+        const key = `${gps.latitude.toFixed(4)},${gps.longitude.toFixed(4)}`
         if (!groups[key]) {
           groups[key] = {
             id: key,
-            lat: item.exif.gps.latitude,
-            lng: item.exif.gps.longitude,
+            lat: gps.latitude,
+            lng: gps.longitude,
             mediaItems: [],
           }
         }
@@ -46,38 +48,53 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
 
   const hasMap = Boolean(postcard.coords || postcard.location)
   const CARD_WIDTH = 'min(95vw, 960px)'
-  const CARD_HEIGHT = 'min(63.33vw, 640px)' // ratio 3:2 exact : width × 2/3
+  const CARD_HEIGHT = 'min(54vw, 540px)' // Further reduced height for better desktop fit
 
   return (
     <div className="w-full flex flex-col items-center">
-      {/* Toggle button */}
-      <div className="mb-4 flex items-center gap-1 bg-white/80 backdrop-blur-sm rounded-full border border-stone-200 shadow-sm p-1">
-        <button
-          onClick={() => setIsMobileView(false)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
-            !isMobileView
-              ? 'bg-teal-600 text-white shadow-sm'
-              : 'text-stone-500 hover:text-stone-700'
-          }`}
-        >
-          <CreditCard size={13} />
-          <span>Carte</span>
-        </button>
-        <button
-          onClick={() => setIsMobileView(true)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
-            isMobileView
-              ? 'bg-teal-600 text-white shadow-sm'
-              : 'text-stone-500 hover:text-stone-700'
-          }`}
-        >
-          <Smartphone size={13} />
-          <span>Lecture</span>
-        </button>
-        <ARButton
-          postcard={postcard}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all text-stone-500 hover:text-stone-700 hover:bg-stone-50"
-        />
+      {/* Info & Toggle group */}
+      <div className="mb-6 flex flex-col items-center gap-2">
+        {/* Envoyée de... text */}
+        <div className="flex items-center gap-2 text-stone-500 text-xs sm:text-sm font-semibold tracking-wide uppercase px-4 text-center">
+          <MapPin size={14} className="text-teal-500 shrink-0" />
+          <span>
+            {postcard.location
+              ? `Envoyée de ${postcard.location}${postcard.date ? `, le ${postcard.date}` : ''}`
+              : postcard.date
+                ? `Envoyée le ${postcard.date}`
+                : 'Envoyée avec amour'}
+          </span>
+        </div>
+
+        {/* Toggle buttons */}
+        <div className="flex items-center gap-1 bg-white/80 backdrop-blur-sm rounded-full border border-stone-200 shadow-sm p-1">
+          <button
+            onClick={() => setIsMobileView(false)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+              !isMobileView
+                ? 'bg-teal-600 text-white shadow-sm'
+                : 'text-stone-500 hover:text-stone-700'
+            }`}
+          >
+            <CreditCard size={13} />
+            <span>Carte</span>
+          </button>
+          <button
+            onClick={() => setIsMobileView(true)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+              isMobileView
+                ? 'bg-teal-600 text-white shadow-sm'
+                : 'text-stone-500 hover:text-stone-700'
+            }`}
+          >
+            <Smartphone size={13} />
+            <span>Lecture</span>
+          </button>
+          <ARButton
+            postcard={postcard}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all text-stone-500 hover:text-stone-700 hover:bg-stone-50"
+          />
+        </div>
       </div>
 
       {/* Card view + compteur de vues (languette vues en bas à droite sur le côté de la carte) */}
@@ -123,15 +140,33 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
                   {postcard.location || 'Lieu de la carte'}
                 </span>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsMapOpen(true)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-200/70 text-sm font-semibold transition-colors"
-                title="Agrandir la carte"
-              >
-                <Search size={16} />
-                <span>Agrandir</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {photoLocations.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowMapPhotos(!showMapPhotos)}
+                    className={cn(
+                      'flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-semibold transition-colors',
+                      showMapPhotos
+                        ? 'bg-teal-50 text-teal-700 border-teal-200/70'
+                        : 'bg-stone-50 text-stone-500 border-stone-200/70 hover:bg-stone-100',
+                    )}
+                    title={showMapPhotos ? 'Masquer les photos' : 'Afficher les photos'}
+                  >
+                    {showMapPhotos ? <Eye size={16} /> : <EyeOff size={16} />}
+                    <span className="hidden sm:inline">Photos</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsMapOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-200/70 text-sm font-semibold transition-colors"
+                  title="Agrandir la carte"
+                >
+                  <Search size={16} />
+                  <span>Agrandir</span>
+                </button>
+              </div>
             </div>
             <div className="relative w-full aspect-[16/10] min-h-[200px] bg-stone-100">
               {postcard.coords ? (
@@ -140,7 +175,7 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
                     coords={postcard.coords}
                     zoom={mapZoom}
                     onClick={() => setIsMapOpen(true)}
-                    photoLocations={photoLocations}
+                    photoLocations={showMapPhotos ? photoLocations : []}
                   />
                   <div
                     className="absolute top-2 right-2 z-[1100] flex flex-col gap-0.5 shadow-md rounded-md overflow-hidden"

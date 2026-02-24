@@ -154,5 +154,17 @@ export const Users: CollectionConfig = {
         condition: (data) => Boolean(data?.sessions),
       },
     },
+    {
+      name: 'mobileUploadCode',
+      type: 'text',
+      index: true,
+      admin: {
+        description: 'Code court temporaire pour upload mobile (QR Code).',
+      },
+    },
+    {
+      name: 'mobileUploadCodeExpires',
+      type: 'date',
+    },
   ],
 }

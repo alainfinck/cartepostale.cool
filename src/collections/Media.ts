@@ -59,6 +59,13 @@ export const Media: CollectionConfig = {
       ],
     },
     {
+      name: 'location',
+      type: 'text',
+      admin: {
+        description: 'Localisation de la photo (géocodage inversé depuis les données GPS EXIF)',
+      },
+    },
+    {
       name: 'author',
       type: 'relationship',
       relationTo: 'users',

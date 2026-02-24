@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MediaItem } from '@/types'
-import { ChevronLeft, ChevronRight, X, StickyNote } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X, StickyNote, MapPin } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getOptimizedImageUrl, DISPLAY_MAX_WIDTH } from '@/lib/image-processing'
 
@@ -314,6 +314,12 @@ export default function AlbumPolaroidLightbox({
                       style={{ maxHeight: 'calc(85vh - 20px)', maxWidth: 'calc(95vw - 20px)' }}
                     />
                   )}
+                  {current.location && (
+                    <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 px-3 py-1.5 bg-black/60 backdrop-blur-sm text-white rounded-full text-xs font-medium">
+                      <MapPin size={12} className="flex-none" />
+                      <span>{current.location}</span>
+                    </div>
+                  )}
                   {current.note && (
                     <div className="absolute bottom-3 right-3 z-10">
                       <button
@@ -328,19 +334,29 @@ export default function AlbumPolaroidLightbox({
                 </div>
               )}
 
-              {/* FRONT BOTTOM — Lire la note (diapo only) */}
-              {viewMode === 'diapo' && current.note && (
+              {/* FRONT BOTTOM — Localisation + Lire la note (diapo only) */}
+              {viewMode === 'diapo' && (current.note || current.location) && (
                 <div
-                  className="absolute bottom-0 left-0 right-0 h-16 sm:h-20 px-4 sm:px-6 z-10 flex items-center justify-end"
+                  className="absolute bottom-0 left-0 right-0 h-16 sm:h-20 px-4 sm:px-6 z-10 flex items-center justify-between gap-2"
                   style={{ backfaceVisibility: 'hidden' }}
                 >
-                  <button
-                    onClick={() => setIsFlipped(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-full text-xs font-bold transition-all shadow-sm hover:scale-105 active:scale-95"
-                  >
-                    <StickyNote size={14} />
-                    <span>Lire la note</span>
-                  </button>
+                  {current.location ? (
+                    <div className="flex items-center gap-1 text-stone-400 text-xs min-w-0 flex-1">
+                      <MapPin size={11} className="text-teal-500 flex-none" />
+                      <span className="truncate">{current.location}</span>
+                    </div>
+                  ) : (
+                    <div />
+                  )}
+                  {current.note && (
+                    <button
+                      onClick={() => setIsFlipped(true)}
+                      className="flex-none flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-full text-xs font-bold transition-all shadow-sm hover:scale-105 active:scale-95"
+                    >
+                      <StickyNote size={14} />
+                      <span>Lire la note</span>
+                    </button>
+                  )}
                 </div>
               )}
 

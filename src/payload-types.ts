@@ -179,6 +179,11 @@ export interface User {
         ip?: string | null;
       }[]
     | null;
+  /**
+   * Code court temporaire pour upload mobile (QR Code).
+   */
+  mobileUploadCode?: string | null;
+  mobileUploadCodeExpires?: string | null;
   accounts?:
     | {
         provider: string;
@@ -257,6 +262,10 @@ export interface Media {
      */
     cameraModel?: string | null;
   };
+  /**
+   * Localisation de la photo (géocodage inversé depuis les données GPS EXIF)
+   */
+  location?: string | null;
   /**
    * Utilisateur ayant téléchargé ce média (pour sa galerie personnelle)
    */
@@ -914,6 +923,8 @@ export interface UsersSelect<T extends boolean = true> {
         userAgent?: T;
         ip?: T;
       };
+  mobileUploadCode?: T;
+  mobileUploadCodeExpires?: T;
   accounts?:
     | T
     | {
@@ -951,6 +962,7 @@ export interface MediaSelect<T extends boolean = true> {
         cameraMake?: T;
         cameraModel?: T;
       };
+  location?: T;
   author?: T;
   updatedAt?: T;
   createdAt?: T;

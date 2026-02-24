@@ -6,6 +6,8 @@ export interface MediaItem {
   mimeType?: string
   filesize?: number
   note?: string
+  /** Localisation géocodée inversée depuis l'EXIF GPS (ex: "Paris, France") */
+  location?: string
   exif?: {
     gps?: {
       latitude: number

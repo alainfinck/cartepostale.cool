@@ -674,7 +674,7 @@ const ALBUM_TIERS = {
   paid: { photos: 50, videos: 10, price: 2.5 },
 } as const
 
-/** Plans tarifaires : Carte gratuite (48 h) ou À l'unité 2,50 € (prix unique tout compris). */
+/** Plans tarifaires : Carte gratuite (sans limite de temps) ou À l'unité 2,50 € (prix unique tout compris). */
 type PostcardPlanId = 'ephemere' | 'payant'
 
 interface PostcardPlan {
@@ -694,7 +694,7 @@ interface PostcardPlan {
   multiRecipients: number
 }
 
-/** Même plan tarifaire que la page /pricing : Carte gratuite 48 h + À l'unité 2,50 €. */
+/** Même plan tarifaire que la page /pricing : Carte gratuite sans limite de temps + À l'unité 2,50 €. */
 const POSTCARD_PLANS: PostcardPlan[] = [
   {
     id: 'ephemere',
@@ -703,7 +703,7 @@ const POSTCARD_PLANS: PostcardPlan[] = [
     tagline: 'Essayez sans engagement',
     price: 0,
     priceLabel: 'Gratuit',
-    duration: '48h',
+    duration: 'Illimitée',
     features: [
       '1 carte postale (photo, texte)',
       'Modifiable via le lien reçu par email',
@@ -1921,54 +1921,83 @@ export default function EditorPage() {
     frontImageFilter.grayscale !== DEFAULT_FRONT_FILTER.grayscale
   const frontImageFilterCss = buildFrontImageFilterCss(frontImageFilter)
 
-  const currentPostcard: Postcard = useMemo<Postcard>(() => ({
-    id: createdPostcardId || 'editor-preview',
-    frontImage:
-      frontImage || 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg',
-    frontImageCrop: frontImage ? frontImageCrop : undefined,
-    frontImageFilter: frontImage ? frontImageFilter : undefined,
-    frontCaption: frontCaption.trim() || undefined,
-    frontEmoji: frontEmoji.trim() || undefined,
-    frontCaptionPosition,
-    frontCaptionFontFamily,
-    frontCaptionFontSize,
-    frontCaptionColor,
-    frontTextBgOpacity,
-    frontCaptionPreset: frontCaptionPreset !== 'classic' ? frontCaptionPreset : undefined,
-    frontCaptionWidth: frontCaptionWidth,
-    message: message || '',
-    recipientName: recipientName || '',
-    senderName: senderName || '',
-    senderEmail: senderEmail || undefined,
+  const currentPostcard: Postcard = useMemo<Postcard>(
+    () => ({
+      id: createdPostcardId || 'editor-preview',
+      frontImage:
+        frontImage || 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg',
+      frontImageCrop: frontImage ? frontImageCrop : undefined,
+      frontImageFilter: frontImage ? frontImageFilter : undefined,
+      frontCaption: frontCaption.trim() || undefined,
+      frontEmoji: frontEmoji.trim() || undefined,
+      frontCaptionPosition,
+      frontCaptionFontFamily,
+      frontCaptionFontSize,
+      frontCaptionColor,
+      frontTextBgOpacity,
+      frontCaptionPreset: frontCaptionPreset !== 'classic' ? frontCaptionPreset : undefined,
+      frontCaptionWidth: frontCaptionWidth,
+      message: message || '',
+      recipientName: recipientName || '',
+      senderName: senderName || '',
+      senderEmail: senderEmail || undefined,
 
-    location: location || '',
-    stampStyle,
-    stampLabel: stampLabel.trim() || undefined,
-    stampYear: stampYear.trim() || undefined,
-    postmarkText: postmarkText.trim() || undefined,
-    date: new Date().toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
+      location: location || '',
+      stampStyle,
+      stampLabel: stampLabel.trim() || undefined,
+      stampYear: stampYear.trim() || undefined,
+      postmarkText: postmarkText.trim() || undefined,
+      date: new Date().toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      }),
+      isPremium,
+      stickers,
+      emojiStickers: emojiStickers.length > 0 ? emojiStickers : undefined,
+      mediaItems,
+      coords: coords || undefined,
+      scratchCardEnabled,
+      puzzleCardEnabled,
+      puzzleCardDifficulty,
+      backgroundMusic,
+      backgroundMusicTitle,
     }),
-    isPremium,
-    stickers,
-    emojiStickers: emojiStickers.length > 0 ? emojiStickers : undefined,
-    mediaItems,
-    coords: coords || undefined,
-    scratchCardEnabled,
-    puzzleCardEnabled,
-    puzzleCardDifficulty,
-    backgroundMusic,
-    backgroundMusicTitle,
-  }), [
-    createdPostcardId, frontImage, frontImageCrop, frontImageFilter, frontCaption,
-    frontEmoji, frontCaptionPosition, frontCaptionFontFamily, frontCaptionFontSize,
-    frontCaptionColor, frontTextBgOpacity, frontCaptionPreset, frontCaptionWidth, message, recipientName, senderName,
-    senderEmail, location, stampStyle, stampLabel, stampYear, postmarkText,
-    isPremium, stickers, emojiStickers, mediaItems, coords, scratchCardEnabled, puzzleCardEnabled,
-    puzzleCardDifficulty, backgroundMusic, backgroundMusicTitle,
-  ])
+    [
+      createdPostcardId,
+      frontImage,
+      frontImageCrop,
+      frontImageFilter,
+      frontCaption,
+      frontEmoji,
+      frontCaptionPosition,
+      frontCaptionFontFamily,
+      frontCaptionFontSize,
+      frontCaptionColor,
+      frontTextBgOpacity,
+      frontCaptionPreset,
+      frontCaptionWidth,
+      message,
+      recipientName,
+      senderName,
+      senderEmail,
+      location,
+      stampStyle,
+      stampLabel,
+      stampYear,
+      postmarkText,
+      isPremium,
+      stickers,
+      emojiStickers,
+      mediaItems,
+      coords,
+      scratchCardEnabled,
+      puzzleCardEnabled,
+      puzzleCardDifficulty,
+      backgroundMusic,
+      backgroundMusicTitle,
+    ],
+  )
 
   /** Aperçu : à l'étape Rédaction, si un modèle verso est choisi, on affiche le verso avec son style (timbre, message, lieu). */
   const postcardForPreview: Postcard = useMemo<Postcard>(() => {
@@ -3196,7 +3225,19 @@ export default function EditorPage() {
                     </div>
                     {/* Suggestions rapides */}
                     <div className="flex flex-wrap gap-2 mb-3">
-                      {([...EMOJI_SUGGESTIONS, '❤️', '⭐', '🔥', '🎉', '😎', '🌈', '🏖️', '🎨'] as string[]).map((emoji) => (
+                      {(
+                        [
+                          ...EMOJI_SUGGESTIONS,
+                          '❤️',
+                          '⭐',
+                          '🔥',
+                          '🎉',
+                          '😎',
+                          '🌈',
+                          '🏖️',
+                          '🎨',
+                        ] as string[]
+                      ).map((emoji) => (
                         <button
                           key={emoji}
                           type="button"
@@ -3220,13 +3261,20 @@ export default function EditorPage() {
                     {/* Liste des emojis placés */}
                     {emojiStickers.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-2 p-2 bg-stone-50 rounded-xl border border-stone-200">
-                        <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider w-full mb-1">Sur la carte :</span>
+                        <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider w-full mb-1">
+                          Sur la carte :
+                        </span>
                         {emojiStickers.map((es) => (
-                          <div key={es.id} className="flex items-center gap-1 bg-white border border-stone-200 rounded-lg px-2 py-1">
+                          <div
+                            key={es.id}
+                            className="flex items-center gap-1 bg-white border border-stone-200 rounded-lg px-2 py-1"
+                          >
                             <span className="text-lg">{es.emoji}</span>
                             <button
                               type="button"
-                              onClick={() => setEmojiStickers((prev) => prev.filter((s) => s.id !== es.id))}
+                              onClick={() =>
+                                setEmojiStickers((prev) => prev.filter((s) => s.id !== es.id))
+                              }
                               className="text-stone-300 hover:text-red-500 transition-colors"
                               title="Retirer"
                             >
@@ -5170,7 +5218,7 @@ export default function EditorPage() {
             {!shareUrl && (
               <div className="mt-4 lg:mt-8 lg:hidden">
                 {/* Card Preview — masqué quand l'aperçu fixe en bas est actif */}
-                <div ref={previewSectionRef} className={stickyPreview ? "hidden" : ""}>
+                <div ref={previewSectionRef} className={stickyPreview ? 'hidden' : ''}>
                   <div className="flex items-center gap-2 mb-3">
                     <Eye size={14} className="text-teal-500" />
                     <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
@@ -5251,7 +5299,6 @@ export default function EditorPage() {
         </div>
       </div>
 
-
       {/* Modal plein écran : voir comme le destinataire */}
       {showFullscreen && (
         <div
@@ -5331,12 +5378,21 @@ export default function EditorPage() {
 
       {/* Sticky preview panel — mobile/tablet */}
       {stickyPreview && !shareUrl && currentStep !== 'preview' && (
-        <div className="fixed bottom-0 inset-x-0 z-[46] lg:hidden bg-stone-900 shadow-2xl shadow-black/60" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        <div
+          className="fixed bottom-0 inset-x-0 z-[46] lg:hidden bg-stone-900 shadow-2xl shadow-black/60"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        >
           {/* Barre du haut */}
           <div className="flex items-center justify-between px-3 py-1.5">
             <div className="flex items-center gap-1.5">
-              <RefreshCw size={10} className="text-teal-400 animate-spin" style={{ animationDuration: '3s' }} />
-              <span className="text-[11px] font-bold text-white/50 uppercase tracking-wider">Aperçu en direct</span>
+              <RefreshCw
+                size={10}
+                className="text-teal-400 animate-spin"
+                style={{ animationDuration: '3s' }}
+              />
+              <span className="text-[11px] font-bold text-white/50 uppercase tracking-wider">
+                Aperçu en direct
+              </span>
             </div>
             <button
               type="button"
@@ -5707,7 +5763,9 @@ export default function EditorPage() {
                 <span className="inline-block w-3 h-3 rounded-full bg-green-500" />
                 <h4 className="font-bold text-stone-800">Carte gratuite</h4>
               </div>
-              <p className="text-sm text-stone-600 mb-1">Valable 48 h. Essayez sans engagement.</p>
+              <p className="text-sm text-stone-600 mb-1">
+                Sans limite de temps. Essayez sans engagement.
+              </p>
               <ul className="text-xs text-stone-600 space-y-1 list-disc list-inside">
                 <li>1 carte postale (photo, texte)</li>
                 <li>Modifiable via le lien reçu par email</li>
@@ -5729,7 +5787,7 @@ export default function EditorPage() {
                 <li>Photos, vidéos, message vocal : même tarif</li>
                 <li>Programmation (ex. anniversaire à 8h00)</li>
                 <li>Modifiable depuis votre compte</li>
-                <li>Carte gratuite 48 h modifiable via le lien reçu par email</li>
+                <li>Carte gratuite modifiable via le lien reçu par email</li>
               </ul>
             </div>
           </div>

@@ -23,15 +23,20 @@ function MapBoundsController({ postcards }: { postcards: Postcard[] }) {
   const map = useMap()
   const coords = useMemo(
     () => postcards.filter((p) => p.coords?.lat != null && p.coords?.lng != null),
-    [postcards]
+    [postcards],
   )
 
   React.useEffect(() => {
     if (coords.length === 0) return
     const bounds = L.latLngBounds(
-      coords.map((p) => [p.coords!.lat!, p.coords!.lng!] as [number, number])
+      coords.map((p) => [p.coords!.lat!, p.coords!.lng!] as [number, number]),
     )
-    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 10 })
+    map.fitBounds(bounds, {
+      padding: [40, 40],
+      maxZoom: 10,
+      animate: true,
+      duration: 3.5, // Slow zoom for world context
+    })
   }, [coords, map])
 
   return null
@@ -40,7 +45,7 @@ function MapBoundsController({ postcards }: { postcards: Postcard[] }) {
 export function GalleryMap({ postcards }: { postcards: Postcard[] }) {
   const withCoords = useMemo(
     () => postcards.filter((p) => p.coords?.lat != null && p.coords?.lng != null),
-    [postcards]
+    [postcards],
   )
 
   const center = useMemo((): [number, number] => {
@@ -50,7 +55,7 @@ export function GalleryMap({ postcards }: { postcards: Postcard[] }) {
         lat: acc.lat + (p.coords?.lat ?? 0),
         lng: acc.lng + (p.coords?.lng ?? 0),
       }),
-      { lat: 0, lng: 0 }
+      { lat: 0, lng: 0 },
     )
     return [sum.lat / withCoords.length, sum.lng / withCoords.length]
   }, [withCoords])
@@ -65,12 +70,7 @@ export function GalleryMap({ postcards }: { postcards: Postcard[] }) {
 
   return (
     <div className="h-[400px] rounded-2xl overflow-hidden border border-stone-200 shadow-md">
-      <MapContainer
-        center={center}
-        zoom={2}
-        className="h-full w-full"
-        scrollWheelZoom
-      >
+      <MapContainer center={center} zoom={2} className="h-full w-full" scrollWheelZoom>
         <LeafletFix />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -78,16 +78,11 @@ export function GalleryMap({ postcards }: { postcards: Postcard[] }) {
         />
         <MapBoundsController postcards={withCoords} />
         {withCoords.map((card) => (
-          <Marker
-            key={card.id}
-            position={[card.coords!.lat!, card.coords!.lng!]}
-          >
+          <Marker key={card.id} position={[card.coords!.lat!, card.coords!.lng!]}>
             <Popup>
               <div className="min-w-[180px]">
                 <div className="font-semibold text-stone-800">{card.location}</div>
-                <div className="text-xs text-stone-500 mt-0.5">
-                  par {card.senderName}
-                </div>
+                <div className="text-xs text-stone-500 mt-0.5">par {card.senderName}</div>
                 {card.frontImage && (
                   <img
                     src={getOptimizedImageUrl(card.frontImage, { width: 200 })}

@@ -28,13 +28,17 @@ function getFrontImageUrl(postcard: PayloadPostcard): string {
 
 export default function DevClient({ postcards }: Props) {
   const [copiedId, setCopiedId] = useState<number | null>(null)
+  const [origin, setOrigin] = useState('https://cartepostale.cool')
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin)
+    }
+  }, [])
 
   const publishedPostcards = postcards.filter((p) => p.status === 'published')
 
   const handleCopy = (id: number, publicId: string) => {
-    // Assuming the app runs on a domain known as NEXT_PUBLIC_APP_URL, or window.location.origin
-    const origin =
-      typeof window !== 'undefined' ? window.location.origin : 'https://cartepostale.cool'
     const iframeCode = `<iframe src="${origin}/carte/${publicId}" width="100%" height="600" style="border:none; border-radius:12px; overflow:hidden;" title="Carte Postale ${publicId}"></iframe>`
 
     navigator.clipboard.writeText(iframeCode)
@@ -57,8 +61,6 @@ export default function DevClient({ postcards }: Props) {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {publishedPostcards.map((postcard) => {
-        const origin =
-          typeof window !== 'undefined' ? window.location.origin : 'https://cartepostale.cool'
         const iframeCode = `<iframe src="${origin}/carte/${postcard.publicId}" width="100%" height="600" style="border:none; border-radius:12px; overflow:hidden;" title="Carte Postale ${postcard.publicId}"></iframe>`
 
         return (

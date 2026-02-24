@@ -1,5 +1,5 @@
 import React from 'react'
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { cn } from '@/lib/utils'
 import PhotoMarker, { PhotoLocation } from '@/components/ui/PhotoMarker'
@@ -15,16 +15,74 @@ interface MiniMapProps {
 
 function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap()
+  const [container, setContainer] = React.useState<HTMLElement | null>(null)
+  const [hasAnimated, setHasAnimated] = React.useState(false)
 
   React.useEffect(() => {
-    // Leaflet trick to fix "grey map" when container size changes/initializes
-    const timer = setTimeout(() => {
-      map.invalidateSize()
-    }, 100)
-    return () => clearTimeout(timer)
+    const el = map.getContainer()
+    setContainer(el)
   }, [map])
 
-  map.setView(center, zoom)
+  // Initial animation: world to destination by steps (paliers)
+  React.useEffect(() => {
+    if (!hasAnimated && map) {
+      // First, center the view on the target but keep the world zoom level (no animation for this jump)
+      map.setView(center, 1, { animate: false })
+
+      let currentStepZoom = 1
+      const targetZoom = zoom
+      let timer: NodeJS.Timeout
+
+      const step = () => {
+        if (currentStepZoom < targetZoom) {
+          currentStepZoom += 1
+          // Increment zoom level
+          map.setZoom(currentStepZoom, { animate: true })
+          // Wait 600ms before next step to create a distinct "step" effect
+          timer = setTimeout(step, 600)
+        } else {
+          setHasAnimated(true)
+        }
+      }
+
+      // Start the sequence after a slight delay
+      timer = setTimeout(step, 800)
+
+      return () => clearTimeout(timer)
+    }
+  }, [map, center, zoom, hasAnimated])
+
+  // Handle standard zoom/center changes (e.g. from buttons) AFTER initial animation
+  React.useEffect(() => {
+    if (hasAnimated) {
+      map.setView(center, zoom)
+    }
+  }, [center, zoom, map, hasAnimated])
+
+  React.useEffect(() => {
+    if (!container) return
+
+    const resizeObserver = new ResizeObserver(() => {
+      // Small timeout to allow the browser to finish layout before Leaflet recalculates
+      const timer = setTimeout(() => {
+        map.invalidateSize()
+      }, 200)
+      return () => clearTimeout(timer)
+    })
+
+    resizeObserver.observe(container)
+
+    // Initial fix for hidden/animated containers
+    const initialTimer = setTimeout(() => {
+      map.invalidateSize()
+    }, 500)
+
+    return () => {
+      resizeObserver.disconnect()
+      clearTimeout(initialTimer)
+    }
+  }, [container, map])
+
   return null
 }
 
@@ -42,8 +100,8 @@ const MiniMap: React.FC<MiniMapProps> = ({
     <div className={cn('relative w-full h-full z-0', className)} onClick={onClick}>
       {/* ... comments ... */}
       <MapContainer
-        center={position}
-        zoom={zoom}
+        center={[20, 0]}
+        zoom={1}
         zoomControl={false}
         scrollWheelZoom={false}
         dragging={false}
@@ -58,7 +116,6 @@ const MiniMap: React.FC<MiniMapProps> = ({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <Marker position={position} />
 
         {photoLocations.map((loc) => (
           <PhotoMarker

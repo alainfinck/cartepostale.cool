@@ -51,7 +51,7 @@ const dropdownPro = [
 ]
 
 const dropdownTarifs = [
-  { href: '/pricing', icon: Gift, label: 'Carte gratuite', price: '48 h', desc: '' },
+  { href: '/pricing', icon: Gift, label: 'Carte gratuite', price: 'Illimitée', desc: '' },
   { href: '/pricing', icon: Mail, label: "À l'unité", price: '2,50 €', desc: '' },
   { href: '/pricing', icon: Zap, label: 'Pro & Agence', price: 'Devis', desc: '' },
 ]

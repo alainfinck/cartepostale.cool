@@ -26,7 +26,12 @@ L.Marker.prototype.options.icon = DefaultIcon
 
 function getFrontImageUrl(postcard: Postcard): string {
   if (postcard.frontImageURL) return postcard.frontImageURL
-  if (postcard.frontImage && typeof postcard.frontImage === 'object' && 'url' in postcard.frontImage && postcard.frontImage.url) {
+  if (
+    postcard.frontImage &&
+    typeof postcard.frontImage === 'object' &&
+    'url' in postcard.frontImage &&
+    postcard.frontImage.url
+  ) {
     return postcard.frontImage.url
   }
   return 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'
@@ -37,8 +42,8 @@ function MapFocusController({ focusedCoords }: { focusedCoords?: { lat: number; 
 
   React.useEffect(() => {
     if (!focusedCoords) return
-    map.flyTo([focusedCoords.lat, focusedCoords.lng], Math.max(map.getZoom(), 5), {
-      duration: 0.7,
+    map.flyTo([focusedCoords.lat, focusedCoords.lng], Math.max(map.getZoom(), 8), {
+      duration: 2.5, // Slower, more cinematic zoom
     })
   }, [focusedCoords, map])
 
@@ -52,9 +57,9 @@ export default function WorldMapClient({ initialData }: { initialData: Postcards
   const postcardsWithCoords = useMemo(
     () =>
       initialData.docs.filter(
-        (postcard) => postcard.coords?.lat != null && postcard.coords?.lng != null
+        (postcard) => postcard.coords?.lat != null && postcard.coords?.lng != null,
       ),
-    [initialData.docs]
+    [initialData.docs],
   )
 
   const filteredPostcards = useMemo(() => {
@@ -64,7 +69,7 @@ export default function WorldMapClient({ initialData }: { initialData: Postcards
 
   const focusedPostcard = useMemo(
     () => filteredPostcards.find((postcard) => postcard.id === focusedPostcardId),
-    [filteredPostcards, focusedPostcardId]
+    [filteredPostcards, focusedPostcardId],
   )
 
   const focusedCoords = useMemo<{ lat: number; lng: number } | undefined>(() => {
@@ -82,7 +87,7 @@ export default function WorldMapClient({ initialData }: { initialData: Postcards
           lng: acc.lng + (postcard.coords?.lng ?? 0),
         }
       },
-      { lat: 0, lng: 0 }
+      { lat: 0, lng: 0 },
     )
     return [sum.lat / filteredPostcards.length, sum.lng / filteredPostcards.length]
   }, [filteredPostcards])
@@ -101,7 +106,9 @@ export default function WorldMapClient({ initialData }: { initialData: Postcards
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="rounded-xl border border-border/50 bg-card/50 p-4">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Cartes geolocalisees</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            Cartes geolocalisees
+          </p>
           <p className="text-2xl font-bold text-foreground mt-1">{postcardsWithCoords.length}</p>
         </div>
         <div className="rounded-xl border border-border/50 bg-card/50 p-4">
@@ -110,7 +117,9 @@ export default function WorldMapClient({ initialData }: { initialData: Postcards
         </div>
         <div className="rounded-xl border border-border/50 bg-card/50 p-4">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Sans coordonnees</p>
-          <p className="text-2xl font-bold text-foreground mt-1">{Math.max(0, initialData.totalDocs - postcardsWithCoords.length)}</p>
+          <p className="text-2xl font-bold text-foreground mt-1">
+            {Math.max(0, initialData.totalDocs - postcardsWithCoords.length)}
+          </p>
         </div>
       </div>
 
@@ -123,7 +132,7 @@ export default function WorldMapClient({ initialData }: { initialData: Postcards
             onClick={() => setStatusFilter(status)}
             className={cn(
               'px-3 text-xs h-8',
-              statusFilter === status && 'bg-background shadow-sm hover:bg-background'
+              statusFilter === status && 'bg-background shadow-sm hover:bg-background',
             )}
           >
             {status === 'all'
@@ -167,7 +176,11 @@ export default function WorldMapClient({ initialData }: { initialData: Postcards
                       <MapPin size={12} />
                       {postcard.location || 'Lieu non precise'}
                     </div>
-                    <Link href={`/carte/${postcard.publicId}`} target="_blank" className="inline-flex">
+                    <Link
+                      href={`/carte/${postcard.publicId}`}
+                      target="_blank"
+                      className="inline-flex"
+                    >
                       <Button size="sm" className="h-8 text-xs">
                         Voir la carte
                       </Button>
@@ -186,9 +199,7 @@ export default function WorldMapClient({ initialData }: { initialData: Postcards
           Cartes affichees ({filteredPostcards.length})
         </p>
         {filteredPostcards.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Aucune carte geolocalisee pour ce filtre.
-          </p>
+          <p className="text-sm text-muted-foreground">Aucune carte geolocalisee pour ce filtre.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {filteredPostcards.map((postcard) => (
@@ -200,7 +211,7 @@ export default function WorldMapClient({ initialData }: { initialData: Postcards
                   'flex items-center gap-3 rounded-lg border p-2 text-left transition-colors',
                   focusedPostcardId === postcard.id
                     ? 'border-teal-300 bg-teal-50/70'
-                    : 'border-border/40 bg-background hover:bg-muted/40'
+                    : 'border-border/40 bg-background hover:bg-muted/40',
                 )}
               >
                 <img
@@ -209,8 +220,12 @@ export default function WorldMapClient({ initialData }: { initialData: Postcards
                   className="w-14 h-10 object-cover rounded-md border border-stone-100 shrink-0"
                 />
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{postcard.recipientName || 'Destinataire'}</p>
-                  <p className="text-xs text-muted-foreground truncate">{postcard.location || 'Lieu non precise'}</p>
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {postcard.recipientName || 'Destinataire'}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {postcard.location || 'Lieu non precise'}
+                  </p>
                 </div>
               </button>
             ))}

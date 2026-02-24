@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Copy, ExternalLink, Check, FileText, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,7 +19,8 @@ const landingPages: LandingPage[] = [
   {
     id: 'agences',
     title: 'Landing Agences & Pro',
-    description: 'Page de conversion pour les agences : avantages pros, marque blanche, photothèque, stats et tarifs dédiés agences.',
+    description:
+      'Page de conversion pour les agences : avantages pros, marque blanche, photothèque, stats et tarifs dédiés agences.',
     path: '/agences',
     icon: Building2,
     audience: 'Agences, offices de tourisme, réseaux d’hébergement',
@@ -27,7 +28,8 @@ const landingPages: LandingPage[] = [
   {
     id: 'business',
     title: 'Page Business (générale)',
-    description: 'Présentation complète du service marque blanche pour tous types de professionnels.',
+    description:
+      'Présentation complète du service marque blanche pour tous types de professionnels.',
     path: '/business',
     icon: FileText,
     audience: 'Entreprises, destinations, établissements',
@@ -36,11 +38,18 @@ const landingPages: LandingPage[] = [
 
 export function ManagerLandingPagesClient() {
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [origin, setOrigin] = useState('')
 
-  const getFullUrl = useCallback((path: string) => {
-    if (typeof window === 'undefined') return ''
-    return `${window.location.origin}${path}`
+  useEffect(() => {
+    setOrigin(window.location.origin)
   }, [])
+
+  const getFullUrl = useCallback(
+    (path: string) => {
+      return `${origin}${path}`
+    },
+    [origin],
+  )
 
   const copyLink = useCallback(
     (page: LandingPage) => {
@@ -50,7 +59,7 @@ export function ManagerLandingPagesClient() {
         setTimeout(() => setCopiedId(null), 2000)
       })
     },
-    [getFullUrl]
+    [getFullUrl],
   )
 
   return (
@@ -58,7 +67,8 @@ export function ManagerLandingPagesClient() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Pages de conversion</h1>
         <p className="text-muted-foreground mt-1">
-          Liens des landing pages à envoyer à vos clients (agences, prospects) pour présenter le service et les tarifs.
+          Liens des landing pages à envoyer à vos clients (agences, prospects) pour présenter le
+          service et les tarifs.
         </p>
       </div>
 
@@ -91,9 +101,19 @@ export function ManagerLandingPagesClient() {
                     onClick={() => copyLink(page)}
                     className="shrink-0"
                   >
-                    {isCopied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                    {isCopied ? (
+                      <Check className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
                   </Button>
-                  <Button variant="outline" size="icon" title="Ouvrir dans un nouvel onglet" asChild className="shrink-0">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    title="Ouvrir dans un nouvel onglet"
+                    asChild
+                    className="shrink-0"
+                  >
                     <a href={page.path} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4" />
                     </a>
@@ -118,7 +138,9 @@ export function ManagerLandingPagesClient() {
       <Card className="border-dashed bg-muted/30">
         <CardContent className="pt-6">
           <p className="text-sm text-muted-foreground">
-            <strong>Conseil :</strong> Envoyez le lien « Landing Agences » à vos prospects agences par email ou incluez-le dans vos propositions commerciales. La page présente le service, les avantages pour les pros et les tarifs dédiés marque blanche.
+            <strong>Conseil :</strong> Envoyez le lien « Landing Agences » à vos prospects agences
+            par email ou incluez-le dans vos propositions commerciales. La page présente le service,
+            les avantages pour les pros et les tarifs dédiés marque blanche.
           </p>
         </CardContent>
       </Card>

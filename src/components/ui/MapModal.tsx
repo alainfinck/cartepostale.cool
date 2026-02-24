@@ -21,14 +21,71 @@ interface MapModalProps {
 
 function MapEffects({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap()
+  const [container, setContainer] = useState<HTMLElement | null>(null)
+  const [hasAnimated, setHasAnimated] = useState(false)
+
   useEffect(() => {
-    map.setView(center, zoom)
+    const el = map.getContainer()
+    setContainer(el)
+  }, [map])
+
+  // Initial animation: world to destination by steps (paliers)
+  useEffect(() => {
+    if (!hasAnimated && map) {
+      // First, center the view on the target but keep the world zoom level
+      map.setView(center, 2, { animate: false })
+
+      let currentStepZoom = 2
+      const targetZoom = zoom
+      let timer: NodeJS.Timeout
+
+      const step = () => {
+        if (currentStepZoom < targetZoom) {
+          currentStepZoom += 1
+          map.setZoom(currentStepZoom, { animate: true })
+          timer = setTimeout(step, 600)
+        } else {
+          setHasAnimated(true)
+        }
+      }
+
+      // Slightly longer delay for modal transition to finish
+      timer = setTimeout(step, 1000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [map, center, zoom, hasAnimated])
+
+  // Handle standard zoom/center changes AFTER initial animation
+  useEffect(() => {
+    if (hasAnimated) {
+      map.setView(center, zoom)
+    }
+  }, [center, zoom, map, hasAnimated])
+
+  useEffect(() => {
+    if (!container) return
+
+    const resizeObserver = new ResizeObserver(() => {
+      const timer = setTimeout(() => {
+        map.invalidateSize()
+      }, 200)
+      return () => clearTimeout(timer)
+    })
+
+    resizeObserver.observe(container)
+
     // Leaflet fix for grey map in hidden/animated containers
     const timer = setTimeout(() => {
       map.invalidateSize()
-    }, 200)
-    return () => clearTimeout(timer)
-  }, [center, zoom, map])
+    }, 500)
+
+    return () => {
+      resizeObserver.disconnect()
+      clearTimeout(timer)
+    }
+  }, [container, map])
+
   return null
 }
 
@@ -126,19 +183,32 @@ const MapModal: React.FC<MapModalProps> = ({
         </button>
 
         {photoLocations.length > 0 && (
-          <button
-            onClick={() => setShowPhotos(!showPhotos)}
-            className={cn(
-              'absolute top-4 left-16 bg-white/90 hover:bg-white text-stone-600 p-2.5 rounded-full transition-all z-[1000] shadow-xl border-2 border-stone-100 flex items-center gap-2 font-semibold text-xs uppercase tracking-wide',
-              showPhotos ? 'text-teal-600' : 'text-stone-400',
-            )}
-            title={showPhotos ? 'Masquer les photos' : 'Afficher les photos'}
-          >
-            {showPhotos ? <Eye size={20} /> : <EyeOff size={20} />}
-            <span className="hidden sm:inline">
-              {showPhotos ? 'Photos visibles' : 'Photos masquées'} ({photoLocations.length})
-            </span>
-          </button>
+          <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2">
+            <button
+              onClick={() => setShowPhotos(!showPhotos)}
+              className={cn(
+                'bg-white/95 hover:bg-white p-3 rounded-2xl transition-all shadow-xl border-2 flex items-center gap-3 font-bold text-sm min-w-[140px]',
+                showPhotos
+                  ? 'text-teal-600 border-teal-200 shadow-teal-100/50'
+                  : 'text-stone-500 border-stone-100 shadow-stone-100/50',
+              )}
+            >
+              <div
+                className={cn(
+                  'w-10 h-5 rounded-full relative transition-colors duration-200',
+                  showPhotos ? 'bg-teal-500' : 'bg-stone-200',
+                )}
+              >
+                <div
+                  className={cn(
+                    'absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-200',
+                    showPhotos ? 'left-6' : 'left-1',
+                  )}
+                />
+              </div>
+              <span className="whitespace-nowrap">Galerie Photos</span>
+            </button>
+          </div>
         )}
 
         {isLoading ? (
@@ -161,13 +231,13 @@ const MapModal: React.FC<MapModalProps> = ({
         ) : (
           <div className="flex-1 min-h-0 w-full">
             <MapContainer
-              center={position}
-              zoom={13}
+              center={[20, 0]}
+              zoom={2}
               style={{ width: '100%', height: '100%' }}
               className="z-0"
             >
               <LeafletFix />
-              <MapEffects center={position} zoom={13} />
+              <MapEffects center={position} zoom={7} />
 
               <LayersControl position="topleft">
                 <LayersControl.BaseLayer checked name="Plan (OSM)">
