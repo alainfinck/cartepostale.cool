@@ -11,10 +11,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Postcard } from '@/payload-types'
-import { Camera, Loader2, Save, X, Images } from 'lucide-react'
+import { Camera, Loader2, Save, X, Images, ImageIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fileToProcessedDataUrl, dataUrlToBlob, getOptimizedImageUrl } from '@/lib/image-processing'
 import { UpdatePostcardFn } from './EditPostcardDialog'
+import UserGalleryModal from '@/components/editor/UserGalleryModal'
+import type { UserMediaItem } from '@/actions/client-gallery-actions'
 
 function getItemUrl(item: any): string {
   if (item.tempUrl) return item.tempUrl
@@ -48,6 +50,7 @@ export default function AlbumDialog({
   const [isPending, startTransition] = useTransition()
   const [mediaItems, setMediaItems] = useState<any[]>([])
   const [isUploadingAlbum, setIsUploadingAlbum] = useState(false)
+  const [galleryPickerOpen, setGalleryPickerOpen] = useState(false)
 
   useEffect(() => {
     if (postcard) {
@@ -107,6 +110,15 @@ export default function AlbumDialog({
 
     setMediaItems((prev) => [...prev, ...newItems])
     setIsUploadingAlbum(false)
+  }
+
+  const handleAddFromGallery = (items: UserMediaItem[]) => {
+    const newItems = items.map((item) => ({
+      media: { id: item.id, url: item.url },
+      type: 'image' as const,
+    }))
+    setMediaItems((prev) => [...prev, ...newItems])
+    setGalleryPickerOpen(false)
   }
 
   const handleRemove = (idx: number) => {
@@ -207,8 +219,27 @@ export default function AlbumDialog({
                 disabled={isUploadingAlbum}
               />
             </label>
+
+            <button
+              type="button"
+              onClick={() => setGalleryPickerOpen(true)}
+              className={cn(
+                'flex flex-col items-center justify-center aspect-square rounded-lg border-2 border-dashed border-teal-200 hover:border-teal-500/50 hover:bg-teal-50/50 hover:text-teal-600 transition-colors cursor-pointer bg-muted/20 text-muted-foreground',
+              )}
+            >
+              <ImageIcon size={20} className="text-teal-600" />
+              <span className="text-[10px] mt-1 font-medium select-none">Galerie</span>
+            </button>
           </div>
         </div>
+
+        <UserGalleryModal
+          open={galleryPickerOpen}
+          onOpenChange={setGalleryPickerOpen}
+          onSelect={() => {}}
+          onSelectMediaItems={handleAddFromGallery}
+          multiple
+        />
 
         <DialogFooter className="gap-2 sm:gap-0">
           <Button

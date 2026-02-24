@@ -16,6 +16,8 @@ interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSelect: (url: string | string[]) => void
+  /** When set, multiple selection calls this with full media items (id, url, alt) instead of onSelect(urls). */
+  onSelectMediaItems?: (items: UserMediaItem[]) => void
   multiple?: boolean
 }
 
@@ -23,6 +25,7 @@ export default function UserGalleryModal({
   open,
   onOpenChange,
   onSelect,
+  onSelectMediaItems,
   multiple = false,
 }: Props) {
   const [items, setItems] = useState<UserMediaItem[]>([])
@@ -57,10 +60,14 @@ export default function UserGalleryModal({
   }
 
   const handleConfirm = () => {
-    if (selectedUrls.size > 0) {
+    if (selectedUrls.size === 0) return
+    if (onSelectMediaItems) {
+      const selectedItems = items.filter((item) => selectedUrls.has(item.url))
+      onSelectMediaItems(selectedItems)
+    } else {
       onSelect(Array.from(selectedUrls))
-      onOpenChange(false)
     }
+    onOpenChange(false)
   }
 
   return (
