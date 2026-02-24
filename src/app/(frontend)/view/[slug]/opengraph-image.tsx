@@ -1,140 +1,112 @@
 import { ImageResponse } from 'next/og'
 import { getPostcardByPublicId } from '@/actions/postcard-actions'
+import { getOptimizedImageUrl } from '@/lib/image-processing'
 
 export const alt = 'Carte postale'
 export const size = {
-    width: 1200,
-    height: 630,
+  width: 1200,
+  height: 630,
 }
 
 export const contentType = 'image/png'
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
-    const { slug } = await params
-    const postcard = await getPostcardByPublicId(slug)
+  const { slug } = await params
+  const postcard = await getPostcardByPublicId(slug)
 
-    if (!postcard) {
-        return new ImageResponse(
-            (
-                <div style={{ display: 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', background: '#fdfbf7' }}>
-                    <h1>Carte postale introuvable</h1>
-                </div>
-            )
-        )
-    }
-
-    const sender = postcard.senderName || 'Un ami'
-    const frontMedia = typeof postcard.frontImage === 'object' ? postcard.frontImage : null
-    let imageUrl = postcard.frontImageURL || (frontMedia && (frontMedia.url || (frontMedia.filename ? `/media/${encodeURIComponent(frontMedia.filename)}` : ''))) || ''
-    // Normalize legacy API URLs to static /media/ URLs
-    if (imageUrl.startsWith('/api/media/file/')) {
-        imageUrl = `/media/${imageUrl.replace(/^\/api\/media\/file\//, '')}`
-    }
-
-    if (!imageUrl) {
-        // Fallback image
-        imageUrl = '/media/enveloppe-social2.jpg'
-    } else if (imageUrl.startsWith('/')) {
-        // Correct URL for OG Image generation which happens on server side
-        imageUrl = `https://cartepostale.cool${imageUrl}`
-    }
-
+  if (!postcard) {
     return new ImageResponse(
-        (
-            <div
-                style={{
-                    display: 'flex',
-                    height: '100%',
-                    width: '100%',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: '#fdfbf7',
-                    padding: '40px',
-                }}
-            >
-                <div
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: 'white',
-                        borderRadius: '24px',
-                        overflow: 'hidden',
-                        boxShadow: '0 20px 50px rgba(0,0,0,0.15)',
-                        border: '12px solid white',
-                        position: 'relative',
-                    }}
-                >
-                    {/* Background Image */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src={imageUrl}
-                        alt="Postcard Front"
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                        }}
-                    />
-
-                    {/* Overlay for text readability */}
-                    <div
-                        style={{
-                            position: 'absolute',
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            height: '50%',
-                            background: 'linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.4), transparent)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'flex-end',
-                            padding: '60px 40px',
-                        }}
-                    >
-                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                            <div style={{ width: '40px', height: '3px', backgroundColor: '#fbbf24', marginRight: '16px' }}></div>
-                            <span style={{ color: 'white', fontSize: '24px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '4px' }}>
-                                Carte Postale
-                            </span>
-                        </div>
-                        <h1 style={{ color: 'white', fontSize: '64px', margin: 0, fontWeight: 800, lineHeight: 1.1 }}>
-                            Vous avez reçu une carte de <span style={{ color: '#2dd4bf' }}>{sender}</span> !
-                        </h1>
-                    </div>
-
-                    {/* Stamp lookalike in corner */}
-                    <div
-                        style={{
-                            position: 'absolute',
-                            top: '40px',
-                            right: '40px',
-                            width: '120px',
-                            height: '150px',
-                            backgroundColor: 'white',
-                            padding: '8px',
-                            borderRadius: '6px',
-                            boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            border: '2px dashed #d1d5db',
-                        }}
-                    >
-                        <div style={{ width: '100%', height: '80%', backgroundColor: '#f1f5f9', borderRadius: '4px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ fontSize: '32px' }}>📩</div>
-                        </div>
-                        <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#94a3b8' }}>2024</span>
-                    </div>
-                </div>
-            </div>
-        ),
-        {
-            ...size,
-        }
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          height: '100%',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#fdfbf7',
+        }}
+      >
+        <h1>Carte postale introuvable</h1>
+      </div>,
     )
+  }
+
+  const frontMedia = typeof postcard.frontImage === 'object' ? postcard.frontImage : null
+  let imageUrl =
+    postcard.frontImageURL ||
+    (frontMedia &&
+      (frontMedia.url ||
+        (frontMedia.filename ? `/media/${encodeURIComponent(frontMedia.filename)}` : ''))) ||
+    ''
+
+  // Normalize legacy API URLs to static /media/ URLs
+  if (imageUrl.startsWith('/api/media/file/')) {
+    imageUrl = `/media/${imageUrl.replace(/^\/api\/media\/file\//, '')}`
+  }
+
+  if (!imageUrl) {
+    // Fallback image
+    imageUrl = 'https://cartepostale.cool/media/enveloppe-social2.jpg'
+  } else {
+    // Enforce absolute URLs for open graph images (Cloudflare CGI or local)
+    if (imageUrl.startsWith('/')) {
+      imageUrl = `https://cartepostale.cool${imageUrl}`
+      imageUrl = getOptimizedImageUrl(imageUrl, { width: 1200, quality: 80, fit: 'cover' })
+    } else {
+      imageUrl = getOptimizedImageUrl(imageUrl, { width: 1200, quality: 80, fit: 'cover' })
+    }
+  }
+
+  // Workaround for Vercel OG returning 500 when img src is not fully qualified or fails to load:
+  // Ensure URL is explicitly absolute if `getOptimizedImageUrl` returns a relative path (it shouldn't, but safely check).
+  if (imageUrl.startsWith('/')) {
+    imageUrl = `https://cartepostale.cool${imageUrl}`
+  }
+
+  return new ImageResponse(
+    <div
+      style={{
+        display: 'flex',
+        height: '100%',
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#e5e7eb', // stone-200 background
+        padding: '40px',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'white',
+          borderRadius: '16px',
+          overflow: 'hidden',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.2)',
+          border: '24px solid white', // Epaisse bordure blanche comme demandé
+          position: 'relative',
+        }}
+      >
+        {/* Background Image / Photo Principal */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={imageUrl}
+          alt="Photo de la carte"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+      </div>
+    </div>,
+    {
+      ...size,
+    },
+  )
 }
