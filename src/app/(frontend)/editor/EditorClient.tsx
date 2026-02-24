@@ -5246,7 +5246,7 @@ export default function EditorPage() {
 
       {/* Sticky preview panel — mobile/tablet */}
       {stickyPreview && !shareUrl && currentStep !== 'preview' && (
-        <div className="fixed bottom-0 inset-x-0 z-[46] lg:hidden bg-stone-900 shadow-2xl shadow-black/60">
+        <div className="fixed bottom-0 inset-x-0 z-[46] lg:hidden bg-stone-900 shadow-2xl shadow-black/60" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           {/* Barre du haut */}
           <div className="flex items-center justify-between px-3 py-1.5">
             <div className="flex items-center gap-1.5">
