@@ -527,15 +527,21 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   // Ajustement automatique : au flip et au changement de message/échelle
   useLayoutEffect(() => {
     computeAutoFontSize()
+    // Reset scroll au cas où il y a du débordement
+    if (messageContainerRef.current) {
+      messageContainerRef.current.scrollTop = 0
+    }
     // En plein écran : recalculer après layout (conteneur peut avoir 0 au premier paint)
     if (isLarge) {
       const t1 = requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           computeAutoFontSize()
+          if (messageContainerRef.current) messageContainerRef.current.scrollTop = 0
         })
       })
       const t2 = window.setTimeout(() => {
         computeAutoFontSize()
+        if (messageContainerRef.current) messageContainerRef.current.scrollTop = 0
       }, 150)
       return () => {
         cancelAnimationFrame(t1)
@@ -1632,7 +1638,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     {/* Removed individual loupe here */}
                     <div
                       ref={messageContainerRef}
-                      className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 pl-1 sm:pl-2 flex flex-col justify-start"
+                      className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 pl-1 sm:pl-2 block"
                       onClick={openMessage}
                     >
                       <p
