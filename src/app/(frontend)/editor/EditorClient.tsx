@@ -74,6 +74,7 @@ import {
   CAPTION_FONT_SIZE_STEP,
   StickerPlacement,
   Sticker,
+  EmojiSticker,
 } from '@/types'
 import PostcardView from '@/components/postcard/PostcardView'
 import ScratchCardViewWrapper from '@/components/view/ScratchCardViewWrapper'
@@ -861,6 +862,7 @@ export default function EditorPage() {
   const [showUserGalleryModal, setShowUserGalleryModal] = useState<'front' | 'back' | null>(null)
   const [showStickerGallery, setShowStickerGallery] = useState(false)
   const [stickers, setStickers] = useState<StickerPlacement[]>([])
+  const [emojiStickers, setEmojiStickers] = useState<EmojiSticker[]>([])
   const [selectedEmojiCategory, setSelectedEmojiCategory] = useState<EmojiCategoryKey>(
     EMOJI_CATEGORIES[0].key,
   )
@@ -915,7 +917,6 @@ export default function EditorPage() {
   const [recordingTime, setRecordingTime] = useState(0)
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [stickyPreview, setStickyPreview] = useState(false)
-  const [stickyOptionsOpen, setStickyOptionsOpen] = useState(false)
 
   // Background music state
   const [backgroundMusic, setBackgroundMusic] = useState<string | undefined>(undefined)
@@ -1209,6 +1210,7 @@ export default function EditorPage() {
       mediaItems, // Attention: URLs blobs ne persistent pas après reload, mais URLs base64 oui.
       isPremium,
       stickers,
+      emojiStickers,
       selectedTemplateId,
       updatedAt: Date.now(),
     }
@@ -1247,6 +1249,7 @@ export default function EditorPage() {
     mediaItems,
     isPremium,
     stickers,
+    emojiStickers,
     selectedTemplateId,
   ])
 
@@ -1294,6 +1297,7 @@ export default function EditorPage() {
           if (data.mediaItems) setMediaItems(data.mediaItems)
           if (data.isPremium) setIsPremium(data.isPremium)
           if (data.stickers) setStickers(data.stickers)
+          if (data.emojiStickers) setEmojiStickers(data.emojiStickers)
           if (data.selectedTemplateId) setSelectedTemplateId(data.selectedTemplateId)
         } else {
           localStorage.removeItem(LOCAL_STORAGE_KEY)
@@ -1949,6 +1953,7 @@ export default function EditorPage() {
     }),
     isPremium,
     stickers,
+    emojiStickers: emojiStickers.length > 0 ? emojiStickers : undefined,
     mediaItems,
     coords: coords || undefined,
     scratchCardEnabled,
@@ -1961,7 +1966,7 @@ export default function EditorPage() {
     frontEmoji, frontCaptionPosition, frontCaptionFontFamily, frontCaptionFontSize,
     frontCaptionColor, frontTextBgOpacity, frontCaptionPreset, frontCaptionWidth, message, recipientName, senderName,
     senderEmail, location, stampStyle, stampLabel, stampYear, postmarkText,
-    isPremium, stickers, mediaItems, coords, scratchCardEnabled, puzzleCardEnabled,
+    isPremium, stickers, emojiStickers, mediaItems, coords, scratchCardEnabled, puzzleCardEnabled,
     puzzleCardDifficulty, backgroundMusic, backgroundMusicTitle,
   ])
 
@@ -3108,6 +3113,16 @@ export default function EditorPage() {
                           >
                             <Grid size={16} />
                           </button>
+                          {frontEmoji && (
+                            <button
+                              type="button"
+                              onClick={() => setFrontEmoji('')}
+                              className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-stone-200 bg-white text-stone-400 transition-colors hover:border-red-400 hover:text-red-500"
+                              title="Retirer l'emoji"
+                            >
+                              <X size={15} />
+                            </button>
+                          )}
                           <button
                             type="button"
                             className="flex h-12 px-5 items-center justify-center rounded-xl border-2 border-stone-200 bg-white text-stone-500 transition-colors hover:border-teal-400 hover:text-teal-600 gap-2 font-semibold text-sm"
@@ -3163,8 +3178,76 @@ export default function EditorPage() {
                   </div>
                 </section>
 
+                {/* Emojis sur la face avant */}
+                {frontImage && (
+                  <section className="mt-6 pt-6 border-t border-stone-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-600 text-lg">
+                        🎭
+                      </span>
+                      <div>
+                        <h3 className="text-sm font-bold text-stone-800 uppercase tracking-wider">
+                          Emojis sur la carte
+                        </h3>
+                        <p className="text-xs font-semibold text-stone-500">
+                          Ajoutez des emojis directement sur la photo · glissez · pincez pour zoomer
+                        </p>
+                      </div>
+                    </div>
+                    {/* Suggestions rapides */}
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {([...EMOJI_SUGGESTIONS, '❤️', '⭐', '🔥', '🎉', '😎', '🌈', '🏖️', '🎨'] as string[]).map((emoji) => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={() => {
+                            const newSticker: EmojiSticker = {
+                              id: `es-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                              emoji,
+                              x: 30 + Math.random() * 40,
+                              y: 20 + Math.random() * 60,
+                              scale: 1,
+                            }
+                            setEmojiStickers((prev) => [...prev, newSticker])
+                          }}
+                          className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-stone-200 bg-white text-xl transition-all hover:border-teal-400 hover:bg-teal-50 hover:scale-110"
+                          title={`Ajouter ${emoji}`}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                    {/* Liste des emojis placés */}
+                    {emojiStickers.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2 p-2 bg-stone-50 rounded-xl border border-stone-200">
+                        <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider w-full mb-1">Sur la carte :</span>
+                        {emojiStickers.map((es) => (
+                          <div key={es.id} className="flex items-center gap-1 bg-white border border-stone-200 rounded-lg px-2 py-1">
+                            <span className="text-lg">{es.emoji}</span>
+                            <button
+                              type="button"
+                              onClick={() => setEmojiStickers((prev) => prev.filter((s) => s.id !== es.id))}
+                              className="text-stone-300 hover:text-red-500 transition-colors"
+                              title="Retirer"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => setEmojiStickers([])}
+                          className="ml-auto text-[11px] text-stone-400 hover:text-red-500 transition-colors font-semibold"
+                        >
+                          Tout effacer
+                        </button>
+                      </div>
+                    )}
+                  </section>
+                )}
+
                 {/* Interactive Front Face Editor */}
-                {frontImage && frontCaption.trim().length > 0 && (
+                {frontImage && (frontCaption.trim().length > 0 || emojiStickers.length > 0) && (
                   <section className="mt-8 pt-8 border-t border-stone-200">
                     <div className="flex items-center gap-2 mb-4">
                       <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-100 text-teal-600">
@@ -3190,7 +3273,9 @@ export default function EditorPage() {
                       frontCaptionWidth={frontCaptionWidth}
                       location={location}
                       stickers={stickers}
+                      emojiStickers={emojiStickers}
                       onCaptionPositionChange={setFrontCaptionPosition}
+                      onEmojiStickerChange={setEmojiStickers}
                       className="w-full"
                     />
                     {/* Largeur du bloc texte */}
@@ -5253,26 +5338,16 @@ export default function EditorPage() {
               <RefreshCw size={10} className="text-teal-400 animate-spin" style={{ animationDuration: '3s' }} />
               <span className="text-[11px] font-bold text-white/50 uppercase tracking-wider">Aperçu en direct</span>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShowBack((v) => !v)}
-                className="flex items-center gap-1 text-[11px] font-bold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-full transition-colors"
-              >
-                <RotateCw size={11} />
-                {showBack ? 'Recto' : 'Retourner'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setStickyPreview(false)}
-                className="p-1 text-white/40 hover:text-white transition-colors"
-                aria-label="Fermer"
-              >
-                <X size={15} />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setStickyPreview(false)}
+              className="p-1 text-white/40 hover:text-white transition-colors"
+              aria-label="Fermer"
+            >
+              <X size={15} />
+            </button>
           </div>
-          {/* Carte pleine largeur — réglages PostcardView fermés par défaut */}
+          {/* Carte pleine largeur */}
           <PostcardView
             postcard={postcardForPreview}
             flipped={showBack}
@@ -5282,46 +5357,25 @@ export default function EditorPage() {
             hideFlipHints
             defaultActionsOpen={false}
           />
-
-          {/* Barre d'options repliable — repliée par défaut */}
-          <button
-            type="button"
-            onClick={() => setStickyOptionsOpen((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-2 hover:bg-white/5 transition-colors"
-          >
-            <ChevronUp
-              size={14}
-              className={cn('text-white/30 transition-transform duration-200', stickyOptionsOpen ? '' : 'rotate-180')}
-            />
-          </button>
-
-          {stickyOptionsOpen && (
-            <div className="flex items-center gap-2 px-4 pb-3 pt-0.5 border-t border-white/10">
-              <button
-                type="button"
-                onClick={() => setShowBack((v) => !v)}
-                className="flex items-center gap-1.5 text-[11px] font-bold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors"
-              >
-                <RotateCw size={11} />
-                {showBack ? 'Recto' : 'Verso'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowFullscreen(true)}
-                className="flex items-center gap-1.5 text-[11px] font-bold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors"
-              >
-                <Maximize2 size={11} />
-                Plein écran
-              </button>
-              <button
-                type="button"
-                onClick={() => { setStickyPreview(false); setStickyOptionsOpen(false) }}
-                className="ml-auto flex items-center gap-1.5 text-[11px] text-white/40 hover:text-white/80 transition-colors"
-              >
-                <X size={13} />
-              </button>
-            </div>
-          )}
+          {/* Barre du bas — toujours visible */}
+          <div className="flex items-center gap-2 px-4 py-2.5 border-t border-white/10">
+            <button
+              type="button"
+              onClick={() => setShowBack((v) => !v)}
+              className="flex items-center gap-1.5 text-[11px] font-bold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors"
+            >
+              <RotateCw size={11} />
+              {showBack ? 'Recto' : 'Verso'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowFullscreen(true)}
+              className="flex items-center gap-1.5 text-[11px] font-bold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors"
+            >
+              <Maximize2 size={11} />
+              Plein écran
+            </button>
+          </div>
         </div>
       )}
 

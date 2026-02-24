@@ -1041,6 +1041,28 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 ))}
               </div>
 
+              {/* Emoji Stickers Rendering */}
+              {postcard.emojiStickers && postcard.emojiStickers.length > 0 && (
+                <div className="absolute inset-0 pointer-events-none z-15">
+                  {postcard.emojiStickers.map((es) => (
+                    <div
+                      key={es.id}
+                      className="absolute select-none"
+                      style={{
+                        left: `${es.x}%`,
+                        top: `${es.y}%`,
+                        transform: `translate(-50%, -50%) scale(${es.scale})`,
+                        fontSize: '48px',
+                        lineHeight: 1,
+                        userSelect: 'none',
+                      }}
+                    >
+                      {es.emoji}
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Loading State for Front Image */}
               <AnimatePresence>
                 {isFrontImageLoading && (

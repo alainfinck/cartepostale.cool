@@ -8,6 +8,7 @@ import {
   FrontImageCrop,
   FrontImageFilter,
   StickerPlacement,
+  EmojiSticker,
 } from '@/types'
 import { MapPin, Move, RotateCcw, Maximize2, GripVertical } from 'lucide-react'
 import { isCoordinate } from '@/lib/utils'
@@ -23,8 +24,10 @@ interface FrontFaceEditorProps {
   frontCaptionWidth?: number
   location?: string
   stickers?: StickerPlacement[]
+  emojiStickers?: EmojiSticker[]
   onCaptionPositionChange: (pos: FrontCaptionPosition) => void
   onCaptionStyleChange?: (style: CaptionStyle) => void
+  onEmojiStickerChange?: (stickers: EmojiSticker[]) => void
   className?: string
 }
 
@@ -58,6 +61,144 @@ const buildFrontImageFilterCss = (filter?: FrontImageFilter): string => {
 
 const POSTCARD_ASPECT = 3 / 2
 
+// Composant interne pour un emoji sticker interactif (drag + pinch zoom)
+function EmojiStickerEl({
+  sticker,
+  containerRef,
+  onUpdate,
+  onRemove,
+}: {
+  sticker: EmojiSticker
+  containerRef: React.RefObject<HTMLDivElement | null>
+  onUpdate: (s: EmojiSticker) => void
+  onRemove: (id: string) => void
+}) {
+  const posRef = useRef({ x: sticker.x, y: sticker.y })
+  const scaleRef = useRef(sticker.scale)
+  const [localX, setLocalX] = useState(sticker.x)
+  const [localY, setLocalY] = useState(sticker.y)
+  const [localScale, setLocalScale] = useState(sticker.scale)
+  const draggingRef = useRef(false)
+  const touchRef = useRef<{ dist: number; scale: number } | null>(null)
+
+  // Sync depuis les props quand on ne drag pas
+  useEffect(() => {
+    if (!draggingRef.current) {
+      posRef.current = { x: sticker.x, y: sticker.y }
+      scaleRef.current = sticker.scale
+      setLocalX(sticker.x)
+      setLocalY(sticker.y)
+      setLocalScale(sticker.scale)
+    }
+  }, [sticker.x, sticker.y, sticker.scale])
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.button === 2) return // clic droit → ignorer
+    e.stopPropagation()
+    e.preventDefault()
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    draggingRef.current = true
+  }
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!draggingRef.current) return
+    e.stopPropagation()
+    const container = containerRef.current
+    if (!container) return
+    const rect = container.getBoundingClientRect()
+    const x = Math.max(5, Math.min(95, ((e.clientX - rect.left) / rect.width) * 100))
+    const y = Math.max(5, Math.min(95, ((e.clientY - rect.top) / rect.height) * 100))
+    posRef.current = { x, y }
+    setLocalX(x)
+    setLocalY(y)
+  }
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!draggingRef.current) return
+    ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+    draggingRef.current = false
+    onUpdate({ ...sticker, x: posRef.current.x, y: posRef.current.y, scale: scaleRef.current })
+  }
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const factor = e.deltaY > 0 ? 0.9 : 1.1
+    const newScale = Math.max(0.3, Math.min(5, scaleRef.current * factor))
+    scaleRef.current = newScale
+    setLocalScale(newScale)
+    onUpdate({ ...sticker, x: posRef.current.x, y: posRef.current.y, scale: newScale })
+  }
+
+  const getTouchDist = (t: React.TouchList) => {
+    if (t.length < 2) return 0
+    const dx = t[0].clientX - t[1].clientX
+    const dy = t[0].clientY - t[1].clientY
+    return Math.sqrt(dx * dx + dy * dy)
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault()
+      touchRef.current = { dist: getTouchDist(e.touches), scale: scaleRef.current }
+    }
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchRef.current || e.touches.length < 2) return
+    e.preventDefault()
+    const factor = getTouchDist(e.touches) / touchRef.current.dist
+    const newScale = Math.max(0.3, Math.min(5, touchRef.current.scale * factor))
+    scaleRef.current = newScale
+    setLocalScale(newScale)
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchRef.current) {
+      touchRef.current = null
+      onUpdate({ ...sticker, x: posRef.current.x, y: posRef.current.y, scale: scaleRef.current })
+    }
+  }
+
+  return (
+    <div
+      className="absolute touch-none select-none group/es"
+      style={{
+        left: `${localX}%`,
+        top: `${localY}%`,
+        transform: `translate(-50%, -50%) scale(${localScale})`,
+        fontSize: '48px',
+        lineHeight: 1,
+        zIndex: 25,
+        cursor: draggingRef.current ? 'grabbing' : 'grab',
+      }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      onWheel={handleWheel}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      <span style={{ userSelect: 'none', pointerEvents: 'none' }}>{sticker.emoji}</span>
+      {/* Bouton supprimer au survol */}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation()
+          onRemove(sticker.id)
+        }}
+        onPointerDown={(e) => e.stopPropagation()}
+        className="absolute -top-2 -right-2 hidden group-hover/es:flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold shadow-lg"
+        style={{ fontSize: '10px', lineHeight: 1 }}
+      >
+        ×
+      </button>
+    </div>
+  )
+}
+
 export default function FrontFaceEditor({
   frontImage,
   frontImageCrop,
@@ -69,22 +210,24 @@ export default function FrontFaceEditor({
   frontCaptionWidth,
   location,
   stickers,
+  emojiStickers,
   onCaptionPositionChange,
   onCaptionStyleChange,
+  onEmojiStickerChange,
   className,
 }: FrontFaceEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const captionRef = useRef<HTMLDivElement>(null)
-  
+
   const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null)
   const [isImageLoading, setIsImageLoading] = useState(true)
-  
+
   const [isDragging, setIsDragging] = useState(false)
   const [localPosition, setLocalPosition] = useState<FrontCaptionPosition>(frontCaptionPosition)
-  
+
   const [captionStyle, setCaptionStyle] = useState<CaptionStyle>({ fontSize: 100, rotation: 0 })
   const [isResizing, setIsResizing] = useState(false)
-  
+
   const dragStateRef = useRef<{
     startX: number
     startY: number
@@ -108,7 +251,10 @@ export default function FrontFaceEditor({
   }, [frontCaptionPosition, isDragging])
 
   const frontImageSrc = frontImage || FALLBACK_FRONT_IMAGE
-  const frontImageFilterCss = useMemo(() => buildFrontImageFilterCss(frontImageFilter), [frontImageFilter])
+  const frontImageFilterCss = useMemo(
+    () => buildFrontImageFilterCss(frontImageFilter),
+    [frontImageFilter],
+  )
   const clampedOpacity = Math.max(0, Math.min(100, frontTextBgOpacity))
   const frontTextBgColor = `rgba(255, 255, 255, ${clampedOpacity / 100})`
 
@@ -123,69 +269,78 @@ export default function FrontFaceEditor({
     const rect = container.getBoundingClientRect()
     const xPct = ((clientX - rect.left) / rect.width) * 100
     const yPct = ((clientY - rect.top) / rect.height) * 100
-    
+
     const x = Math.max(10, Math.min(90, xPct))
     const y = Math.max(10, Math.min(90, yPct))
 
     setLocalPosition({ x, y })
   }, [])
 
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (!showCaption) return
-    
-    e.stopPropagation()
-    e.preventDefault()
-    
-    const target = e.currentTarget as HTMLElement
-    target.setPointerCapture(e.pointerId)
-    
-    setIsDragging(true)
-    
-    dragStateRef.current = {
-      startX: e.clientX,
-      startY: e.clientY,
-      startPosX: localPosition.x,
-      startPosY: localPosition.y,
-      rafId: null,
-      lastUpdate: performance.now(),
-    }
-  }, [showCaption, localPosition])
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (!showCaption) return
 
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!isDragging || !dragStateRef.current) return
-    
-    e.stopPropagation()
-    e.preventDefault()
+      e.stopPropagation()
+      e.preventDefault()
 
-    const now = performance.now()
-    if (now - dragStateRef.current.lastUpdate < 16) return
-    dragStateRef.current.lastUpdate = now
+      const target = e.currentTarget as HTMLElement
+      target.setPointerCapture(e.pointerId)
 
-    if (dragStateRef.current.rafId !== null) {
-      cancelAnimationFrame(dragStateRef.current.rafId)
-    }
+      setIsDragging(true)
 
-    dragStateRef.current.rafId = requestAnimationFrame(() => {
-      updatePosition(e.clientX, e.clientY)
-    })
-  }, [isDragging, updatePosition])
+      dragStateRef.current = {
+        startX: e.clientX,
+        startY: e.clientY,
+        startPosX: localPosition.x,
+        startPosY: localPosition.y,
+        rafId: null,
+        lastUpdate: performance.now(),
+      }
+    },
+    [showCaption, localPosition],
+  )
 
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    if (!isDragging) return
-    
-    e.stopPropagation()
-    
-    const target = e.currentTarget as HTMLElement
-    target.releasePointerCapture(e.pointerId)
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!isDragging || !dragStateRef.current) return
 
-    if (dragStateRef.current?.rafId != null) {
-      cancelAnimationFrame(dragStateRef.current.rafId)
-    }
-    
-    setIsDragging(false)
-    onCaptionPositionChange(localPosition)
-    dragStateRef.current = null
-  }, [isDragging, localPosition, onCaptionPositionChange])
+      e.stopPropagation()
+      e.preventDefault()
+
+      const now = performance.now()
+      if (now - dragStateRef.current.lastUpdate < 16) return
+      dragStateRef.current.lastUpdate = now
+
+      if (dragStateRef.current.rafId !== null) {
+        cancelAnimationFrame(dragStateRef.current.rafId)
+      }
+
+      dragStateRef.current.rafId = requestAnimationFrame(() => {
+        updatePosition(e.clientX, e.clientY)
+      })
+    },
+    [isDragging, updatePosition],
+  )
+
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      if (!isDragging) return
+
+      e.stopPropagation()
+
+      const target = e.currentTarget as HTMLElement
+      target.releasePointerCapture(e.pointerId)
+
+      if (dragStateRef.current?.rafId != null) {
+        cancelAnimationFrame(dragStateRef.current.rafId)
+      }
+
+      setIsDragging(false)
+      onCaptionPositionChange(localPosition)
+      dragStateRef.current = null
+    },
+    [isDragging, localPosition, onCaptionPositionChange],
+  )
 
   const getTouchDistance = (touches: React.TouchList) => {
     if (touches.length < 2) return 0
@@ -196,52 +351,64 @@ export default function FrontFaceEditor({
 
   const getTouchAngle = (touches: React.TouchList) => {
     if (touches.length < 2) return 0
-    return Math.atan2(
-      touches[1].clientY - touches[0].clientY,
-      touches[1].clientX - touches[0].clientX
-    ) * (180 / Math.PI)
+    return (
+      Math.atan2(touches[1].clientY - touches[0].clientY, touches[1].clientX - touches[0].clientX) *
+      (180 / Math.PI)
+    )
   }
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      e.preventDefault()
-      setIsResizing(true)
-      touchStateRef.current = {
-        initialDistance: getTouchDistance(e.touches),
-        initialScale: captionStyle.fontSize,
-        initialAngle: getTouchAngle(e.touches),
-        initialRotation: captionStyle.rotation,
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault()
+        setIsResizing(true)
+        touchStateRef.current = {
+          initialDistance: getTouchDistance(e.touches),
+          initialScale: captionStyle.fontSize,
+          initialAngle: getTouchAngle(e.touches),
+          initialRotation: captionStyle.rotation,
+        }
       }
-    }
-  }, [captionStyle])
+    },
+    [captionStyle],
+  )
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isResizing || !touchStateRef.current || e.touches.length < 2) return
-    
-    e.preventDefault()
-    
-    const currentDistance = getTouchDistance(e.touches)
-    const currentAngle = getTouchAngle(e.touches)
-    
-    const scaleFactor = currentDistance / touchStateRef.current.initialDistance
-    const newFontSize = Math.max(50, Math.min(200, touchStateRef.current.initialScale * scaleFactor))
-    
-    const angleDiff = currentAngle - touchStateRef.current.initialAngle
-    const newRotation = touchStateRef.current.initialRotation + angleDiff
-    
-    setCaptionStyle({
-      fontSize: Math.round(newFontSize),
-      rotation: Math.round(newRotation),
-    })
-  }, [isResizing])
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isResizing || !touchStateRef.current || e.touches.length < 2) return
 
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (isResizing) {
-      setIsResizing(false)
-      touchStateRef.current = null
-      onCaptionStyleChange?.(captionStyle)
-    }
-  }, [isResizing, captionStyle, onCaptionStyleChange])
+      e.preventDefault()
+
+      const currentDistance = getTouchDistance(e.touches)
+      const currentAngle = getTouchAngle(e.touches)
+
+      const scaleFactor = currentDistance / touchStateRef.current.initialDistance
+      const newFontSize = Math.max(
+        50,
+        Math.min(200, touchStateRef.current.initialScale * scaleFactor),
+      )
+
+      const angleDiff = currentAngle - touchStateRef.current.initialAngle
+      const newRotation = touchStateRef.current.initialRotation + angleDiff
+
+      setCaptionStyle({
+        fontSize: Math.round(newFontSize),
+        rotation: Math.round(newRotation),
+      })
+    },
+    [isResizing],
+  )
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (isResizing) {
+        setIsResizing(false)
+        touchStateRef.current = null
+        onCaptionStyleChange?.(captionStyle)
+      }
+    },
+    [isResizing, captionStyle, onCaptionStyleChange],
+  )
 
   const resetCaptionPosition = useCallback(() => {
     setLocalPosition(DEFAULT_CAPTION_POSITION)
@@ -251,7 +418,7 @@ export default function FrontFaceEditor({
 
   const imageStyle = useMemo(() => {
     if (!frontImageCrop || !imgNaturalSize) return { filter: frontImageFilterCss }
-    
+
     const imgAspect = imgNaturalSize.w / imgNaturalSize.h
     let w: number, h: number
 
@@ -300,7 +467,7 @@ export default function FrontFaceEditor({
                 alt="Photo de la carte"
                 className={cn(
                   'block w-full h-full object-cover transition-opacity duration-500',
-                  isImageLoading ? 'opacity-0' : 'opacity-100'
+                  isImageLoading ? 'opacity-0' : 'opacity-100',
                 )}
                 onLoad={(e) => {
                   setImgNaturalSize({
@@ -318,7 +485,7 @@ export default function FrontFaceEditor({
               alt="Photo de la carte"
               className={cn(
                 'w-full h-full object-cover pointer-events-none transition-opacity duration-500',
-                isImageLoading ? 'opacity-0' : 'opacity-100'
+                isImageLoading ? 'opacity-0' : 'opacity-100',
               )}
               style={{ filter: frontImageFilterCss }}
               onLoad={(e) => {
@@ -358,6 +525,25 @@ export default function FrontFaceEditor({
           </div>
         )}
 
+        {/* Emoji stickers interactifs */}
+        {emojiStickers && emojiStickers.length > 0 && onEmojiStickerChange && (
+          <div className="absolute inset-0 z-20">
+            {emojiStickers.map((es) => (
+              <EmojiStickerEl
+                key={es.id}
+                sticker={es}
+                containerRef={containerRef}
+                onUpdate={(updated) =>
+                  onEmojiStickerChange(
+                    emojiStickers.map((s) => (s.id === updated.id ? updated : s)),
+                  )
+                }
+                onRemove={(id) => onEmojiStickerChange(emojiStickers.filter((s) => s.id !== id))}
+              />
+            ))}
+          </div>
+        )}
+
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none z-5" />
 
         {location && !isCoordinate(location) && (
@@ -379,7 +565,7 @@ export default function FrontFaceEditor({
               isDragging
                 ? 'cursor-grabbing shadow-[0_12px_40px_rgb(0,0,0,0.2)] ring-2 ring-teal-400/50'
                 : 'cursor-grab hover:shadow-[0_10px_35px_rgb(0,0,0,0.15)]',
-              'touch-none select-none'
+              'touch-none select-none',
             )}
             style={{
               left: `${localPosition.x}%`,
@@ -425,7 +611,7 @@ export default function FrontFaceEditor({
               isDragging
                 ? 'cursor-grabbing shadow-[0_12px_40px_rgb(0,0,0,0.2)] ring-2 ring-teal-400/50'
                 : 'cursor-grab hover:shadow-[0_10px_35px_rgb(0,0,0,0.15)]',
-              'touch-none select-none group'
+              'touch-none select-none group',
             )}
             style={{
               left: `${localPosition.x}%`,
@@ -489,7 +675,7 @@ export default function FrontFaceEditor({
               <span className="sm:hidden">Déplacer</span>
             </span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 bg-stone-100 rounded-lg px-2 py-1">
               <span className="text-[10px] font-medium text-stone-500 tabular-nums">
@@ -500,7 +686,7 @@ export default function FrontFaceEditor({
                 Y: {Math.round(localPosition.y)}%
               </span>
             </div>
-            
+
             <button
               type="button"
               onClick={resetCaptionPosition}

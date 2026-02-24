@@ -17,6 +17,8 @@ import {
   Layers,
   Sparkles,
   Mail,
+  Star,
+  Eye,
 } from 'lucide-react'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import { motion } from 'framer-motion'
@@ -156,7 +158,7 @@ export default function AgencesLandingClient() {
                 className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white px-8 py-6 rounded-2xl text-lg font-bold shadow-xl border-0"
               >
                 <Link href="/contact">
-                  Demander une démo <ArrowRight size={20} />
+                  Démarrez maintenant <ArrowRight size={20} />
                 </Link>
               </Button>
               <Button
@@ -164,7 +166,9 @@ export default function AgencesLandingClient() {
                 variant="outline"
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20 px-8 py-6 rounded-2xl text-lg font-bold"
               >
-                <Link href="/agences/demo">Voir la démo en direct ✨</Link>
+                <Link href="/carte/demo-1">
+                  <Eye size={20} className="mr-2" /> Voir la démo destinataire
+                </Link>
               </Button>
             </div>
           </motion.div>
@@ -332,6 +336,17 @@ export default function AgencesLandingClient() {
               className="bg-transparent border-white/30 text-white hover:bg-white/10 px-10 py-6 rounded-2xl text-lg font-bold"
             >
               <Link href="/pricing">Voir tous les tarifs</Link>
+            </Button>
+          </div>
+          <div className="mt-12 flex justify-center">
+            <Button
+              asChild
+              variant="outline"
+              className="bg-white/5 border-white/20 text-white hover:bg-white/10 px-8 py-6 rounded-2xl text-lg font-bold"
+            >
+              <Link href="/carte/demo-1">
+                <Eye size={20} className="mr-2" /> Voir un exemple destinataire
+              </Link>
             </Button>
           </div>
         </div>

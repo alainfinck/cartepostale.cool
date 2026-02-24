@@ -72,6 +72,28 @@ export async function getUserGalleryMedia(): Promise<UserMediaItem[]> {
       }
     }
 
+    // Fetch directly uploaded media
+    const directMediaResult = await payload.find({
+      collection: 'media',
+      where: {
+        author: { equals: user.id },
+      },
+      limit: 1000,
+      overrideAccess: true,
+    })
+
+    for (const m of directMediaResult.docs) {
+      const id = m.id
+      if (id && !mediaMap.has(id)) {
+        mediaMap.set(id, {
+          id,
+          url: m.url || `/media/${encodeURIComponent(m.filename || '')}`,
+          alt: m.alt || 'Image téléchargée',
+          addedAt: m.createdAt || new Date().toISOString(),
+        })
+      }
+    }
+
     // Convert map to array and sort by newest first
     return Array.from(mediaMap.values()).sort((a, b) => {
       return new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime()
@@ -79,5 +101,52 @@ export async function getUserGalleryMedia(): Promise<UserMediaItem[]> {
   } catch (error) {
     console.error('Error fetching user gallery media:', error)
     return []
+  }
+}
+
+/**
+ * Creates a Media document linked to the current user (e.g. after direct R2 upload).
+ */
+export async function addUserGalleryImage(
+  key: string,
+  mimeType: string,
+  filesize: number,
+  alt: string,
+  exif?: any,
+): Promise<{ success: boolean; id?: number; error?: string }> {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return { success: false, error: 'Non authentifié' }
+    }
+
+    const payload = await getPayload({ config })
+
+    // Check for duplicate key
+    const existingMedia = await payload.find({
+      collection: 'media',
+      where: { filename: { equals: key } },
+    })
+
+    if (existingMedia.totalDocs > 0) {
+      return { success: true, id: existingMedia.docs[0].id as number }
+    }
+
+    const media = await payload.create({
+      collection: 'media',
+      data: {
+        alt: alt || 'Image téléchargée',
+        filename: key,
+        mimeType: mimeType || 'image/jpeg',
+        filesize: filesize || 0,
+        author: user.id,
+        ...(exif ? { exif } : {}),
+      },
+    })
+
+    return { success: true, id: media.id as number }
+  } catch (err: any) {
+    console.error('Error adding user gallery image:', err)
+    return { success: false, error: err.message || 'Erreur lors de la sauvegarde' }
   }
 }

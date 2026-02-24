@@ -19,6 +19,142 @@ import EnvelopeExperience from '@/components/view/EnvelopeExperience'
 import { getCurrentUser } from '@/lib/auth'
 import { PostcardTracking } from '@/components/analytics/PostcardTracking'
 import { TextAnimate } from '@/components/ui/text-animate'
+import { demoPostcards } from '@/data/demoPostcards'
+
+// Showcase postcards extracted from GalerieClient
+const SHOWCASE_POSTCARDS: FrontendPostcard[] = [
+  {
+    id: 'show-1',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1501785888041-af3ef285b470.jpg',
+    location: 'Grand Canyon, USA',
+    message:
+      "L'immensité de ce lieu est impossible à décrire. Les couleurs au coucher du soleil sont irréelles. Un souvenir gravé à jamais !",
+    recipientName: 'Papa & Maman',
+    senderName: 'Sarah',
+    stampStyle: 'classic',
+    date: '12 Oct 2024',
+    isPremium: true,
+    coords: { lat: 36.0544, lng: -112.1401 },
+    mediaItems: [
+      {
+        id: 'm1',
+        type: 'image',
+        url: 'https://img.cartepostale.cool/demo/photo-1474044159687-1ee9f3a51722.jpg',
+      },
+      {
+        id: 'm2',
+        type: 'video',
+        url: 'https://assets.mixkit.co/videos/preview/mixkit-grand-canyon-scenery-view-4844-large.mp4',
+      },
+      {
+        id: 'm3',
+        type: 'image',
+        url: 'https://img.cartepostale.cool/demo/photo-1527333656061-ca7adf608ae1.jpg',
+      },
+    ],
+  },
+  {
+    id: 'show-2',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1493976040374-85c8e12f0c0e.jpg',
+    location: 'Kyoto, Japon',
+    message:
+      "J'ai trouvé le jardin zen le plus paisible au monde. Le matcha ici est une révélation. La bambouseraie d'Arashiyama est magique.",
+    recipientName: 'Tom',
+    senderName: 'Jen',
+    stampStyle: 'airmail',
+    date: '05 Nov 2024',
+    isPremium: true,
+    coords: { lat: 35.0116, lng: 135.7681 },
+    mediaItems: [
+      {
+        id: 'k1',
+        type: 'image',
+        url: 'https://img.cartepostale.cool/demo/photo-1528164344705-47542687000d.jpg',
+      },
+      {
+        id: 'k2',
+        type: 'video',
+        url: 'https://assets.mixkit.co/videos/preview/mixkit-small-waterfall-in-a-japanese-garden-4268-large.mp4',
+      },
+    ],
+  },
+  {
+    id: 'show-3',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg',
+    location: 'Côte Amalfitaine, Italie',
+    message:
+      "Ciao ! La dolce vita pure. Les citrons sont aussi gros que des ballons, la mer est d'un bleu électrique.",
+    recipientName: 'Sophie',
+    senderName: 'Marc',
+    stampStyle: 'classic',
+    date: '14 Juil 2024',
+    isPremium: false,
+    coords: { lat: 40.6333, lng: 14.6002 },
+  },
+  {
+    id: 'show-4',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1506929562872-bb421503ef21.jpg',
+    location: 'Îles Phi Phi, Thaïlande',
+    message:
+      "Le paradis sur terre. L'eau est si chaude et transparente. On a exploré des lagons secrets ce matin !",
+    recipientName: 'La bande',
+    senderName: 'Elena',
+    stampStyle: 'modern',
+    date: '02 Dec 2024',
+    isPremium: true,
+    coords: { lat: 7.7407, lng: 98.7784 },
+    mediaItems: [
+      {
+        id: 'p1',
+        type: 'image',
+        url: 'https://img.cartepostale.cool/demo/photo-1552465011-b4e21bf6e79a.jpg',
+      },
+      {
+        id: 'p2',
+        type: 'video',
+        url: 'https://assets.mixkit.co/videos/preview/mixkit-tropical-beach-with-palm-trees-from-above-4122-large.mp4',
+      },
+    ],
+  },
+  {
+    id: 'show-5',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1502602898657-3e91760cbb34.jpg',
+    location: 'Paris, France',
+    message:
+      'La ville lumière porte bien son nom. Un croissant au beurre, un café crème et la Tour Eiffel qui scintille... Le bonheur à la française.',
+    recipientName: 'Mamie',
+    senderName: 'Léa',
+    stampStyle: 'classic',
+    date: '20 Sep 2024',
+    isPremium: false,
+    coords: { lat: 48.8566, lng: 2.3522 },
+  },
+  {
+    id: 'show-6',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1531366936337-7c912a4589a7.jpg',
+    location: 'Tromsø, Norvège',
+    message:
+      "Les aurores boréales dansent au-dessus de nos têtes chaque soir. C'est le spectacle le plus incroyable que j'aie jamais vu.",
+    recipientName: 'Julien & Marie',
+    senderName: 'Alex',
+    stampStyle: 'airmail',
+    date: '18 Jan 2025',
+    isPremium: true,
+    coords: { lat: 69.6496, lng: 18.956 },
+    mediaItems: [
+      {
+        id: 'n1',
+        type: 'image',
+        url: 'https://img.cartepostale.cool/demo/photo-1531366936337-7c912a4589a7.jpg',
+      },
+      {
+        id: 'n2',
+        type: 'image',
+        url: 'https://img.cartepostale.cool/demo/photo-1483347756197-71ef80e95f73.jpg',
+      },
+    ],
+  },
+]
 
 type SearchParams = {
   [key: string]: string | string[] | undefined
@@ -181,6 +317,36 @@ import { isCoordinate } from '@/lib/utils'
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
+
+  // Check demo postcards
+  const demoCard =
+    demoPostcards.find((c) => c.id === slug) || SHOWCASE_POSTCARDS.find((c) => c.id === slug)
+  if (demoCard) {
+    const title = `Une carte postale de ${demoCard.senderName} vous attend !`
+    const description = isCoordinate(demoCard.location)
+      ? `Découvrez la carte envoyée par ${demoCard.senderName}.`
+      : `Découvrez la carte envoyée par ${demoCard.senderName} depuis ${demoCard.location}.`
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        type: 'article',
+        url: `https://cartepostale.cool/carte/${slug}`,
+        siteName: 'CartePostale.cool',
+        images: [
+          {
+            url: '/media/enveloppe-social2.jpg',
+            width: 1200,
+            height: 630,
+            alt: 'cartepostale.cool',
+          },
+        ],
+      },
+    }
+  }
+
   const postcard = await getPostcardByPublicId(slug)
 
   if (!postcard) {
@@ -229,37 +395,60 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
   const envelopeParam = resolvedSearchParams.enveloppe
   const showEnvelope = envelopeParam !== '0'
 
-  const payloadPostcard = await getPostcardByPublicId(slug)
+  // Handling demo postcards
+  const demoPostcard =
+    demoPostcards.find((c) => c.id === slug) || SHOWCASE_POSTCARDS.find((c) => c.id === slug)
 
-  if (!payloadPostcard) {
-    notFound()
+  let frontendPostcard: FrontendPostcard
+  let payloadPostcardId: number | undefined
+  let payloadPostcardViews = 0
+  let payloadPostcardShares = 0
+  let isDemo = false
+
+  if (demoPostcard) {
+    frontendPostcard = { ...demoPostcard }
+    isDemo = true
+  } else {
+    const payloadPostcard = await getPostcardByPublicId(slug)
+    if (!payloadPostcard) {
+      notFound()
+    }
+    frontendPostcard = mapPostcard(payloadPostcard)
+    payloadPostcardId = payloadPostcard.id
+    payloadPostcardViews = payloadPostcard.views || 0
+    payloadPostcardShares = payloadPostcard.shares || 0
   }
 
-  const frontendPostcard = mapPostcard(payloadPostcard)
   // Geocode when we have location but no coords so the back map can display
   if (frontendPostcard.location && !frontendPostcard.coords) {
     const coords = await geocodeLocation(frontendPostcard.location)
     if (coords) frontendPostcard.coords = coords
   }
 
-  // Check contribution access
-  const user = await getCurrentUser()
-  const payloadPostcardAny = payloadPostcard as any
-  const isAuthor =
-    user &&
-    payloadPostcard.author &&
-    (typeof payloadPostcard.author === 'object'
-      ? payloadPostcard.author.id === user.id
-      : payloadPostcard.author === user.id)
+  // Check contribution access (only for real cards)
+  let hasContributionAccess = false
+  if (!isDemo && !demoPostcard) {
+    const user = await getCurrentUser()
+    const payloadPostcard = await getPostcardByPublicId(slug) // refetch or ideally reuse
+    if (payloadPostcard) {
+      const payloadPostcardAny = payloadPostcard as any
+      const isAuthor =
+        user &&
+        payloadPostcard.author &&
+        (typeof payloadPostcard.author === 'object'
+          ? payloadPostcard.author.id === user.id
+          : payloadPostcard.author === user.id)
 
-  const tokenParam = resolvedSearchParams.token as string | undefined
-  // Access valid if author OR if token param matches DB token
-  const hasContributionAccess =
-    isAuthor || (tokenParam && tokenParam === payloadPostcardAny.contributionToken)
+      const tokenParam = resolvedSearchParams.token as string | undefined
+      // Access valid if author OR if token param matches DB token
+      hasContributionAccess =
+        !!isAuthor || !!(tokenParam && tokenParam === payloadPostcardAny.contributionToken)
 
-  if (hasContributionAccess) {
-    frontendPostcard.contributionToken = payloadPostcardAny.contributionToken || undefined
-    frontendPostcard.isContributionEnabled = payloadPostcardAny.isContributionEnabled ?? true
+      if (hasContributionAccess) {
+        frontendPostcard.contributionToken = payloadPostcardAny.contributionToken || undefined
+        frontendPostcard.isContributionEnabled = payloadPostcardAny.isContributionEnabled ?? true
+      }
+    }
   }
 
   const heroSection = showEnvelope ? (
@@ -283,7 +472,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
       <RotateDevicePrompt />
 
       <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-0 px-2 md:px-4 min-h-[70vh] md:min-h-[80vh] justify-center">
-        <ScratchCardWrapper postcard={frontendPostcard} views={payloadPostcard.views || 0} />
+        <ScratchCardWrapper postcard={frontendPostcard} views={payloadPostcardViews} />
       </div>
 
       {/* Cible pour la barre de réactions (rendue ici par SocialBar via portal) — collée à la carte / languette */}
@@ -294,7 +483,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
         <PhotoFeed
           mediaItems={frontendPostcard.mediaItems}
           senderName={frontendPostcard.senderName}
-          postcardId={payloadPostcard.id}
+          postcardId={payloadPostcardId || 0}
           postcardDate={frontendPostcard.date}
         />
       )}
@@ -302,13 +491,14 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
       {/* Réactions (affichées sous la carte via portal), partage et livre d'or */}
       <div className="w-full max-w-4xl px-4">
         <SocialBar
-          postcardId={payloadPostcard.id}
+          postcardId={payloadPostcardId || 0}
           publicId={slug}
           senderName={frontendPostcard.senderName}
-          initialViews={payloadPostcard.views || 0}
-          initialShares={payloadPostcard.shares || 0}
+          initialViews={payloadPostcardViews}
+          initialShares={payloadPostcardShares}
           coords={frontendPostcard.coords}
           reactionsPortalTargetId="reactions-under-card"
+          isDemo={isDemo}
         />
       </div>
 
@@ -444,7 +634,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
 
   return (
     <EnvelopeExperience enabled={showEnvelope} hero={heroSection}>
-      <PostcardTracking postcardId={slug} senderName={frontendPostcard.senderName} />
+      {!isDemo && <PostcardTracking postcardId={slug} senderName={frontendPostcard.senderName} />}
       {pageContent}
     </EnvelopeExperience>
   )

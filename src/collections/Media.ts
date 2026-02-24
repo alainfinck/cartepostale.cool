@@ -58,6 +58,14 @@ export const Media: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'author',
+      type: 'relationship',
+      relationTo: 'users',
+      admin: {
+        description: 'Utilisateur ayant téléchargé ce média (pour sa galerie personnelle)',
+      },
+    },
   ],
   hooks: {
     beforeChange: [

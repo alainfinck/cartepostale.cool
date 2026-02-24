@@ -39,16 +39,19 @@ import { cn } from '@/lib/utils'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import { searchUnsplashPhotos, type UnsplashPhoto, type UnsplashOrderBy } from '@/lib/unsplash'
 
-const GalleryMap = dynamic(
-  () => import('./GalleryMap').then((m) => m.GalleryMap),
-  { ssr: false, loading: () => <div className="h-[400px] rounded-2xl bg-stone-100 animate-pulse flex items-center justify-center text-stone-500">Chargement de la carte…</div> }
-)
+const GalleryMap = dynamic(() => import('./GalleryMap').then((m) => m.GalleryMap), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[400px] rounded-2xl bg-stone-100 animate-pulse flex items-center justify-center text-stone-500">
+      Chargement de la carte…
+    </div>
+  ),
+})
 
 const SHOWCASE_POSTCARDS: Postcard[] = [
   {
     id: 'show-1',
-    frontImage:
-      'https://img.cartepostale.cool/demo/photo-1501785888041-af3ef285b470.jpg',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1501785888041-af3ef285b470.jpg',
     location: 'Grand Canyon, USA',
     message:
       "L'immensité de ce lieu est impossible à décrire. Les couleurs au coucher du soleil sont irréelles. Un souvenir gravé à jamais !",
@@ -78,8 +81,7 @@ const SHOWCASE_POSTCARDS: Postcard[] = [
   },
   {
     id: 'show-2',
-    frontImage:
-      'https://img.cartepostale.cool/demo/photo-1493976040374-85c8e12f0c0e.jpg',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1493976040374-85c8e12f0c0e.jpg',
     location: 'Kyoto, Japon',
     message:
       "J'ai trouvé le jardin zen le plus paisible au monde. Le matcha ici est une révélation. La bambouseraie d'Arashiyama est magique.",
@@ -104,8 +106,7 @@ const SHOWCASE_POSTCARDS: Postcard[] = [
   },
   {
     id: 'show-3',
-    frontImage:
-      'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg',
     location: 'Côte Amalfitaine, Italie',
     message:
       "Ciao ! La dolce vita pure. Les citrons sont aussi gros que des ballons, la mer est d'un bleu électrique.",
@@ -118,8 +119,7 @@ const SHOWCASE_POSTCARDS: Postcard[] = [
   },
   {
     id: 'show-4',
-    frontImage:
-      'https://img.cartepostale.cool/demo/photo-1506929562872-bb421503ef21.jpg',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1506929562872-bb421503ef21.jpg',
     location: 'Îles Phi Phi, Thaïlande',
     message:
       "Le paradis sur terre. L'eau est si chaude et transparente. On a exploré des lagons secrets ce matin !",
@@ -144,11 +144,10 @@ const SHOWCASE_POSTCARDS: Postcard[] = [
   },
   {
     id: 'show-5',
-    frontImage:
-      'https://img.cartepostale.cool/demo/photo-1502602898657-3e91760cbb34.jpg',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1502602898657-3e91760cbb34.jpg',
     location: 'Paris, France',
     message:
-      "La ville lumière porte bien son nom. Un croissant au beurre, un café crème et la Tour Eiffel qui scintille... Le bonheur à la française.",
+      'La ville lumière porte bien son nom. Un croissant au beurre, un café crème et la Tour Eiffel qui scintille... Le bonheur à la française.',
     recipientName: 'Mamie',
     senderName: 'Léa',
     stampStyle: 'classic',
@@ -158,8 +157,7 @@ const SHOWCASE_POSTCARDS: Postcard[] = [
   },
   {
     id: 'show-6',
-    frontImage:
-      'https://img.cartepostale.cool/demo/photo-1531366936337-7c912a4589a7.jpg',
+    frontImage: 'https://img.cartepostale.cool/demo/photo-1531366936337-7c912a4589a7.jpg',
     location: 'Tromsø, Norvège',
     message:
       "Les aurores boréales dansent au-dessus de nos têtes chaque soir. C'est le spectacle le plus incroyable que j'aie jamais vu.",
@@ -298,7 +296,13 @@ export default function GalerieClient() {
   const [unsplashCols, setUnsplashCols] = useState(4)
   const unsplashDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const GRID_COLS_CLASS = ['grid-cols-2', 'grid-cols-3', 'grid-cols-4', 'grid-cols-5', 'grid-cols-6'] as const
+  const GRID_COLS_CLASS = [
+    'grid-cols-2',
+    'grid-cols-3',
+    'grid-cols-4',
+    'grid-cols-5',
+    'grid-cols-6',
+  ] as const
 
   useEffect(() => {
     setPostcards(SHOWCASE_POSTCARDS)
@@ -340,7 +344,10 @@ export default function GalerieClient() {
     const value = e.target.value
     setUnsplashInput(value)
     if (unsplashDebounceRef.current) clearTimeout(unsplashDebounceRef.current)
-    unsplashDebounceRef.current = setTimeout(() => setUnsplashQuery(value.trim()), UNSPLASH_DEBOUNCE_MS)
+    unsplashDebounceRef.current = setTimeout(
+      () => setUnsplashQuery(value.trim()),
+      UNSPLASH_DEBOUNCE_MS,
+    )
   }, [])
 
   const handleUnsplashSearch = useCallback(() => {
@@ -354,7 +361,10 @@ export default function GalerieClient() {
       <div className="relative bg-stone-900 h-[420px] flex items-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src={getOptimizedImageUrl("https://img.cartepostale.cool/demo/photo-1488646953014-85cb44e25828.jpg", { width: 1920 })}
+            src={getOptimizedImageUrl(
+              'https://img.cartepostale.cool/demo/photo-1488646953014-85cb44e25828.jpg',
+              { width: 1920 },
+            )}
             className="w-full h-full object-cover opacity-30"
             alt="Travel background"
           />
@@ -390,7 +400,8 @@ export default function GalerieClient() {
                 Inspirations Voyage
               </h2>
               <p className="text-stone-500 mt-2">
-                Découvrez les cartes envoyées par notre communauté ou recherchez une image dans notre studio en ligne&nbsp;
+                Découvrez les cartes envoyées par notre communauté ou recherchez une image dans
+                notre studio en ligne&nbsp;
                 <a
                   href={EDITOR_STUDIO_URL}
                   target="_blank"
@@ -432,7 +443,7 @@ export default function GalerieClient() {
                     'w-full h-14 pl-12 pr-4 rounded-2xl border border-stone-200 bg-white text-stone-800',
                     'placeholder:text-stone-400 text-[15px] font-medium',
                     'focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400',
-                    'shadow-sm hover:shadow-md transition-shadow'
+                    'shadow-sm hover:shadow-md transition-shadow',
                   )}
                   aria-label="Recherche d'image"
                   title={IMAGE_SEARCH_TOOLTIP}
@@ -445,7 +456,11 @@ export default function GalerieClient() {
                 className="h-14 px-6 rounded-2xl bg-teal-500 hover:bg-teal-600 text-white font-bold shadow-md shrink-0"
                 title="Lance la recherche d'image dans le studio CartePostale"
               >
-                {unsplashLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+                {unsplashLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Search className="w-5 h-5" />
+                )}
               </Button>
             </div>
             <div
@@ -500,7 +515,7 @@ export default function GalerieClient() {
                           'px-3 py-1.5 rounded-xl text-sm font-bold transition-all',
                           unsplashOrderBy === 'relevant'
                             ? 'bg-teal-500 text-white shadow-sm'
-                            : 'bg-white text-stone-500 border border-stone-200 hover:border-stone-300'
+                            : 'bg-white text-stone-500 border border-stone-200 hover:border-stone-300',
                         )}
                       >
                         Pertinent
@@ -512,7 +527,7 @@ export default function GalerieClient() {
                           'px-3 py-1.5 rounded-xl text-sm font-bold transition-all',
                           unsplashOrderBy === 'latest'
                             ? 'bg-teal-500 text-white shadow-sm'
-                            : 'bg-white text-stone-500 border border-stone-200 hover:border-stone-300'
+                            : 'bg-white text-stone-500 border border-stone-200 hover:border-stone-300',
                         )}
                       >
                         Récent
@@ -530,13 +545,15 @@ export default function GalerieClient() {
                           'w-8 h-8 flex items-center justify-center rounded-lg font-bold transition-all',
                           unsplashCols <= 2
                             ? 'bg-stone-100 text-stone-300 cursor-not-allowed'
-                            : 'bg-white text-stone-600 border border-stone-200 hover:border-teal-400 hover:text-teal-600'
+                            : 'bg-white text-stone-600 border border-stone-200 hover:border-teal-400 hover:text-teal-600',
                         )}
                         aria-label="Moins de colonnes"
                       >
                         <Minus className="w-4 h-4" />
                       </button>
-                      <span className="text-sm font-bold text-stone-600 min-w-[1.5rem] text-center">{unsplashCols}</span>
+                      <span className="text-sm font-bold text-stone-600 min-w-[1.5rem] text-center">
+                        {unsplashCols}
+                      </span>
                       <button
                         type="button"
                         onClick={() => setUnsplashCols((c) => Math.min(6, c + 1))}
@@ -545,7 +562,7 @@ export default function GalerieClient() {
                           'w-8 h-8 flex items-center justify-center rounded-lg font-bold transition-all',
                           unsplashCols >= 6
                             ? 'bg-stone-100 text-stone-300 cursor-not-allowed'
-                            : 'bg-white text-stone-600 border border-stone-200 hover:border-teal-400 hover:text-teal-600'
+                            : 'bg-white text-stone-600 border border-stone-200 hover:border-teal-400 hover:text-teal-600',
                         )}
                         aria-label="Plus de colonnes"
                       >
@@ -555,7 +572,10 @@ export default function GalerieClient() {
                   </div>
                   <span className="text-sm text-stone-500">
                     {unsplashTotal > 0 && (
-                      <>Environ {unsplashTotal.toLocaleString('fr-FR')} résultat{unsplashTotal > 1 ? 's' : ''}</>
+                      <>
+                        Environ {unsplashTotal.toLocaleString('fr-FR')} résultat
+                        {unsplashTotal > 1 ? 's' : ''}
+                      </>
                     )}
                   </span>
                 </div>
@@ -566,9 +586,13 @@ export default function GalerieClient() {
                   <Loader2 className="w-10 h-10 animate-spin text-teal-500" />
                 </div>
               ) : unsplashResults.length === 0 ? (
-                <p className="text-center text-stone-500 py-12">Aucun résultat pour cette recherche. Essayez un autre mot-clé.</p>
+                <p className="text-center text-stone-500 py-12">
+                  Aucun résultat pour cette recherche. Essayez un autre mot-clé.
+                </p>
               ) : (
-                <ul className={cn('grid gap-4 list-none p-0 m-0', GRID_COLS_CLASS[unsplashCols - 2])}>
+                <ul
+                  className={cn('grid gap-4 list-none p-0 m-0', GRID_COLS_CLASS[unsplashCols - 2])}
+                >
                   {unsplashResults.map((photo) => {
                     const editorUrl = `/editor?cover=${encodeURIComponent(photo.urls.regular)}`
                     return (
@@ -654,25 +678,45 @@ export default function GalerieClient() {
               )}
               <div className="flex flex-wrap justify-center gap-x-12 gap-y-24">
                 {postcards.map((card) => (
-                <div key={card.id} className="flex flex-col items-center">
-                  <PostcardView postcard={card} />
-                  <div className="w-[340px] sm:w-[600px] mt-6 flex justify-between items-center px-4 py-3 bg-white border border-stone-100 rounded-2xl shadow-sm">
-                    <div className="flex items-center gap-3">
-                      <Heart
-                        size={16}
-                        className="text-stone-300 hover:text-red-500 cursor-pointer transition-colors"
-                      />
-                      <span className="text-stone-400 text-xs">|</span>
-                      <span className="text-xs font-semibold text-stone-500">
-                        {card.location}
-                      </span>
+                  <div key={card.id} className="flex flex-col items-center">
+                    <PostcardView postcard={card} />
+                    <div className="w-[340px] sm:w-[600px] mt-6 flex justify-between items-center px-4 py-3 bg-white border border-stone-100 rounded-2xl shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <Heart
+                          size={16}
+                          className="text-stone-300 hover:text-red-500 cursor-pointer transition-colors"
+                        />
+                        <span className="text-stone-400 text-xs">|</span>
+                        <span className="text-xs font-semibold text-stone-500">
+                          {card.location}
+                        </span>
+                      </div>
+                      <div className="text-xs text-stone-400 font-medium">
+                        par <span className="text-stone-600 font-semibold">{card.senderName}</span>
+                      </div>
                     </div>
-                    <div className="text-xs text-stone-400 font-medium">
-                      par <span className="text-stone-600 font-semibold">{card.senderName}</span>
+
+                    {/* Boutons de démo */}
+                    <div className="w-[340px] sm:w-[600px] mt-4 flex flex-col sm:flex-row gap-2">
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="flex-1 rounded-xl bg-white border-stone-200 text-stone-600 hover:bg-stone-50 text-[10px] sm:text-xs font-bold py-2 h-auto shadow-sm"
+                      >
+                        <Link href={`/carte/${card.id}`}>
+                          <Eye size={14} className="mr-1.5 text-teal-500" />
+                          Voir comme un destinataire
+                        </Link>
+                      </Button>
+                      <Button
+                        asChild
+                        className="flex-1 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-[10px] sm:text-xs font-bold py-2 h-auto shadow-sm transition-all"
+                      >
+                        <Link href="/editor">Créer une carte identique</Link>
+                      </Button>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
               </div>
             </>
           )}
@@ -700,7 +744,7 @@ export default function GalerieClient() {
                     <div
                       className={cn(
                         'w-20 h-20 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-hover:-translate-y-1 group-hover:shadow-xl',
-                        step.color
+                        step.color,
                       )}
                     >
                       <Icon size={32} />
@@ -803,7 +847,7 @@ export default function GalerieClient() {
                   <div
                     className={cn(
                       'w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold',
-                      testimonial.color
+                      testimonial.color,
                     )}
                   >
                     {testimonial.avatar}
@@ -823,7 +867,10 @@ export default function GalerieClient() {
       <section className="relative bg-teal-900 py-20 sm:py-24 overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src={getOptimizedImageUrl("https://img.cartepostale.cool/demo/photo-1476514525535-07fb3b4ae5f1.jpg", { width: 1920 })}
+            src={getOptimizedImageUrl(
+              'https://img.cartepostale.cool/demo/photo-1476514525535-07fb3b4ae5f1.jpg',
+              { width: 1920 },
+            )}
             className="w-full h-full object-cover opacity-20 mix-blend-overlay"
             alt=""
           />
@@ -838,8 +885,8 @@ export default function GalerieClient() {
             </span>
           </h2>
           <p className="text-teal-100 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-            Créez votre première carte postale en moins de 2 minutes. C&apos;est gratuit, c&apos;est beau,
-            et ça fait plaisir.
+            Créez votre première carte postale en moins de 2 minutes. C&apos;est gratuit, c&apos;est
+            beau, et ça fait plaisir.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/editor">

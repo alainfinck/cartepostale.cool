@@ -108,6 +108,7 @@ export interface Postcard {
   agencyId?: string
   brandLogo?: string
   stickers?: StickerPlacement[]
+  emojiStickers?: EmojiSticker[]
   audioMessage?: string
   audioDuration?: number
   backgroundMusic?: string
@@ -138,6 +139,15 @@ export interface StickerPlacement {
   scale: number
   rotation: number
   imageUrl?: string // Cache for display
+}
+
+/** Emoji placé directement sur la face avant de la carte (draggable + zoomable). */
+export interface EmojiSticker {
+  id: string
+  emoji: string
+  x: number // % 0-100 (centre)
+  y: number // % 0-100 (centre)
+  scale: number // multiplicateur de taille (1 = ~48px)
 }
 
 export interface AgencyConfig {

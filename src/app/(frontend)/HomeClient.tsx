@@ -21,6 +21,7 @@ import {
   Map,
   Smartphone,
   Heart,
+  Eye,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -62,8 +63,16 @@ export default function Home() {
     isPremium: true,
     coords: { lat: 48.8566, lng: 2.3522 },
     mediaItems: [
-      { id: 'h1', type: 'image', url: 'https://img.cartepostale.cool/demo/photo-1502602898657-3e91760cbb34.jpg' },
-      { id: 'h2', type: 'image', url: 'https://img.cartepostale.cool/demo/photo-1499856871958-5b9627545d1a.jpg' },
+      {
+        id: 'h1',
+        type: 'image',
+        url: 'https://img.cartepostale.cool/demo/photo-1502602898657-3e91760cbb34.jpg',
+      },
+      {
+        id: 'h2',
+        type: 'image',
+        url: 'https://img.cartepostale.cool/demo/photo-1499856871958-5b9627545d1a.jpg',
+      },
     ],
   }
 
@@ -298,6 +307,31 @@ export default function Home() {
           {savedPostcards.map((card) => (
             <div key={card.id} className="flex flex-col items-center group">
               <PostcardView postcard={card} />
+              <div className="mt-4 text-center">
+                <p className="text-stone-500 text-sm">
+                  par <span className="text-stone-600 font-semibold">{card.senderName}</span>
+                </p>
+
+                {/* Boutons de démo */}
+                <div className="mt-4 flex flex-col sm:flex-row gap-2 w-full max-w-[340px] sm:max-w-[600px]">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="flex-1 rounded-xl bg-white border-stone-200 text-stone-600 hover:bg-stone-50 text-[10px] sm:text-xs font-bold py-2 h-auto"
+                  >
+                    <Link href={`/carte/${card.id}`}>
+                      <Eye size={14} className="mr-1.5 text-teal-500" />
+                      Voir comme un destinataire
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    className="flex-1 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-[10px] sm:text-xs font-bold py-2 h-auto"
+                  >
+                    <Link href="/editor">Créer une carte identique</Link>
+                  </Button>
+                </div>
+              </div>
             </div>
           ))}
         </div>

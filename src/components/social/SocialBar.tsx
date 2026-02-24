@@ -31,6 +31,7 @@ interface SocialBarProps {
   allowComments?: boolean
   /** Id du noeud DOM où afficher la barre de réactions (ex. sous la carte). Si défini, les réactions sont rendues dans ce noeud, le reste en dessous. */
   reactionsPortalTargetId?: string
+  isDemo?: boolean
 }
 
 export default function SocialBar({
@@ -42,6 +43,7 @@ export default function SocialBar({
   coords,
   allowComments = true,
   reactionsPortalTargetId,
+  isDemo = false,
 }: SocialBarProps) {
   const searchParams = useSearchParams()
   const sessionId = useSessionId()
@@ -66,7 +68,10 @@ export default function SocialBar({
 
   // Load initial data + record view (open)
   useEffect(() => {
-    if (!sessionId) return
+    if (!sessionId || isDemo) {
+      if (isDemo) setLoaded(true)
+      return
+    }
 
     const load = async () => {
       const [reactionsData, userReactionsData, commentsData] = await Promise.all([

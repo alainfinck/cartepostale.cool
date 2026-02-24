@@ -257,6 +257,10 @@ export interface Media {
      */
     cameraModel?: string | null;
   };
+  /**
+   * Utilisateur ayant téléchargé ce média (pour sa galerie personnelle)
+   */
+  author?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -947,6 +951,7 @@ export interface MediaSelect<T extends boolean = true> {
         cameraMake?: T;
         cameraModel?: T;
       };
+  author?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;

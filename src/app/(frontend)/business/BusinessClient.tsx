@@ -21,6 +21,10 @@ import {
   QrCode,
   TrendingUp,
   Rocket,
+  Star,
+  Map,
+  Smartphone,
+  Heart,
 } from 'lucide-react'
 import WordRotate from '@/components/ui/word-rotate'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
@@ -55,9 +59,12 @@ export default function BusinessClient() {
       <section className="relative bg-[#061e1e] min-h-[85vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
-            src={getOptimizedImageUrl('https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg', {
-              width: 1920,
-            })}
+            src={getOptimizedImageUrl(
+              'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg',
+              {
+                width: 1920,
+              },
+            )}
             alt="Vacation Background"
             className="w-full h-full object-cover opacity-40 mix-blend-overlay scale-105"
           />
@@ -113,7 +120,16 @@ export default function BusinessClient() {
                 className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white px-10 py-8 rounded-2xl text-xl font-bold transition-all shadow-2xl shadow-orange-950/40 flex items-center gap-3 border-0"
               >
                 <Link href="/contact">
-                  Démarrer maintenant <ArrowRight size={24} />
+                  Démarrez maintenant <ArrowRight size={20} />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 px-8 py-6 rounded-2xl text-lg font-bold"
+              >
+                <Link href="/carte/demo-1">
+                  <Eye size={20} className="mr-2" /> Voir la démo destinataire
                 </Link>
               </Button>
               <Button
@@ -385,9 +401,12 @@ export default function BusinessClient() {
             <div className="absolute -inset-4 bg-orange-100 rounded-[40px] rotate-2 -z-10 blur-2xl opacity-50"></div>
             <div className="bg-white rounded-[40px] p-2 shadow-2xl overflow-hidden border border-stone-100">
               <img
-                src={getOptimizedImageUrl('https://img.cartepostale.cool/demo/photo-1502602898657-3e91760cbb34.jpg', {
-                  width: 1000,
-                })}
+                src={getOptimizedImageUrl(
+                  'https://img.cartepostale.cool/demo/photo-1502602898657-3e91760cbb34.jpg',
+                  {
+                    width: 1000,
+                  },
+                )}
                 alt="Image Bank Preview"
                 className="rounded-[36px] w-full"
               />
