@@ -137,6 +137,7 @@ const plans: PricingPlan[] = [
       'Modifiable via le lien reçu par email',
       'Prolongeable en carte payante à tout moment',
     ],
+    notIncluded: ['Album photos'],
     color: 'stone',
     cta: 'Créer ma carte',
     ctaHref: '/editor',
@@ -237,7 +238,8 @@ export default function PricingPage() {
               <p className="font-bold text-sm">Carte gratuite</p>
               <p className="text-teal-100 text-xs mt-0.5">
                 Créez une carte sans payer. Elle est sans limite de temps et modifiable via le lien
-                reçu par email — vous pourrez la modifier à tout moment.
+                reçu par email — vous pourrez la modifier à tout moment, mais elle n'inclut pas
+                d'album photos (limité à 1 photo).
               </p>
             </div>
           </div>

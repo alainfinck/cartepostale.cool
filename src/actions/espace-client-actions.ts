@@ -201,6 +201,48 @@ export async function updateMyPostcard(
         (mediaDoc.filename ? `/media/${encodeURIComponent(mediaDoc.filename)}` : undefined)
     }
 
+    if (data.mediaItems && Array.isArray(data.mediaItems)) {
+      const processedMediaItems = []
+      for (const item of data.mediaItems) {
+        if (item.newKey) {
+          const media = await payload.create({
+            collection: 'media',
+            data: {
+              alt: `Photo album`,
+              filename: item.newKey,
+              mimeType: item.mimeType || 'image/jpeg',
+              filesize: item.filesize || 0,
+            },
+          })
+          processedMediaItems.push({ media: media.id, type: item.type || 'image', note: item.note })
+        } else if (item.newBase64) {
+          const [meta, base64Data] = (item.newBase64 as string).split(',')
+          const mime = meta.match(/:(.*?);/)?.[1] || 'image/png'
+          const extension = mime.split('/')[1] || 'png'
+          const buffer = Buffer.from(base64Data, 'base64')
+
+          const media = await payload.create({
+            collection: 'media',
+            data: { alt: `Photo album` },
+            file: {
+              data: buffer,
+              mimetype: mime,
+              name: `postcard-album-${Date.now()}.${extension}`,
+              size: buffer.length,
+            },
+          })
+          processedMediaItems.push({ media: media.id, type: item.type || 'image', note: item.note })
+        } else if (item.media) {
+          processedMediaItems.push({
+            media: item.media,
+            type: item.type || 'image',
+            note: item.note,
+          })
+        }
+      }
+      updateData.mediaItems = processedMediaItems
+    }
+
     await payload.update({
       collection: 'postcards',
       id,

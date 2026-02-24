@@ -126,6 +126,18 @@ const BACK_MESSAGE_FONTS = [
     fontFamily: "'Parisienne', cursive",
     className: 'font-handwriting-parisienne',
   },
+  {
+    id: 'sans' as const,
+    name: 'Standard (Sans)',
+    fontFamily: 'var(--font-sans), system-ui, sans-serif',
+    className: 'font-sans',
+  },
+  {
+    id: 'serif' as const,
+    name: 'Classique (Serif)',
+    fontFamily: "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif",
+    className: 'font-serif',
+  },
 ]
 
 const buildFrontImageFilterCss = (filter?: FrontImageFilter): string => {
@@ -352,10 +364,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const [messageModalFontSize, setMessageModalFontSize] = useState(2)
   // Slider de taille du texte au verso (0.7 = petit, 2.2 = grand) — défaut réduit pour aperçu global
   const [backTextScale, setBackTextScale] = useState(isLarge ? 0.95 : 0.78)
-  // Police du message au verso (dancing = défaut, greatVibes, parisienne)
-  const [backMessageFont, setBackMessageFont] = useState<'dancing' | 'greatVibes' | 'parisienne'>(
-    'dancing',
-  )
+  // Police du message au verso (dancing = défaut, greatVibes, parisienne, sans, serif)
+  const [backMessageFont, setBackMessageFont] = useState<
+    'dancing' | 'greatVibes' | 'parisienne' | 'sans' | 'serif'
+  >('dancing')
   const [isFontMenuOpen, setIsFontMenuOpen] = useState(false)
   // Zoom de la mini-carte au verso (pour que + / - fonctionnent sans déclencher le flip)
   const [backMapZoom, setBackMapZoom] = useState(6)
