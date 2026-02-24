@@ -171,3 +171,45 @@ export async function addUserGalleryImage(
     return { success: false, error: err.message || 'Erreur lors de la sauvegarde' }
   }
 }
+
+export async function deleteUserGalleryImage(
+  imageId: number,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return { success: false, error: 'Non authentifié' }
+    }
+
+    const payload = await getPayload({ config })
+
+    // Find the media item to verify ownership
+    const media = await payload.findByID({
+      collection: 'media',
+      id: imageId,
+    })
+
+    if (!media) {
+      return { success: false, error: 'Média introuvable' }
+    }
+
+    // Check if the user is the author
+    const authorId = typeof media.author === 'object' ? media.author?.id : media.author
+
+    if (authorId !== user.id) {
+      return { success: false, error: 'Vous n’êtes pas autorisé à supprimer ce média' }
+    }
+
+    // Delete from Payload (and R2 via s3Storage plugin)
+    await payload.delete({
+      collection: 'media',
+      id: imageId,
+      overrideAccess: true,
+    })
+
+    return { success: true }
+  } catch (err: any) {
+    console.error('Error deleting user gallery image:', err)
+    return { success: false, error: err.message || 'Erreur lors de la suppression' }
+  }
+}

@@ -1,11 +1,24 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
-import { Search, Image as ImageIcon, Upload, Loader2, CloudUpload, X, Send } from 'lucide-react'
+import {
+  Search,
+  Image as ImageIcon,
+  Upload,
+  Loader2,
+  CloudUpload,
+  X,
+  Send,
+  Trash2,
+} from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
-import { type UserMediaItem, addUserGalleryImage } from '@/actions/client-gallery-actions'
+import {
+  type UserMediaItem,
+  addUserGalleryImage,
+  deleteUserGalleryImage,
+} from '@/actions/client-gallery-actions'
 import { fileToProcessedDataUrl, dataUrlToBlob } from '@/lib/image-processing'
 import { extractExifData } from '@/lib/extract-exif'
 import { useDropzone } from 'react-dropzone'
@@ -19,6 +32,7 @@ export default function UserGalerieClient({ items: initialItems }: Props) {
   const [items, setItems] = useState<UserMediaItem[]>(initialItems)
   const [search, setSearch] = useState('')
   const [isUploading, setIsUploading] = useState(false)
+  const [isDeleting, setIsDeleting] = useState<number | null>(null)
   const [selectedImage, setSelectedImage] = useState<UserMediaItem | null>(null)
 
   const filteredItems = items.filter((item) => {
@@ -81,6 +95,29 @@ export default function UserGalerieClient({ items: initialItems }: Props) {
       alert(err.message || 'Une erreur est survenue lors de l’upload.')
     } finally {
       setIsUploading(false)
+    }
+  }
+
+  const handleDelete = async (e: React.MouseEvent, item: UserMediaItem) => {
+    e.stopPropagation()
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette image de votre galerie ?')) return
+
+    setIsDeleting(item.id)
+    try {
+      const res = await deleteUserGalleryImage(item.id)
+      if (res.success) {
+        setItems((prev) => prev.filter((i) => i.id !== item.id))
+        if (selectedImage?.id === item.id) {
+          setSelectedImage(null)
+        }
+      } else {
+        alert(res.error || 'Erreur lors de la suppression')
+      }
+    } catch (err) {
+      console.error('Delete Error:', err)
+      alert('Une erreur est survenue lors de la suppression.')
+    } finally {
+      setIsDeleting(null)
     }
   }
 
@@ -206,6 +243,22 @@ export default function UserGalerieClient({ items: initialItems }: Props) {
                   {new Date(item.addedAt).toLocaleDateString('fr-FR')}
                 </p>
               </div>
+
+              {/* Action Overlay on Hover */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={(e) => handleDelete(e, item)}
+                  disabled={isDeleting === item.id}
+                  className="p-2 bg-white/90 hover:bg-red-50 text-stone-600 hover:text-red-500 rounded-full shadow-sm transition-colors disabled:opacity-50"
+                  title="Supprimer l'image"
+                >
+                  {isDeleting === item.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -251,6 +304,19 @@ export default function UserGalerieClient({ items: initialItems }: Props) {
               >
                 <Send className="h-5 w-5" />
                 Utiliser pour une vraie carte
+              </button>
+
+              <button
+                onClick={(e) => handleDelete(e, selectedImage)}
+                disabled={isDeleting === selectedImage.id}
+                className="bg-stone-800/80 hover:bg-red-500/90 text-white font-medium py-3 px-6 rounded-full shadow-lg flex items-center gap-3 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+              >
+                {isDeleting === selectedImage.id ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Trash2 className="h-5 w-5" />
+                )}
+                Supprimer
               </button>
             </div>
           </div>
