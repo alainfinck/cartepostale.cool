@@ -93,24 +93,6 @@ export default function EnvelopeHero({
           {coords ? (
             <div className="w-full h-full relative">
               <MiniMap coords={coords} zoom={5} className="w-full h-full" />
-
-              {/* Animated Pin Overlay */}
-              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                <motion.div
-                  initial={{ y: -100, opacity: 0, scale: 0.5 }}
-                  animate={{ y: 0, opacity: 1, scale: 1 }}
-                  transition={{
-                    delay: 1.5,
-                    type: 'spring',
-                    stiffness: 300,
-                    damping: 15,
-                    mass: 0.8,
-                  }}
-                  className="mb-8" // Offset for pin placement
-                >
-                  <GooglePinIcon className="w-8 h-12 drop-shadow-xl" />
-                </motion.div>
-              </div>
             </div>
           ) : (
             <div className="w-full h-full bg-stone-100 flex items-center justify-center">

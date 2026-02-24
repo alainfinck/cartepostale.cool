@@ -61,7 +61,7 @@ export default function EnvelopeExperience({
             className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-br from-[#fffdf7] via-[#f7f2ea] to-[#f1e8d6] backdrop-blur-3xl"
           >
             <div
-              className={`min-h-full w-full flex flex-col items-center justify-center py-12 px-5 transition-opacity duration-500 ${isOpening ? 'opacity-0' : 'opacity-100'}`}
+              className={`min-h-full w-full flex flex-col items-center justify-start pt-[12vh] pb-12 px-5 transition-opacity duration-500 ${isOpening ? 'opacity-0' : 'opacity-100'}`}
             >
               <motion.button
                 type="button"
