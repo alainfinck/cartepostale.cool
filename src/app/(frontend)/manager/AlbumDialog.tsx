@@ -13,8 +13,22 @@ import { Label } from '@/components/ui/label'
 import { Postcard } from '@/payload-types'
 import { Camera, Loader2, Save, X, Images } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { fileToProcessedDataUrl, dataUrlToBlob } from '@/lib/image-processing'
+import { fileToProcessedDataUrl, dataUrlToBlob, getOptimizedImageUrl } from '@/lib/image-processing'
 import { UpdatePostcardFn } from './EditPostcardDialog'
+
+function getItemUrl(item: any): string {
+  if (item.tempUrl) return item.tempUrl
+  if (typeof item.media === 'object' && item.media) {
+    let url = item.media.url || ''
+    if (!url && item.media.filename) {
+      url = `/media/${item.media.filename}`
+    }
+    // Decode any %2F that may have been introduced by old generateFileURL encoding
+    if (url) url = url.replace(/%2F/gi, '/')
+    return url ? getOptimizedImageUrl(url, { width: 400 }) : ''
+  }
+  return ''
+}
 
 interface AlbumDialogProps {
   postcard: Postcard | null
@@ -144,10 +158,7 @@ export default function AlbumDialog({
 
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
             {mediaItems.map((item, idx) => {
-              let url = item.tempUrl || ''
-              if (!url && typeof item.media === 'object' && item.media) {
-                url = item.media.url || (item.media.filename ? `/media/${item.media.filename}` : '')
-              }
+              const url = getItemUrl(item)
               return (
                 <div
                   key={idx}

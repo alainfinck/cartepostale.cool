@@ -69,7 +69,13 @@ const plugins = [
               ...(process.env.R2_PUBLIC_BASE_URL && {
                 generateFileURL: ({ filename, prefix }) => {
                   const base = process.env.R2_PUBLIC_BASE_URL!.replace(/\/$/, '')
-                  const path = [prefix, encodeURIComponent(filename)].filter(Boolean).join('/')
+                  // Encode each path segment individually to preserve '/' as path separators
+                  // (the filename can be a full R2 key like "postcards/album-photo.jpg")
+                  const encodedFilename = filename
+                    .split('/')
+                    .map(encodeURIComponent)
+                    .join('/')
+                  const path = [prefix, encodedFilename].filter(Boolean).join('/')
                   return `${base}/${path}`
                 },
               }),
