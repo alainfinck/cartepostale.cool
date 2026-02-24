@@ -20,6 +20,11 @@ export default function MobileUploadClient({ token }: { token: string }) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const [totalFiles, setTotalFiles] = useState(0)
+  const [currentFileIndex, setCurrentFileIndex] = useState(0)
+  const [uploadDetail, setUploadDetail] = useState('')
+  const [progressPercent, setProgressPercent] = useState(0)
+
   React.useEffect(() => {
     async function checkToken() {
       const { success } = await validateMobileToken(token)
@@ -47,13 +52,21 @@ export default function MobileUploadClient({ token }: { token: string }) {
       setPreviewUrl(objectUrl)
 
       // Upload each file sequentially
+      setTotalFiles(files.length)
       for (let i = 0; i < files.length; i++) {
+        setCurrentFileIndex(i + 1)
         const file = files[i]
 
         // 1. Read, Extract EXIF & Resize via browser canvas
+        setUploadDetail(`Analyse de la photo ${i + 1}/${files.length}...`)
+        setProgressPercent(10)
         const exif = await extractExifData(file)
+
+        setUploadDetail(`Création de la vignette...`)
+        setProgressPercent(20)
         const resizedDataUrl = await fileToProcessedDataUrl(file)
 
+        setProgressPercent(30)
         const blob = await dataUrlToBlob(resizedDataUrl)
         if (!blob) throw new Error('Failed to create image blob')
 
@@ -62,6 +75,8 @@ export default function MobileUploadClient({ token }: { token: string }) {
         const filesize = blob.size
 
         // 3. Get generic presigned URL for upload
+        setUploadDetail(`Préparation de l'envoi...`)
+        setProgressPercent(40)
         const presignedRes = await fetch('/api/upload-presigned', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -73,16 +88,37 @@ export default function MobileUploadClient({ token }: { token: string }) {
         const { url: uploadUrl, key } = await presignedRes.json()
 
         // 4. Upload directly to R2
-        const uploadRes = await fetch(uploadUrl, {
-          method: 'PUT',
-          headers: { 'Content-Type': mimeType },
-          body: blob,
+        setUploadDetail(`Envoi en cours...`)
+        setProgressPercent(40)
+
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest()
+          xhr.open('PUT', uploadUrl, true)
+          xhr.setRequestHeader('Content-Type', mimeType)
+
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              const percentComplete = Math.round((e.loaded / e.total) * 40) // 40% to 80%
+              setProgressPercent(40 + percentComplete)
+              setUploadDetail(`Envoi en cours (${Math.round((e.loaded / e.total) * 100)}%)...`)
+            }
+          }
+
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve(true)
+            } else {
+              reject(new Error('Erreur lors de l’envoi du fichier vers le serveur'))
+            }
+          }
+
+          xhr.onerror = () => reject(new Error('Erreur réseau lors de l’envoi'))
+          xhr.send(blob)
         })
-        if (!uploadRes.ok) {
-          throw new Error('Erreur lors de l’envoi du fichier vers le serveur')
-        }
 
         // 5. Save the relation in Payload via Server Action, using the token
+        setUploadDetail(`Sauvegarde...`)
+        setProgressPercent(90)
         const saveRes = await verifyAndAddMobileGalleryImage(
           token,
           key,
@@ -96,6 +132,8 @@ export default function MobileUploadClient({ token }: { token: string }) {
             saveRes.error || 'Erreur lors de la sauvegarde du média (Token invalide?)',
           )
         }
+
+        setProgressPercent(100)
       }
 
       setUploadStatus('success')
@@ -115,6 +153,10 @@ export default function MobileUploadClient({ token }: { token: string }) {
     setUploadStatus('idle')
     setPreviewUrl(null)
     setErrorMessage(null)
+    setProgressPercent(0)
+    setCurrentFileIndex(0)
+    setTotalFiles(0)
+    setUploadDetail('')
   }
 
   return (
@@ -199,10 +241,24 @@ export default function MobileUploadClient({ token }: { token: string }) {
               >
                 {/* Upload Overlay */}
                 {isUploading && (
-                  <div className="absolute inset-0 z-10 bg-teal-500 flex flex-col items-center justify-center text-white animate-in fade-in duration-300">
-                    <Loader2 className="h-10 w-10 animate-spin mb-3" />
-                    <p className="font-bold text-lg">Envoi en cours...</p>
-                    <p className="text-teal-100 text-sm mt-1">Veuillez patienter</p>
+                  <div className="absolute inset-0 z-10 bg-teal-500/95 backdrop-blur-sm flex flex-col items-center justify-center text-white animate-in fade-in duration-300 p-6">
+                    <Loader2 className="h-10 w-10 animate-spin mb-4" />
+                    <p className="font-bold text-lg mb-1">
+                      Envoi {currentFileIndex} sur {totalFiles}
+                    </p>
+                    <p className="text-teal-100 text-sm mb-4 font-medium text-center h-5">
+                      {uploadDetail}
+                    </p>
+
+                    {/* Progress Bar Container */}
+                    <div className="w-full max-w-[200px] h-2 bg-teal-800/50 rounded-full overflow-hidden mb-2">
+                      {/* Progress Bar Fill */}
+                      <div
+                        className="h-full bg-white rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-teal-100 font-bold">{progressPercent}%</p>
                   </div>
                 )}
 

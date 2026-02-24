@@ -1524,7 +1524,7 @@ function GridCard({
                   className="flex flex-wrap items-center justify-between gap-2"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <Link
                       href={`/carte/${postcard.publicId}`}
                       target="_blank"
@@ -1533,10 +1533,10 @@ function GridCard({
                       <Button
                         variant="outline"
                         size="icon"
-                        className="h-9 w-9 text-stone-600 hover:text-teal-600 border-stone-200 bg-white shadow-sm"
+                        className="h-8 w-8 text-stone-600 hover:text-teal-600 border-stone-200 bg-white shadow-sm"
                         title="Ouvrir dans un nouvel onglet"
                       >
-                        <ExternalLink size={16} />
+                        <ExternalLink size={14} />
                       </Button>
                     </Link>
                     <Button
@@ -1546,10 +1546,10 @@ function GridCard({
                         e.stopPropagation()
                         onEdit()
                       }}
-                      className="h-9 w-9 text-stone-600 hover:text-teal-600 hover:bg-teal-50 border-teal-200 shadow-sm"
+                      className="h-8 w-8 text-stone-600 hover:text-teal-600 hover:bg-teal-50 border-teal-200 shadow-sm"
                       title="Modifier"
                     >
-                      <Pencil size={16} />
+                      <Pencil size={14} />
                     </Button>
                     {onEditInEditor && (
                       <Button
@@ -1559,10 +1559,10 @@ function GridCard({
                           e.stopPropagation()
                           onEditInEditor()
                         }}
-                        className="h-9 px-2.5 text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-100 font-medium shadow-sm"
+                        className="h-8 px-2 text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-100 font-medium shadow-sm text-[10px]"
                         title="Ouvrir dans l’éditeur"
                       >
-                        <PenTool size={14} className="mr-1.5 shrink-0" />
+                        <PenTool size={12} className="mr-1 shrink-0" />
                         Éditeur
                       </Button>
                     )}
@@ -1574,10 +1574,10 @@ function GridCard({
                           e.stopPropagation()
                           onOpenShareContribution()
                         }}
-                        className="h-9 w-9 text-purple-600 hover:text-purple-700 hover:bg-purple-50 border-purple-200 shadow-sm"
+                        className="h-8 w-8 text-purple-600 hover:text-purple-700 hover:bg-purple-50 border-purple-200 shadow-sm"
                         title="Partager le lien de contribution (photos)"
                       >
-                        <Users size={16} />
+                        <Users size={14} />
                       </Button>
                     )}
                     <StatusDropdown
@@ -1592,10 +1592,10 @@ function GridCard({
                         e.stopPropagation()
                         onDelete(postcard.id)
                       }}
-                      className="h-9 w-9 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 shadow-sm"
+                      className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 shadow-sm"
                       title="Supprimer la carte"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={14} />
                     </Button>
                   </div>
                 </div>
@@ -1632,6 +1632,17 @@ function GridCard({
           className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-lg overflow-hidden border border-border/50 bg-gradient-to-br from-stone-100 to-stone-200/80 shadow-lg cursor-pointer"
           onClick={onSelect}
         >
+          <div className="absolute top-3 right-3 z-10">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 text-stone-600 hover:text-teal-600 border-stone-200 bg-white shadow-sm"
+              onClick={toggleFlip}
+              title="Retourner recto"
+            >
+              <RotateCcw size={14} />
+            </Button>
+          </div>
           <div className="h-full flex flex-col p-5 justify-center">
             <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">
               Message
@@ -1746,35 +1757,38 @@ function ListRow({
         {postcard.shares || 0}
       </TableCell>
       <TableCell>
-        <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex flex-wrap items-center justify-end gap-1.5"
+          onClick={(e) => e.stopPropagation()}
+        >
           <Link href={`/carte/${postcard.publicId}`} target="_blank">
             <Button
               variant="outline"
               size="icon"
-              className="h-9 w-9 text-stone-600 hover:text-teal-600 border-stone-200 bg-white shadow-sm"
+              className="h-8 w-8 text-stone-600 hover:text-teal-600 border-stone-200 bg-white shadow-sm"
               title="Voir la carte"
             >
-              <ExternalLink size={16} />
+              <ExternalLink size={14} />
             </Button>
           </Link>
           <Button
             variant="outline"
             size="icon"
-            className="h-9 w-9 text-stone-600 hover:text-teal-600 hover:bg-teal-50 border-teal-200 shadow-sm"
+            className="h-8 w-8 text-stone-600 hover:text-teal-600 hover:bg-teal-50 border-teal-200 shadow-sm"
             onClick={() => onEdit()}
             title="Modifier"
           >
-            <Pencil size={16} />
+            <Pencil size={14} />
           </Button>
           {onEditInEditor && (
             <Button
               variant="outline"
               size="sm"
-              className="h-9 px-2.5 text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-100 font-medium shadow-sm"
+              className="h-8 px-2 text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-100 font-medium shadow-sm text-xs"
               onClick={() => onEditInEditor()}
               title="Ouvrir dans l’éditeur"
             >
-              <PenTool size={14} className="mr-1.5" />
+              <PenTool size={12} className="mr-1" />
               Éditeur
             </Button>
           )}
@@ -1782,11 +1796,11 @@ function ListRow({
             <Button
               variant="outline"
               size="sm"
-              className="h-9 px-3 text-violet-700 border-violet-200 bg-violet-50/50 hover:bg-violet-100 font-medium shadow-sm"
+              className="h-8 px-2 text-violet-700 border-violet-200 bg-violet-50/50 hover:bg-violet-100 font-medium shadow-sm text-xs"
               onClick={() => onDuplicate()}
               title="Dupliquer la carte"
             >
-              <Copy size={14} className="mr-1.5" />
+              <Copy size={12} className="mr-1" />
               Dupliquer
             </Button>
           )}
@@ -1794,11 +1808,11 @@ function ListRow({
             <Button
               variant="outline"
               size="sm"
-              className="h-9 px-3 text-purple-700 border-purple-200 bg-purple-50/50 hover:bg-purple-100 font-medium shadow-sm"
+              className="h-8 px-2 text-purple-700 border-purple-200 bg-purple-50/50 hover:bg-purple-100 font-medium shadow-sm text-xs"
               onClick={() => onOpenShareContribution()}
               title="Partager le lien de contribution (photos)"
             >
-              <Users size={14} className="mr-1.5" />
+              <Users size={12} className="mr-1" />
               Contribuer
             </Button>
           )}
@@ -1810,11 +1824,11 @@ function ListRow({
           <Button
             variant="outline"
             size="icon"
-            className="h-9 w-9 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 shadow-sm"
+            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 shadow-sm"
             onClick={() => onDelete(postcard.id)}
             title="Supprimer"
           >
-            <Trash2 size={16} />
+            <Trash2 size={14} />
           </Button>
         </div>
       </TableCell>
@@ -2361,9 +2375,9 @@ function DetailsSheet(props: {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-12 px-4 rounded-xl border-border/50 bg-background/50 backdrop-blur-sm"
+                    className="h-10 px-3 rounded-xl border-border/50 bg-background/50 backdrop-blur-sm text-xs"
                   >
-                    <ArrowUpDown size={16} className="mr-2" />
+                    <ArrowUpDown size={14} className="mr-2" />
                     Statut
                   </Button>
                 </DropdownMenuTrigger>
@@ -2397,20 +2411,20 @@ function DetailsSheet(props: {
                 variant="outline"
                 size="icon"
                 onClick={onEdit}
-                className="w-12 h-12 text-teal-600 border-border/50 hover:bg-teal-50 rounded-xl transition-colors"
+                className="w-10 h-10 text-teal-600 border-border/50 hover:bg-teal-50 rounded-xl transition-colors"
                 title="Modifier"
               >
-                <Pencil size={18} />
+                <Pencil size={16} />
               </Button>
               {onEditInEditor && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={onEditInEditor}
-                  className="h-12 px-4 text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-100 rounded-xl font-medium"
+                  className="h-10 px-3 text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-100 rounded-xl font-medium text-xs"
                   title="Ouvrir dans l’éditeur"
                 >
-                  <PenTool size={18} className="mr-2" />
+                  <PenTool size={16} className="mr-2" />
                   Éditeur
                 </Button>
               )}
@@ -2419,10 +2433,10 @@ function DetailsSheet(props: {
                   variant="outline"
                   size="icon"
                   onClick={() => onDuplicate(postcard.id)}
-                  className="w-12 h-12 text-violet-600 border-border/50 hover:bg-violet-50 rounded-xl transition-colors"
+                  className="w-10 h-10 text-violet-600 border-border/50 hover:bg-violet-50 rounded-xl transition-colors"
                   title="Dupliquer la carte"
                 >
-                  <Copy size={18} />
+                  <Copy size={16} />
                 </Button>
               )}
               {onSetPublicVisibility && (
@@ -2431,7 +2445,7 @@ function DetailsSheet(props: {
                   size="sm"
                   onClick={() => onSetPublicVisibility(postcard.id, !(postcard.isPublic ?? true))}
                   className={cn(
-                    'h-12 px-4 rounded-xl border-border/50 transition-colors',
+                    'h-10 px-3 rounded-xl border-border/50 transition-colors text-xs',
                     postcard.isPublic
                       ? 'text-emerald-700 hover:bg-emerald-50'
                       : 'text-stone-600 hover:bg-stone-50',
@@ -2446,9 +2460,9 @@ function DetailsSheet(props: {
                 variant="outline"
                 size="icon"
                 onClick={() => onDelete(postcard.id)}
-                className="w-12 h-12 text-destructive border-border/50 hover:bg-destructive/10 rounded-xl transition-colors"
+                className="w-10 h-10 text-destructive border-border/50 hover:bg-destructive/10 rounded-xl transition-colors"
               >
-                <Trash2 size={18} />
+                <Trash2 size={16} />
               </Button>
             </div>
           </div>
