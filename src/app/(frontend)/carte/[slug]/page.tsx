@@ -319,6 +319,9 @@ import { isCoordinate } from '@/lib/utils'
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
 
+  // Ensure absolute image URLs
+  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://cartepostale.cool'
+
   // Check demo postcards
   const demoCard =
     demoPostcards.find((c) => c.id === slug) || SHOWCASE_POSTCARDS.find((c) => c.id === slug)
@@ -327,6 +330,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const description = isCoordinate(demoCard.location)
       ? `Découvrez la carte envoyée par ${demoCard.senderName}.`
       : `Découvrez la carte envoyée par ${demoCard.senderName} depuis ${demoCard.location}.`
+
+    // Use frontImage or fallback
+    const imageUrl = demoCard.frontImage || `${baseUrl}/media/enveloppe-social3.jpg`
+    const absoluteImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`
+
     return {
       title,
       description,
@@ -334,16 +342,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         title,
         description,
         type: 'article',
-        url: `https://cartepostale.cool/carte/${slug}`,
+        url: `${baseUrl}/carte/${slug}`,
         siteName: 'CartePostale.cool',
         images: [
           {
-            url: '/media/enveloppe-social2.jpg',
+            url: absoluteImageUrl,
             width: 1200,
             height: 630,
-            alt: 'cartepostale.cool',
+            alt: `Carte postale de ${demoCard.senderName}`,
           },
         ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: [absoluteImageUrl],
       },
     }
   }
@@ -361,6 +375,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? `Découvrez la carte envoyée par ${postcard.senderName}.`
     : `Découvrez la carte envoyée par ${postcard.senderName} depuis ${postcard.location}.`
 
+  // Map to frontend postcard to easily grab front image logic
+  const frontendPostcard = mapPostcard(postcard)
+  // Use frontImage or fallback to enveloppe-social3.jpg
+  const imageUrl =
+    frontendPostcard.frontImage && !frontendPostcard.frontImage.includes('placeholder')
+      ? frontendPostcard.frontImage
+      : `${baseUrl}/media/enveloppe-social3.jpg`
+  const absoluteImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`
+
   return {
     title,
     description,
@@ -368,13 +391,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       type: 'article',
-      url: `https://cartepostale.cool/carte/${slug}`,
+      url: `${baseUrl}/carte/${slug}`,
       siteName: 'CartePostale.cool',
+      images: [
+        {
+          url: absoluteImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `Carte postale de ${postcard.senderName}`,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: [absoluteImageUrl],
     },
   }
 }

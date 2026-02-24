@@ -15,7 +15,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'https://cartepostale.cool'),
   title: {
     default: 'CartePostale.cool - Cartes postales numériques',
     template: '%s | CartePostale.cool',
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     description: 'Créez et envoyez des cartes postales numériques personnalisées.',
     images: [
       {
-        url: '/media/enveloppe-social2.jpg',
+        url: '/media/enveloppe-social3.jpg',
         width: 1200,
         height: 630,
         alt: 'CartePostale.cool',
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'CartePostale.cool',
     description: 'Créez et envoyez des cartes postales numériques personnalisées.',
-    images: ['/media/enveloppe-social2.jpg'],
+    images: ['/media/enveloppe-social3.jpg'],
   },
   manifest: '/manifest.json',
   appleWebApp: {
