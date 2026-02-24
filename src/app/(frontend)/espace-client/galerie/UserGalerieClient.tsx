@@ -19,6 +19,7 @@ import {
   addUserGalleryImage,
   deleteUserGalleryImage,
 } from '@/actions/client-gallery-actions'
+import { getOptimizedImageUrl } from '@/lib/image-processing'
 import { fileToProcessedDataUrl, dataUrlToBlob } from '@/lib/image-processing'
 import { extractExifData } from '@/lib/extract-exif'
 import { useDropzone } from 'react-dropzone'
@@ -233,7 +234,13 @@ export default function UserGalerieClient({ items: initialItems }: Props) {
               className="group relative rounded-xl border border-stone-200 bg-white overflow-hidden hover:shadow-md transition-all cursor-pointer"
             >
               <div className="aspect-square bg-stone-100 relative">
-                <Image src={item.url} alt={item.alt} fill className="object-cover" />
+                <Image
+                  src={getOptimizedImageUrl(item.url, { width: 400, quality: 80 })}
+                  alt={item.alt}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                />
               </div>
               <div className="p-3 bg-white">
                 <h3 className="font-medium text-xs text-stone-700 truncate" title={item.alt}>
