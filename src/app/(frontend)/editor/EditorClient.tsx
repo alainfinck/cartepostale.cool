@@ -6147,29 +6147,44 @@ export default function EditorPage() {
       )}
 
       <UserGalleryModal
+        multiple={showUserGalleryModal === 'back'}
         open={showUserGalleryModal !== null}
         onOpenChange={(open) => !open && setShowUserGalleryModal(null)}
-        onSelect={(url) => {
+        onSelect={(payloadUrl) => {
           if (showUserGalleryModal === 'front') {
-            setFrontImage(url)
-            setFrontImageKey(null)
-            setFrontImageMimeType(null)
-            setFrontImageFilesize(null)
-            setFrontImageCrop({ scale: 1, x: 50, y: 50 })
-            setFrontImageFilter(DEFAULT_FRONT_FILTER)
-          } else if (showUserGalleryModal === 'back') {
-            const newItem = {
-              id: Date.now() + Math.random().toString(),
-              type: 'image' as const,
-              url,
+            const finalUrl = Array.isArray(payloadUrl) ? payloadUrl[0] : payloadUrl
+            if (finalUrl) {
+              setFrontImage(finalUrl)
+              setFrontImageKey(null)
+              setFrontImageMimeType(null)
+              setFrontImageFilesize(null)
+              setFrontImageCrop({ scale: 1, x: 50, y: 50 })
+              setFrontImageFilter(DEFAULT_FRONT_FILTER)
             }
+          } else if (showUserGalleryModal === 'back') {
+            const urls = Array.isArray(payloadUrl) ? payloadUrl : [payloadUrl]
+
             setMediaItems((prev) => {
-              const images = (prev || []).filter((i) => i.type === 'image').length
-              if (images >= ALBUM_TIERS.paid.photos) {
-                alert(`La limite est atteinte (${ALBUM_TIERS.paid.photos} photos max).`)
-                return prev || []
+              const currentMedia = prev || []
+              let imagesCount = currentMedia.filter((i) => i.type === 'image').length
+              const newItems: typeof currentMedia = []
+
+              for (const url of urls) {
+                if (imagesCount >= ALBUM_TIERS.paid.photos) {
+                  alert(
+                    `La limite est atteinte (${ALBUM_TIERS.paid.photos} photos max). Certaines images n'ont pas été ajoutées.`,
+                  )
+                  break
+                }
+                newItems.push({
+                  id: Date.now().toString() + Math.random().toString(),
+                  type: 'image' as const,
+                  url,
+                })
+                imagesCount++
               }
-              return [...(prev || []), newItem]
+
+              return [...currentMedia, ...newItems]
             })
           }
         }}

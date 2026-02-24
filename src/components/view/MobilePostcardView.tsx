@@ -144,8 +144,13 @@ export default function MobilePostcardView({ postcard }: MobilePostcardViewProps
 
           {/* Signature */}
           {postcard.senderName && (
-            <div className="mt-6 transform -rotate-2">
-              <p className="font-handwriting text-teal-700 text-2xl font-bold">
+            <div className="mt-4 transform -rotate-2">
+              <p
+                className="font-handwriting text-teal-700 text-2xl font-bold"
+                style={{
+                  fontFamily: "'Dancing Script', cursive",
+                }}
+              >
                 — {postcard.senderName}
               </p>
             </div>
@@ -161,11 +166,19 @@ export default function MobilePostcardView({ postcard }: MobilePostcardViewProps
           </div>
 
           {/* Watermark */}
-          <div className="mt-4 flex items-center justify-center gap-1.5 opacity-40">
-            <Mail size={10} className="text-teal-600" />
-            <span className="text-[9px] font-semibold tracking-[0.2em] uppercase text-stone-500">
-              cartepostale.cool
-            </span>
+          <div className="mt-4 flex flex-col items-center justify-center gap-2">
+            <div className="flex items-center gap-1.5 opacity-40">
+              <Mail size={10} className="text-teal-600" />
+              <span className="text-[9px] font-semibold tracking-[0.2em] uppercase text-stone-500">
+                cartepostale.cool
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 mt-4 px-3 py-1.5 rounded-full bg-white/40 border border-stone-200/50 text-stone-400">
+              <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-center">
+                Cliquez sur le texte ou la carte pour agrandir
+              </span>
+            </div>
           </div>
         </div>
       </div>
