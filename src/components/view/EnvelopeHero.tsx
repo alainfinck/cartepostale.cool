@@ -40,6 +40,8 @@ function GooglePinIcon({ className }: { className?: string }) {
   )
 }
 
+import { TextAnimate } from '@/components/ui/text-animate'
+
 export default function EnvelopeHero({
   senderName,
   location,
@@ -57,26 +59,29 @@ export default function EnvelopeHero({
   }, [])
 
   return (
-    <div className="flex flex-col items-center gap-6 w-full max-w-2xl mx-auto px-4">
+    <div
+      className={`flex flex-col items-center gap-6 w-full max-w-2xl mx-auto px-4 ${isOpened ? 'mt-12 md:mt-24 pt-12' : ''}`}
+    >
       {/* Title & Sender */}
       <div className="text-center space-y-4">
-        <h1 className="text-2xl sm:text-3xl md:text-5xl font-serif font-bold text-stone-800 leading-tight">
-          Vous avez reçu une carte postale !
-        </h1>
+        <TextAnimate
+          animation="fadeIn"
+          by="character"
+          duration={1.5}
+          startOnView={false}
+          className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-stone-800 leading-tight whitespace-nowrap"
+        >
+          Vous avez reçu une carte postale de la part de
+        </TextAnimate>
 
         <motion.div
-          className="flex items-baseline justify-center gap-2 text-stone-500"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          className="flex items-center justify-center text-stone-500"
+          initial={{ opacity: 0, y: 30, filter: 'blur(10px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          transition={{ delay: 1.5, duration: 1.2 }}
         >
-          <span className="text-lg font-medium tracking-wide">De la part de</span>
-          <span className="font-bold text-teal-600 flex items-center gap-2 text-2xl md:text-4xl font-serif">
+          <span className="font-handwriting text-teal-600 flex items-center justify-center text-4xl md:text-6xl whitespace-nowrap py-2">
             {senderName}
-            <Heart
-              className="inline-block text-red-500 fill-red-500 animate-pulse shrink-0 w-6 h-6 md:w-8 md:h-8"
-              strokeWidth={2.5}
-            />
           </span>
         </motion.div>
       </div>

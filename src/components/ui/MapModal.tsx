@@ -23,6 +23,11 @@ function MapEffects({ center, zoom }: { center: [number, number]; zoom: number }
   const map = useMap()
   useEffect(() => {
     map.setView(center, zoom)
+    // Leaflet fix for grey map in hidden/animated containers
+    const timer = setTimeout(() => {
+      map.invalidateSize()
+    }, 200)
+    return () => clearTimeout(timer)
   }, [center, zoom, map])
   return null
 }

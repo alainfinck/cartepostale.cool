@@ -144,8 +144,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   onExitFullscreen,
   onCaptionPositionChange,
   defaultActionsOpen = true,
+  isPreview = false,
 }) => {
   const [isFlipped, setIsFlipped] = useState(flipped ?? false)
+  const [hasBeenFlipped, setHasBeenFlipped] = useState(flipped ?? false)
   const [isDraggingCaption, setIsDraggingCaption] = useState(false)
   const frontFaceRef = useRef<HTMLDivElement>(null)
   const [frontImageSrc, setFrontImageSrc] = useState(postcard.frontImage || FALLBACK_FRONT_IMAGE)
@@ -308,9 +310,26 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   useEffect(() => {
     if (flipped !== undefined) {
       setIsFlipped(flipped)
+      setHasBeenFlipped((prev) => prev || flipped)
       rotateY.set(flipped ? 180 : 0)
     }
   }, [flipped, rotateY])
+
+  // Small wiggle animation to invite user to flip the card on first load
+  useEffect(() => {
+    if (!hasBeenFlipped && !isFlipped && !isPreview) {
+      const timer = setTimeout(() => {
+        rotateY.set(6)
+        setTimeout(() => {
+          rotateY.set(-3)
+          setTimeout(() => {
+            rotateY.set(0)
+          }, 400)
+        }, 400)
+      }, 2500)
+      return () => clearTimeout(timer)
+    }
+  }, [hasBeenFlipped, isFlipped, rotateY, isPreview])
 
   const [isMessageOpen, setIsMessageOpen] = useState(false)
   const [isAlbumOpen, setIsAlbumOpen] = useState(false)
@@ -533,6 +552,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const handleFlip = () => {
     const newFlippedState = !isFlipped
     setIsFlipped(newFlippedState)
+    setHasBeenFlipped(true)
     rotateY.set(newFlippedState ? 180 : 0)
   }
 
@@ -1119,11 +1139,15 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           transform: 'translate(-50%, -50%)',
                           backgroundColor: frontTextBgColor,
                           willChange: isDraggingCaption ? 'transform, left, top' : 'auto',
-                          ...(postcard.frontCaptionWidth != null && { width: `${postcard.frontCaptionWidth}%` }),
+                          ...(postcard.frontCaptionWidth != null && {
+                            width: `${postcard.frontCaptionWidth}%`,
+                          }),
                         }
                       : {
                           backgroundColor: 'rgba(255,255,255,0.65)',
-                          ...(postcard.frontCaptionWidth != null && { width: `${postcard.frontCaptionWidth}%` }),
+                          ...(postcard.frontCaptionWidth != null && {
+                            width: `${postcard.frontCaptionWidth}%`,
+                          }),
                         }
                   }
                   {...(onCaptionPositionChange && {
@@ -1185,11 +1209,15 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           transform: 'translate(-50%, -50%)',
                           backgroundColor: frontTextBgColor,
                           willChange: isDraggingCaption ? 'transform, left, top' : 'auto',
-                          ...(postcard.frontCaptionWidth != null && { width: `${postcard.frontCaptionWidth}%` }),
+                          ...(postcard.frontCaptionWidth != null && {
+                            width: `${postcard.frontCaptionWidth}%`,
+                          }),
                         }
                       : {
                           backgroundColor: frontTextBgColor,
-                          ...(postcard.frontCaptionWidth != null && { width: `${postcard.frontCaptionWidth}%` }),
+                          ...(postcard.frontCaptionWidth != null && {
+                            width: `${postcard.frontCaptionWidth}%`,
+                          }),
                         }
                   }
                   {...(onCaptionPositionChange && {
@@ -1952,6 +1980,24 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </div>
               </div>
             </motion.div>
+
+            {/* Hint to flip the card (disappears after first flip) */}
+            <AnimatePresence>
+              {!hasBeenFlipped && !isFlipped && !isPreview && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, x: '-50%' }}
+                  animate={{ opacity: 1, y: 0, x: '-50%' }}
+                  exit={{ opacity: 0, y: 10, x: '-50%' }}
+                  className="absolute -bottom-14 left-1/2 -translate-x-1/2 z-50 bg-teal-600 text-white px-5 py-2.5 rounded-2xl font-black uppercase tracking-wider text-[10px] sm:text-xs shadow-2xl flex items-center gap-3 whitespace-nowrap border-2 border-white/20 select-none cursor-pointer"
+                  onClick={handleFlip}
+                >
+                  <div className="bg-white/20 p-1.5 rounded-lg">
+                    <RotateCw size={14} className="text-white" />
+                  </div>
+                  Cliquez pour retourner
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </motion.div>
 

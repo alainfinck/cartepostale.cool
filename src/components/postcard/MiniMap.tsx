@@ -15,6 +15,15 @@ interface MiniMapProps {
 
 function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap()
+
+  React.useEffect(() => {
+    // Leaflet trick to fix "grey map" when container size changes/initializes
+    const timer = setTimeout(() => {
+      map.invalidateSize()
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [map])
+
   map.setView(center, zoom)
   return null
 }

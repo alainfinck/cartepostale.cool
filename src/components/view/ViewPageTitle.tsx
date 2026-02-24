@@ -45,32 +45,25 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
   }, [])
 
   return (
-    <div className="text-center mb-6 md:mb-8 px-4 mt-8 md:mt-12 pt-8 landscape:mb-2 landscape:mt-2.5 landscape:pt-0 relative z-10 flex flex-col items-center gap-2">
+    <div className="text-center mb-6 md:mb-8 px-4 mt-12 md:mt-24 pt-12 landscape:mb-2 landscape:mt-2.5 landscape:pt-0 relative z-10 flex flex-col items-center gap-4">
       <TextAnimate
-        animation="blurInUp"
-        by="word"
-        duration={2}
+        animation="fadeIn"
+        by="character"
+        duration={1.5}
         startOnView={false}
-        className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-serif font-bold text-stone-800 leading-tight tracking-tight max-w-5xl mx-auto [-webkit-font-smoothing:antialiased]"
+        className="text-xl sm:text-2xl md:text-4xl font-serif font-bold text-stone-800 leading-tight tracking-tight max-w-none whitespace-nowrap [-webkit-font-smoothing:antialiased]"
       >
-        {title}
+        {`Vous avez reçu une carte postale de la part de`}
       </TextAnimate>
 
       <motion.div
-        className="flex items-baseline justify-center gap-2 text-stone-500 mt-2 md:mt-4"
-        initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+        className="flex items-center justify-center text-stone-500"
+        initial={{ opacity: 0, y: 30, filter: 'blur(10px)' }}
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        transition={{ delay: 1.8, duration: 1.2, ease: easeOut }}
+        transition={{ delay: 1.5, duration: 1.2, ease: easeOut }}
       >
-        <span className="text-lg md:text-xl font-medium tracking-wide whitespace-nowrap">
-          De la part de
-        </span>
-        <span className="font-bold text-teal-600 flex items-center gap-2 text-2xl md:text-4xl lg:text-5xl font-serif whitespace-nowrap">
+        <span className="font-handwriting text-teal-600 flex items-center justify-center text-5xl md:text-7xl lg:text-8xl whitespace-nowrap py-2">
           {senderName}
-          <Heart
-            className="inline-block text-red-500 fill-red-500 animate-pulse shrink-0 w-6 h-6 md:w-8 md:h-8"
-            strokeWidth={2.5}
-          />
         </span>
       </motion.div>
       {/* Bloc lieu / date — pin rouge type Google qui se « plante » */}
