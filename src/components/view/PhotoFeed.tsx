@@ -25,6 +25,7 @@ import { CoolMode } from '@/components/ui/cool-mode'
 import { useSessionId } from '@/hooks/useSessionId'
 import { getReactions, getUserReactions, toggleReaction } from '@/actions/social-actions'
 import { cn } from '@/lib/utils'
+import { getOptimizedImageUrl } from '@/lib/image-processing'
 
 interface PhotoFeedProps {
   mediaItems: MediaItem[]
@@ -208,6 +209,9 @@ const InstaCard = ({
           />
         ) : (
           <Image
+            loader={({ src, width, quality }) =>
+              getOptimizedImageUrl(src, { width, quality: quality || 80 })
+            }
             src={item.url}
             alt={`Photo ${index + 1}`}
             fill
@@ -739,6 +743,9 @@ export default function PhotoFeed({
                             />
                           ) : (
                             <Image
+                              loader={({ src, width, quality }) =>
+                                getOptimizedImageUrl(src, { width, quality: quality || 80 })
+                              }
                               src={sortedMediaItems[selectedIndex].url}
                               alt={`Full photo ${selectedIndex + 1}`}
                               fill

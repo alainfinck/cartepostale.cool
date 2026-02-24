@@ -13,6 +13,7 @@ import {
   Plus,
   ArrowLeft,
   Image as ImageIcon,
+  Code,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -22,6 +23,7 @@ const nav = [
   { href: '/espace-agence', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/espace-agence/cartes', label: "Cartes de l'agence", icon: Mail },
   { href: '/espace-agence/galerie', label: "Galerie d'images", icon: ImageIcon },
+  { href: '/espace-agence/dev', label: 'Espace Dev', icon: Code },
   { href: '/espace-agence/agence', label: 'Mon agence', icon: Building2 },
   { href: '/espace-agence/compte', label: 'Mon compte', icon: User },
 ]

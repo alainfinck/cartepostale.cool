@@ -77,6 +77,8 @@ export interface Postcard {
   frontCaptionColor?: FrontCaptionColor
   /** Opacité du fond du bloc texte (0–100). */
   frontTextBgOpacity?: number
+  /** Preset de style du texte accroche (ex: 'classic', 'elegant', 'bd'…). */
+  frontCaptionPreset?: string
   message: string
   recipientName: string
   senderName: string

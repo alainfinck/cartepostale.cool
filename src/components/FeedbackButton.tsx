@@ -64,7 +64,7 @@ export function FeedbackButton() {
       <DialogTrigger asChild>
         <button
           className={cn(
-            'fixed left-4 bottom-4 z-[71] group flex items-center gap-2 px-4 py-2.5',
+            'hidden sm:flex fixed left-4 bottom-4 z-[71] group items-center gap-2 px-4 py-2.5',
             'bg-teal-600 hover:bg-teal-700 text-white rounded-full shadow-lg transition-all duration-300',
             'hover:scale-105 active:scale-95',
           )}

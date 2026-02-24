@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useCallback, useEffect } from 'react'
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import confetti from 'canvas-confetti'
@@ -95,7 +95,7 @@ import {
   JPEG_QUALITY,
 } from '@/lib/image-processing'
 import { extractExifData, ExifData } from '@/lib/extract-exif'
-import { CAPTION_FONT_FAMILY, CAPTION_COLOR } from '@/lib/caption-style'
+import { CAPTION_FONT_FAMILY, CAPTION_COLOR, CAPTION_PRESETS, getCaptionExtraStyle } from '@/lib/caption-style'
 import { UnsplashSearchModal } from '@/components/UnsplashSearchModal'
 import {
   AiImageGeneratorModal,
@@ -256,7 +256,7 @@ const STEPS = [
   { id: 'photo', label: 'Photo', icon: Camera },
   { id: 'redaction', label: 'Rédaction', icon: PenTool },
   { id: 'payment', label: 'Paiement', icon: CreditCard },
-  { id: 'preview', label: 'Aperçu', icon: Eye },
+  { id: 'preview', label: 'Aperçu', icon: Share2 },
 ] as const
 
 type StepId = (typeof STEPS)[number]['id']
@@ -762,6 +762,7 @@ export default function EditorPage() {
   const [frontCaptionFontSize, setFrontCaptionFontSize] = useState(CAPTION_FONT_SIZE_DEFAULT)
   const [frontCaptionColor, setFrontCaptionColor] = useState<FrontCaptionColor>('stone-900')
   const [frontTextBgOpacity, setFrontTextBgOpacity] = useState(90)
+  const [frontCaptionPreset, setFrontCaptionPreset] = useState('classic')
   const [message, setMessage] = useState(
     'Un petit coucou de mes vacances ! Tout se passe merveilleusement bien, les paysages sont magnifiques. On pense bien à vous !',
   )
@@ -841,7 +842,7 @@ export default function EditorPage() {
   const [previewRecipientModalOpen, setPreviewRecipientModalOpen] = useState(false)
   const [previewRecipientUrl, setPreviewRecipientUrl] = useState<string | null>(null)
   const [previewRecipientLoading, setPreviewRecipientLoading] = useState(false)
-  /** Dernier slug d’aperçu — réutilisé pour réactiver le même lien (TTL 5 min) */
+  /** Dernier slug d'aperçu — réutilisé pour réactiver le même lien (TTL 5 min) */
   const [lastPreviewSlug, setLastPreviewSlug] = useState<string | null>(null)
   const [isSendingEmail, setIsSendingEmail] = useState(false)
   const [isEmailSent, setIsEmailSent] = useState(false)
@@ -912,6 +913,8 @@ export default function EditorPage() {
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null)
   const [recordingTime, setRecordingTime] = useState(0)
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const [stickyPreview, setStickyPreview] = useState(false)
+  const [stickyOptionsOpen, setStickyOptionsOpen] = useState(false)
 
   // Background music state
   const [backgroundMusic, setBackgroundMusic] = useState<string | undefined>(undefined)
@@ -971,9 +974,10 @@ export default function EditorPage() {
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
   const [showBack, setShowBack] = useState(currentStep === 'redaction')
 
-  // Sync showBack when step changes
+  // Sync showBack when step changes + scroll to top
   useEffect(() => {
     setShowBack(currentStep === 'redaction')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [currentStep])
 
   // Même seuil que la Navbar : quand elle passe en mode réduit, on ajuste le top de la barre d'étapes
@@ -1000,7 +1004,7 @@ export default function EditorPage() {
     }
   }, [searchParams])
 
-  // Mode édition : charger la carte depuis l’API (?edit=publicId)
+  // Mode édition : charger la carte depuis l'API (?edit=publicId)
   useEffect(() => {
     const editId = searchParams.get('edit')
     if (!editId || typeof editId !== 'string') return
@@ -1040,6 +1044,7 @@ export default function EditorPage() {
           setFrontCaptionFontSize(Number(doc.frontCaptionFontSize))
         if (doc.frontCaptionColor != null) setFrontCaptionColor(doc.frontCaptionColor)
         if (doc.frontTextBgOpacity != null) setFrontTextBgOpacity(Number(doc.frontTextBgOpacity))
+        if (doc.frontCaptionPreset != null) setFrontCaptionPreset(doc.frontCaptionPreset)
         if (doc.stampStyle != null) setStampStyle(doc.stampStyle)
         if (doc.stampLabel != null) setStampLabel(doc.stampLabel)
         if (doc.stampYear != null) setStampYear(String(doc.stampYear))
@@ -1188,6 +1193,7 @@ export default function EditorPage() {
       frontCaptionFontSize,
       frontCaptionColor,
       frontTextBgOpacity,
+      frontCaptionPreset,
       message,
       recipientName,
       senderName,
@@ -1225,6 +1231,7 @@ export default function EditorPage() {
     frontCaptionFontSize,
     frontCaptionColor,
     frontTextBgOpacity,
+    frontCaptionPreset,
     message,
     recipientName,
     senderName,
@@ -1270,6 +1277,7 @@ export default function EditorPage() {
             setFrontCaptionFontSize(Number(data.frontCaptionFontSize))
           if (data.frontCaptionColor) setFrontCaptionColor(data.frontCaptionColor)
           if (data.frontTextBgOpacity != null) setFrontTextBgOpacity(data.frontTextBgOpacity)
+          if (data.frontCaptionPreset) setFrontCaptionPreset(data.frontCaptionPreset)
           if (data.message) setMessage(data.message)
           if (data.recipientName) setRecipientName(data.recipientName)
           if (data.senderName) setSenderName(data.senderName)
@@ -1302,7 +1310,7 @@ export default function EditorPage() {
         setCoords({ lat: latitude, lng: longitude })
       },
       () => {
-        /* refus ou erreur : l’utilisateur peut cliquer sur « Ma position actuelle » */
+        /* refus ou erreur : l'utilisateur peut cliquer sur « Ma position actuelle » */
       },
     )
   }, [])
@@ -1348,7 +1356,7 @@ export default function EditorPage() {
       case 'photo':
         return frontImage !== ''
       case 'redaction':
-        // Un seul critère : au moins un message. Destinataire / expéditeur / lieu optionnels (valeurs par défaut à l’envoi).
+        // Un seul critère : au moins un message. Destinataire / expéditeur / lieu optionnels (valeurs par défaut à l'envoi).
         return message.trim().length > 0
       case 'payment':
         return (
@@ -1384,7 +1392,7 @@ export default function EditorPage() {
     setFrontExif(exif)
 
     setUploadStatus({ current: 1, total: 1, step: "Optimisation de l'image..." })
-    // Resize max 2k, JPEG 80%, puis upload du résultat (pas l’original)
+    // Resize max 2k, JPEG 80%, puis upload du résultat (pas l'original)
     const dataUrl = await fileToDataUrl(file).catch(() => null)
     if (!dataUrl) {
       setUploadStatus(null)
@@ -1905,7 +1913,7 @@ export default function EditorPage() {
     frontImageFilter.grayscale !== DEFAULT_FRONT_FILTER.grayscale
   const frontImageFilterCss = buildFrontImageFilterCss(frontImageFilter)
 
-  const currentPostcard: Postcard = {
+  const currentPostcard: Postcard = useMemo<Postcard>(() => ({
     id: createdPostcardId || 'editor-preview',
     frontImage:
       frontImage || 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg',
@@ -1918,6 +1926,7 @@ export default function EditorPage() {
     frontCaptionFontSize,
     frontCaptionColor,
     frontTextBgOpacity,
+    frontCaptionPreset: frontCaptionPreset !== 'classic' ? frontCaptionPreset : undefined,
     message: message || '',
     recipientName: recipientName || '',
     senderName: senderName || '',
@@ -1942,22 +1951,30 @@ export default function EditorPage() {
     puzzleCardDifficulty,
     backgroundMusic,
     backgroundMusicTitle,
-  }
+  }), [
+    createdPostcardId, frontImage, frontImageCrop, frontImageFilter, frontCaption,
+    frontEmoji, frontCaptionPosition, frontCaptionFontFamily, frontCaptionFontSize,
+    frontCaptionColor, frontTextBgOpacity, frontCaptionPreset, message, recipientName, senderName,
+    senderEmail, location, stampStyle, stampLabel, stampYear, postmarkText,
+    isPremium, stickers, mediaItems, coords, scratchCardEnabled, puzzleCardEnabled,
+    puzzleCardDifficulty, backgroundMusic, backgroundMusicTitle,
+  ])
 
   /** Aperçu : à l'étape Rédaction, si un modèle verso est choisi, on affiche le verso avec son style (timbre, message, lieu). */
-  const postcardForPreview: Postcard =
-    currentStep === 'redaction' && versoPreviewTemplateId
-      ? (() => {
-          const tpl = SAMPLE_TEMPLATES.find((t) => t.id === versoPreviewTemplateId)
-          if (!tpl) return currentPostcard
-          return {
-            ...currentPostcard,
-            message: tpl.message ?? currentPostcard.message,
-            location: tpl.location ?? currentPostcard.location,
-            stampStyle: tpl.stampStyle ?? currentPostcard.stampStyle,
-          }
-        })()
-      : currentPostcard
+  const postcardForPreview: Postcard = useMemo<Postcard>(() => {
+    if (currentStep === 'redaction' && versoPreviewTemplateId) {
+      const tpl = SAMPLE_TEMPLATES.find((t) => t.id === versoPreviewTemplateId)
+      if (tpl) {
+        return {
+          ...currentPostcard,
+          message: tpl.message ?? currentPostcard.message,
+          location: tpl.location ?? currentPostcard.location,
+          stampStyle: tpl.stampStyle ?? currentPostcard.stampStyle,
+        }
+      }
+    }
+    return currentPostcard
+  }, [currentPostcard, currentStep, versoPreviewTemplateId])
 
   const filteredTemplates = SAMPLE_TEMPLATES
   const selectedTemplate = selectedTemplateId
@@ -2452,7 +2469,7 @@ export default function EditorPage() {
         )}
       >
         <div className="max-w-5xl mx-auto px-3 py-1.5 sm:px-4 sm:py-2 md:py-2.5">
-          <div className="flex items-center justify-between gap-0">
+          <div className="flex items-center gap-0">
             {STEPS.map((step, index) => {
               const Icon = step.icon
               const isActive = step.id === currentStep
@@ -2494,6 +2511,21 @@ export default function EditorPage() {
                 </React.Fragment>
               )
             })}
+            {/* Toggle aperçu fixe — mobile only */}
+            <button
+              type="button"
+              onClick={() => setStickyPreview((v) => !v)}
+              className={cn(
+                'ml-2 lg:hidden flex items-center gap-1 px-2 py-1.5 rounded-full text-[10px] font-bold transition-all shrink-0 border',
+                stickyPreview
+                  ? 'bg-teal-100 text-teal-700 border-teal-300'
+                  : 'bg-stone-100 text-stone-400 border-stone-200',
+              )}
+              aria-label="Aperçu fixe en bas"
+            >
+              <Eye size={11} />
+              <span className="hidden xs:inline">Aperçu</span>
+            </button>
           </div>
         </div>
       </div>
@@ -2901,6 +2933,40 @@ export default function EditorPage() {
                     </div>
                     {frontCaption.trim().length > 0 && (
                       <>
+                        {/* Presets de style */}
+                        <div>
+                          <label className="mb-2 block text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                            Style du texte
+                          </label>
+                          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
+                            {CAPTION_PRESETS.map((preset) => {
+                              const extraStyle = getCaptionExtraStyle(preset.id)
+                              const isActive = frontCaptionPreset === preset.id
+                              return (
+                                <button
+                                  key={preset.id}
+                                  type="button"
+                                  onClick={() => setFrontCaptionPreset(preset.id)}
+                                  className={[
+                                    'shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-xl border-2 text-center transition-all',
+                                    isActive
+                                      ? 'border-teal-400 bg-teal-50 shadow-sm'
+                                      : 'border-stone-200 bg-white hover:border-stone-300',
+                                  ].join(' ')}
+                                  style={{ minWidth: 68 }}
+                                >
+                                  <span className="text-lg leading-none">{preset.emoji}</span>
+                                  <span
+                                    className="text-[10px] font-bold leading-tight"
+                                    style={extraStyle}
+                                  >
+                                    {preset.label}
+                                  </span>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
                         <div>
                           <label className="mb-1.5 block text-xs font-semibold text-stone-600 uppercase tracking-wider">
                             Police
@@ -3103,14 +3169,7 @@ export default function EditorPage() {
                         <h3 className="text-sm font-bold text-stone-800 uppercase tracking-wider">
                           Position du texte
                         </h3>
-                        <p
-                          className="text-xs font-semibold"
-                          style={{
-                            fontFamily: CAPTION_FONT_FAMILY[frontCaptionFontFamily],
-                            fontSize: `${frontCaptionFontSize}px`,
-                            color: CAPTION_COLOR[frontCaptionColor],
-                          }}
-                        >
+                        <p className="text-xs font-semibold text-stone-500">
                           Glissez le texte pour le repositionner sur la photo
                         </p>
                       </div>
@@ -4263,7 +4322,7 @@ export default function EditorPage() {
                   <div className="h-px bg-stone-100" />
 
                   {/* Album / Gallery Section */}
-                  <section className="relative">
+                  <section className="relative rounded-2xl border-2 border-stone-200 bg-stone-50/60 p-5 shadow-sm">
                     {!isPremium && (
                       <div className="sm:hidden p-3 mb-5 bg-amber-50/50 border border-amber-100 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
                         <Sparkles size={18} className="text-amber-500 shrink-0" />
@@ -4488,75 +4547,6 @@ export default function EditorPage() {
                           </p>
                         </div>
                       </div>
-                    )}
-                  </section>
-
-                  <div className="h-px bg-stone-100" />
-
-                  {/* Promo Code Section */}
-                  <section className="bg-teal-50/30 p-6 rounded-2xl border border-teal-100/50">
-                    <label className="flex items-center gap-2 text-sm font-bold text-stone-800 mb-4 uppercase tracking-wider">
-                      <Gift size={16} className="text-teal-600" /> Code Promo / Carte Gratuite
-                    </label>
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <Input
-                          placeholder="Entrez votre code ici..."
-                          value={promoCode}
-                          onChange={(e) => {
-                            setPromoCode(e.target.value.toUpperCase())
-                            setCodeError(null)
-                            setCodeSuccess(false)
-                          }}
-                          disabled={codeSuccess || isActivatingCode}
-                          className="h-12 border-stone-200 focus:border-teal-500 rounded-xl uppercase font-mono tracking-wider"
-                        />
-                        {codeSuccess && (
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500">
-                            <Check size={20} />
-                          </div>
-                        )}
-                      </div>
-                      <Button
-                        onClick={async () => {
-                          if (!promoCode || isActivatingCode) return
-                          setIsActivatingCode(true)
-                          setCodeError(null)
-                          const { validatePromoCode } = await import('@/actions/leads-actions')
-                          const res = await validatePromoCode(promoCode)
-                          setIsActivatingCode(false)
-                          if (res.success) {
-                            setCodeSuccess(true)
-                            setIsPremium(true)
-                          } else {
-                            setCodeError(res.error || 'Code invalide')
-                          }
-                        }}
-                        disabled={!promoCode || codeSuccess || isActivatingCode}
-                        className={cn(
-                          'h-12 px-6 rounded-xl font-bold transition-all',
-                          codeSuccess
-                            ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                            : 'bg-stone-800 hover:bg-stone-900 text-white',
-                        )}
-                      >
-                        {isActivatingCode ? (
-                          <RefreshCw size={18} className="animate-spin" />
-                        ) : codeSuccess ? (
-                          'Activé !'
-                        ) : (
-                          'Appliquer'
-                        )}
-                      </Button>
-                    </div>
-                    {codeError && (
-                      <p className="text-xs text-red-500 mt-2 font-medium">{codeError}</p>
-                    )}
-                    {codeSuccess && (
-                      <p className="text-xs text-emerald-600 mt-2 font-bold flex items-center gap-1.5">
-                        <Sparkles size={12} /> Votre carte pro avec galerie est maintenant gratuite
-                        !
-                      </p>
                     )}
                   </section>
 
@@ -5016,7 +5006,7 @@ export default function EditorPage() {
                                 const needSender =
                                   !currentUser && !(senderEmail || '').trim() && !isEmailSent
                                 if (needSender)
-                                  return alert('Indiquez votre e-mail plus haut avant d’envoyer.')
+                                  return alert("Indiquez votre e-mail plus haut avant d'envoyer.")
                                 const valid = recipients.filter((r) => (r.email || '').trim())
                                 if (valid.length === 0)
                                   return alert('Ajoutez au moins un e-mail valide.')
@@ -5030,7 +5020,7 @@ export default function EditorPage() {
                                   )
                                   if (result.success && result.sentCount !== undefined)
                                     setRecipientsSentCount(result.sentCount)
-                                  else alert(result.error || 'Erreur lors de l’envoi.')
+                                  else alert(result.error || "Erreur lors de l'envoi.")
                                 } catch (e) {
                                   alert('Une erreur est survenue.')
                                 } finally {
@@ -5059,8 +5049,8 @@ export default function EditorPage() {
 
             {!shareUrl && (
               <div className="mt-4 lg:mt-8 lg:hidden">
-                {/* Card Preview — visible uniquement en mobile/tablette ; en desktop l’aperçu unique est dans le panneau gauche */}
-                <div ref={previewSectionRef}>
+                {/* Card Preview — masqué quand l'aperçu fixe en bas est actif */}
+                <div ref={previewSectionRef} className={stickyPreview ? "hidden" : ""}>
                   <div className="flex items-center gap-2 mb-3">
                     <Eye size={14} className="text-teal-500" />
                     <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
@@ -5141,15 +5131,6 @@ export default function EditorPage() {
         </div>
       </div>
 
-      <div className="lg:hidden fixed bottom-4 left-4 z-[45] animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <Button
-          onClick={() => setShowFullscreen(true)}
-          className="h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-white/50 hover:bg-white/70 border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_28px_rgba(0,0,0,0.1)] backdrop-blur-xl text-teal-600 hover:text-teal-700 flex items-center justify-center p-0"
-          aria-label="Aperçu plein écran"
-        >
-          <Eye className="h-7 w-7 sm:h-8 sm:w-8" />
-        </Button>
-      </div>
 
       {/* Modal plein écran : voir comme le destinataire */}
       {showFullscreen && (
@@ -5228,6 +5209,87 @@ export default function EditorPage() {
         </div>
       )}
 
+      {/* Sticky preview panel — mobile/tablet */}
+      {stickyPreview && !shareUrl && currentStep !== 'preview' && (
+        <div className="fixed bottom-0 inset-x-0 z-[46] lg:hidden bg-stone-900 shadow-2xl shadow-black/60">
+          {/* Barre du haut */}
+          <div className="flex items-center justify-between px-3 py-1.5">
+            <div className="flex items-center gap-1.5">
+              <RefreshCw size={10} className="text-teal-400 animate-spin" style={{ animationDuration: '3s' }} />
+              <span className="text-[11px] font-bold text-white/50 uppercase tracking-wider">Aperçu en direct</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowBack((v) => !v)}
+                className="flex items-center gap-1 text-[11px] font-bold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-full transition-colors"
+              >
+                <RotateCw size={11} />
+                {showBack ? 'Recto' : 'Retourner'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setStickyPreview(false)}
+                className="p-1 text-white/40 hover:text-white transition-colors"
+                aria-label="Fermer"
+              >
+                <X size={15} />
+              </button>
+            </div>
+          </div>
+          {/* Carte pleine largeur — réglages PostcardView fermés par défaut */}
+          <PostcardView
+            postcard={postcardForPreview}
+            flipped={showBack}
+            frontTextBgOpacity={frontTextBgOpacity}
+            className="w-full aspect-[3/2]"
+            hideFullscreenButton
+            hideFlipHints
+            defaultActionsOpen={false}
+          />
+
+          {/* Barre d'options repliable — repliée par défaut */}
+          <button
+            type="button"
+            onClick={() => setStickyOptionsOpen((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-2 hover:bg-white/5 transition-colors"
+          >
+            <ChevronUp
+              size={14}
+              className={cn('text-white/30 transition-transform duration-200', stickyOptionsOpen ? '' : 'rotate-180')}
+            />
+          </button>
+
+          {stickyOptionsOpen && (
+            <div className="flex items-center gap-2 px-4 pb-3 pt-0.5 border-t border-white/10">
+              <button
+                type="button"
+                onClick={() => setShowBack((v) => !v)}
+                className="flex items-center gap-1.5 text-[11px] font-bold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors"
+              >
+                <RotateCw size={11} />
+                {showBack ? 'Recto' : 'Verso'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowFullscreen(true)}
+                className="flex items-center gap-1.5 text-[11px] font-bold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors"
+              >
+                <Maximize2 size={11} />
+                Plein écran
+              </button>
+              <button
+                type="button"
+                onClick={() => { setStickyPreview(false); setStickyOptionsOpen(false) }}
+                className="ml-auto flex items-center gap-1.5 text-[11px] text-white/40 hover:text-white/80 transition-colors"
+              >
+                <X size={13} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Modal "Voir comme un destinataire" — iframe /carte/preview/[token] */}
       <Dialog
         open={previewRecipientModalOpen}
@@ -5293,7 +5355,7 @@ export default function EditorPage() {
               </button>
             </div>
             <DialogDescription>
-              Ajustez les filtres, le recadrage et le zoom. L’aperçu à gauche est mis à jour en
+              Ajustez les filtres, le recadrage et le zoom. L'aperçu à gauche est mis à jour en
               temps réel.
             </DialogDescription>
           </DialogHeader>
@@ -5977,31 +6039,13 @@ export default function EditorPage() {
         }}
       />
 
-      {/* Floating Buttons: Scroll to Top & Preview — ne pas changer l'étape pour éviter de déclencher handlePublish() / création de carte */}
-      <div className="fixed bottom-4 right-4 z-[71] flex flex-col-reverse gap-3 items-end">
-        <button
-          onClick={() => {
-            const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024
-            if (!isDesktop && previewSectionRef.current) {
-              previewSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            } else {
-              window.scrollTo({ top: 0, behavior: 'smooth' })
-            }
-          }}
-          className={cn(
-            'group flex items-center gap-2 px-4 py-2.5',
-            'bg-teal-600 hover:bg-teal-700 text-white rounded-full shadow-lg transition-all duration-300',
-            'hover:scale-105 active:scale-95',
-          )}
-        >
-          <Eye className="w-5 h-5" />
-          <span className="font-medium text-sm hidden md:inline">Aperçu</span>
-        </button>
-        {showScrollTop && (
+      {/* Floating Button: Scroll to Top */}
+      {showScrollTop && !stickyPreview && (
+        <div className="fixed bottom-4 right-4 z-[71]">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className={cn(
-              'group flex items-center justify-center w-12 h-12',
+              'flex items-center justify-center w-12 h-12',
               'bg-teal-600 hover:bg-teal-700 text-white rounded-full shadow-lg transition-all duration-300',
               'hover:scale-110 active:scale-95 animate-in fade-in zoom-in duration-300',
             )}
@@ -6009,8 +6053,8 @@ export default function EditorPage() {
           >
             <ChevronUp className="w-6 h-6" />
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

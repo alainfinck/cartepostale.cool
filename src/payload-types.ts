@@ -314,6 +314,10 @@ export interface Postcard {
    * Opacité du fond du bloc texte (0-100)
    */
   frontTextBgOpacity?: number | null;
+  /**
+   * Preset de style du texte accroche (ex: classic, elegant, bd…)
+   */
+  frontCaptionPreset?: string | null;
   message: string;
   recipients?:
     | {
@@ -997,6 +1001,7 @@ export interface PostcardsSelect<T extends boolean = true> {
   frontCaptionFontSize?: T;
   frontCaptionColor?: T;
   frontTextBgOpacity?: T;
+  frontCaptionPreset?: T;
   message?: T;
   recipients?:
     | T

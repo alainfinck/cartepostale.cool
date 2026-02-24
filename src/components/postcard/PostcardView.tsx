@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { FrontImageFilter, Postcard } from '@/types'
-import { getCaptionStyle } from '@/lib/caption-style'
+import { getCaptionStyle, getCaptionExtraStyle } from '@/lib/caption-style'
 import { PhotoLocation } from '@/components/ui/PhotoMarker'
 import fireConfetti from '@/components/ui/confetti'
 import {
@@ -80,6 +80,8 @@ interface PostcardViewProps {
   onExitFullscreen?: () => void
   /** En mode éditeur : callback quand l'utilisateur déplace le bloc caption (position en %). */
   onCaptionPositionChange?: (pos: { x: number; y: number }) => void
+  /** Réglages du verso ouverts ou fermés par défaut (défaut : true). */
+  defaultActionsOpen?: boolean
 }
 
 /** Position par défaut du texte d'accroche : en bas à gauche, au-dessus de la localisation */
@@ -141,6 +143,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   isInsideFullscreen = false,
   onExitFullscreen,
   onCaptionPositionChange,
+  defaultActionsOpen = true,
 }) => {
   const [isFlipped, setIsFlipped] = useState(flipped ?? false)
   const [isDraggingCaption, setIsDraggingCaption] = useState(false)
@@ -221,24 +224,45 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const clampedFrontTextBgOpacity = Math.max(0, Math.min(100, effectiveBgOpacity))
   const frontTextBgColor = `rgba(255, 255, 255, ${clampedFrontTextBgOpacity / 100})`
   const captionStyle = getCaptionStyle(postcard)
+  const captionExtraStyle = getCaptionExtraStyle(postcard.frontCaptionPreset)
 
+  // Sync isFullscreen with native browser fullscreen changes (ESC, browser button…)
+  useEffect(() => {
+    const onFsChange = () => {
+      if (!document.fullscreenElement) {
+        setIsFullscreen(false)
+        document.body.style.overflow = ''
+      }
+    }
+    document.addEventListener('fullscreenchange', onFsChange)
+    return () => document.removeEventListener('fullscreenchange', onFsChange)
+  }, [])
+
+  // Lock scroll while fullscreen overlay is open
   useEffect(() => {
     if (isFullscreen) {
       document.body.style.overflow = 'hidden'
-      const handleEsc = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') setIsFullscreen(false)
-      }
-      window.addEventListener('keydown', handleEsc)
       return () => {
         document.body.style.overflow = ''
-        window.removeEventListener('keydown', handleEsc)
       }
     }
   }, [isFullscreen])
 
-  const toggleFullscreen = (e: React.MouseEvent) => {
+  const toggleFullscreen = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    setIsFullscreen(!isFullscreen)
+    if (!isFullscreen) {
+      try {
+        await document.documentElement.requestFullscreen({ navigationUI: 'hide' })
+      } catch {
+        // Navigateur bloque la demande (ex: Firefox desktop sans geste utilisateur) — on continue en mode overlay
+      }
+      setIsFullscreen(true)
+    } else {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen().catch(() => {})
+      }
+      setIsFullscreen(false)
+    }
   }
 
   useEffect(() => {
@@ -304,7 +328,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const [isFontMenuOpen, setIsFontMenuOpen] = useState(false)
   // Zoom de la mini-carte au verso (pour que + / - fonctionnent sans déclencher le flip)
   const [backMapZoom, setBackMapZoom] = useState(6)
-  const [isActionsOpen, setIsActionsOpen] = useState(true)
+  const [isActionsOpen, setIsActionsOpen] = useState(defaultActionsOpen)
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false)
   const musicRef = useRef<HTMLAudioElement>(null)
@@ -923,6 +947,13 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   >
                     <img
                       ref={frontImageRef}
+                      srcSet={`
+                        ${getOptimizedImageUrl(frontImageSrc, { width: 640 })} 640w,
+                        ${getOptimizedImageUrl(frontImageSrc, { width: 960 })} 960w,
+                        ${getOptimizedImageUrl(frontImageSrc, { width: 1280 })} 1280w,
+                        ${getOptimizedImageUrl(frontImageSrc, { width: 1600 })} 1600w
+                      `}
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 800px, 1200px"
                       src={getOptimizedImageUrl(frontImageSrc, { width: 1600 })}
                       alt="Postcard Front"
                       className={cn(
@@ -948,6 +979,13 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 ) : (
                   <img
                     ref={frontImageRef}
+                    srcSet={`
+                      ${getOptimizedImageUrl(frontImageSrc, { width: 640 })} 640w,
+                      ${getOptimizedImageUrl(frontImageSrc, { width: 960 })} 960w,
+                      ${getOptimizedImageUrl(frontImageSrc, { width: 1280 })} 1280w,
+                      ${getOptimizedImageUrl(frontImageSrc, { width: 1600 })} 1600w
+                    `}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 800px, 1200px"
                     src={getOptimizedImageUrl(frontImageSrc, { width: 1600 })}
                     alt="Postcard Front"
                     className={cn(
@@ -1081,6 +1119,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                         captionStyle.color === '#ffffff' || captionStyle.color === '#000000'
                           ? '0 1px 2px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.15)'
                           : '0 1px 2px rgba(255,255,255,0.8)',
+                      ...captionExtraStyle,
                     }}
                   >
                     {postcard.frontCaption}
@@ -1145,6 +1184,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                         captionStyle.color === '#ffffff' || captionStyle.color === '#000000'
                           ? '0 1px 2px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.15)'
                           : '0 1px 2px rgba(255,255,255,0.8)',
+                      ...captionExtraStyle,
                     }}
                   >
                     {postcard.frontCaption}

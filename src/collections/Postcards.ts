@@ -107,6 +107,11 @@ export const Postcards: CollectionConfig = {
       max: 100,
     },
     {
+      name: 'frontCaptionPreset',
+      type: 'text',
+      admin: { description: 'Preset de style du texte accroche (ex: classic, elegant, bd…)' },
+    },
+    {
       name: 'message',
       type: 'textarea',
       required: true,
