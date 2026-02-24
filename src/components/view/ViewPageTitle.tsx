@@ -51,7 +51,7 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
         by="character"
         duration={1.5}
         startOnView={false}
-        className="text-xl sm:text-2xl md:text-4xl font-serif font-bold text-stone-800 leading-tight tracking-tight max-w-none whitespace-nowrap [-webkit-font-smoothing:antialiased]"
+        className="text-xl sm:text-2xl md:text-4xl font-serif font-bold text-stone-800 leading-tight tracking-tight [-webkit-font-smoothing:antialiased] mx-auto max-w-xs sm:max-w-none"
       >
         {`Vous avez reçu une carte postale de la part de`}
       </TextAnimate>

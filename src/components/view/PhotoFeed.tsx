@@ -488,8 +488,8 @@ export default function PhotoFeed({
             </div>
           )}
 
-          <div className="relative pl-7">
-            <div className="absolute left-[6px] top-0 bottom-0 w-px bg-gradient-to-b from-teal-200 via-stone-200 to-transparent" />
+          <div className="relative px-4">
+            <div className="absolute left-[10px] top-0 bottom-0 w-px bg-gradient-to-b from-teal-200 via-stone-200 to-transparent" />
 
             <div className="flex flex-col gap-10">
               {sortedMediaItems.map((item, index) => {
@@ -521,7 +521,7 @@ export default function PhotoFeed({
                     }}
                   >
                     <motion.div
-                      className="absolute -left-7 top-5 w-[13px] h-[13px] rounded-full bg-white border-2 border-teal-300 shadow-sm z-10"
+                      className="absolute -left-[30px] top-5 w-[13px] h-[13px] rounded-full bg-white border-2 border-teal-300 shadow-sm z-10"
                       initial={{ scale: 0, opacity: 0 }}
                       whileInView={{ scale: 1, opacity: 1 }}
                       viewport={{ once: true, margin: '-40px 0px', amount: 0.2 }}

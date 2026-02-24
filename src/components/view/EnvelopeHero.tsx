@@ -70,7 +70,7 @@ export default function EnvelopeHero({
           by="character"
           duration={1.5}
           startOnView={false}
-          className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-stone-800 leading-tight whitespace-nowrap"
+          className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-stone-800 leading-tight mx-auto max-w-xs sm:max-w-none"
         >
           Vous avez reçu une carte postale de la part de
         </TextAnimate>

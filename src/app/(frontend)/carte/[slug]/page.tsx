@@ -11,7 +11,6 @@ import { Postcard as PayloadPostcard, Media } from '@/payload-types'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import * as motion from 'motion/react-client'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
-import { RotateDevicePrompt } from '@/components/ui/rotate-device-prompt'
 import SocialBar from '@/components/social/SocialBar'
 import ViewPageTitle from '@/components/view/ViewPageTitle'
 import PhotoFeed from '@/components/view/PhotoFeed'
@@ -471,8 +470,6 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
 
   const pageContent = (
     <div className="w-full bg-[#fdfbf7] flex flex-col items-center landscape:justify-center landscape:pb-4 relative pt-0">
-      <RotateDevicePrompt />
-
       <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-0 px-2 md:px-4 min-h-[70vh] md:min-h-[80vh] justify-center">
         <ScratchCardWrapper postcard={frontendPostcard} views={payloadPostcardViews} />
       </div>
