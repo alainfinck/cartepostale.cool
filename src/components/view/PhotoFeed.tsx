@@ -21,6 +21,8 @@ import {
   Maximize2,
   Minimize2,
   Loader2,
+  MapPin,
+  Calendar,
 } from 'lucide-react'
 import { CoolMode } from '@/components/ui/cool-mode'
 import { useSessionId } from '@/hooks/useSessionId'
@@ -107,7 +109,7 @@ const InstaCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="flex flex-col bg-white p-2.5 sm:p-3 pb-10 sm:pb-14 shadow-[0_10px_30px_rgba(0,0,0,0.08)] border border-stone-100 rounded-sm overflow-hidden group/card"
+      className="flex flex-col bg-white p-2.5 sm:p-3 pb-6 sm:pb-8 shadow-[0_10px_30px_rgba(0,0,0,0.08)] border border-stone-100 rounded-sm overflow-hidden group/card"
     >
       {/* No Header anymore, integrated into Polaroid style */}
 
@@ -139,9 +141,9 @@ const InstaCard = ({
       </div>
 
       {/* Polaroid Bottom Part */}
-      <div className="relative px-0.5 pt-3 sm:pt-4">
-        {/* Actions - Plus discretes sur le pola */}
-        <div className="flex items-center justify-between mb-3 opacity-0 group-hover/card:opacity-100 transition-opacity">
+      <div className="relative px-0.5 pt-2 sm:pt-3">
+        {/* Actions - toujours visibles */}
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
             <CoolMode
               options={{
@@ -216,28 +218,41 @@ const InstaCard = ({
           )}
         </AnimatePresence>
 
-        {/* Content */}
+        {/* Description (note) */}
         {item.note != null && String(item.note).trim() !== '' && (
-          <div className="mb-4 text-center">
-            <p className="font-handwriting text-stone-800 text-lg sm:text-xl leading-snug transform -rotate-1">
+          <div className="mb-2 text-center">
+            <p className="font-handwriting text-stone-800 text-base sm:text-lg leading-snug transform -rotate-1">
               {String(item.note).trim()}
             </p>
           </div>
         )}
 
-        <div className="flex flex-col items-center gap-1">
-          <div className="text-[9px] sm:text-[10px] uppercase font-black tracking-[0.2em] text-stone-400 flex items-center gap-2">
+        {/* Métadonnées : expéditeur, lieu, date de prise */}
+        <div className="flex flex-col items-center gap-1 text-[9px] sm:text-[10px] uppercase font-black tracking-[0.15em] text-stone-400">
+          <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
             <span>{senderName}</span>
+            {item.location != null && String(item.location).trim() !== '' && (
+              <>
+                <span className="opacity-30">•</span>
+                <span className="inline-flex items-center gap-1">
+                  <MapPin size={10} className="shrink-0" />
+                  {String(item.location).trim()}
+                </span>
+              </>
+            )}
             <span className="opacity-30">•</span>
-            <span>
-              {item.exif?.dateTime
-                ? new Date(item.exif.dateTime).toLocaleDateString('fr-FR', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                  })
-                : 'Album'}
-            </span>
+            {item.exif?.dateTime != null ? (
+              <span className="inline-flex items-center gap-1" title="Date de prise de vue">
+                <Calendar size={10} className="shrink-0" />
+                {new Date(item.exif.dateTime).toLocaleDateString('fr-FR', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </span>
+            ) : (
+              <span>Album</span>
+            )}
           </div>
         </div>
       </div>
@@ -572,12 +587,12 @@ export default function PhotoFeed({
                   )}
                 </AnimatePresence>
 
-                {/* Polaroid card container — plus large sur desktop en diapo, centré */}
+                {/* Polaroid card container — plus large sur desktop en diapo, centré ; contraint à la zone visible */}
                 <div
                   className={cn(
                     'relative flex-1 w-full flex items-center justify-center min-h-0 overflow-hidden px-4',
                     viewMode === 'diapo'
-                      ? 'max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl'
+                      ? 'max-w-[95vw] max-h-[85vh]'
                       : 'max-w-[95vw]',
                   )}
                   onClick={(e) => e.stopPropagation()}
@@ -601,17 +616,17 @@ export default function PhotoFeed({
                         }
                       }}
                       className={cn(
-                        'w-full cursor-grab active:cursor-grabbing select-none flex items-center justify-center',
+                        'w-full max-w-full h-full max-h-full cursor-grab active:cursor-grabbing select-none flex items-center justify-center min-h-0',
                         viewMode === 'full' ? 'max-w-[95vw]' : '',
                       )}
-                      style={{ maxHeight: '85vh' }}
+                      style={viewMode === 'diapo' ? { maxHeight: '85vh' } : { maxHeight: '85vh' }}
                     >
-                      {/* Polaroid frame — diapo: crop 4/5 + bande basse; full: marge blanche uniforme */}
+                      {/* Polaroid frame — diapo: contenu adapté à l'écran (object-contain) ; full: marge blanche uniforme */}
                       <div
                         className={cn(
                           'relative w-full transition-transform duration-700 ease-in-out',
                           viewMode === 'diapo'
-                            ? 'bg-white shadow-2xl rounded-sm p-3 sm:p-4 pb-16 sm:pb-24'
+                            ? 'flex flex-col bg-white shadow-2xl rounded-sm p-3 sm:p-4 pb-16 sm:pb-24 max-h-[85vh] max-w-[95vw]'
                             : 'inline-flex max-h-[85vh] max-w-[95vw] items-center justify-center',
                         )}
                         style={{
@@ -623,7 +638,7 @@ export default function PhotoFeed({
                         {/* FRONT FACE — image */}
                         {viewMode === 'diapo' ? (
                           <div
-                            className="relative overflow-hidden bg-stone-100"
+                            className="relative flex-1 min-h-0 overflow-hidden bg-stone-100 flex items-center justify-center"
                             style={{ backfaceVisibility: 'hidden' }}
                           >
                             {sortedMediaItems[selectedIndex].type === 'video' ? (
@@ -633,7 +648,7 @@ export default function PhotoFeed({
                                 playsInline
                                 muted
                                 autoPlay
-                                className="w-full h-full object-cover"
+                                className="max-w-full max-h-[calc(85vh-7rem)] object-contain"
                               />
                             ) : (
                               <img
@@ -641,7 +656,7 @@ export default function PhotoFeed({
                                   width: 900,
                                 })}
                                 alt={`Full photo ${selectedIndex + 1}`}
-                                className="w-full h-auto block"
+                                className="max-w-full max-h-[calc(85vh-7rem)] w-auto h-auto object-contain block"
                                 onLoad={() => setIsImageLoading(false)}
                               />
                             )}
