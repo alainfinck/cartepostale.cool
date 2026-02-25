@@ -35,6 +35,7 @@ import {
   Sparkles,
   Loader2,
 } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Pencil, PenTool, RotateCcw } from 'lucide-react'
@@ -759,75 +760,84 @@ export default function ManagerClient({
           </div>
 
           <div className="flex gap-1 rounded-lg border border-border/30 p-1 bg-muted/30">
-            <Button
-              variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-              size="icon"
-              className={cn(
-                'h-8 w-8',
-                viewMode === 'grid' && 'bg-background shadow-sm hover:bg-background',
-              )}
-              onClick={() => setViewMode('grid')}
-            >
-              <LayoutGrid size={16} />
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-              size="icon"
-              className={cn(
-                'h-8 w-8',
-                viewMode === 'list' && 'bg-background shadow-sm hover:bg-background',
-              )}
-              onClick={() => setViewMode('list')}
-            >
-              <List size={16} />
-            </Button>
+            <Tooltip content="Mode grille">
+              <Button
+                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                size="icon"
+                className={cn(
+                  'h-8 w-8',
+                  viewMode === 'grid' && 'bg-background shadow-sm hover:bg-background',
+                )}
+                onClick={() => setViewMode('grid')}
+              >
+                <LayoutGrid size={16} />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Mode liste">
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="icon"
+                className={cn(
+                  'h-8 w-8',
+                  viewMode === 'list' && 'bg-background shadow-sm hover:bg-background',
+                )}
+                onClick={() => setViewMode('list')}
+              >
+                <List size={16} />
+              </Button>
+            </Tooltip>
           </div>
 
           {viewMode === 'grid' && (
             <div className="flex gap-1 rounded-lg border border-border/30 p-1 bg-muted/30">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:bg-muted"
-                onClick={() => {
-                  setColumns(Math.max(1, columns - 1))
-                  setIsAuto(false)
-                }}
-                disabled={columns <= 1}
-              >
-                <Minus size={14} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  'flex items-center justify-center min-w-[40px] px-2 text-xs font-bold transition-all',
-                  isAuto
-                    ? 'text-teal-600 bg-teal-50/50 rounded-md ring-1 ring-teal-500/20 shadow-[0_0_10px_rgba(20,184,166,0.1)]'
-                    : 'text-stone-600',
-                )}
-                onClick={() => setIsAuto(!isAuto)}
-                title={isAuto ? 'Passer en mode manuel' : 'Passer en mode automatique'}
-              >
-                {columns}
-                {isAuto && (
-                  <span className="ml-1 text-[8px] font-black tracking-tighter opacity-70">
-                    AUTO
-                  </span>
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:bg-muted"
-                onClick={() => {
-                  setColumns(Math.min(maxAutoColumns, columns + 1))
-                  setIsAuto(false)
-                }}
-                disabled={columns >= maxAutoColumns}
-              >
-                <Plus size={14} />
-              </Button>
+              <Tooltip content="Réduire le nombre de colonnes">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:bg-muted"
+                  onClick={() => {
+                    setColumns(Math.max(1, columns - 1))
+                    setIsAuto(false)
+                  }}
+                  disabled={columns <= 1}
+                >
+                  <Minus size={14} />
+                </Button>
+              </Tooltip>
+              <Tooltip content={isAuto ? 'Passer en mode manuel' : 'Passer en mode automatique'}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    'flex items-center justify-center min-w-[40px] px-2 text-xs font-bold transition-all',
+                    isAuto
+                      ? 'text-teal-600 bg-teal-50/50 rounded-md ring-1 ring-teal-500/20 shadow-[0_0_10px_rgba(20,184,166,0.1)]'
+                      : 'text-stone-600',
+                  )}
+                  onClick={() => setIsAuto(!isAuto)}
+                >
+                  {columns}
+                  {isAuto && (
+                    <span className="ml-1 text-[8px] font-black tracking-tighter opacity-70">
+                      AUTO
+                    </span>
+                  )}
+                </Button>
+              </Tooltip>
+              <Tooltip content="Augmenter le nombre de colonnes">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:bg-muted"
+                  onClick={() => {
+                    setColumns(Math.min(maxAutoColumns, columns + 1))
+                    setIsAuto(false)
+                  }}
+                  disabled={columns >= maxAutoColumns}
+                >
+                  <Plus size={14} />
+                </Button>
+              </Tooltip>
             </div>
           )}
         </div>
@@ -962,7 +972,7 @@ export default function ManagerClient({
                         }}
                         onChange={toggleSelectAll}
                         onClick={(e) => e.stopPropagation()}
-                        className="h-4 w-4 rounded border-border text-teal-600 focus:ring-teal-500 cursor-pointer"
+                        className="h-3.5 w-3.5 rounded border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer transition-transform hover:scale-110"
                       />
                     </TableHead>
                     <TableHead>Image</TableHead>
@@ -1298,6 +1308,36 @@ export default function ManagerClient({
 
 // --- Sub-components ---
 
+function Tooltip({ children, content }: { children: React.ReactNode; content: string }) {
+  const [isVisible, setIsVisible] = useState(false)
+
+  return (
+    <div
+      className="relative flex items-center"
+      onMouseEnter={() => setIsVisible(true)}
+      onMouseLeave={() => setIsVisible(false)}
+      onFocus={() => setIsVisible(true)}
+      onBlur={() => setIsVisible(false)}
+    >
+      {children}
+      <AnimatePresence>
+        {isVisible && (
+          <motion.div
+            initial={{ opacity: 0, y: 5, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 5, scale: 0.95 }}
+            transition={{ duration: 0.1, ease: 'easeOut' }}
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-stone-900/90 backdrop-blur-md text-white text-[10px] font-medium rounded-md shadow-xl whitespace-nowrap z-[100] pointer-events-none border border-white/10"
+          >
+            {content}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-stone-900/90" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 const statVariants = {
   default: 'border-border/50 bg-card/50 backdrop-blur-sm',
   success: 'border-emerald-200/50 bg-emerald-50/50 text-emerald-700 backdrop-blur-sm',
@@ -1435,270 +1475,240 @@ function GridCard({
   }
 
   return (
-    <div className="[perspective:1000px] h-full">
-      <div
-        className="relative h-full transition-transform duration-300 ease-out [transform-style:preserve-3d]"
-        style={{ minHeight: '320px', transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
-      >
-        <div className="[backface-visibility:hidden] h-full" style={{ transform: 'rotateY(0deg)' }}>
-          <Card
-            className={cn(
-              'overflow-hidden border-border/50 hover:shadow-xl hover:shadow-black/5 transition-shadow duration-300 cursor-pointer group bg-card/60 backdrop-blur-sm h-full flex flex-col',
-              selected && 'ring-2 ring-teal-500 ring-offset-2',
-            )}
-            onClick={onSelect}
+    <div className="group flex flex-col h-full gap-2">
+      <div className="[perspective:1000px] flex-1">
+        <div
+          className="relative h-full transition-transform duration-500 ease-in-out [transform-style:preserve-3d]"
+          style={{ minHeight: '300px', transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
+        >
+          {/* Face Recto */}
+          <div
+            className="[backface-visibility:hidden] h-full"
+            style={{ transform: 'rotateY(0deg)' }}
           >
-            {/* Image */}
-            <div className="relative h-48 overflow-hidden flex-shrink-0">
-              <div className="absolute top-3 left-3 z-10" onClick={(e) => e.stopPropagation()}>
+            <Card
+              className={cn(
+                'overflow-hidden border-border/50 hover:shadow-xl hover:shadow-black/5 transition-all duration-300 cursor-pointer bg-card/60 backdrop-blur-sm h-full flex flex-col relative',
+                selected && 'ring-2 ring-teal-500 ring-offset-2',
+              )}
+              onClick={onSelect}
+            >
+              <div className="absolute top-2.5 left-2.5 z-20" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
                   checked={selected}
                   onChange={onToggleSelect}
                   onClick={(e) => e.stopPropagation()}
-                  className="h-4 w-4 rounded border-border text-teal-600 focus:ring-teal-500 cursor-pointer bg-white/90 shadow"
+                  className="h-3.5 w-3.5 rounded border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer bg-white/90 shadow-sm transition-transform hover:scale-110"
                 />
               </div>
-              <Image
-                src={imageUrl}
-                alt={`Carte de ${postcard.senderName}`}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-700"
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              />
-              <div className="absolute top-3 left-10 flex gap-2 items-center">
-                <StatusBadge status={postcard.status || 'draft'} />
-                <span className="bg-black/40 backdrop-blur-md text-white/90 text-[10px] px-1.5 py-0.5 rounded-md font-mono border border-white/10">
-                  #{postcard.publicId}
-                </span>
-              </div>
-              {postcard.isPremium && (
-                <div className="absolute top-3 right-3 bg-amber-400/90 backdrop-blur-sm text-amber-950 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30">
-                  PREMIUM
+
+              {/* Image */}
+              <div className="relative h-44 overflow-hidden shrink-0">
+                <Image
+                  src={imageUrl}
+                  alt={`Carte de ${postcard.senderName}`}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                />
+                <div className="absolute top-2.5 left-9 flex gap-1.5 items-center">
+                  <StatusBadge status={postcard.status || 'draft'} />
+                  <span className="bg-black/30 backdrop-blur-sm text-white/90 text-[10px] px-1.5 py-0.5 rounded font-mono border border-white/5">
+                    #{postcard.publicId}
+                  </span>
                 </div>
-              )}
-              <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <p className="text-white text-xs line-clamp-2 italic">
-                  &quot;{postcard.message}&quot;
-                </p>
-              </div>
-            </div>
-
-            {/* Info */}
-            <div className="p-4 space-y-4 flex-1">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-stone-800">
-                    <span className="bg-teal-100 text-teal-700 text-[10px] px-1.5 py-0.5 rounded leading-none">
-                      DE
-                    </span>
-                    {postcard.senderName}
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-stone-500">
-                    <span className="bg-stone-100 text-stone-600 text-[10px] px-1.5 py-0.5 rounded leading-none">
-                      À
-                    </span>
-                    {postcard.recipientName}
-                  </div>
-                </div>
-                <div className="text-[10px] font-medium text-stone-400 bg-stone-50 px-2 py-1 rounded-md border border-stone-100">
-                  {new Date(postcard.date)
-                    .toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
-                    .toUpperCase()}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 text-xs text-stone-500 py-1.5 px-2 bg-stone-50/50 rounded-lg border border-stone-100/50">
-                <MapPin size={12} className="text-orange-400 shrink-0" />
-                <span className="truncate">{postcard.location}</span>
-              </div>
-
-              <div className="space-y-3 pt-3 border-t border-border/10">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 text-[11px] text-stone-400 font-medium">
-                    <span
-                      className="flex items-center gap-1 hover:text-stone-600 transition-colors"
-                      title="Vues (Interne)"
-                    >
-                      <Eye size={13} className="text-stone-300" /> {postcard.views || 0}
-                    </span>
-                    <span
-                      className="flex items-center gap-1 text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded-md border border-teal-100/50"
-                      title="Vues Umami"
-                    >
-                      <BarChart3 size={13} /> {umamiViews || 0}
-                    </span>
-                    <span
-                      className="flex items-center gap-1 hover:text-stone-600 transition-colors"
-                      title="Partages"
-                    >
-                      <Share2 size={13} className="text-stone-300" /> {postcard.shares || 0}
-                    </span>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8 text-stone-600 hover:text-teal-600 border-stone-200 bg-white shadow-sm"
-                    onClick={toggleFlip}
-                    title={isFlipped ? 'Retourner recto' : 'Voir le verso'}
-                  >
-                    <RotateCcw size={14} />
-                  </Button>
-                </div>
-
-                <div
-                  className="flex flex-wrap items-center justify-between gap-y-3 gap-x-1"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {/* Primary actions */}
-                  <div className="flex items-center gap-1.5 p-1 bg-stone-100/50 rounded-xl border border-stone-200/50">
-                    <Link
-                      href={`/carte/${postcard.publicId}`}
-                      target="_blank"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 text-stone-600 hover:text-teal-600 hover:bg-white rounded-lg transition-all shadow-none"
-                        title="Ouvrir dans un nouvel onglet"
-                      >
-                        <ExternalLink size={16} />
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onEdit()
-                      }}
-                      className="h-9 w-9 text-stone-600 hover:text-teal-600 hover:bg-white rounded-lg transition-all shadow-none"
-                      title="Modifier les infos"
-                    >
-                      <Pencil size={16} />
-                    </Button>
-                    {onEditAlbum && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onEditAlbum()
-                        }}
-                        className="h-9 w-9 text-stone-600 hover:text-blue-600 hover:bg-white rounded-lg transition-all shadow-none"
-                        title="Gérer l'album photo"
-                      >
-                        <ImageIcon size={16} />
-                      </Button>
-                    )}
-                    {onEditInEditor && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onEditInEditor()
-                        }}
-                        className="h-9 w-9 text-stone-600 hover:text-amber-600 hover:bg-white rounded-lg transition-all shadow-none"
-                        title="Ouvrir dans l’éditeur"
-                      >
-                        <PenTool size={16} />
-                      </Button>
-                    )}
-                  </div>
-
-                  {/* Secondary/Special actions */}
-                  <div className="flex items-center gap-1.5">
-                    {onOpenShareContribution && postcard.contributionToken && (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onOpenShareContribution()
-                        }}
-                        className="h-9 w-9 text-purple-600 border-purple-100 bg-purple-50/50 hover:bg-purple-100 rounded-xl transition-all shadow-sm"
-                        title="Lien de contribution"
-                      >
-                        <Users size={16} />
-                      </Button>
-                    )}
-
-                    <StatusDropdown
-                      currentStatus={postcard.status || 'draft'}
-                      onUpdate={onUpdateStatus}
-                      postcardId={postcard.id}
-                    />
-
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onDelete(postcard.id)
-                      }}
-                      className="h-9 w-9 text-red-400 hover:text-red-600 border-red-100 hover:border-red-200 bg-red-50/30 hover:bg-red-50 rounded-xl transition-all shadow-sm"
-                      title="Supprimer"
-                    >
-                      <Trash2 size={16} />
-                    </Button>
-                  </div>
-                </div>
-
-                {onDuplicate && (
-                  <div className="pt-2" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onDuplicate()
-                      }}
-                      className="w-full h-10 text-stone-600 border-stone-200 bg-white hover:bg-stone-50 hover:border-stone-300 rounded-xl font-medium transition-all group"
-                      title="Dupliquer la carte pour modifier texte et photos"
-                    >
-                      <Copy
-                        size={14}
-                        className="mr-2 text-stone-400 group-hover:text-violet-600 transition-colors"
-                      />
-                      Dupliquer la carte
-                    </Button>
+                {postcard.isPremium && (
+                  <div className="absolute top-2.5 right-2.5 bg-amber-400/90 backdrop-blur-sm text-amber-950 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-amber-500/20">
+                    PREMIUM
                   </div>
                 )}
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent flex items-end p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <p className="text-white text-[11px] line-clamp-2 italic leading-tight">
+                    &quot;{postcard.message}&quot;
+                  </p>
+                </div>
+                {/* Flip button inside image area */}
+                <button
+                  onClick={toggleFlip}
+                  className="absolute bottom-2 right-2 p-1.5 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/40"
+                  title="Voir le message"
+                >
+                  <RotateCcw size={12} />
+                </button>
+              </div>
+
+              {/* Info compact */}
+              <div className="p-3 space-y-2 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="flex items-center gap-1.5 text-sm font-semibold text-stone-800 truncate">
+                      <span className="text-[9px] text-stone-400 uppercase font-medium">De</span>
+                      {postcard.senderName}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-stone-500 truncate">
+                      <span className="text-[9px] text-stone-400 uppercase font-medium">À</span>
+                      {postcard.recipientName}
+                    </div>
+                  </div>
+                  <div className="text-[9px] font-bold text-stone-400 bg-stone-50 px-1.5 py-0.5 rounded border border-stone-100 whitespace-nowrap">
+                    {new Date(postcard.date)
+                      .toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
+                      .toUpperCase()}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 text-[11px] text-stone-500 px-2 py-1 bg-stone-50/50 rounded border border-stone-100/50">
+                  <MapPin size={10} className="text-orange-400 shrink-0" />
+                  <span className="truncate">{postcard.location}</span>
+                </div>
+
+                <div className="flex items-center gap-3 pt-2 text-[10px] text-stone-400 border-t border-border/5">
+                  <Tooltip content="Vues (Interne)">
+                    <span className="flex items-center gap-1 whitespace-nowrap">
+                      <Eye size={11} className="text-stone-300" /> {postcard.views || 0}
+                    </span>
+                  </Tooltip>
+                  <Tooltip content="Vues Umami">
+                    <span className="flex items-center gap-1 text-teal-600 font-medium whitespace-nowrap">
+                      <BarChart3 size={11} /> {umamiViews || 0}
+                    </span>
+                  </Tooltip>
+                  <Tooltip content="Partages">
+                    <span className="flex items-center gap-1 whitespace-nowrap">
+                      <Share2 size={11} className="text-stone-300" /> {postcard.shares || 0}
+                    </span>
+                  </Tooltip>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Face verso */}
+          <div
+            className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-xl overflow-hidden border border-border/50 bg-gradient-to-br from-stone-50 to-stone-100/80 shadow-lg cursor-pointer"
+            onClick={onSelect}
+          >
+            <div className="absolute top-2.5 right-2.5 z-20">
+              <button
+                onClick={toggleFlip}
+                className="p-1.5 rounded-full bg-stone-300/30 text-stone-600 hover:bg-stone-300/50 transition-colors"
+                title="Retourner"
+              >
+                <RotateCcw size={12} />
+              </button>
+            </div>
+            <div className="h-full flex flex-col p-4 justify-center">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-stone-400 mb-2">
+                Message
+              </p>
+              <p className="text-xs text-stone-700 italic leading-relaxed line-clamp-6 bg-white/40 p-3 rounded-lg border border-white/60">
+                {postcard.message ? `"${postcard.message}"` : '—'}
+              </p>
+              <div className="mt-3 pt-3 border-t border-stone-200/50 flex items-center gap-1.5 text-[10px] text-stone-500">
+                <MapPin size={10} className="text-orange-500 shrink-0" />
+                <span className="truncate">{postcard.location || '—'}</span>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
-        {/* Face verso */}
-        <div
-          className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-lg overflow-hidden border border-border/50 bg-gradient-to-br from-stone-100 to-stone-200/80 shadow-lg cursor-pointer"
-          onClick={onSelect}
-        >
-          <div className="absolute top-3 right-3 z-10">
+      </div>
+
+      {/* Actions underneath the card */}
+      <div
+        className="flex items-center justify-between gap-1 px-1 h-9"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-1">
+          <Tooltip content="Ouvrir">
+            <Link href={`/carte/${postcard.publicId}`} target="_blank">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-stone-500 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all"
+              >
+                <ExternalLink size={14} />
+              </Button>
+            </Link>
+          </Tooltip>
+          <Tooltip content="Infos">
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon"
-              className="h-8 w-8 text-stone-600 hover:text-teal-600 border-stone-200 bg-white shadow-sm"
-              onClick={toggleFlip}
-              title="Retourner recto"
+              onClick={onEdit}
+              className="h-8 w-8 text-stone-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
             >
-              <RotateCcw size={14} />
+              <Pencil size={14} />
             </Button>
-          </div>
-          <div className="h-full flex flex-col p-5 justify-center">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">
-              Message
-            </p>
-            <p className="text-sm text-stone-700 italic leading-relaxed line-clamp-6">
-              {postcard.message ? `"${postcard.message}"` : '—'}
-            </p>
-            <div className="mt-4 pt-4 border-t border-stone-300/50 flex items-center gap-2 text-xs text-stone-500">
-              <MapPin size={12} className="text-orange-500 shrink-0" />
-              <span>{postcard.location || '—'}</span>
-            </div>
-          </div>
+          </Tooltip>
+          {onEditAlbum && (
+            <Tooltip content="Photos">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onEditAlbum}
+                className="h-8 w-8 text-stone-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+              >
+                <ImageIcon size={14} />
+              </Button>
+            </Tooltip>
+          )}
+          {onEditInEditor && (
+            <Tooltip content="Design">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onEditInEditor}
+                className="h-8 w-8 text-stone-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+              >
+                <PenTool size={14} />
+              </Button>
+            </Tooltip>
+          )}
+          {onDuplicate && (
+            <Tooltip content="Dupliquer">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onDuplicate}
+                className="h-8 w-8 text-stone-500 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-all"
+              >
+                <Copy size={14} />
+              </Button>
+            </Tooltip>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1">
+          {onOpenShareContribution && postcard.contributionToken && (
+            <Tooltip content="Contribution">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onOpenShareContribution}
+                className="h-8 w-8 text-purple-600 hover:bg-purple-50 rounded-lg transition-all"
+              >
+                <Users size={14} />
+              </Button>
+            </Tooltip>
+          )}
+
+          <StatusDropdown
+            currentStatus={postcard.status || 'draft'}
+            onUpdate={onUpdateStatus}
+            postcardId={postcard.id}
+          />
+
+          <Tooltip content="Supprimer">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onDelete(postcard.id)}
+              className="h-8 w-8 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+            >
+              <Trash2 size={14} />
+            </Button>
+          </Tooltip>
         </div>
       </div>
     </div>
@@ -1750,7 +1760,7 @@ function ListRow({
           checked={selected}
           onChange={onToggleSelect}
           onClick={(e) => e.stopPropagation()}
-          className="h-4 w-4 rounded border-border text-teal-600 focus:ring-teal-500 cursor-pointer"
+          className="h-3.5 w-3.5 rounded border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer transition-transform hover:scale-110"
         />
       </TableCell>
       <TableCell>
@@ -1786,21 +1796,27 @@ function ListRow({
         <StatusBadge status={postcard.status || 'draft'} />
       </TableCell>
       <TableCell className="text-right text-stone-500 font-medium">
-        <div className="flex flex-col items-end">
-          <span className="text-[10px] text-stone-400 uppercase leading-none mb-1">Interne</span>
-          <span>{postcard.views || 0}</span>
-        </div>
+        <Tooltip content="Vues (Interne)">
+          <div className="flex flex-col items-end whitespace-nowrap">
+            <span className="text-[10px] text-stone-400 uppercase leading-none mb-1">Interne</span>
+            <span>{postcard.views || 0}</span>
+          </div>
+        </Tooltip>
       </TableCell>
       <TableCell className="text-right text-teal-600 font-bold">
-        <div className="flex flex-col items-end">
-          <span className="text-[10px] text-teal-500/70 uppercase leading-none mb-1">Umami</span>
-          <span className="flex items-center gap-1">
-            <BarChart3 size={10} /> {umamiViews || 0}
-          </span>
-        </div>
+        <Tooltip content="Vues Umami">
+          <div className="flex flex-col items-end whitespace-nowrap">
+            <span className="text-[10px] text-teal-500/70 uppercase leading-none mb-1">Umami</span>
+            <span className="flex items-center gap-1">
+              <BarChart3 size={10} /> {umamiViews || 0}
+            </span>
+          </div>
+        </Tooltip>
       </TableCell>
       <TableCell className="text-right text-stone-500 font-medium">
-        {postcard.shares || 0}
+        <Tooltip content="Partages">
+          <span className="whitespace-nowrap">{postcard.shares || 0}</span>
+        </Tooltip>
       </TableCell>
       <TableCell>
         <div
@@ -1808,71 +1824,77 @@ function ListRow({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center gap-1 p-1 bg-stone-100/50 rounded-lg border border-stone-200/50 mr-1">
-            <Link href={`/carte/${postcard.publicId}`} target="_blank">
+            <Tooltip content="Ouvrir">
+              <Link href={`/carte/${postcard.publicId}`} target="_blank">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-stone-600 hover:text-teal-600 hover:bg-white rounded-md transition-all shadow-none"
+                >
+                  <ExternalLink size={14} />
+                </Button>
+              </Link>
+            </Tooltip>
+            <Tooltip content="Modifier">
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-stone-600 hover:text-teal-600 hover:bg-white rounded-md transition-all shadow-none"
-                title="Voir la carte"
+                onClick={() => onEdit()}
               >
-                <ExternalLink size={14} />
+                <Pencil size={14} />
               </Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-stone-600 hover:text-teal-600 hover:bg-white rounded-md transition-all shadow-none"
-              onClick={() => onEdit()}
-              title="Modifier"
-            >
-              <Pencil size={14} />
-            </Button>
+            </Tooltip>
             {onEditAlbum && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-stone-600 hover:text-blue-600 hover:bg-white rounded-md transition-all shadow-none"
-                onClick={() => onEditAlbum()}
-                title="Gérer l'album photo"
-              >
-                <ImageIcon size={14} />
-              </Button>
+              <Tooltip content="Photos">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-stone-600 hover:text-blue-600 hover:bg-white rounded-md transition-all shadow-none"
+                  onClick={() => onEditAlbum()}
+                >
+                  <ImageIcon size={14} />
+                </Button>
+              </Tooltip>
             )}
             {onEditInEditor && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-stone-600 hover:text-amber-600 hover:bg-white rounded-md transition-all shadow-none"
-                onClick={() => onEditInEditor()}
-                title="Ouvrir dans l’éditeur"
-              >
-                <PenTool size={14} />
-              </Button>
+              <Tooltip content="Design">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-stone-600 hover:text-amber-600 hover:bg-white rounded-md transition-all shadow-none"
+                  onClick={() => onEditInEditor()}
+                >
+                  <PenTool size={14} />
+                </Button>
+              </Tooltip>
             )}
           </div>
 
           {onOpenShareContribution && postcard.contributionToken && (
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 text-purple-600 border-purple-100 bg-purple-50/50 hover:bg-purple-100 rounded-lg transition-all shadow-sm"
-              onClick={() => onOpenShareContribution()}
-              title="Lien de contribution"
-            >
-              <Users size={14} />
-            </Button>
+            <Tooltip content="Contribution">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 text-purple-600 border-purple-100 bg-purple-50/50 hover:bg-purple-100 rounded-lg transition-all shadow-sm"
+                onClick={() => onOpenShareContribution?.()}
+              >
+                <Users size={14} />
+              </Button>
+            </Tooltip>
           )}
 
           {onDuplicate && (
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 text-stone-500 border-stone-200 bg-white hover:bg-stone-50 rounded-lg transition-all shadow-sm"
-              onClick={() => onDuplicate()}
-              title="Dupliquer"
-            >
-              <Copy size={14} />
-            </Button>
+            <Tooltip content="Dupliquer">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 text-stone-500 border-stone-200 bg-white hover:bg-stone-50 rounded-lg transition-all shadow-sm"
+                onClick={() => onDuplicate()}
+              >
+                <Copy size={14} />
+              </Button>
+            </Tooltip>
           )}
 
           <StatusDropdown
@@ -1881,15 +1903,16 @@ function ListRow({
             postcardId={postcard.id}
           />
 
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8 text-red-400 hover:text-red-600 border-red-100 hover:border-red-200 bg-red-50/30 hover:bg-red-50 rounded-lg transition-all shadow-sm"
-            onClick={() => onDelete(postcard.id)}
-            title="Supprimer"
-          >
-            <Trash2 size={14} />
-          </Button>
+          <Tooltip content="Supprimer">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 text-red-400 border-red-100 bg-red-50/50 hover:bg-red-100 rounded-lg transition-all shadow-sm"
+              onClick={() => onDelete(postcard.id)}
+            >
+              <Trash2 size={14} />
+            </Button>
+          </Tooltip>
         </div>
       </TableCell>
     </TableRow>
