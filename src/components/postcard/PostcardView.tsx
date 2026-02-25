@@ -1184,7 +1184,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     e.stopPropagation()
                     setIsFrontImageZoomOpen(true)
                   }}
-                  className="absolute bottom-3 right-3 z-30 flex items-center justify-center w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-lg border border-stone-200/80 text-stone-600 hover:text-stone-900 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  className="absolute z-30 flex items-center justify-center w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-lg border border-stone-200/80 text-stone-600 hover:text-stone-900 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  style={{ left: '776px', top: '655px' }}
                   aria-label="Voir l'image en grand"
                 >
                   <Search size={18} strokeWidth={2} />
@@ -2282,6 +2283,63 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             photoLocations={photoLocations}
             onPhotoClick={handleMapPhotoClick}
           />,
+          portalRoot,
+        )}
+
+      {/* Lightbox : image de la face avant en grand */}
+      {portalRoot &&
+        createPortal(
+          <AnimatePresence>
+            {isFrontImageZoomOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[999] bg-black/95 flex items-center justify-center overflow-auto"
+                onClick={() => setIsFrontImageZoomOpen(false)}
+                style={{
+                  padding:
+                    'max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left))',
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setIsFrontImageZoomOpen(false)
+                  }}
+                  className="fixed z-10 flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/95 shadow-xl text-stone-700 hover:bg-white transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-stone-900"
+                  style={{
+                    top: 'max(1rem, env(safe-area-inset-top))',
+                    right: 'max(1rem, env(safe-area-inset-right))',
+                  }}
+                  aria-label="Fermer"
+                >
+                  <X size={24} className="sm:w-7 sm:h-7" strokeWidth={2.5} />
+                </button>
+                <div
+                  className="relative shrink-0 max-w-[min(90vw,1200px)] max-h-[85vh] w-full aspect-[4/3] overflow-hidden rounded-lg shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <img
+                    src={getOptimizedImageUrl(frontImageSrc, { width: 1600 })}
+                    alt="Face avant de la carte postale"
+                    className="w-full h-full object-cover"
+                    style={{
+                      objectPosition: postcard.frontImageCrop
+                        ? `${postcard.frontImageCrop.x}% ${postcard.frontImageCrop.y}%`
+                        : undefined,
+                      transform: postcard.frontImageCrop
+                        ? `scale(${postcard.frontImageCrop.scale})`
+                        : undefined,
+                      filter: frontImageFilterCss,
+                    }}
+                    draggable={false}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
           portalRoot,
         )}
 
