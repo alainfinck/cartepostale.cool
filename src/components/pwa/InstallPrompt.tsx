@@ -28,21 +28,23 @@ export function InstallPrompt() {
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault()
       setDeferredPrompt(e)
-      // Only show if not standalone
-      if (!window.matchMedia('(display-mode: standalone)').matches) {
+      // Only show if not standalone and not in an iframe
+      const isEmbed = window.self !== window.top
+      if (!window.matchMedia('(display-mode: standalone)').matches && !isEmbed) {
         // Delay slightly to not annoy user immediately
-        setTimeout(() => setShowPrompt(true), 3000)
+        setTimeout(() => setShowPrompt(true), 5000)
       }
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
 
     // iOS: Show prompt if not standalone (and after a delay)
-    if (isIOSDevice && !window.matchMedia('(display-mode: standalone)').matches) {
-      // Check if we've already shown it in this session or recently
+    const isEmbed = typeof window !== 'undefined' && window.self !== window.top
+    if (isIOSDevice && !window.matchMedia('(display-mode: standalone)').matches && !isEmbed) {
+      // Check if we've already shown it recently
       const lastDismissed = localStorage.getItem('pwa_prompt_dismissed')
       if (!lastDismissed || Date.now() - parseInt(lastDismissed) > 24 * 60 * 60 * 1000) {
-        setTimeout(() => setShowPrompt(true), 3000)
+        setTimeout(() => setShowPrompt(true), 5000)
       }
     }
 
@@ -76,12 +78,12 @@ export function InstallPrompt() {
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
-          className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:w-96"
+          className="fixed bottom-6 left-6 right-6 z-[100] md:left-auto md:right-6 md:w-96"
         >
-          <div className="bg-white/90 backdrop-blur-md border border-teal-100 dark:bg-stone-900/90 dark:border-stone-800 p-4 rounded-2xl shadow-xl flex flex-col gap-3">
+          <div className="bg-white/95 backdrop-blur-md border border-teal-100 dark:bg-stone-900/95 dark:border-stone-800 p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col gap-4">
             <div className="flex justify-between items-start">
-              <div className="flex gap-3">
-                <div className="bg-teal-100 p-2 rounded-xl text-teal-600">
+              <div className="flex gap-4">
+                <div className="bg-teal-100 p-2.5 rounded-xl text-teal-600 flex items-center justify-center shrink-0">
                   <Download size={24} />
                 </div>
                 <div>
