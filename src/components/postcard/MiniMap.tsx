@@ -54,7 +54,10 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
   // Handle standard zoom/center changes (e.g. from buttons) AFTER initial animation
   React.useEffect(() => {
     if (hasAnimated) {
-      map.setView(center, zoom)
+      map.setView(center, zoom, {
+        animate: true,
+        duration: 0.5,
+      })
     }
   }, [center, zoom, map, hasAnimated])
 

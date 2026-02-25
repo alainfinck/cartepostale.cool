@@ -1980,7 +1980,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   </div>
 
                   {/* Destinataire — Placé en haut de la colonne, avec marge négative pour remonter */}
-                  {postcard.recipientName && (
+                  {postcard.recipientName?.trim() && (
                     <div className="px-2 sm:px-3 mb-4 shrink-0 -mt-2 sm:-mt-4">
                       <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-1">
                         À l&apos;attention de
