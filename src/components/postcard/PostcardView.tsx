@@ -2066,7 +2066,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             className="w-full flex justify-center overflow-hidden"
             style={{ transformOrigin: 'top', transformStyle: 'preserve-3d' }}
           >
-            <div className="flex items-center justify-center w-[98%] max-w-3xl flex-wrap gap-2 sm:gap-4 rounded-b-[2.5rem] border-x border-b border-stone-200/40 bg-white/75 backdrop-blur-2xl shadow-[0_25px_70px_rgba(0,0,0,0.07)] px-4 sm:px-8 py-2 sm:py-3.5">
+            <div className="flex items-center justify-center w-full flex-wrap gap-3 sm:gap-6 px-4 sm:px-8 py-4">
               {(hasMedia || canContribute) && (
                 <button
                   onClick={openAlbum}
@@ -2121,7 +2121,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   onClick={toggleFullscreen}
                   className={cn(
                     actionButtonBase,
-                    'group bg-stone-50 border-stone-200 text-stone-900 hover:text-teal-600 hover:bg-white transition-all',
+                    'group bg-white border-stone-200 text-stone-900 hover:text-teal-600 hover:bg-stone-50 transition-all',
                   )}
                 >
                   <Maximize2
@@ -2139,7 +2139,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 }}
                 className={cn(
                   actionButtonBase,
-                  'group bg-stone-100 border-stone-200 text-stone-900 hover:text-teal-600 hover:bg-white transition-all',
+                  'group bg-white border-stone-200 text-stone-900 hover:text-teal-600 hover:bg-stone-50 transition-all',
                 )}
                 title="Retourner la carte"
               >
