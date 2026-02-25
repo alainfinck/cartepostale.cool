@@ -17,31 +17,28 @@ export default async function EspaceClientCreditsPage() {
   if (!user) return null
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
+    <div className="space-y-8 pb-12">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-4xl font-serif font-bold text-stone-900 tracking-tight flex items-center gap-3">
+            Gérer mes crédits
+            <Sparkles size={32} className="text-teal-500" />
+          </h1>
+          <p className="text-stone-500 mt-2 text-lg">
+            Rechargez votre compte pour envoyer des cartes postales.
+          </p>
+        </div>
         <Link
           href="/espace-client"
-          className="flex items-center gap-1.5 text-sm font-medium text-stone-500 hover:text-stone-700 transition-colors"
+          className="flex items-center gap-2 text-sm font-bold text-stone-600 hover:text-stone-900 transition-all bg-white border border-stone-200 px-4 py-2 rounded-xl shadow-sm hover:shadow-md"
         >
           <ArrowLeft size={18} />
-          Retour
+          Retour au tableau de bord
         </Link>
       </div>
-      <div>
-        <h1 className="text-2xl font-serif font-bold text-stone-800 flex items-center gap-2">
-          <Sparkles size={28} className="text-teal-600" />
-          Gérer mes crédits
-        </h1>
-        <p className="text-stone-600 mt-1">
-          Rechargez votre compte avec un pack de cartes ou utilisez un code promo.
-        </p>
-      </div>
-      <div className="w-full max-w-3xl">
-        <CreditsCard
-          initialCredits={user.credits || 0}
-          userId={user.id}
-          userEmail={user.email}
-        />
+
+      <div className="w-full">
+        <CreditsCard initialCredits={user.credits || 0} userId={user.id} userEmail={user.email} />
       </div>
     </div>
   )

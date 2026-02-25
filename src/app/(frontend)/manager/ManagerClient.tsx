@@ -1515,26 +1515,27 @@ function GridCard({
 
               <div className="space-y-3 pt-3 border-t border-border/10">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-xs text-stone-400">
+                  <div className="flex items-center gap-4 text-[11px] text-stone-400 font-medium">
                     <span
                       className="flex items-center gap-1 hover:text-stone-600 transition-colors"
                       title="Vues (Interne)"
                     >
-                      <Eye size={12} /> {postcard.views || 0}
+                      <Eye size={13} className="text-stone-300" /> {postcard.views || 0}
                     </span>
                     <span
-                      className="flex items-center gap-1 text-teal-600 font-medium"
+                      className="flex items-center gap-1 text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded-md border border-teal-100/50"
                       title="Vues Umami"
                     >
-                      <BarChart3 size={12} /> {umamiViews || 0}
+                      <BarChart3 size={13} /> {umamiViews || 0}
                     </span>
                     <span
                       className="flex items-center gap-1 hover:text-stone-600 transition-colors"
                       title="Partages"
                     >
-                      <Share2 size={12} /> {postcard.shares || 0}
+                      <Share2 size={13} className="text-stone-300" /> {postcard.shares || 0}
                     </span>
                   </div>
+
                   <Button
                     variant="outline"
                     size="icon"
@@ -1803,84 +1804,87 @@ function ListRow({
       </TableCell>
       <TableCell>
         <div
-          className="flex flex-wrap items-center justify-end gap-1.5"
+          className="flex flex-wrap items-center justify-end gap-1"
           onClick={(e) => e.stopPropagation()}
         >
-          <Link href={`/carte/${postcard.publicId}`} target="_blank">
+          <div className="flex items-center gap-1 p-1 bg-stone-100/50 rounded-lg border border-stone-200/50 mr-1">
+            <Link href={`/carte/${postcard.publicId}`} target="_blank">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-stone-600 hover:text-teal-600 hover:bg-white rounded-md transition-all shadow-none"
+                title="Voir la carte"
+              >
+                <ExternalLink size={14} />
+              </Button>
+            </Link>
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon"
-              className="h-8 w-8 text-stone-600 hover:text-teal-600 border-stone-200 bg-white shadow-sm"
-              title="Voir la carte"
+              className="h-8 w-8 text-stone-600 hover:text-teal-600 hover:bg-white rounded-md transition-all shadow-none"
+              onClick={() => onEdit()}
+              title="Modifier"
             >
-              <ExternalLink size={14} />
+              <Pencil size={14} />
             </Button>
-          </Link>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8 text-stone-600 hover:text-teal-600 hover:bg-teal-50 border-teal-200 shadow-sm"
-            onClick={() => onEdit()}
-            title="Modifier"
-          >
-            <Pencil size={14} />
-          </Button>
-          {onEditAlbum && (
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200 shadow-sm"
-              onClick={() => onEditAlbum()}
-              title="Gérer l'album photo"
-            >
-              <ImageIcon size={14} />
-            </Button>
-          )}
-          {onEditInEditor && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 px-2 text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-100 font-medium shadow-sm text-xs"
-              onClick={() => onEditInEditor()}
-              title="Ouvrir dans l’éditeur"
-            >
-              <PenTool size={12} className="mr-1" />
-              Éditeur
-            </Button>
-          )}
-          {onDuplicate && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 px-2 text-violet-700 border-violet-200 bg-violet-50/50 hover:bg-violet-100 font-medium shadow-sm text-xs"
-              onClick={() => onDuplicate()}
-              title="Dupliquer la carte"
-            >
-              <Copy size={12} className="mr-1" />
-              Dupliquer
-            </Button>
-          )}
+            {onEditAlbum && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-stone-600 hover:text-blue-600 hover:bg-white rounded-md transition-all shadow-none"
+                onClick={() => onEditAlbum()}
+                title="Gérer l'album photo"
+              >
+                <ImageIcon size={14} />
+              </Button>
+            )}
+            {onEditInEditor && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-stone-600 hover:text-amber-600 hover:bg-white rounded-md transition-all shadow-none"
+                onClick={() => onEditInEditor()}
+                title="Ouvrir dans l’éditeur"
+              >
+                <PenTool size={14} />
+              </Button>
+            )}
+          </div>
+
           {onOpenShareContribution && postcard.contributionToken && (
             <Button
               variant="outline"
-              size="sm"
-              className="h-8 px-2 text-purple-700 border-purple-200 bg-purple-50/50 hover:bg-purple-100 font-medium shadow-sm text-xs"
+              size="icon"
+              className="h-8 w-8 text-purple-600 border-purple-100 bg-purple-50/50 hover:bg-purple-100 rounded-lg transition-all shadow-sm"
               onClick={() => onOpenShareContribution()}
-              title="Partager le lien de contribution (photos)"
+              title="Lien de contribution"
             >
-              <Users size={12} className="mr-1" />
-              Contribuer
+              <Users size={14} />
             </Button>
           )}
+
+          {onDuplicate && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 text-stone-500 border-stone-200 bg-white hover:bg-stone-50 rounded-lg transition-all shadow-sm"
+              onClick={() => onDuplicate()}
+              title="Dupliquer"
+            >
+              <Copy size={14} />
+            </Button>
+          )}
+
           <StatusDropdown
             currentStatus={postcard.status || 'draft'}
             onUpdate={onUpdateStatus}
             postcardId={postcard.id}
           />
+
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 shadow-sm"
+            className="h-8 w-8 text-red-400 hover:text-red-600 border-red-100 hover:border-red-200 bg-red-50/30 hover:bg-red-50 rounded-lg transition-all shadow-sm"
             onClick={() => onDelete(postcard.id)}
             title="Supprimer"
           >
