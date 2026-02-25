@@ -3884,12 +3884,18 @@ export default function EditorPage() {
                   {/* Carte gratuite (limitée) */}
                   <button
                     type="button"
-                    onClick={() => setSelectedPlan('ephemere')}
+                    onClick={() => {
+                      if (message.length <= 500) {
+                        setSelectedPlan('ephemere')
+                      }
+                    }}
+                    disabled={message.length > 500}
                     className={cn(
                       'relative w-full text-left rounded-2xl border-2 p-5 transition-all duration-200 focus:outline-none',
                       selectedPlan === 'ephemere'
                         ? 'border-stone-400 bg-stone-50 ring-2 ring-stone-400 shadow-md'
                         : 'border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm',
+                      message.length > 500 && 'opacity-50 cursor-not-allowed',
                     )}
                   >
                     <div className="flex items-start gap-3">
@@ -3903,8 +3909,8 @@ export default function EditorPage() {
                         <ul className="space-y-1">
                           {[
                             '1 photo (pas de vidéo ni audio)',
+                            "Jusqu'à 500 caractères",
                             'Lien de partage permanent',
-                            'Modifiable depuis votre compte',
                           ].map((f, i) => (
                             <li
                               key={i}
@@ -4742,17 +4748,32 @@ export default function EditorPage() {
                       <label className="flex items-center gap-2 text-sm font-bold text-indigo-900 uppercase tracking-wider">
                         <Type size={16} className="text-indigo-500" /> Votre Message
                       </label>
-                      <span className="text-xs text-indigo-400 font-medium">
-                        {message.length}/500
-                      </span>
+                      <div className="flex flex-col items-end">
+                        <span className="text-xs text-indigo-400 font-medium">
+                          {message.length}/10000
+                        </span>
+                        {message.length > 500 && (
+                          <span className="text-[10px] text-teal-600 font-bold uppercase tracking-wider mt-0.5">
+                            Premium (&gt; 500 car.)
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <textarea
                       ref={messageInputRef}
                       value={message}
-                      onChange={(e) => setMessage(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        if (val.length <= 10000) {
+                          setMessage(val)
+                          if (val.length > 500 && selectedPlan === 'ephemere') {
+                            setSelectedPlan('payant')
+                          }
+                        }
+                      }}
                       placeholder="Cher(e)... Nous voici au bout du monde, le soleil se couche sur la mer et je pense à vous..."
                       rows={8}
-                      maxLength={500}
+                      maxLength={10000}
                       className="w-full min-h-[220px] rounded-2xl border border-stone-200 shadow-inner focus:border-indigo-500 focus:ring-indigo-500 text-lg p-5 font-sans bg-white leading-relaxed text-stone-700 resize-none placeholder:text-stone-300"
                     />
                     {/* Emojis rapides pour le message */}
@@ -4771,8 +4792,11 @@ export default function EditorPage() {
                               const before = message.slice(0, pos)
                               const after = message.slice(pos)
                               const next = before + emoji + after
-                              if (next.length <= 500) {
+                              if (next.length <= 10000) {
                                 setMessage(next)
+                                if (next.length > 500 && selectedPlan === 'ephemere') {
+                                  setSelectedPlan('payant')
+                                }
                                 requestAnimationFrame(() => {
                                   if (el) {
                                     el.focus()
