@@ -951,6 +951,9 @@ export default function EditorPage() {
           const linkRes = await linkPostcardToUser(createdPostcardId, result.email)
           setIsSendingEmail(false)
           if (linkRes.success) {
+            if (typeof window !== 'undefined') {
+              sessionStorage.removeItem('pendingLinkPostcard')
+            }
             setIsEmailSent(true)
             // Update currentUser state
             setCurrentUser({
@@ -2270,6 +2273,9 @@ export default function EditorPage() {
 
         if (!currentUser && !senderEmail) {
           setShowEmailPromptModal(true)
+          if (typeof window !== 'undefined' && result.publicId) {
+            sessionStorage.setItem('pendingLinkPostcard', result.publicId)
+          }
         }
       } else {
         setShareError(result.error || 'Une erreur est survenue lors de la création de la carte.')
@@ -5903,6 +5909,9 @@ export default function EditorPage() {
                     linkPostcardToUser(createdPostcardId!, senderEmail).then((res) => {
                       setIsSendingEmail(false)
                       if (res.success) {
+                        if (typeof window !== 'undefined') {
+                          sessionStorage.removeItem('pendingLinkPostcard')
+                        }
                         setIsEmailSent(true)
                         setTimeout(() => {
                           setShowEmailPromptModal(false)
@@ -5940,6 +5949,15 @@ export default function EditorPage() {
                   </div>
                   <GoogleLoginButton onSuccess={handleGoogleSuccess} className="!h-14" />
                 </>
+              )}
+
+              {createdPostcardId && (
+                <Link
+                  href={`/connexion?callbackUrl=${encodeURIComponent('/espace-client')}&linkPostcard=${encodeURIComponent(createdPostcardId)}`}
+                  className="block w-full text-center text-sm font-bold text-teal-600 hover:text-teal-700 transition-colors"
+                >
+                  Déjà un compte ? Se connecter
+                </Link>
               )}
 
               <button
