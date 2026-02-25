@@ -363,8 +363,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         images: [
           {
             url: absoluteImageUrl,
-            width: 1200,
-            height: 630,
+            width: 1000,
+            height: 525,
             alt: `Carte postale de ${demoCard.senderName}`,
           },
         ],
@@ -412,8 +412,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       images: [
         {
           url: absoluteImageUrl,
-          width: 1200,
-          height: 630,
+          width: 1000,
+          height: 525,
           alt: `Carte postale de ${postcard.senderName}`,
         },
       ],
