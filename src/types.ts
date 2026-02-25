@@ -180,6 +180,13 @@ export type TemplateCategory =
   | 'festive'
   | 'food'
   | 'abstract'
+  | 'birthday'
+  | 'vacation'
+  | 'invitation'
+  | 'birth'
+  | 'christmas'
+  | 'wedding'
+  | 'graduation'
 
 export interface Template {
   id: string

@@ -264,6 +264,15 @@ type StepId = (typeof STEPS)[number]['id']
 
 const TEMPLATE_CATEGORIES: { key: TemplateCategory | 'all'; label: string; icon?: string }[] = [
   { key: 'all', label: 'Tous' },
+  // Occasions
+  { key: 'birthday', label: 'Anniversaire', icon: '🎂' },
+  { key: 'vacation', label: 'Vacances', icon: '🌴' },
+  { key: 'invitation', label: 'Invitation', icon: '✉️' },
+  { key: 'birth', label: 'Naissance', icon: '👶' },
+  { key: 'christmas', label: 'Noël', icon: '🎄' },
+  { key: 'wedding', label: 'Mariage', icon: '💍' },
+  { key: 'graduation', label: 'Diplôme', icon: '🎓' },
+  // Destinations & scènes
   { key: 'beach', label: 'Plage', icon: '\u{1F3D6}\u{FE0F}' },
   { key: 'city', label: 'Ville', icon: '\u{1F3D9}\u{FE0F}' },
   { key: 'nature', label: 'Nature', icon: '\u{1F33F}' },
@@ -272,6 +281,17 @@ const TEMPLATE_CATEGORIES: { key: TemplateCategory | 'all'; label: string; icon?
   { key: 'festive', label: 'F\u00EAtes', icon: '\u{1F389}' },
   { key: 'food', label: 'Gastronomie', icon: '\u{1F37D}\u{FE0F}' },
   { key: 'abstract', label: 'Abstrait', icon: '\u{1F3A8}' },
+]
+
+/** Catégories d'occasions affichées en raccourcis dans la section templates */
+const OCCASION_SHORTCUTS: { key: TemplateCategory; label: string; icon: string }[] = [
+  { key: 'birthday', label: 'Anniversaire', icon: '🎂' },
+  { key: 'vacation', label: 'Vacances', icon: '🌴' },
+  { key: 'invitation', label: 'Invitation', icon: '✉️' },
+  { key: 'birth', label: 'Naissance', icon: '👶' },
+  { key: 'christmas', label: 'Noël', icon: '🎄' },
+  { key: 'wedding', label: 'Mariage', icon: '💍' },
+  { key: 'graduation', label: 'Diplôme', icon: '🎓' },
 ]
 
 /** IDs des modèles affichés en raccourci (icônes cliquables). */
@@ -571,6 +591,169 @@ const SAMPLE_TEMPLATES: Template[] = [
     location: 'Bruxelles, Belgique',
     stampStyle: 'classic',
   },
+  // === Anniversaire (birthday) ===
+  {
+    id: 'tpl-25',
+    name: 'Joyeux anniversaire',
+    description: 'Gâteau et bougies pour fêter le grand jour',
+    imageUrl: 'https://img.cartepostale.cool/demo/photo-1464349153735-7db50ed83c84.jpg',
+    category: 'birthday',
+    frontCaption: 'Joyeux anniversaire !',
+    frontEmoji: '🎂',
+    message:
+      'En ce jour si spécial, je pense très fort à toi ! Que cette nouvelle année t\'apporte tout ce que tu mérites : bonheur, santé et plein de belles aventures. Je t\'embrasse très fort !',
+    stampStyle: 'modern',
+  },
+  {
+    id: 'tpl-26',
+    name: 'Fête en couleurs',
+    description: 'Ballons et confettis pour célébrer',
+    imageUrl: 'https://img.cartepostale.cool/demo/photo-1513151233558-d860c5398176.jpg',
+    category: 'birthday',
+    frontCaption: "C'est ta fête !",
+    frontEmoji: '🎉',
+    message:
+      'Un anniversaire, ça n\'arrive qu\'une fois par an – alors on fête ça en grand ! Tous mes vœux du fond du cœur, que ce jour soit aussi extraordinaire que tu l\'es.',
+    stampStyle: 'modern',
+  },
+  // === Vacances (vacation) ===
+  {
+    id: 'tpl-27',
+    name: 'Paradis estival',
+    description: 'Hamac et cocotiers au bord de la mer',
+    imageUrl: 'https://img.cartepostale.cool/demo/photo-1506197603052-3cc9c3a201bd.jpg',
+    category: 'vacation',
+    frontCaption: 'En vacances !',
+    frontEmoji: '🌴',
+    message:
+      'Enfin les vacances ! On profite à fond du soleil, de la mer et de la dolce vita. Pas de réveil, pas de réunions – juste du bonheur. On pense à vous !',
+    stampStyle: 'airmail',
+  },
+  {
+    id: 'tpl-28',
+    name: 'Road trip ensoleillé',
+    description: 'Liberté sur la route sous le soleil',
+    imageUrl: 'https://img.cartepostale.cool/demo/photo-1473116763249-2faaef81ccda.jpg',
+    category: 'vacation',
+    frontCaption: 'La route nous appelle',
+    frontEmoji: '🚗',
+    message:
+      'En route pour l\'aventure ! La fenêtre ouverte, la musique à fond et le paysage qui défile… Le road trip de rêve. On vous envoie plein de soleil depuis la route !',
+    stampStyle: 'modern',
+  },
+  // === Invitation ===
+  {
+    id: 'tpl-29',
+    name: 'Soirée élégante',
+    description: 'Table dressée pour une occasion spéciale',
+    imageUrl: 'https://img.cartepostale.cool/demo/photo-1524824267900-2b3a7fc8a408.jpg',
+    category: 'invitation',
+    frontCaption: 'Vous êtes invités !',
+    frontEmoji: '✉️',
+    message:
+      'Nous avons le plaisir de vous convier à une soirée exceptionnelle. Votre présence rendra cet événement encore plus mémorable. Nous comptons sur vous !',
+    stampStyle: 'classic',
+  },
+  {
+    id: 'tpl-30',
+    name: 'Fête d\'été',
+    description: 'Ambiance festive et conviviale',
+    imageUrl: 'https://img.cartepostale.cool/demo/photo-1530103043960-ef38714abb15.jpg',
+    category: 'invitation',
+    frontCaption: 'Save the date !',
+    frontEmoji: '🥂',
+    message:
+      'On organise une fête et vous êtes bien sûr de la partie ! Au programme : bonne humeur, musique et moments inoubliables. Répondez vite, les places sont limitées !',
+    stampStyle: 'modern',
+  },
+  // === Naissance (birth) ===
+  {
+    id: 'tpl-31',
+    name: 'Bienvenue au monde',
+    description: 'La magie d\'une nouvelle naissance',
+    imageUrl: 'https://img.cartepostale.cool/demo/photo-1519689680058-324335c77eba.jpg',
+    category: 'birth',
+    frontCaption: 'Bienvenue petit(e) !',
+    frontEmoji: '👶',
+    message:
+      'Une nouvelle petite étoile vient d\'illuminer notre vie. On est fous de joie et on voulait partager cette merveilleuse nouvelle avec vous. Bébé et maman se portent à merveille !',
+    stampStyle: 'classic',
+  },
+  {
+    id: 'tpl-32b',
+    name: 'Douceur de l\'enfance',
+    description: 'Tendresse et délicatesse pour accueillir bébé',
+    imageUrl: 'https://img.cartepostale.cool/demo/photo-1555252333-9f8e92e65df9.jpg',
+    category: 'birth',
+    frontCaption: 'Notre trésor est né !',
+    frontEmoji: '🌸',
+    message:
+      'Après tant d\'impatience, notre petit miracle est arrivé. Les yeux grands ouverts sur le monde, il (elle) nous remplit déjà d\'un amour infini. Venez vite le (la) rencontrer !',
+    stampStyle: 'classic',
+  },
+  // === Noël (christmas) ===
+  {
+    id: 'tpl-32',
+    name: 'Joyeux Noël',
+    description: 'Lumières et magie de Noël',
+    imageUrl: 'https://img.cartepostale.cool/demo/photo-1512389142860-9c449e58a543.jpg',
+    category: 'christmas',
+    frontCaption: 'Joyeux Noël !',
+    frontEmoji: '🎄',
+    message:
+      'En cette période féerique, on vous souhaite un Noël rempli de chaleur, de rires et de bonheur partagé. Que cette nuit magique vous apporte tout ce que vous espérez. Joyeuses fêtes !',
+    stampStyle: 'classic',
+  },
+  {
+    id: 'tpl-33',
+    name: 'Ambiance hivernale',
+    description: 'Sapin illuminé et atmosphère chaleureuse',
+    imageUrl: 'https://img.cartepostale.cool/demo/photo-1543589077-47d81606c1bf.jpg',
+    category: 'christmas',
+    frontCaption: 'Magie de Noël',
+    frontEmoji: '⛄',
+    message:
+      'Le sapin scintille, la neige tombe et le chocolat chaud fume… C\'est Noël ! On pense à vous avec tout notre amour et on vous souhaite les plus belles fêtes de fin d\'année.',
+    stampStyle: 'classic',
+  },
+  // === Mariage (wedding) ===
+  {
+    id: 'tpl-34',
+    name: 'Notre plus beau jour',
+    description: 'Célébration d\'un amour éternel',
+    imageUrl: 'https://img.cartepostale.cool/demo/photo-1519741497674-611481863552.jpg',
+    category: 'wedding',
+    frontCaption: 'Nous nous sommes mariés !',
+    frontEmoji: '💍',
+    message:
+      'C\'est avec une joie immense que nous vous annonçons notre union. Ce jour restera gravé dans nos cœurs pour toujours. Merci d\'avoir partagé ce moment magique avec nous. Avec tout notre amour.',
+    stampStyle: 'classic',
+  },
+  {
+    id: 'tpl-35',
+    name: 'Fleurs de mariage',
+    description: 'Bouquet et décoration florale élégante',
+    imageUrl: 'https://img.cartepostale.cool/demo/photo-1465495976277-4387d4b0b4c6.jpg',
+    category: 'wedding',
+    frontCaption: 'Oui, pour la vie !',
+    frontEmoji: '💐',
+    message:
+      'Entourés de ceux qu\'on aime, on a dit oui ! La cérémonie était absolument magique, les fleurs sublimes et les émotions au rendez-vous. On est si heureux de partager cette nouvelle avec vous !',
+    stampStyle: 'modern',
+  },
+  // === Diplôme (graduation) ===
+  {
+    id: 'tpl-36',
+    name: 'Félicitations diplômé !',
+    description: 'Remise de diplôme et réussite scolaire',
+    imageUrl: 'https://img.cartepostale.cool/demo/photo-1523050854058-8df90110c9f1.jpg',
+    category: 'graduation',
+    frontCaption: 'Mission accomplie !',
+    frontEmoji: '🎓',
+    message:
+      'Toutes mes félicitations pour l\'obtention de ton diplôme ! Des années de travail et de persévérance ont payé. Tu peux être très fier(ère) de toi. Un avenir brillant t\'attend – je le sais !',
+    stampStyle: 'modern',
+  },
   // === Abstrait ===
   {
     id: 'tpl-23',
@@ -818,6 +1001,7 @@ export default function EditorPage() {
   const [showFullscreen, setShowFullscreen] = useState(false)
   const [showRecipientModal, setShowRecipientModal] = useState(false)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
+  const [templateModalCategory, setTemplateModalCategory] = useState<TemplateCategory | 'all'>('all')
   const [showPricingModal, setShowPricingModal] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<PostcardPlanId>('payant')
   const [showTemplateSection, setShowTemplateSection] = useState(false) // Mobile-friendly: hide templates by default
@@ -2025,7 +2209,10 @@ export default function EditorPage() {
     return currentPostcard
   }, [currentPostcard, currentStep, versoPreviewTemplateId])
 
-  const filteredTemplates = SAMPLE_TEMPLATES
+  const filteredTemplates =
+    templateModalCategory === 'all'
+      ? SAMPLE_TEMPLATES
+      : SAMPLE_TEMPLATES.filter((t) => t.category === templateModalCategory)
   const selectedTemplate = selectedTemplateId
     ? (SAMPLE_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? null)
     : null
@@ -2805,58 +2992,88 @@ export default function EditorPage() {
 
                 {/* Template Selection - Collapsible */}
                 {showTemplateSection && (
-                  <div className="space-y-3 mb-8">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-stone-700">Choisissez un modèle</p>
-                      <button
-                        type="button"
-                        onClick={() => setShowTemplateModal(true)}
-                        className="flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-600 transition hover:border-teal-300 hover:bg-stone-50 hover:text-teal-600"
-                        aria-label="Voir tous les modèles"
-                      >
-                        <MoreHorizontal size={16} />
-                        Plus de modèles
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      {BASE_TEMPLATE_IDS.map((id) => {
-                        const tpl = SAMPLE_TEMPLATES.find((t) => t.id === id)
-                        if (!tpl) return null
-                        const cat = TEMPLATE_CATEGORIES.find((c) => c.key === tpl.category)
-                        const isSelected = selectedTemplateId === tpl.id
-                        return (
+                  <div className="space-y-5 mb-8">
+                    {/* Raccourcis occasions */}
+                    <div>
+                      <p className="text-sm font-semibold text-stone-700 mb-2.5">
+                        Choisir par occasion
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {OCCASION_SHORTCUTS.map((occ) => (
                           <button
-                            key={tpl.id}
+                            key={occ.key}
                             type="button"
-                            onClick={() => handleSelectTemplate(tpl)}
-                            className={cn(
-                              'flex items-center gap-2 rounded-2xl border p-2.5 text-left transition-all min-w-0 max-w-full',
-                              isSelected
-                                ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-200'
-                                : 'border-stone-200 bg-white hover:border-teal-200 hover:bg-stone-50',
-                            )}
-                            title={tpl.description ? `${tpl.name} – ${tpl.description}` : tpl.name}
+                            onClick={() => {
+                              setTemplateModalCategory(occ.key)
+                              setShowTemplateModal(true)
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-stone-200 hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700 text-stone-600 transition-all shadow-sm"
                           >
-                            <div className="h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-stone-100">
-                              <img
-                                src={tpl.imageUrl}
-                                alt=""
-                                className="h-full w-full object-cover"
-                              />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs font-semibold text-stone-800 truncate">
-                                {tpl.name}
-                              </p>
-                              <p className="flex items-center gap-0.5 text-[0.65rem] uppercase tracking-wider text-stone-400">
-                                {cat?.icon && <span>{cat.icon}</span>}
-                                <span className="truncate">{cat?.label ?? tpl.category}</span>
-                              </p>
-                            </div>
+                            <span className="text-base leading-none">{occ.icon}</span>
+                            <span>{occ.label}</span>
                           </button>
-                        )
-                      })}
+                        ))}
+                      </div>
                     </div>
+
+                    {/* Modèles sélectionnés */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2.5">
+                        <p className="text-sm font-semibold text-stone-700">Modèles sélectionnés</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTemplateModalCategory('all')
+                            setShowTemplateModal(true)
+                          }}
+                          className="flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-600 transition hover:border-teal-300 hover:bg-stone-50 hover:text-teal-600"
+                          aria-label="Voir tous les modèles"
+                        >
+                          <MoreHorizontal size={16} />
+                          Tous les modèles
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {BASE_TEMPLATE_IDS.map((id) => {
+                          const tpl = SAMPLE_TEMPLATES.find((t) => t.id === id)
+                          if (!tpl) return null
+                          const cat = TEMPLATE_CATEGORIES.find((c) => c.key === tpl.category)
+                          const isSelected = selectedTemplateId === tpl.id
+                          return (
+                            <button
+                              key={tpl.id}
+                              type="button"
+                              onClick={() => handleSelectTemplate(tpl)}
+                              className={cn(
+                                'flex items-center gap-2 rounded-2xl border p-2.5 text-left transition-all min-w-0 max-w-full',
+                                isSelected
+                                  ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-200'
+                                  : 'border-stone-200 bg-white hover:border-teal-200 hover:bg-stone-50',
+                              )}
+                              title={tpl.description ? `${tpl.name} – ${tpl.description}` : tpl.name}
+                            >
+                              <div className="h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-stone-100">
+                                <img
+                                  src={tpl.imageUrl}
+                                  alt=""
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-semibold text-stone-800 truncate">
+                                  {tpl.name}
+                                </p>
+                                <p className="flex items-center gap-0.5 text-[0.65rem] uppercase tracking-wider text-stone-400">
+                                  {cat?.icon && <span>{cat.icon}</span>}
+                                  <span className="truncate">{cat?.label ?? tpl.category}</span>
+                                </p>
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
                     <Button
                       type="button"
                       onClick={() => setShowUnsplashModal(true)}
@@ -6030,8 +6247,22 @@ export default function EditorPage() {
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-3xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-stone-200 flex flex-col"
           >
+            {/* Header */}
             <div className="flex items-center justify-between shrink-0 border-b border-stone-200 px-6 py-4">
-              <h3 className="text-lg font-bold text-stone-800">Tous les modèles</h3>
+              <div>
+                <h3 className="text-lg font-bold text-stone-800">
+                  {templateModalCategory === 'all'
+                    ? 'Tous les modèles'
+                    : (TEMPLATE_CATEGORIES.find((c) => c.key === templateModalCategory)?.icon ??
+                        '') +
+                      ' ' +
+                      (TEMPLATE_CATEGORIES.find((c) => c.key === templateModalCategory)?.label ??
+                        '')}
+                </h3>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  {filteredTemplates.length} modèle{filteredTemplates.length > 1 ? 's' : ''}
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowTemplateModal(false)}
@@ -6041,6 +6272,30 @@ export default function EditorPage() {
                 <X size={20} />
               </button>
             </div>
+
+            {/* Category filter pills */}
+            <div className="shrink-0 border-b border-stone-100 px-4 py-3 overflow-x-auto">
+              <div className="flex gap-2 flex-nowrap min-w-max">
+                {TEMPLATE_CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.key}
+                    type="button"
+                    onClick={() => setTemplateModalCategory(cat.key)}
+                    className={cn(
+                      'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all',
+                      templateModalCategory === cat.key
+                        ? 'bg-teal-500 text-white shadow-sm'
+                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200',
+                    )}
+                  >
+                    {cat.icon && <span>{cat.icon}</span>}
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Template grid */}
             <div className="flex-1 overflow-y-auto p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {filteredTemplates.map((template) => {
@@ -6081,14 +6336,31 @@ export default function EditorPage() {
                             : (cat?.label ?? template.category)}
                         </p>
                       </div>
+                      {isSelected && (
+                        <div className="shrink-0 w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center">
+                          <Check size={12} className="text-white" />
+                        </div>
+                      )}
                     </button>
                   )
                 })}
               </div>
               {filteredTemplates.length === 0 && (
-                <p className="text-sm text-stone-500 text-center py-8">
-                  Aucun modèle dans cette catégorie pour le moment.
-                </p>
+                <div className="text-center py-12">
+                  <p className="text-2xl mb-2">
+                    {TEMPLATE_CATEGORIES.find((c) => c.key === templateModalCategory)?.icon ?? '📋'}
+                  </p>
+                  <p className="text-sm font-semibold text-stone-600">
+                    Aucun modèle dans cette catégorie pour le moment.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setTemplateModalCategory('all')}
+                    className="mt-3 text-xs text-teal-600 hover:text-teal-700 font-semibold underline"
+                  >
+                    Voir tous les modèles
+                  </button>
+                </div>
               )}
             </div>
           </div>
