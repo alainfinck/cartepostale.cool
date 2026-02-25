@@ -7,6 +7,7 @@ import { Heart } from 'lucide-react'
 interface EnvelopeExperienceProps {
   enabled?: boolean
   hero?: ReactNode
+  frontImage?: string
   children: ReactNode
 }
 
@@ -18,6 +19,7 @@ const contentVariants = {
 export default function EnvelopeExperience({
   enabled = false,
   hero,
+  frontImage,
   children,
 }: EnvelopeExperienceProps) {
   const [isRevealed, setIsRevealed] = useState(!enabled)
@@ -103,6 +105,31 @@ export default function EnvelopeExperience({
                     backgroundRepeat: 'no-repeat',
                   }}
                 >
+                  {/* Photo de la carte postale qui dépasse de l'enveloppe */}
+                  {frontImage && (
+                    <motion.div
+                      className="absolute top-[-12%] left-[15%] w-[70%] aspect-[3/2] rounded-md shadow-md border border-white/50"
+                      initial={{ y: 0, rotate: -2 }}
+                      animate={
+                        isOpening
+                          ? { y: -80, rotate: 4, opacity: 0, transition: { duration: 0.6 } }
+                          : {
+                              y: [0, -8, 0],
+                              rotate: [-2, 1, -2],
+                              transition: {
+                                y: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
+                                rotate: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+                              },
+                            }
+                      }
+                      style={{
+                        backgroundImage: `url(${frontImage})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        zIndex: -1, // S'affiche sous l'enveloppe car le parent forme un conteneur de pile
+                      }}
+                    />
+                  )}
                   {/* Heart Seal (slow beat) + Ouvrir text fixed below */}
                   <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none flex flex-col items-center gap-4">
                     <motion.div

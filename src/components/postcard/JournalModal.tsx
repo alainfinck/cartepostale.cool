@@ -44,7 +44,7 @@ const JournalModal: React.FC<JournalModalProps> = ({ postcard, isOpen, onClose }
             initial={{ scale: 0.95, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 20 }}
-            className="w-full max-w-2xl max-h-[85dvh] bg-[#fdfbf7] rounded-2xl shadow-2xl overflow-hidden flex flex-col relative"
+            className="w-full max-w-2xl max-h-[85dvh] bg-[#FCF5EB] rounded-2xl shadow-2xl overflow-hidden flex flex-col relative"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}

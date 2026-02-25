@@ -1342,6 +1342,11 @@ export default function EditorPage() {
         }
         setCreatedPostcardId(editId)
         setShareUrl(`${origin}/carte/${editId}`)
+
+        const step = searchParams.get('step')
+        if (step === 'preview') {
+          setCurrentStep('preview')
+        }
       })
       .catch(() => setShareError('Impossible de charger la carte à modifier.'))
       .finally(() => setEditModeLoading(false))
@@ -5473,7 +5478,14 @@ export default function EditorPage() {
                                     </span>
                                   </div>
                                 </div>
-                                <GoogleLoginButton onSuccess={handleGoogleSuccess} />
+                                <GoogleLoginButton
+                                  onSuccess={handleGoogleSuccess}
+                                  redirectPath={
+                                    createdPostcardId
+                                      ? `/api/link-postcard-and-redirect?postcard=${encodeURIComponent(createdPostcardId)}&redirect=${encodeURIComponent(`/editor?edit=${createdPostcardId}&step=preview`)}`
+                                      : undefined
+                                  }
+                                />
                               </>
                             )}
                           </div>
@@ -6320,13 +6332,21 @@ export default function EditorPage() {
                       </span>
                     </div>
                   </div>
-                  <GoogleLoginButton onSuccess={handleGoogleSuccess} className="!h-14" />
+                  <GoogleLoginButton
+                    onSuccess={handleGoogleSuccess}
+                    className="!h-14"
+                    redirectPath={
+                      createdPostcardId
+                        ? `/api/link-postcard-and-redirect?postcard=${encodeURIComponent(createdPostcardId)}&redirect=${encodeURIComponent(`/editor?edit=${createdPostcardId}&step=preview`)}`
+                        : undefined
+                    }
+                  />
                 </>
               )}
 
               {createdPostcardId && (
                 <Link
-                  href={`/connexion?callbackUrl=${encodeURIComponent('/espace-client')}&linkPostcard=${encodeURIComponent(createdPostcardId)}`}
+                  href={`/connexion?callbackUrl=${encodeURIComponent(`/editor?edit=${createdPostcardId}&step=preview`)}&linkPostcard=${encodeURIComponent(createdPostcardId)}`}
                   className="block w-full text-center text-sm font-bold text-teal-600 hover:text-teal-700 transition-colors"
                 >
                   Déjà un compte ? Se connecter
