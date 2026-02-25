@@ -15,12 +15,9 @@ import {
   ArrowUpDown,
   User,
   Heart,
-  Send,
   Bookmark,
   MoreHorizontal,
   Flag,
-  Share2,
-  Link2,
   Maximize2,
   Minimize2,
   Loader2,
@@ -78,28 +75,6 @@ const InstaCard = ({
       return () => document.removeEventListener('click', handleClickOutside)
     }
   }, [moreOpen])
-
-  const handleCopyLink = () => {
-    const url = typeof window !== 'undefined' ? window.location.href : ''
-    navigator.clipboard?.writeText(url).then(() => setMoreOpen(false))
-  }
-
-  const handleShare = async () => {
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Carte postale',
-          url: window.location.href,
-          text: `Photo de ${senderName}`,
-        })
-        setMoreOpen(false)
-      } catch {
-        handleCopyLink()
-      }
-    } else {
-      handleCopyLink()
-    }
-  }
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -196,14 +171,6 @@ const InstaCard = ({
                 )}
               </button>
             </CoolMode>
-            <button
-              className="text-stone-400 hover:text-stone-900 transition-colors shrink-0"
-              type="button"
-              aria-label="Envoyer / Partager"
-              onClick={handleShare}
-            >
-              <Send className="w-5 h-5 shrink-0" />
-            </button>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -243,12 +210,6 @@ const InstaCard = ({
               >
                 <StickyNote size={14} /> CRÉER MA CARTE
               </Link>
-              <button
-                onClick={handleShare}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 border-t border-stone-100"
-              >
-                <Share2 size={14} /> PARTAGER
-              </button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -563,7 +524,7 @@ export default function PhotoFeed({
                           animate={{ x: [-10, 10, -10] }}
                           transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
                         >
-                          <Share2 size={16} className="text-white/80 rotate-90" />
+                          <ArrowUpDown size={16} className="text-white/80 rotate-90" />
                         </motion.div>
                         <span className="text-white/90 text-xs font-bold uppercase tracking-widest whitespace-nowrap">
                           Faites glisser pour défiler
