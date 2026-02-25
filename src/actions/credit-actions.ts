@@ -5,6 +5,22 @@ import config from '@payload-config'
 import { getCurrentUser } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 
+export async function addWelcomeCredit() {
+  const user = await getCurrentUser()
+  if (!user) {
+    return { success: false, error: 'Non connecté.' }
+  }
+  const payload = await getPayload({ config })
+  const dbUser = await payload.findByID({ collection: 'users', id: user.id })
+  await payload.update({
+    collection: 'users',
+    id: user.id,
+    data: { credits: (dbUser.credits || 0) + 1 },
+  })
+  revalidatePath('/espace-client')
+  return { success: true }
+}
+
 export async function consumeCredit() {
   const user = await getCurrentUser()
   if (!user) {

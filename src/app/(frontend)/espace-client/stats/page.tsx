@@ -1,11 +1,26 @@
-import { getEspaceClientViewStats } from '@/actions/postcard-view-stats'
-import { StatsOverview } from '@/app/(frontend)/manager/StatsOverview'
-import { getEspaceClientStats } from '@/actions/espace-client-actions'
+import {
+  getEspaceClientViewStats,
+  getViewStatsByDay,
+} from '@/actions/postcard-view-stats'
+import { getEspaceClientStats, getMyPostcardsForStatsSelector } from '@/actions/espace-client-actions'
+import { EspaceClientStatsClient } from './EspaceClientStatsClient'
 
 export const dynamic = 'force-dynamic'
 
 export default async function EspaceClientStatsPage() {
-  const [stats, viewStats] = await Promise.all([getEspaceClientStats(), getEspaceClientViewStats()])
+  const [stats, viewStats, postcards, viewStatsByDay] = await Promise.all([
+    getEspaceClientStats(),
+    getEspaceClientViewStats(),
+    getMyPostcardsForStatsSelector(),
+    getViewStatsByDay(null, 14),
+  ])
 
-  return <StatsOverview stats={stats} viewStats={viewStats} isClientView={true} />
+  return (
+    <EspaceClientStatsClient
+      stats={stats}
+      viewStats={viewStats}
+      postcards={postcards}
+      initialViewStatsByDay={viewStatsByDay}
+    />
+  )
 }

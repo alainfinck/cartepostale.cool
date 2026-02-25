@@ -29,10 +29,13 @@ import { Button } from '@/components/ui/button'
 
 import ComparisonSection from '@/components/home/ComparisonSection'
 import ShareHomeButtons from '@/components/social/ShareHomeButtons'
+import MobileFrame from '@/components/view/MobileFrame'
 
 export default function Home() {
   const savedPostcards = demoPostcards
   const [fullScreenPostcard, setFullScreenPostcard] = useState<Postcard | null>(null)
+  const [recipientViewPostcard, setRecipientViewPostcard] = useState<Postcard | null>(null)
+  const [recipientModalEnvelopeOpened, setRecipientModalEnvelopeOpened] = useState(false)
 
   const demoCard: Postcard = {
     id: 'demo-rv',
@@ -261,19 +264,24 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-16 bg-gradient-to-br from-stone-900 to-stone-800 rounded-[40px] p-8 md:p-12 text-center text-white relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+          <div className="mt-16 bg-gradient-to-br from-teal-900 via-teal-800 to-purple-900 rounded-[40px] p-8 md:p-12 text-center text-white relative overflow-hidden shadow-2xl">
+            <div className="absolute top-0 right-0 w-72 h-72 bg-pink-400/20 rounded-full blur-[100px] -mr-40 -mt-40" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-400/15 rounded-full blur-[80px] -ml-32 -mb-32" />
+            <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-teal-400/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2" />
             <div className="relative z-10">
-              <h3 className="text-2xl md:text-3xl font-bold mb-4">
+              <span className="inline-block px-4 py-1.5 rounded-full bg-white/15 text-teal-100 text-sm font-bold uppercase tracking-wider mb-6">
+                2,50 € par carte
+              </span>
+              <h3 className="text-2xl md:text-3xl font-bold mb-4 drop-shadow-sm">
                 Une seule carte, destinataires illimités.
               </h3>
-              <p className="text-stone-300 text-lg mb-8 max-w-2xl mx-auto">
-                À 2,50 €, votre carte devient un souvenir partagé à l&apos;infini. Une petite
-                attention à petit prix qui fait toujours autant plaisir.
+              <p className="text-teal-100/90 text-lg mb-8 max-w-2xl mx-auto">
+                Votre carte devient un souvenir partagé à l&apos;infini. Une petite attention à petit
+                prix qui fait toujours autant plaisir.
               </p>
               <Link href="/editor">
-                <Button className="bg-white text-stone-900 hover:bg-stone-50 px-10 py-7 rounded-2xl font-bold text-lg shadow-xl shadow-stone-900/20 border-0 flex items-center gap-3 transition-all h-auto mx-auto inline-flex">
-                  Essayer maintenant <ArrowRight size={20} className="text-stone-400" />
+                <Button className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-10 py-7 rounded-2xl font-bold text-lg shadow-xl shadow-pink-500/30 border-0 flex items-center gap-3 transition-all h-auto mx-auto inline-flex hover:scale-[1.02] active:scale-[0.98]">
+                  Essayer maintenant <ArrowRight size={20} className="opacity-90" />
                 </Button>
               </Link>
             </div>
@@ -390,22 +398,21 @@ export default function Home() {
           {savedPostcards.map((card) => (
             <div key={card.id} className="flex flex-col items-center group">
               <PostcardView postcard={card} />
-              <div className="mt-4 text-center">
+              <div className="mt-2 text-center">
                 <p className="text-stone-500 text-sm">
                   par <span className="text-stone-600 font-semibold">{card.senderName}</span>
                 </p>
 
                 {/* Boutons de démo */}
-                <div className="mt-4 flex flex-col sm:flex-row gap-2 w-full max-w-[340px] sm:max-w-[600px]">
+                <div className="mt-2 flex flex-col sm:flex-row gap-2 w-full max-w-[340px] sm:max-w-[600px]">
                   <Button
-                    asChild
+                    type="button"
                     variant="outline"
                     className="flex-1 rounded-xl bg-white border-stone-200 text-stone-600 hover:bg-stone-50 text-[10px] sm:text-xs font-bold py-2 h-auto"
+                    onClick={() => setRecipientViewPostcard(card)}
                   >
-                    <Link href={`/carte/${card.id}`}>
-                      <Eye size={14} className="mr-1.5 text-teal-500" />
-                      Voir comme un destinataire
-                    </Link>
+                    <Eye size={14} className="mr-1.5 text-teal-500" />
+                    Voir comme un destinataire
                   </Button>
                   <Button
                     asChild
@@ -541,6 +548,113 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Modal "Comme un destinataire" : enveloppe puis carte dans un faux mobile */}
+      <AnimatePresence>
+        {recipientViewPostcard && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-gradient-to-br from-[#fffdf7] via-[#f7f2ea] to-[#f1e8d6] backdrop-blur-md flex flex-col items-center justify-start pt-6 pb-8 px-4 md:px-8 overflow-y-auto"
+          >
+            <button
+              onClick={() => {
+                setRecipientViewPostcard(null)
+                setRecipientModalEnvelopeOpened(false)
+              }}
+              className="absolute top-4 right-4 z-[210] p-2.5 bg-white hover:bg-stone-100 text-stone-600 rounded-full transition-all border border-stone-200 shadow-sm"
+              aria-label="Fermer"
+            >
+              <X size={24} />
+            </button>
+
+            {!recipientModalEnvelopeOpened ? (
+              /* Étape 1 : enveloppe à ouvrir */
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center flex-1 w-full pt-[8vh]"
+              >
+                <p className="text-stone-600 font-medium mb-6 text-center">
+                  Vous avez reçu une carte postale…
+                </p>
+                <motion.button
+                  type="button"
+                  onClick={() => setRecipientModalEnvelopeOpened(true)}
+                  className="flex flex-col items-center gap-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-400"
+                >
+                  <motion.div
+                    className="relative w-[min(320px,85vw)] aspect-[5/3] cursor-pointer"
+                    whileHover={{ scale: 1.05, y: -8 }}
+                    whileTap={{ scale: 0.98 }}
+                    style={{
+                      backgroundImage: 'url(/media/enveloppe1.png)',
+                      backgroundSize: 'contain',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat',
+                    }}
+                  >
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-3">
+                      <div className="bg-white/95 backdrop-blur-md p-2.5 rounded-full shadow-xl border border-red-100/50">
+                        <Heart size={28} fill="#ef4444" className="text-red-500" />
+                      </div>
+                      <span className="text-base font-bold uppercase text-stone-700 tracking-widest">
+                        Ouvrir
+                      </span>
+                    </div>
+                  </motion.div>
+                </motion.button>
+              </motion.div>
+            ) : (
+              /* Étape 2 : contenu dans un faux mobile */
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.35, ease: 'easeOut' }}
+                className="w-full flex flex-col items-center mt-2"
+              >
+                <MobileFrame width={320} height="min(85vh, 640px)">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="text-center">
+                      <p className="text-base text-stone-600 font-medium">
+                        Vous avez reçu une carte postale
+                      </p>
+                      <p className="font-handwriting text-teal-600 text-2xl sm:text-3xl mt-0.5">
+                        {recipientViewPostcard.senderName}
+                      </p>
+                    </div>
+
+                    <div className="w-full flex justify-center flex-1 min-h-0">
+                      <PostcardView
+                        postcard={recipientViewPostcard}
+                        isLarge={false}
+                        isPreview={false}
+                        width="280px"
+                        height="210px"
+                        className="shadow-lg rounded-xl"
+                      />
+                    </div>
+
+                    <Link
+                      href={`/carte/${recipientViewPostcard.id}`}
+                      className="inline-flex w-full justify-center"
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full border-teal-200 text-teal-700 hover:bg-teal-50 w-full max-w-[240px]"
+                      >
+                        Ouvrir en pleine page
+                      </Button>
+                    </Link>
+                  </div>
+                </MobileFrame>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Modal Plein Écran */}
       <AnimatePresence>

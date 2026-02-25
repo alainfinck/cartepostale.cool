@@ -34,6 +34,7 @@ import {
   CreditCard,
   Sparkles,
   Loader2,
+  QrCode,
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -116,6 +117,7 @@ import {
 import { redeemPromoCodeForCredits } from '@/actions/leads-actions'
 import PostcardView from '@/components/postcard/PostcardView'
 import ShareContributionModal from '@/components/postcard/ShareContributionModal'
+import PostcardQRCode from '@/components/postcard/PostcardQRCode'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import EditPostcardDialog, { EditPostcardForm } from './EditPostcardDialog'
 import AlbumDialog from './AlbumDialog'
@@ -264,6 +266,7 @@ export default function ManagerClient({
   const [buyCreditsError, setBuyCreditsError] = useState<string | null>(null)
   const [editorModalPostcard, setEditorModalPostcard] = useState<PayloadPostcard | null>(null)
   const [shareContributionModalOpen, setShareContributionModalOpen] = useState(false)
+  const [qrCodePostcard, setQrCodePostcard] = useState<PayloadPostcard | null>(null)
   const maxAutoColumns = useEspaceClientActions ? 3 : 6
 
   const CREDITS_PACKS = [
@@ -868,61 +871,71 @@ export default function ManagerClient({
         )}
 
         {/* Bulk actions bar */}
-        {selectedIds.size > 0 && (
-          <div className="flex flex-wrap items-center gap-3 p-4 rounded-xl border border-teal-200/60 bg-teal-50/50 backdrop-blur-sm shadow-sm">
-            <span className="text-sm font-medium text-teal-800">
-              {selectedIds.size} carte{selectedIds.size > 1 ? 's' : ''} sélectionnée
-              {selectedIds.size > 1 ? 's' : ''}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-teal-700 hover:bg-teal-100"
-              onClick={clearSelection}
+        <AnimatePresence>
+          {selectedIds.size > 0 && (
+            <motion.div
+              key="bulk-actions-bar"
+              layout
+              initial={{ opacity: 0, y: -8, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.97 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="flex flex-wrap items-center gap-3 p-4 rounded-xl border border-teal-200/60 bg-teal-50/50 backdrop-blur-sm shadow-sm"
             >
-              Tout désélectionner
-            </Button>
-            <div className="h-4 w-px bg-teal-200" />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-white border-teal-200 text-teal-800 hover:bg-teal-100"
-                >
-                  <ArrowUpDown size={14} className="mr-2" />
-                  Changer le statut
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48">
-                {(['published', 'draft', 'archived'] as const).map((s) => (
-                  <DropdownMenuItem key={s} onClick={() => handleBulkStatus(s)} className="gap-2">
-                    <div
-                      className={cn(
-                        'w-2 h-2 rounded-full',
-                        s === 'published'
-                          ? 'bg-emerald-500'
-                          : s === 'draft'
-                            ? 'bg-amber-500'
-                            : 'bg-stone-400',
-                      )}
-                    />
-                    {statusConfig[s].label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-red-200 text-red-700 hover:bg-red-50"
-              onClick={() => setDeleteConfirmBulkIds(Array.from(selectedIds))}
-            >
-              <Trash2 size={14} className="mr-2" />
-              Supprimer
-            </Button>
-          </div>
-        )}
+              <span className="text-sm font-medium text-teal-800">
+                {selectedIds.size} carte{selectedIds.size > 1 ? 's' : ''} sélectionnée
+                {selectedIds.size > 1 ? 's' : ''}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-teal-700 hover:bg-teal-100"
+                onClick={clearSelection}
+              >
+                Tout désélectionner
+              </Button>
+              <div className="h-4 w-px bg-teal-200" />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-white border-teal-200 text-teal-800 hover:bg-teal-100"
+                  >
+                    <ArrowUpDown size={14} className="mr-2" />
+                    Changer le statut
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  {(['published', 'draft', 'archived'] as const).map((s) => (
+                    <DropdownMenuItem key={s} onClick={() => handleBulkStatus(s)} className="gap-2">
+                      <div
+                        className={cn(
+                          'w-2 h-2 rounded-full',
+                          s === 'published'
+                            ? 'bg-emerald-500'
+                            : s === 'draft'
+                              ? 'bg-amber-500'
+                              : 'bg-stone-400',
+                        )}
+                      />
+                      {statusConfig[s].label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-red-200 text-red-700 hover:bg-red-50"
+                onClick={() => setDeleteConfirmBulkIds(Array.from(selectedIds))}
+              >
+                <Trash2 size={14} className="mr-2" />
+                Supprimer
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Loading overlay */}
         {isPending && (
@@ -976,6 +989,9 @@ export default function ManagerClient({
                         setShareContributionModalOpen(true)
                       }
                     : undefined
+                }
+                onShowQRCode={
+                  useEspaceClientActions ? () => setQrCodePostcard(postcard) : undefined
                 }
               />
             ))}
@@ -1041,6 +1057,9 @@ export default function ManagerClient({
                               setShareContributionModalOpen(true)
                             }
                           : undefined
+                      }
+                      onShowQRCode={
+                        useEspaceClientActions ? () => setQrCodePostcard(postcard) : undefined
                       }
                     />
                   ))}
@@ -1151,6 +1170,28 @@ export default function ManagerClient({
               }
             />
           )}
+
+        {/* Modal QR code (espace client) */}
+        {qrCodePostcard && (
+          <Dialog open={!!qrCodePostcard} onOpenChange={(open) => !open && setQrCodePostcard(null)}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>QR code de la carte</DialogTitle>
+                <DialogDescription>
+                  Scannez ou téléchargez ce QR code pour accéder à votre carte postale.
+                </DialogDescription>
+              </DialogHeader>
+              <PostcardQRCode
+                postcardUrl={
+                  origin ? `${origin}/carte/${qrCodePostcard.publicId}` : ''
+                }
+                showPrintHint
+                compact
+                size={180}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
 
         {/* Modal Éditeur (iframe) */}
         {editorModalPostcard && (
@@ -1482,6 +1523,7 @@ function GridCard({
   onDelete,
   umamiViews,
   onOpenShareContribution,
+  onShowQRCode,
 }: {
   postcard: PayloadPostcard
   selected: boolean
@@ -1495,6 +1537,7 @@ function GridCard({
   onDelete: (id: number) => void
   umamiViews?: number
   onOpenShareContribution?: () => void
+  onShowQRCode?: () => void
 }) {
   const imageUrl = getFrontImageUrl(postcard)
   const [isFlipped, setIsFlipped] = useState(false)
@@ -1522,13 +1565,13 @@ function GridCard({
               )}
               onClick={onSelect}
             >
-              <div className="absolute top-0.5 left-0.5 z-20" onClick={(e) => e.stopPropagation()}>
+              <div className="absolute top-1.5 left-1.5 z-20" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
                   checked={selected}
                   onChange={onToggleSelect}
                   onClick={(e) => e.stopPropagation()}
-                  className="size-[25px] min-w-0 min-h-0 rounded-[3px] border border-stone-300 text-teal-600 focus:ring-1 focus:ring-teal-500 cursor-pointer bg-white/90 shadow-sm transition-transform hover:scale-110 appearance-none checked:bg-teal-500 checked:border-teal-500 checked:bg-no-repeat checked:bg-center checked:[background-image:url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%208%208%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%221.8%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M1%202.5L3%204.5L7%201%22%2F%3E%3C%2Fsvg%3E')] checked:[background-size:65%]"
+                  className="size-8 min-w-0 min-h-0 rounded-md border border-stone-300 text-teal-600 focus:ring-1 focus:ring-teal-500 cursor-pointer bg-white/90 shadow-sm transition-transform hover:scale-105 appearance-none checked:bg-teal-500 checked:border-teal-500 checked:bg-no-repeat checked:bg-center checked:[background-image:url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%208%208%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%221.8%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M1%202.5L3%204.5L7%201%22%2F%3E%3C%2Fsvg%3E')] checked:[background-size:65%]"
                 />
               </div>
 
@@ -1541,7 +1584,7 @@ function GridCard({
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 />
-                <div className="absolute top-2.5 left-9 flex gap-1.5 items-center">
+                <div className="absolute top-2.5 left-12 flex gap-1.5 items-center">
                   <StatusBadge status={postcard.status || 'draft'} />
                   <span className="bg-black/30 backdrop-blur-sm text-white/90 text-[10px] px-1.5 py-0.5 rounded font-mono border border-white/5">
                     #{postcard.publicId}
@@ -1717,6 +1760,14 @@ function GridCard({
                           <Users size={14} /> Contribution
                         </DropdownMenuItem>
                       )}
+                      {onShowQRCode && (
+                        <DropdownMenuItem
+                          onClick={onShowQRCode}
+                          className="gap-2.5 py-2.5 rounded-lg text-teal-600"
+                        >
+                          <QrCode size={14} /> QR code
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator className="bg-stone-100" />
                       <DropdownMenuItem
                         onClick={() => onDelete(postcard.id)}
@@ -1778,6 +1829,7 @@ function ListRow({
   formatDate,
   umamiViews,
   onOpenShareContribution,
+  onShowQRCode,
 }: {
   postcard: PayloadPostcard
   selected: boolean
@@ -1792,6 +1844,7 @@ function ListRow({
   formatDate: (d: string) => string
   umamiViews?: number
   onOpenShareContribution?: () => void
+  onShowQRCode?: () => void
 }) {
   const imageUrl = getFrontImageUrl(postcard)
 
@@ -1960,6 +2013,11 @@ function ListRow({
                   className="gap-2 text-purple-600"
                 >
                   <Users size={14} /> Contribution
+                </DropdownMenuItem>
+              )}
+              {onShowQRCode && (
+                <DropdownMenuItem onClick={onShowQRCode} className="gap-2 text-teal-600">
+                  <QrCode size={14} /> QR code
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem
@@ -2235,6 +2293,21 @@ function DetailsSheet(props: {
                       </div>
                     </div>
                   )}
+
+                {/* QR code pour accéder à la carte (espace client) */}
+                {useEspaceClientActions && baseUrl && (
+                  <div className="space-y-3">
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">
+                      Accéder à la carte
+                    </h4>
+                    <PostcardQRCode
+                      postcardUrl={`${baseUrl}/carte/${postcard.publicId}`}
+                      showPrintHint
+                      compact
+                      size={160}
+                    />
+                  </div>
+                )}
 
                 {/* Liens de tracking (espace client uniquement) */}
                 {useEspaceClientActions && (

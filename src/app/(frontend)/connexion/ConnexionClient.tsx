@@ -3,16 +3,21 @@
 import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { LogIn, Mail, Lock, AlertCircle, UserPlus, User } from 'lucide-react'
+import { LogIn, Mail, Lock, AlertCircle, UserPlus, User, Gift } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { GoogleLoginButton } from '@/components/auth/GoogleLoginButton'
 import { useFacebookPixel } from '@/hooks/useFacebookPixel'
+import { addWelcomeCredit } from '@/actions/credit-actions'
 
 export default function ConnexionClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const initialFlipped = useMemo(() => searchParams.get('inscription') === '1', [searchParams])
+  const isPromo = useMemo(() => searchParams.get('promo') === '1', [searchParams])
+  const initialFlipped = useMemo(
+    () => searchParams.get('inscription') === '1' || isPromo,
+    [searchParams, isPromo],
+  )
   const callbackUrl = useMemo(
     () => searchParams.get('callbackUrl') || '/espace-client',
     [searchParams],
@@ -104,6 +109,10 @@ export default function ConnexionClient() {
       }
       // Meta Pixel — CompleteRegistration (inscription réussie)
       trackCompleteRegistration({ content_name: 'Inscription Email' })
+      // Crédit offert si lien promotionnel
+      if (isPromo) {
+        await addWelcomeCredit()
+      }
       router.push(callbackUrl)
       router.refresh()
     } catch {
@@ -129,6 +138,16 @@ export default function ConnexionClient() {
                 : 'Connectez-vous pour gérer vos cartes postales.'}
             </p>
           </div>
+
+          {isPromo && (
+            <div className="flex items-center gap-3 mb-6 px-5 py-4 rounded-2xl bg-teal-50 border border-teal-200 text-teal-800">
+              <Gift size={22} className="shrink-0 text-teal-600" />
+              <p className="text-base font-medium">
+                <span className="font-bold">1 carte offerte</span> — créez votre compte et recevez
+                un crédit gratuit pour envoyer votre première carte postale.
+              </p>
+            </div>
+          )}
 
           <div className="perspective-1000 min-h-[600px]">
             <div

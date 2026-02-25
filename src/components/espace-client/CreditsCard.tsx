@@ -156,35 +156,35 @@ export function CreditsCard({ initialCredits, userId, userEmail }: CreditsCardPr
   return (
     <div className="space-y-8">
       {/* Balance Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-stone-900 to-stone-800 rounded-3xl p-8 text-white shadow-2xl shadow-stone-200">
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900/90 via-teal-800/80 to-emerald-600/60 rounded-3xl p-8 text-slate-50 shadow-2xl shadow-teal-400/40">
         <div className="absolute top-0 right-0 p-4 opacity-10">
           <Sparkles size={120} />
         </div>
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div>
-            <p className="text-stone-400 font-medium tracking-widest text-xs uppercase mb-2">
+            <p className="text-slate-200 font-medium tracking-widest text-xs uppercase mb-2">
               Solde actuel
             </p>
             <div className="flex items-baseline gap-3">
-              <span className="text-6xl font-serif font-bold text-teal-400">{initialCredits}</span>
-              <span className="text-xl text-stone-300 font-medium">
+              <span className="text-6xl font-serif font-bold text-emerald-300">{initialCredits}</span>
+              <span className="text-xl text-slate-200 font-medium">
                 crédit{initialCredits > 1 ? 's' : ''}
               </span>
             </div>
-            <p className="mt-4 text-stone-400 text-sm max-w-sm">
+            <p className="mt-4 text-slate-200/80 text-sm max-w-sm">
               Chaque crédit vous permet de publier une carte postale virtuelle de manière
               permanente.
             </p>
           </div>
 
-          <div className="flex items-center gap-4 bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10">
-            <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center text-teal-400 shrink-0">
+          <div className="flex items-center gap-4 bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-lg shadow-white/20 text-white">
+            <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-white shrink-0 shadow-inner shadow-white/30">
               <CreditCard size={24} />
             </div>
             <div>
-              <p className="font-bold text-sm">Paiement Sécurisé</p>
-              <p className="text-xs text-stone-400">Via Revolut Pay</p>
+              <p className="font-bold text-sm text-white">Paiement Sécurisé</p>
+              <p className="text-xs text-white/70">Via Revolut Pay</p>
             </div>
           </div>
         </div>

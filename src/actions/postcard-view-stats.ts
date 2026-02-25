@@ -175,6 +175,89 @@ export async function getGlobalViewStats(): Promise<PostcardViewStats | null> {
   }
 }
 
+/** Vues par jour (derniers N jours) pour une ou plusieurs cartes de l'utilisateur. */
+export interface ViewStatsByDayItem {
+  date: string // YYYY-MM-DD
+  views: number
+  uniqueSessions: number
+}
+
+export async function getViewStatsByDay(
+  postcardIds: number[] | null,
+  days: number = 14,
+): Promise<ViewStatsByDayItem[]> {
+  const user = await getCurrentUser()
+  if (!user) return []
+
+  try {
+    const payload = await getPayload({ config })
+    let cardIds = postcardIds
+    if (cardIds == null || cardIds.length === 0) {
+      const userCards = await payload.find({
+        collection: 'postcards',
+        where: { author: { equals: user.id } },
+        limit: 1000,
+        depth: 0,
+      })
+      cardIds = userCards.docs.map((d) => d.id)
+    } else {
+      // Vérifier que l'utilisateur possède bien ces cartes
+      const requestedIds = postcardIds as number[]
+      const userCards = await payload.find({
+        collection: 'postcards',
+        where: { author: { equals: user.id }, id: { in: requestedIds } },
+        limit: requestedIds.length,
+        depth: 0,
+      })
+      cardIds = userCards.docs.map((d) => d.id)
+    }
+    if (cardIds.length === 0) return []
+
+    const since = new Date()
+    since.setDate(since.getDate() - days)
+    since.setHours(0, 0, 0, 0)
+
+    const result = await payload.find({
+      collection: 'postcard-view-events',
+      where: {
+        postcard: { in: cardIds },
+        openedAt: { greater_than_equal: since.toISOString() },
+      },
+      limit: 50000,
+      depth: 0,
+      sort: 'openedAt',
+      overrideAccess: true,
+    })
+
+    const docs = result.docs as Array<{ openedAt: string; sessionId: string }>
+    const byDay: Record<string, { views: number; sessions: Set<string> }> = {}
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    for (let d = 0; d < days; d++) {
+      const date = new Date(today)
+      date.setDate(date.getDate() - (days - 1 - d))
+      const key = date.toISOString().slice(0, 10)
+      byDay[key] = { views: 0, sessions: new Set() }
+    }
+    for (const ev of docs) {
+      const key = ev.openedAt.slice(0, 10)
+      if (!byDay[key]) byDay[key] = { views: 0, sessions: new Set() }
+      byDay[key].views += 1
+      byDay[key].sessions.add(ev.sessionId)
+    }
+
+    const sortedKeys = Object.keys(byDay).sort()
+    return sortedKeys.map((date) => ({
+      date,
+      views: byDay[date].views,
+      uniqueSessions: byDay[date].sessions.size,
+    }))
+  } catch (error) {
+    console.error('Error fetching view stats by day:', error)
+    return []
+  }
+}
+
 export async function getEspaceClientViewStats(): Promise<PostcardViewStats | null> {
   const user = await getCurrentUser()
   if (!user) return null

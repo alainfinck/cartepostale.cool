@@ -592,6 +592,43 @@ export interface EspaceClientStats {
   premiumPostcards: number
 }
 
+/** Carte minimale pour le sélecteur des stats (id, label, vues). */
+export interface PostcardOption {
+  id: number
+  publicId: string
+  senderName: string | null
+  recipientName: string | null
+  views: number
+  status: string
+}
+
+export async function getMyPostcardsForStatsSelector(): Promise<PostcardOption[]> {
+  const user = await getCurrentUser()
+  if (!user) return []
+
+  try {
+    const payload = await getPayload({ config })
+    const result = await payload.find({
+      collection: 'postcards',
+      where: { author: { equals: user.id } },
+      limit: 500,
+      depth: 0,
+      sort: '-createdAt',
+    })
+    return result.docs.map((doc) => ({
+      id: doc.id,
+      publicId: (doc as { publicId?: string }).publicId ?? String(doc.id),
+      senderName: (doc as { senderName?: string | null }).senderName ?? null,
+      recipientName: (doc as { recipientName?: string | null }).recipientName ?? null,
+      views: (doc as { views?: number }).views ?? 0,
+      status: (doc as { status?: string }).status ?? 'draft',
+    }))
+  } catch (error) {
+    console.error('Error fetching postcards for selector:', error)
+    return []
+  }
+}
+
 export async function getEspaceClientStats(): Promise<EspaceClientStats> {
   const user = await getCurrentUser()
   if (!user) {

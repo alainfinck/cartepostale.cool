@@ -428,12 +428,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 import EnvelopeHero from '@/components/view/EnvelopeHero'
+import PostcardSuccessQRBlock from '@/components/postcard/PostcardSuccessQRBlock'
 
 export default async function PostcardPage({ params, searchParams }: PageProps) {
   const { slug } = await params
   const resolvedSearchParams = (await (searchParams ?? Promise.resolve({}))) as SearchParams
   const envelopeParam = resolvedSearchParams.enveloppe
   const showEnvelope = envelopeParam !== '0'
+  const paymentSuccess = resolvedSearchParams.payment_success === 'true'
 
   // Handling demo postcards
   const demoPostcard =
@@ -554,6 +556,9 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
           <div className="absolute -bottom-3 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-teal-300/40 to-transparent" />
         </motion.div>
       </div>
+
+      {/* QR code en fin de process (après paiement) */}
+      <PostcardSuccessQRBlock slug={slug} show={paymentSuccess && !isDemo} />
 
       <motion.section
         initial={{ opacity: 0, y: 50 }}
