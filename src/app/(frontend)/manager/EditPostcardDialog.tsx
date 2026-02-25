@@ -270,13 +270,12 @@ export function EditPostcardForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="recipientName">Destinataire</Label>
+          <Label htmlFor="recipientName">Destinataire (optionnel)</Label>
           <Input
             id="recipientName"
             value={formData.recipientName}
             onChange={(e) => setFormData((prev) => ({ ...prev, recipientName: e.target.value }))}
             placeholder="Nom du destinataire"
-            required
           />
         </div>
       </div>
@@ -298,7 +297,7 @@ export function EditPostcardForm({
           value={formData.message}
           onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
           placeholder="Écrivez votre message ici..."
-          className="min-h-[250px] resize-none"
+          className="min-h-[380px] resize-none"
           required
         />
       </div>

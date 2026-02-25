@@ -38,7 +38,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Pencil, PenTool, RotateCcw } from 'lucide-react'
+import { Pencil, PenTool, RotateCcw, Images } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import Image from 'next/image'
@@ -224,9 +224,9 @@ export default function ManagerClient({
     useEspaceClientActions ? 'published' : 'all',
   )
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
-  const [selectedPostcardTab, setSelectedPostcardTab] = useState<'details' | 'stats' | 'edit'>(
-    'details',
-  )
+  const [selectedPostcardTab, setSelectedPostcardTab] = useState<
+    'details' | 'stats' | 'edit' | 'gallery'
+  >('details')
   const [selectedPostcard, setSelectedPostcard] = useState<PayloadPostcard | null>(null)
   const [origin, setOrigin] = useState('')
 
@@ -997,7 +997,7 @@ export default function ManagerClient({
                         }}
                         onChange={toggleSelectAll}
                         onClick={(e) => e.stopPropagation()}
-                        className="h-3 w-3 rounded border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer transition-transform hover:scale-110"
+                        className="h-2.5 w-2.5 rounded-md border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer transition-transform hover:scale-110"
                       />
                     </TableHead>
                     <TableHead>Image</TableHead>
@@ -1519,13 +1519,13 @@ function GridCard({
               )}
               onClick={onSelect}
             >
-              <div className="absolute top-2.5 left-2.5 z-20" onClick={(e) => e.stopPropagation()}>
+              <div className="absolute top-1 left-1 z-20" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
                   checked={selected}
                   onChange={onToggleSelect}
                   onClick={(e) => e.stopPropagation()}
-                  className="h-3 w-3 rounded border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer bg-white/90 shadow-sm transition-transform hover:scale-110"
+                  className="h-2 w-2 rounded-[3px] border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer bg-white/90 shadow-sm transition-transform hover:scale-110"
                 />
               </div>
 
@@ -1806,7 +1806,7 @@ function ListRow({
           checked={selected}
           onChange={onToggleSelect}
           onClick={(e) => e.stopPropagation()}
-          className="h-3 w-3 rounded border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer transition-transform hover:scale-110"
+          className="h-2.5 w-2.5 rounded-md border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer transition-transform hover:scale-110"
         />
       </TableCell>
       <TableCell>
@@ -1992,8 +1992,8 @@ function DetailsSheet(props: {
   onOpenShareContribution?: () => void
   umamiViews?: number
   umamiDetails?: DetailedUmamiStats | null
-  activeTab: 'details' | 'stats' | 'edit'
-  onTabChange: (tab: 'details' | 'stats' | 'edit') => void
+  activeTab: 'details' | 'stats' | 'edit' | 'gallery'
+  onTabChange: (tab: 'details' | 'stats' | 'edit' | 'gallery') => void
   onSuccess: () => void
 }) {
   const {
@@ -2125,6 +2125,20 @@ function DetailsSheet(props: {
             >
               <BarChart3 size={16} />
               Statistiques
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onTabChange('gallery')}
+              className={cn(
+                'flex-1 h-9 rounded-lg px-3 text-sm font-semibold transition-all flex items-center gap-2 justify-center',
+                activeTab === 'gallery'
+                  ? 'bg-background shadow-md text-teal-700'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
+              )}
+            >
+              <Images size={16} />
+              Galerie
             </Button>
           </div>
         </SheetHeader>
@@ -2346,6 +2360,49 @@ function DetailsSheet(props: {
                   </div>
                 )}
               </>
+            )}
+
+            {activeTab === 'gallery' && (
+              <div className="space-y-6">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">
+                  Photos de la galerie
+                </h4>
+                {frontendPostcard.mediaItems.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {frontendPostcard.mediaItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="aspect-square rounded-xl overflow-hidden border border-border/50 bg-muted/30 shadow-sm"
+                      >
+                        {item.type === 'video' ? (
+                          <video
+                            src={item.url}
+                            className="w-full h-full object-cover"
+                            controls
+                            muted
+                            playsInline
+                          />
+                        ) : (
+                          <Image
+                            src={item.url}
+                            alt=""
+                            width={200}
+                            height={200}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-12 text-center rounded-xl border border-dashed border-border/50 bg-muted/20">
+                    <Images size={32} className="mx-auto text-muted-foreground/50 mb-3" />
+                    <p className="text-sm text-muted-foreground">
+                      Aucune photo dans la galerie pour cette carte.
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
 
             {activeTab === 'stats' && (
