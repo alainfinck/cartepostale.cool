@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 const DEMO_SLUG = 'demo-anniv'
 
 function buildIframeCode(origin: string, slug: string): string {
-  return `<iframe src="${origin}/carte/${slug}" width="100%" height="600" style="border:none; border-radius:12px; overflow:hidden;" title="Carte Postale"></iframe>`
+  return `<iframe src="${origin}/carte/${slug}?embed=1" width="100%" height="600" style="border:none; border-radius:12px; overflow:hidden;" title="Carte Postale"></iframe>`
 }
 
 export default function IntegrerClient() {
@@ -37,9 +37,9 @@ export default function IntegrerClient() {
           Intégrer une carte postale sur votre site
         </h1>
         <p className="text-stone-600 text-lg leading-relaxed">
-          Particuliers, pros, blogs ou sites d&apos;agences : affichez une carte postale virtuelle
-          directement sur votre page avec un simple code à copier-coller. Aucune compétence
-          technique avancée requise.
+          Particuliers, pros, blogs ou sites d&apos;agences : affichez le composant carte postale (effet
+          recto/verso uniquement) directement sur votre page avec un simple code à copier-coller.
+          Aucune compétence technique avancée requise.
         </p>
       </div>
 
@@ -110,7 +110,7 @@ export default function IntegrerClient() {
           <h2 className="text-lg font-bold text-stone-800 mb-4">Aperçu du rendu</h2>
           <div className="rounded-2xl border border-stone-200 overflow-hidden bg-white shadow-sm">
             <iframe
-              src={`${origin}/carte/${DEMO_SLUG}`}
+              src={`${origin}/carte/${DEMO_SLUG}?embed=1`}
               title="Aperçu carte postale intégrée"
               className="w-full border-0"
               style={{ height: '560px' }}

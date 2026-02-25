@@ -39,7 +39,7 @@ export default function DevClient({ postcards }: Props) {
   const publishedPostcards = postcards.filter((p) => p.status === 'published')
 
   const handleCopy = (id: number, publicId: string) => {
-    const iframeCode = `<iframe src="${origin}/carte/${publicId}" width="100%" height="600" style="border:none; border-radius:12px; overflow:hidden;" title="Carte Postale ${publicId}"></iframe>`
+    const iframeCode = `<iframe src="${origin}/carte/${publicId}?embed=1" width="100%" height="600" style="border:none; border-radius:12px; overflow:hidden;" title="Carte Postale ${publicId}"></iframe>`
 
     navigator.clipboard.writeText(iframeCode)
     setCopiedId(id)
@@ -61,7 +61,7 @@ export default function DevClient({ postcards }: Props) {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {publishedPostcards.map((postcard) => {
-        const iframeCode = `<iframe src="${origin}/carte/${postcard.publicId}" width="100%" height="600" style="border:none; border-radius:12px; overflow:hidden;" title="Carte Postale ${postcard.publicId}"></iframe>`
+        const iframeCode = `<iframe src="${origin}/carte/${postcard.publicId}?embed=1" width="100%" height="600" style="border:none; border-radius:12px; overflow:hidden;" title="Carte Postale ${postcard.publicId}"></iframe>`
 
         return (
           <Card

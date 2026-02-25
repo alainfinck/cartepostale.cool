@@ -1,5 +1,8 @@
 import { getPostcardByPublicId } from '@/actions/postcard-actions'
-import { getOptimizedImageUrl } from '@/lib/image-processing'
+import {
+  getOptimizedImageUrl,
+  normalizeMediaUrlToImgDomain,
+} from '@/lib/image-processing'
 import {
   generateOgImageJpeg,
   OG_IMAGE_HEIGHT,
@@ -37,6 +40,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
       if (imageUrl.startsWith('/')) {
         imageUrl = `https://cartepostale.cool${imageUrl}`
       }
+      imageUrl = normalizeMediaUrlToImgDomain(imageUrl)
       imageUrl = getOptimizedImageUrl(imageUrl, {
         width: OG_IMAGE_WIDTH,
         quality: 78,

@@ -499,8 +499,9 @@ export default function Home() {
               Intégrez une carte à votre site
             </h2>
             <p className="text-stone-600 text-lg max-w-2xl mx-auto">
-              Affichez une carte postale sur n&apos;importe quel site ou blog avec un simple code à
-              copier-coller. Idéal pour les blogs voyage, sites d&apos;agences ou portfolios.
+              Affichez le composant carte postale (effet recto/verso) sur n&apos;importe quel site ou blog
+              avec un simple code à copier-coller. Idéal pour les blogs voyage, sites d&apos;agences ou
+              portfolios.
             </p>
           </div>
           <div className="rounded-2xl border border-stone-200 bg-stone-50/50 p-6 md:p-8">
@@ -510,7 +511,7 @@ export default function Home() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  const code = `<iframe src="${embedOrigin}/carte/${EMBED_DEMO_SLUG}" width="100%" height="600" style="border:none; border-radius:12px; overflow:hidden;" title="Carte Postale"></iframe>`
+                  const code = `<iframe src="${embedOrigin}/carte/${EMBED_DEMO_SLUG}?embed=1" width="100%" height="600" style="border:none; border-radius:12px; overflow:hidden;" title="Carte Postale"></iframe>`
                   navigator.clipboard.writeText(code)
                   setEmbedCopied(true)
                   setTimeout(() => setEmbedCopied(false), 2000)
@@ -532,7 +533,7 @@ export default function Home() {
             </div>
             <Input
               readOnly
-              value={`<iframe src="${embedOrigin}/carte/${EMBED_DEMO_SLUG}" width="100%" height="600" style="border:none; border-radius:12px; overflow:hidden;" title="Carte Postale"></iframe>`}
+              value={`<iframe src="${embedOrigin}/carte/${EMBED_DEMO_SLUG}?embed=1" width="100%" height="600" style="border:none; border-radius:12px; overflow:hidden;" title="Carte Postale"></iframe>`}
               className="font-mono text-[10px] sm:text-xs text-stone-600 bg-white border-stone-200"
             />
             <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -548,7 +549,7 @@ export default function Home() {
               Aperçu
             </p>
             <iframe
-              src={`${embedOrigin}/carte/${EMBED_DEMO_SLUG}`}
+              src={`${embedOrigin}/carte/${EMBED_DEMO_SLUG}?embed=1`}
               title="Aperçu carte postale intégrée"
               className="w-full border-0"
               style={{ height: '360px' }}

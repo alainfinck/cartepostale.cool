@@ -108,6 +108,25 @@ export function readFileAsDataUrl(file: File): Promise<string> {
 /** Largeur max raisonnable pour l'affichage écran (évite 4K/3840 inutile). */
 export const DISPLAY_MAX_WIDTH = 1920
 
+const IMG_DOMAIN = 'https://img.cartepostale.cool'
+
+/**
+ * Normalise une URL média du site principal (cartepostale.cool) vers le domaine CDN (img.cartepostale.cool)
+ * pour que getOptimizedImageUrl puisse appliquer cdn-cgi/image.
+ */
+export function normalizeMediaUrlToImgDomain(url: string): string {
+  if (!url || !url.startsWith('http')) return url
+  try {
+    const u = new URL(url)
+    if (u.hostname !== 'cartepostale.cool' && u.hostname !== 'www.cartepostale.cool') return url
+    if (!u.pathname.startsWith('/media/')) return url
+    const path = u.pathname.replace(/^\/media\//, '')
+    return `${IMG_DOMAIN}/${path}`
+  } catch {
+    return url
+  }
+}
+
 /**
  * Retourne une URL d'image optimisée via Cloudflare Image Resizing (cdn-cgi/image).
  * Format cible: https://img.domain.com/cdn-cgi/image/params/path/to/image

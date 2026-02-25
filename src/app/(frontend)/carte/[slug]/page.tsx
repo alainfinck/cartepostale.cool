@@ -332,6 +332,11 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
 
 import { isCoordinate } from '@/lib/utils'
 
+/** URL d’image Open Graph : utilise Cloudflare cdn-cgi/image pour img.cartepostale.cool */
+function ogImageUrl(url: string): string {
+  return getOptimizedImageUrl(url, { width: 1000, quality: 85, fit: 'cover' })
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
 
@@ -350,6 +355,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     // Use frontImage or fallback
     const imageUrl = demoCard.frontImage || `${baseUrl}/media/enveloppe-social3.jpg`
     const absoluteImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`
+    const imageForOg = ogImageUrl(absoluteImageUrl)
 
     return {
       title,
@@ -362,7 +368,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         siteName: 'CartePostale.cool',
         images: [
           {
-            url: absoluteImageUrl,
+            url: imageForOg,
             width: 1000,
             height: 525,
             alt: `Carte postale de ${demoCard.senderName}`,
@@ -373,7 +379,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         card: 'summary_large_image',
         title,
         description,
-        images: [absoluteImageUrl],
+        images: [imageForOg],
       },
     }
   }
@@ -399,6 +405,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ? frontendPostcard.frontImage
       : `${baseUrl}/media/enveloppe-social3.jpg`
   const absoluteImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`
+  const imageForOg = ogImageUrl(absoluteImageUrl)
 
   return {
     title,
@@ -411,7 +418,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: 'CartePostale.cool',
       images: [
         {
-          url: absoluteImageUrl,
+          url: imageForOg,
           width: 1000,
           height: 525,
           alt: `Carte postale de ${postcard.senderName}`,
@@ -422,13 +429,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       card: 'summary_large_image',
       title,
       description,
-      images: [absoluteImageUrl],
+      images: [imageForOg],
     },
   }
 }
 
 import EnvelopeHero from '@/components/view/EnvelopeHero'
 import PostcardSuccessQRBlock from '@/components/postcard/PostcardSuccessQRBlock'
+import PostcardEmbedView from '@/components/view/PostcardEmbedView'
 
 export default async function PostcardPage({ params, searchParams }: PageProps) {
   const { slug } = await params
@@ -436,6 +444,8 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
   const envelopeParam = resolvedSearchParams.enveloppe
   const showEnvelope = envelopeParam !== '0'
   const paymentSuccess = resolvedSearchParams.payment_success === 'true'
+  /** Mode intégration : affiche uniquement le composant postcard recto/verso (pour iframe sur site tiers) */
+  const isEmbed = resolvedSearchParams.embed === '1'
 
   // Handling demo postcards
   const demoPostcard =
@@ -465,6 +475,18 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
   if (frontendPostcard.location && !frontendPostcard.coords) {
     const coords = await geocodeLocation(frontendPostcard.location)
     if (coords) frontendPostcard.coords = coords
+  }
+
+  // Mode intégration : uniquement le composant postcard avec effet recto/verso
+  if (isEmbed) {
+    return (
+      <div className="min-h-screen w-full">
+        {!isDemo && (
+          <PostcardTracking postcardId={slug} senderName={frontendPostcard.senderName} />
+        )}
+        <PostcardEmbedView postcard={frontendPostcard} views={payloadPostcardViews} />
+      </div>
+    )
   }
 
   // Check contribution access (only for real cards)
