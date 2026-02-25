@@ -255,20 +255,19 @@ export default function AlbumPolaroidLightbox({
               className={cn(
                 'relative w-full transition-transform duration-700 ease-in-out',
                 viewMode === 'diapo'
-                  ? 'bg-white shadow-2xl rounded-sm p-3 sm:p-4 pb-16 sm:pb-20'
+                  ? 'bg-white shadow-2xl rounded-sm p-3 sm:p-4 pb-16 sm:pb-24'
                   : 'inline-flex max-h-[85vh] max-w-[95vw] items-center justify-center',
               )}
               style={{
                 transformStyle: 'preserve-3d',
                 transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
                 maxHeight: '85vh',
-                ...(viewMode === 'diapo' ? { aspectRatio: '4/5' } : {}),
               }}
             >
               {/* FRONT FACE — image */}
               {viewMode === 'diapo' ? (
                 <div
-                  className="absolute overflow-hidden bg-stone-100 top-3 left-3 right-3 bottom-16 sm:top-4 sm:left-4 sm:right-4 sm:bottom-20"
+                  className="relative overflow-hidden bg-stone-100"
                   style={{ backfaceVisibility: 'hidden' }}
                 >
                   {current.type === 'video' ? (
@@ -278,14 +277,14 @@ export default function AlbumPolaroidLightbox({
                       playsInline
                       muted
                       autoPlay
-                      className="w-full h-full object-cover"
+                      className="w-full h-auto block"
                     />
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={getOptimizedImageUrl(current.url, { width: displayWidth })}
                       alt={`Photo ${selectedIndex + 1}`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-auto block"
                     />
                   )}
                 </div>

@@ -132,104 +132,40 @@ const InstaCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="flex flex-col bg-white border border-stone-200 rounded-lg overflow-hidden shadow-sm"
+      className="flex flex-col bg-white p-2.5 sm:p-3 pb-10 sm:pb-14 shadow-[0_10px_30px_rgba(0,0,0,0.08)] border border-stone-100 rounded-sm overflow-hidden group/card"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 py-3">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full p-[1.5px] bg-gradient-to-tr from-amber-400 to-fuchsia-600">
-            <div className="w-full h-full rounded-full bg-white p-[1.5px]">
-              <div className="w-full h-full rounded-full bg-stone-100 flex items-center justify-center overflow-hidden">
-                <User size={16} className="text-stone-400" />
-              </div>
-            </div>
-          </div>
-          <span className="font-semibold text-sm text-stone-900">{senderName}</span>
-        </div>
-        <div className="relative" ref={moreRef}>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              setMoreOpen((v) => !v)
-            }}
-            className="text-stone-900 p-1 rounded hover:bg-stone-100 transition-colors"
-            aria-label="Plus d'options"
-          >
-            <MoreHorizontal size={20} />
-          </button>
-          <AnimatePresence>
-            {moreOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.15 }}
-                className="absolute right-0 top-full mt-1 py-1 min-w-[180px] bg-white border border-stone-200 rounded-lg shadow-lg z-50"
-              >
-                <Link
-                  href="/editor"
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-stone-700 hover:bg-stone-50"
-                  onClick={() => setMoreOpen(false)}
-                >
-                  <StickyNote size={16} className="text-teal-600" />
-                  Créer ma carte
-                </Link>
-                <Link
-                  href="/"
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-stone-700 hover:bg-stone-50"
-                  onClick={() => setMoreOpen(false)}
-                >
-                  <Link2 size={16} />
-                  Page d&apos;accueil
-                </Link>
-                <div className="h-px bg-stone-100 my-1" />
-                <button
-                  type="button"
-                  onClick={handleShare}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-stone-700 hover:bg-stone-50"
-                >
-                  <Share2 size={16} />
-                  Partager cette photo
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
+      {/* No Header anymore, integrated into Polaroid style */}
 
       {/* Image */}
+      {/* Image / Video Container - Full height, no cropping */}
       <div
-        className="relative w-full aspect-square bg-stone-100 cursor-pointer"
+        className="relative w-full bg-stone-50 cursor-pointer overflow-hidden border border-stone-100"
         onClick={onImageClick}
         onDoubleClick={handleDoubleClick}
       >
         {item.type === 'video' ? (
           <video
             src={item.url}
-            className="w-full h-full object-cover"
+            className="w-full h-auto block"
             playsInline
             muted
             preload="metadata"
           />
         ) : (
-          <Image
-            loader={({ src, width, quality }) =>
-              getOptimizedImageUrl(src, { width, quality: quality || 80 })
-            }
-            src={item.url}
+          <img
+            src={getOptimizedImageUrl(item.url, { width: 470 })}
             alt={`Photo ${index + 1}`}
-            fill
-            className="object-cover"
-            sizes="(max-width: 470px) 100vw, 470px"
+            className="w-full h-auto block"
+            loading="lazy"
           />
         )}
       </div>
 
-      {/* Actions + reactions — plus compact en mobile pour tenir sur une ligne */}
-      <div className="px-3 pt-3 pb-2">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-1.5 sm:gap-3 flex-nowrap sm:flex-wrap min-w-0">
+      {/* Polaroid Bottom Part */}
+      <div className="relative px-0.5 pt-3 sm:pt-4">
+        {/* Actions - Plus discretes sur le pola */}
+        <div className="flex items-center justify-between mb-3 opacity-0 group-hover/card:opacity-100 transition-opacity">
+          <div className="flex items-center gap-3">
             <CoolMode
               options={{
                 particle: '❤️',
@@ -261,50 +197,85 @@ const InstaCard = ({
               </button>
             </CoolMode>
             <button
-              className="hover:text-stone-600 transition-colors shrink-0"
+              className="text-stone-400 hover:text-stone-900 transition-colors shrink-0"
               type="button"
               aria-label="Envoyer / Partager"
               onClick={handleShare}
             >
-              <Send className="w-5 h-5 sm:w-6 sm:h-6 text-stone-900 -mt-1 rotate-12" />
+              <Send className="w-5 h-5 shrink-0" />
             </button>
           </div>
-          <button
-            type="button"
-            className="hover:text-stone-600 transition-colors shrink-0"
-            aria-label="Enregistrer"
-          >
-            <Bookmark className="w-5 h-5 sm:w-6 sm:h-6 text-stone-900" />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="text-stone-400 hover:text-stone-900 transition-colors shrink-0"
+              aria-label="Plus d'options"
+              onClick={(e) => {
+                e.stopPropagation()
+                setMoreOpen((v) => !v)
+              }}
+            >
+              <MoreHorizontal size={20} />
+            </button>
+            <button
+              type="button"
+              className="text-stone-400 hover:text-stone-900 transition-colors shrink-0"
+              aria-label="Enregistrer"
+            >
+              <Bookmark className="w-5 h-5 shrink-0" />
+            </button>
+          </div>
         </div>
 
+        {/* More Menu (Polaroid Version) */}
+        <AnimatePresence>
+          {moreOpen && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="absolute right-0 bottom-full mb-2 py-1 min-w-[150px] bg-white border border-stone-200 rounded shadow-xl z-50 text-left"
+              ref={moreRef}
+            >
+              <Link
+                href="/editor"
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50"
+              >
+                <StickyNote size={14} /> CRÉER MA CARTE
+              </Link>
+              <button
+                onClick={handleShare}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 border-t border-stone-100"
+              >
+                <Share2 size={14} /> PARTAGER
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Content */}
         {item.note != null && String(item.note).trim() !== '' && (
-          <div className="mb-2">
-            <span className="font-semibold text-stone-900 text-sm mr-2">{senderName}</span>
-            <span className="text-stone-700 text-sm">{String(item.note).trim()}</span>
+          <div className="mb-4 text-center">
+            <p className="font-handwriting text-stone-800 text-lg sm:text-xl leading-snug transform -rotate-1">
+              {String(item.note).trim()}
+            </p>
           </div>
         )}
 
-        <div className="text-sm font-semibold text-stone-900 mb-1">
-          {(counts['❤️'] || 0) + (counts['🔥'] || 0) + (counts['😂'] || 0) > 0 ? (
-            <span>{Object.values(counts).reduce((a, b) => a + b, 0)} J&apos;aime</span>
-          ) : (
-            <span className="text-stone-500 font-normal">Soyez le premier à aimer</span>
-          )}
-        </div>
-
-        <div className="text-[10px] uppercase text-stone-500 font-medium mt-1">
-          Photo {index + 1} sur {totalCount}
-          {item.exif?.dateTime && (
-            <>
-              {' • '}
-              {new Date(item.exif.dateTime).toLocaleDateString('fr-FR', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-              })}
-            </>
-          )}
+        <div className="flex flex-col items-center gap-1">
+          <div className="text-[9px] sm:text-[10px] uppercase font-black tracking-[0.2em] text-stone-400 flex items-center gap-2">
+            <span>{senderName}</span>
+            <span className="opacity-30">•</span>
+            <span>
+              {item.exif?.dateTime
+                ? new Date(item.exif.dateTime).toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                  })
+                : 'Album'}
+            </span>
+          </div>
         </div>
       </div>
     </motion.article>
@@ -672,20 +643,19 @@ export default function PhotoFeed({
                         className={cn(
                           'relative w-full transition-transform duration-700 ease-in-out',
                           viewMode === 'diapo'
-                            ? 'bg-white shadow-2xl rounded-sm p-3 sm:p-4 pb-16 sm:pb-20'
+                            ? 'bg-white shadow-2xl rounded-sm p-3 sm:p-4 pb-16 sm:pb-24'
                             : 'inline-flex max-h-[85vh] max-w-[95vw] items-center justify-center',
                         )}
                         style={{
                           transformStyle: 'preserve-3d',
                           transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
                           maxHeight: '85vh',
-                          ...(viewMode === 'diapo' ? { aspectRatio: '4/5' } : {}),
                         }}
                       >
                         {/* FRONT FACE — image */}
                         {viewMode === 'diapo' ? (
                           <div
-                            className="absolute overflow-hidden bg-stone-100 top-3 left-3 right-3 bottom-16 sm:top-4 sm:left-4 sm:right-4 sm:bottom-20"
+                            className="relative overflow-hidden bg-stone-100"
                             style={{ backfaceVisibility: 'hidden' }}
                           >
                             {sortedMediaItems[selectedIndex].type === 'video' ? (
@@ -698,17 +668,13 @@ export default function PhotoFeed({
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              <Image
-                                loader={({ src, width, quality }) =>
-                                  getOptimizedImageUrl(src, { width, quality: quality || 80 })
-                                }
-                                src={sortedMediaItems[selectedIndex].url}
+                              <img
+                                src={getOptimizedImageUrl(sortedMediaItems[selectedIndex].url, {
+                                  width: 900,
+                                })}
                                 alt={`Full photo ${selectedIndex + 1}`}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 1024px) 100vw, 900px"
-                                onLoadingComplete={() => setIsImageLoading(false)}
-                                priority
+                                className="w-full h-auto block"
+                                onLoad={() => setIsImageLoading(false)}
                               />
                             )}
                           </div>

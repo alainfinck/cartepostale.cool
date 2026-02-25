@@ -3,6 +3,7 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { Postcard } from '@/payload-types'
+import { revalidateTag } from 'next/cache'
 
 export async function uploadContribution(
   publicId: string,
@@ -112,6 +113,7 @@ export async function uploadContribution(
       },
       overrideAccess: true,
     })
+    revalidateTag(`postcard-${publicId}`)
 
     return { success: true }
   } catch (error) {

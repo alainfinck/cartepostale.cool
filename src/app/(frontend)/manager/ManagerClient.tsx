@@ -1547,65 +1547,69 @@ function GridCard({
                 </div>
 
                 <div
-                  className="flex flex-wrap items-center justify-between gap-2"
+                  className="flex flex-wrap items-center justify-between gap-y-3 gap-x-1"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="flex flex-wrap items-center gap-1.5">
+                  {/* Primary actions */}
+                  <div className="flex items-center gap-1.5 p-1 bg-stone-100/50 rounded-xl border border-stone-200/50">
                     <Link
                       href={`/carte/${postcard.publicId}`}
                       target="_blank"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-stone-600 hover:text-teal-600 border-stone-200 bg-white shadow-sm"
+                        className="h-9 w-9 text-stone-600 hover:text-teal-600 hover:bg-white rounded-lg transition-all shadow-none"
                         title="Ouvrir dans un nouvel onglet"
                       >
-                        <ExternalLink size={14} />
+                        <ExternalLink size={16} />
                       </Button>
                     </Link>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="icon"
                       onClick={(e) => {
                         e.stopPropagation()
                         onEdit()
                       }}
-                      className="h-8 w-8 text-stone-600 hover:text-teal-600 hover:bg-teal-50 border-teal-200 shadow-sm"
-                      title="Modifier"
+                      className="h-9 w-9 text-stone-600 hover:text-teal-600 hover:bg-white rounded-lg transition-all shadow-none"
+                      title="Modifier les infos"
                     >
-                      <Pencil size={14} />
+                      <Pencil size={16} />
                     </Button>
                     {onEditAlbum && (
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
                         onClick={(e) => {
                           e.stopPropagation()
                           onEditAlbum()
                         }}
-                        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200 shadow-sm"
+                        className="h-9 w-9 text-stone-600 hover:text-blue-600 hover:bg-white rounded-lg transition-all shadow-none"
                         title="Gérer l'album photo"
                       >
-                        <ImageIcon size={14} />
+                        <ImageIcon size={16} />
                       </Button>
                     )}
                     {onEditInEditor && (
                       <Button
-                        variant="outline"
-                        size="sm"
+                        variant="ghost"
+                        size="icon"
                         onClick={(e) => {
                           e.stopPropagation()
                           onEditInEditor()
                         }}
-                        className="h-8 px-2 text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-100 font-medium shadow-sm text-[10px]"
+                        className="h-9 w-9 text-stone-600 hover:text-amber-600 hover:bg-white rounded-lg transition-all shadow-none"
                         title="Ouvrir dans l’éditeur"
                       >
-                        <PenTool size={12} className="mr-1 shrink-0" />
-                        Éditeur
+                        <PenTool size={16} />
                       </Button>
                     )}
+                  </div>
+
+                  {/* Secondary/Special actions */}
+                  <div className="flex items-center gap-1.5">
                     {onOpenShareContribution && postcard.contributionToken && (
                       <Button
                         variant="outline"
@@ -1614,17 +1618,19 @@ function GridCard({
                           e.stopPropagation()
                           onOpenShareContribution()
                         }}
-                        className="h-8 w-8 text-purple-600 hover:text-purple-700 hover:bg-purple-50 border-purple-200 shadow-sm"
-                        title="Partager le lien de contribution (photos)"
+                        className="h-9 w-9 text-purple-600 border-purple-100 bg-purple-50/50 hover:bg-purple-100 rounded-xl transition-all shadow-sm"
+                        title="Lien de contribution"
                       >
-                        <Users size={14} />
+                        <Users size={16} />
                       </Button>
                     )}
+
                     <StatusDropdown
                       currentStatus={postcard.status || 'draft'}
                       onUpdate={onUpdateStatus}
                       postcardId={postcard.id}
                     />
+
                     <Button
                       variant="outline"
                       size="icon"
@@ -1632,19 +1638,16 @@ function GridCard({
                         e.stopPropagation()
                         onDelete(postcard.id)
                       }}
-                      className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 shadow-sm"
-                      title="Supprimer la carte"
+                      className="h-9 w-9 text-red-400 hover:text-red-600 border-red-100 hover:border-red-200 bg-red-50/30 hover:bg-red-50 rounded-xl transition-all shadow-sm"
+                      title="Supprimer"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={16} />
                     </Button>
                   </div>
                 </div>
 
                 {onDuplicate && (
-                  <div
-                    className="pt-3 border-t border-stone-100 space-y-1.5"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <div className="pt-2" onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="outline"
                       size="sm"
@@ -1652,15 +1655,15 @@ function GridCard({
                         e.stopPropagation()
                         onDuplicate()
                       }}
-                      className="w-full h-10 text-violet-700 border-violet-200 bg-violet-50/50 hover:bg-violet-100 hover:border-violet-300 font-medium shadow-sm"
+                      className="w-full h-10 text-stone-600 border-stone-200 bg-white hover:bg-stone-50 hover:border-stone-300 rounded-xl font-medium transition-all group"
                       title="Dupliquer la carte pour modifier texte et photos"
                     >
-                      <Copy size={16} className="mr-2 shrink-0" />
+                      <Copy
+                        size={14}
+                        className="mr-2 text-stone-400 group-hover:text-violet-600 transition-colors"
+                      />
                       Dupliquer la carte
                     </Button>
-                    <p className="text-[11px] text-stone-500 leading-tight px-0.5">
-                      Modifiez le texte et les photos en repartant de la même base.
-                    </p>
                   </div>
                 )}
               </div>

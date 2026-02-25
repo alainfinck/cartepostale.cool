@@ -23,15 +23,16 @@ interface Props {
   user: CurrentUser
 }
 
-const navItems = [
+const mainNavItems = [
   { href: '/espace-client', label: 'Tableau de bord', icon: LayoutDashboard },
   { href: '/espace-client/cartes', label: 'Mes cartes', icon: Mail },
   { href: '/espace-client/galerie', label: 'Ma galerie', icon: ImageIcon },
   { href: '/espace-client/carte-du-monde', label: 'Carte du monde', icon: Globe },
-  { href: '/espace-client/dev', label: 'Espace Dev', icon: Code },
   { href: '/espace-client/credits', label: 'Gérer les crédits', icon: Sparkles },
   { href: '/espace-client/compte', label: 'Mon compte', icon: User },
 ]
+
+const devNavItem = { href: '/espace-client/dev', label: 'Espace Dev', icon: Code }
 
 export default function EspaceClientNav({ user }: Props) {
   const pathname = usePathname()
@@ -77,7 +78,7 @@ export default function EspaceClientNav({ user }: Props) {
 
         {/* Tabs scrollables */}
         <nav className="flex gap-0.5 px-3 pb-0 overflow-x-auto scrollbar-hide">
-          {navItems.map(({ href, label, icon: Icon }) => {
+          {mainNavItems.map(({ href, label, icon: Icon }) => {
             const isActive =
               pathname === href || (href !== '/espace-client' && pathname.startsWith(href))
             return (
@@ -96,6 +97,19 @@ export default function EspaceClientNav({ user }: Props) {
               </Link>
             )
           })}
+          {/* Espace Dev at the end of mobile scroll */}
+          <Link
+            href={devNavItem.href}
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium whitespace-nowrap border-b-2 transition-colors shrink-0',
+              pathname.startsWith(devNavItem.href)
+                ? 'border-teal-600 text-teal-700'
+                : 'border-transparent text-stone-500 hover:text-stone-700 hover:border-stone-300',
+            )}
+          >
+            <devNavItem.icon size={15} className="shrink-0" />
+            {devNavItem.label}
+          </Link>
         </nav>
       </div>
 
@@ -113,8 +127,8 @@ export default function EspaceClientNav({ user }: Props) {
           </p>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1">
-          {navItems.map(({ href, label, icon: Icon }) => {
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          {mainNavItems.map(({ href, label, icon: Icon }) => {
             const isActive =
               pathname === href || (href !== '/espace-client' && pathname.startsWith(href))
             return (
@@ -139,16 +153,31 @@ export default function EspaceClientNav({ user }: Props) {
           })}
         </nav>
 
-        <div className="p-3 border-t border-stone-100 space-y-2">
+        {/* Bottom Section */}
+        <div className="p-3 border-t border-stone-100 space-y-1">
+          {/* Espace Dev moved here */}
+          <Link
+            href={devNavItem.href}
+            className={cn(
+              'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors mb-2',
+              pathname.startsWith(devNavItem.href)
+                ? 'bg-stone-100 text-stone-900 border border-stone-200'
+                : 'text-stone-500 hover:bg-stone-50 hover:text-stone-700',
+            )}
+          >
+            <devNavItem.icon size={20} className="shrink-0" />
+            {devNavItem.label}
+          </Link>
+
           <Link href="/editor">
-            <Button className="w-full rounded-xl bg-orange-500 hover:bg-orange-600 text-white gap-2">
+            <Button className="w-full rounded-xl bg-orange-500 hover:bg-orange-600 text-white gap-2 shadow-sm">
               <Plus size={18} /> Créer une carte
             </Button>
           </Link>
           <button
             type="button"
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-colors"
+            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-stone-400 hover:bg-stone-50 hover:text-stone-600 transition-colors"
           >
             <LogOut size={20} /> Déconnexion
           </button>
