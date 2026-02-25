@@ -2648,7 +2648,7 @@ export default function EditorPage() {
                     !uploadStatus && isDropActive
                       ? 'border-teal-400 bg-teal-50/40 p-8'
                       : !uploadStatus && uploadedFileName
-                        ? 'border-teal-400 bg-teal-50/10 p-4'
+                        ? 'border-teal-400 bg-teal-50/10 p-2 sm:p-3'
                         : !uploadStatus && frontImage && !uploadedFileName
                           ? 'border-stone-200 bg-shadow-sm p-8'
                           : !uploadStatus && 'border-stone-300 p-8',
@@ -2677,26 +2677,28 @@ export default function EditorPage() {
                       </div>
                     </div>
                   ) : uploadedFileName ? (
-                    <div className="flex items-center gap-4 justify-center text-left">
-                      {frontImage && (
-                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-teal-200 bg-stone-100 flex-shrink-0 shadow-sm transition-transform hover:scale-105">
-                          <img src={frontImage} alt="" className="w-full h-full object-cover" />
-                        </div>
-                      )}
+                    <div className="flex items-center gap-3 justify-between text-left px-2">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <div className="w-6 h-6 rounded-full bg-teal-500 flex items-center justify-center">
-                            <Check size={14} className="text-white" />
+                          <div className="w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center">
+                            <Check size={12} className="text-white" />
                           </div>
                           <span className="text-[10px] font-bold uppercase tracking-widest text-teal-600">
                             Image sélectionnée
                           </span>
                         </div>
-                        <p className="text-stone-800 font-bold truncate">{uploadedFileName}</p>
-                        <p className="text-stone-400 text-[10px] font-bold uppercase tracking-wider mt-1 group-hover:text-teal-500 transition-colors">
+                        <p className="text-stone-800 text-sm font-bold truncate">
+                          {uploadedFileName}
+                        </p>
+                        <p className="text-stone-400 text-[10px] font-bold uppercase tracking-wider mt-0.5 group-hover:text-teal-500 transition-colors">
                           Cliquez pour changer
                         </p>
                       </div>
+                      {frontImage && (
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden border border-teal-200 bg-stone-100 flex-shrink-0 shadow-sm transition-transform hover:scale-105">
+                          <img src={frontImage} alt="" className="w-full h-full object-cover" />
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-3">
@@ -2721,13 +2723,13 @@ export default function EditorPage() {
                 </div>
 
                 {/* Desktop: 2 buttons side by side; mobile: stacked */}
-                <div className="flex flex-col sm:flex-row gap-3 mt-3 mb-4">
+                <div className="flex flex-col sm:flex-row gap-3 mt-3 mb-4 w-full">
                   {currentUser && (
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setShowUserGalleryModal('front')}
-                      className="flex-1 lg:flex-initial rounded-xl border-dashed border-stone-300 text-stone-600 hover:text-teal-600 hover:border-teal-300 hover:bg-teal-50 gap-2"
+                      className="flex-1 w-full h-auto py-3 rounded-xl border-2 border-dashed border-stone-300 text-stone-600 hover:text-teal-600 hover:border-teal-300 hover:bg-teal-50 gap-2"
                     >
                       <ImageIcon size={18} /> Choisir depuis ma galerie
                     </Button>
@@ -2737,7 +2739,7 @@ export default function EditorPage() {
                     onClick={() => setShowTemplateSection(!showTemplateSection)}
                     className={cn(
                       'flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-stone-300 bg-stone-50/50 px-4 py-3 text-stone-600 hover:border-teal-300 hover:bg-teal-50/30 hover:text-teal-600 transition-all group',
-                      currentUser ? 'flex-1 lg:flex-initial' : 'w-full',
+                      currentUser ? 'flex-1 w-full' : 'w-full',
                     )}
                   >
                     <ImageIcon

@@ -45,15 +45,15 @@ function getFrontImageUrl(postcard: Postcard): string {
   return 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'
 }
 
-export default function EditPostcardDialog({
+export function EditPostcardForm({
   postcard,
-  isOpen,
   onClose,
   onSuccess,
   isDuplicateMode = false,
   updatePostcardFn,
   allowChangeAuthor = false,
-}: EditPostcardDialogProps) {
+  className,
+}: EditPostcardDialogProps & { className?: string }) {
   const [isPending, startTransition] = useTransition()
   const [formData, setFormData] = useState({
     senderName: '',
@@ -201,41 +201,18 @@ export default function EditPostcardDialog({
   if (!postcard) return null
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && !isPending && onClose()}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {isDuplicateMode
-              ? 'Vous dupliquez cette carte — modifiez le texte et les photos'
-              : `Modifier la carte #${postcard.publicId}`}
-          </DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-6 py-4">
-          {/* Image Upload Preview */}
-          <div className="space-y-2">
-            <Label>Photo de la carte</Label>
-            <div className="relative group aspect-[4/3] w-full rounded-xl overflow-hidden border-2 border-dashed border-border/50 hover:border-teal-500/50 transition-colors bg-muted/30">
-              {imagePreview ? (
-                <>
-                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <label className="cursor-pointer bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full border border-white/30 flex items-center gap-2 hover:bg-white/30 transition-colors">
-                      <Camera size={18} />
-                      Changer la photo
-                      <input
-                        type="file"
-                        accept="image/*,.heic,.heif,.avif,.webp,.tiff,.bmp"
-                        className="hidden"
-                        onChange={handleImageChange}
-                      />
-                    </label>
-                  </div>
-                </>
-              ) : (
-                <label className="absolute inset-0 cursor-pointer flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-teal-500 transition-colors">
-                  <Camera size={32} />
-                  <span>Ajouter une photo</span>
+    <form onSubmit={handleSubmit} className={cn('space-y-6 py-4', className)}>
+      {/* Image Upload Preview */}
+      <div className="space-y-2">
+        <Label>Photo de la carte</Label>
+        <div className="relative group aspect-[4/3] w-full rounded-xl overflow-hidden border-2 border-dashed border-border/50 hover:border-teal-500/50 transition-colors bg-muted/30">
+          {imagePreview ? (
+            <>
+              <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <label className="cursor-pointer bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full border border-white/30 flex items-center gap-2 hover:bg-white/30 transition-colors">
+                  <Camera size={18} />
+                  Changer la photo
                   <input
                     type="file"
                     accept="image/*,.heic,.heif,.avif,.webp,.tiff,.bmp"
@@ -243,170 +220,198 @@ export default function EditPostcardDialog({
                     onChange={handleImageChange}
                   />
                 </label>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-            <div className="space-y-2">
-              <Label htmlFor="frontCaption">Texte avant</Label>
-              <Input
-                id="frontCaption"
-                value={formData.frontCaption}
-                onChange={(e) => setFormData((prev) => ({ ...prev, frontCaption: e.target.value }))}
-                placeholder="Texte sur la face avant"
+              </div>
+            </>
+          ) : (
+            <label className="absolute inset-0 cursor-pointer flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-teal-500 transition-colors">
+              <Camera size={32} />
+              <span>Ajouter une photo</span>
+              <input
+                type="file"
+                accept="image/*,.heic,.heif,.avif,.webp,.tiff,.bmp"
+                className="hidden"
+                onChange={handleImageChange}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="frontEmoji">Emoji avant</Label>
-              <Input
-                id="frontEmoji"
-                value={formData.frontEmoji}
-                onChange={(e) => setFormData((prev) => ({ ...prev, frontEmoji: e.target.value }))}
-                placeholder="Emoji (ex: 🌴)"
-              />
-            </div>
-          </div>
+            </label>
+          )}
+        </div>
+      </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="senderName">Expéditeur</Label>
-              <Input
-                id="senderName"
-                value={formData.senderName}
-                onChange={(e) => setFormData((prev) => ({ ...prev, senderName: e.target.value }))}
-                placeholder="Nom de l'expéditeur"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="recipientName">Destinataire</Label>
-              <Input
-                id="recipientName"
-                value={formData.recipientName}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, recipientName: e.target.value }))
-                }
-                placeholder="Nom du destinataire"
-                required
-              />
-            </div>
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+        <div className="space-y-2">
+          <Label htmlFor="frontCaption">Texte avant</Label>
+          <Input
+            id="frontCaption"
+            value={formData.frontCaption}
+            onChange={(e) => setFormData((prev) => ({ ...prev, frontCaption: e.target.value }))}
+            placeholder="Texte sur la face avant"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="frontEmoji">Emoji avant</Label>
+          <Input
+            id="frontEmoji"
+            value={formData.frontEmoji}
+            onChange={(e) => setFormData((prev) => ({ ...prev, frontEmoji: e.target.value }))}
+            placeholder="Emoji (ex: 🌴)"
+          />
+        </div>
+      </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="location">Lieu</Label>
-            <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) => setFormData((prev) => ({ ...prev, location: e.target.value }))}
-              placeholder="Lieu (ex: Paris, France)"
-            />
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="senderName">Expéditeur</Label>
+          <Input
+            id="senderName"
+            value={formData.senderName}
+            onChange={(e) => setFormData((prev) => ({ ...prev, senderName: e.target.value }))}
+            placeholder="Nom de l'expéditeur"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="recipientName">Destinataire</Label>
+          <Input
+            id="recipientName"
+            value={formData.recipientName}
+            onChange={(e) => setFormData((prev) => ({ ...prev, recipientName: e.target.value }))}
+            placeholder="Nom du destinataire"
+            required
+          />
+        </div>
+      </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="message">Message</Label>
-            <Textarea
-              id="message"
-              value={formData.message}
-              onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
-              placeholder="Écrivez votre message ici..."
-              className="min-h-[120px] resize-none"
-              required
-            />
-          </div>
+      <div className="space-y-2">
+        <Label htmlFor="location">Lieu</Label>
+        <Input
+          id="location"
+          value={formData.location}
+          onChange={(e) => setFormData((prev) => ({ ...prev, location: e.target.value }))}
+          placeholder="Lieu (ex: Paris, France)"
+        />
+      </div>
 
-          {allowChangeAuthor && (
-            <div className="space-y-3 p-4 bg-muted/30 rounded-xl border border-border/50">
-              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                Client (Compte associé)
-              </Label>
+      <div className="space-y-2">
+        <Label htmlFor="message">Message</Label>
+        <Textarea
+          id="message"
+          value={formData.message}
+          onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
+          placeholder="Écrivez votre message ici..."
+          className="min-h-[250px] resize-none"
+          required
+        />
+      </div>
 
-              {author ? (
-                <div className="flex items-center justify-between p-2 bg-background rounded-lg border border-border/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-[10px]">
-                      {(author.name || author.email).charAt(0).toUpperCase()}
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-xs font-semibold truncate">
-                        {author.name || 'Sans Nom'}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground truncate">
-                        {author.email}
-                      </span>
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-red-500"
-                    onClick={() => setAuthor(null)}
-                  >
-                    <X size={14} />
-                  </Button>
+      {allowChangeAuthor && (
+        <div className="space-y-3 p-4 bg-muted/30 rounded-xl border border-border/50">
+          <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            Client (Compte associé)
+          </Label>
+
+          {author ? (
+            <div className="flex items-center justify-between p-2 bg-background rounded-lg border border-border/50">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-[10px]">
+                  {(author.name || author.email).charAt(0).toUpperCase()}
                 </div>
-              ) : (
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    value={userSearch}
-                    onChange={(e) => setUserSearch(e.target.value)}
-                    placeholder="Rechercher un client par nom ou email..."
-                    className="pl-9 bg-background/50"
-                  />
-                  {isSearchingUsers && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <Loader2 size={14} className="animate-spin text-muted-foreground" />
-                    </div>
-                  )}
-                  {userResults.length > 0 && (
-                    <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg overflow-hidden">
-                      {userResults.map((user) => (
-                        <button
-                          key={user.id}
-                          type="button"
-                          className="w-full flex items-center gap-3 p-2 hover:bg-muted transition-colors text-left"
-                          onClick={() => {
-                            setAuthor(user)
-                            setUserSearch('')
-                            setUserResults([])
-                          }}
-                        >
-                          <div className="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-[10px]">
-                            {(user.name || user.email).charAt(0).toUpperCase()}
-                          </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-xs font-medium truncate">
-                              {user.name || 'Sans Nom'}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground truncate">
-                              {user.email}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-semibold truncate">
+                    {author.name || 'Sans Nom'}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground truncate">{author.email}</span>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                onClick={() => setAuthor(null)}
+              >
+                <X size={14} />
+              </Button>
+            </div>
+          ) : (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                placeholder="Rechercher un client par nom ou email..."
+                className="pl-9 bg-background/50"
+              />
+              {isSearchingUsers && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <Loader2 size={14} className="animate-spin text-muted-foreground" />
+                </div>
+              )}
+              {userResults.length > 0 && (
+                <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg overflow-hidden">
+                  {userResults.map((user) => (
+                    <button
+                      key={user.id}
+                      type="button"
+                      className="w-full flex items-center gap-3 p-2 hover:bg-muted transition-colors text-left"
+                      onClick={() => {
+                        setAuthor(user)
+                        setUserSearch('')
+                        setUserResults([])
+                      }}
+                    >
+                      <div className="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-[10px]">
+                        {(user.name || user.email).charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-medium truncate">
+                          {user.name || 'Sans Nom'}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground truncate">
+                          {user.email}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
           )}
+        </div>
+      )}
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button type="button" variant="ghost" onClick={onClose} disabled={isPending}>
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              disabled={isPending}
-              className="bg-teal-600 hover:bg-teal-700 text-white gap-2"
-            >
-              {isPending ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-              {isPending ? 'Enregistrement...' : 'Enregistrer les modifications'}
-            </Button>
-          </DialogFooter>
-        </form>
+      <div className="flex justify-end gap-2 sm:gap-4 mt-6">
+        <Button type="button" variant="ghost" onClick={onClose} disabled={isPending}>
+          Annuler
+        </Button>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="bg-teal-600 hover:bg-teal-700 text-white gap-2"
+        >
+          {isPending ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+          {isPending ? 'Enregistrement...' : 'Enregistrer les modifications'}
+        </Button>
+      </div>
+    </form>
+  )
+}
+
+import { cn } from '@/lib/utils'
+
+export default function EditPostcardDialog(props: EditPostcardDialogProps) {
+  if (!props.postcard) return null
+
+  return (
+    <Dialog open={props.isOpen} onOpenChange={(open) => !open && props.onClose()}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {props.isDuplicateMode
+              ? 'Vous dupliquez cette carte — modifiez le texte et les photos'
+              : `Modifier la carte #${props.postcard.publicId}`}
+          </DialogTitle>
+        </DialogHeader>
+        <EditPostcardForm {...props} />
       </DialogContent>
     </Dialog>
   )

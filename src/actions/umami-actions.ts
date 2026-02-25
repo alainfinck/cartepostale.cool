@@ -5,56 +5,49 @@ export interface UmamiMetric {
   y: number
 }
 
-export async function getUmamiPageStats(): Promise<Record<string, number>> {
-  const UMAMI_API_KEY = process.env.UMAMI_API_KEY
-  const UMAMI_WEBSITE_ID = process.env.UMAMI_WEBSITE_ID
-  const UMAMI_API_BASE = 'https://api.umami.is/v1'
+const UMAMI_API_BASE = 'https://api.umami.is/v1'
 
-  if (!UMAMI_API_KEY || !UMAMI_WEBSITE_ID) {
+function getUmamiEnv() {
+  return {
+    apiKey: process.env.UMAMI_API_KEY,
+    websiteId: process.env.UMAMI_WEBSITE_ID,
+  }
+}
+
+function getDefaultRange() {
+  const now = Date.now()
+  return { startAt: now - 90 * 24 * 60 * 60 * 1000, endAt: now }
+}
+
+/** Récupère les visites par URL via /metrics?type=url (seul endpoint qui filtre par URL). */
+export async function getUmamiPageStats(): Promise<Record<string, number>> {
+  const { apiKey, websiteId } = getUmamiEnv()
+  if (!apiKey || !websiteId) {
     console.warn('Umami API key or Website ID missing')
     return {}
   }
 
+  const { startAt, endAt } = getDefaultRange()
   try {
-    const now = Date.now()
-    // Default to last 90 days. You might want to make this configurable.
-    const startAt = now - 90 * 24 * 60 * 60 * 1000
-    const endAt = now
-
-    const url = `${UMAMI_API_BASE}/websites/${UMAMI_WEBSITE_ID}/metrics?type=url&startAt=${startAt}&endAt=${endAt}`
-    
+    const url = `${UMAMI_API_BASE}/websites/${websiteId}/metrics?type=url&startAt=${startAt}&endAt=${endAt}&limit=500`
     const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${UMAMI_API_KEY}`,
-      },
-      next: { revalidate: 3600 }, // Cache for 1 hour
+      headers: { Authorization: `Bearer ${apiKey}` },
+      next: { revalidate: 3600 },
     })
-
     if (!response.ok) {
       console.error('Umami API error:', response.status, response.statusText)
       return {}
     }
-
     const data: UmamiMetric[] = await response.json()
-    
-    // Convert to a map of url -> views
     const stats: Record<string, number> = {}
-    data.forEach(metric => {
+    data.forEach((metric) => {
       stats[metric.x] = metric.y
     })
-
     return stats
   } catch (error) {
     console.error('Failed to fetch Umami stats:', error)
     return {}
   }
-}
-
-export async function getStatsForPostcard(publicId: string): Promise<number> {
-  const allStats = await getUmamiPageStats()
-  // The URL in Umami is usually /carte/[publicId]
-  const path = `/carte/${publicId}`
-  return allStats[path] || 0
 }
 
 export interface DetailedUmamiStats {
@@ -64,49 +57,53 @@ export interface DetailedUmamiStats {
   browsers: { x: string; y: number }[]
 }
 
+/**
+ * Stats détaillées pour une carte.
+ * Note: l'endpoint /stats de l'API Umami Cloud ignore le filtre &url=,
+ * donc on utilise uniquement /metrics?type=country et /metrics?type=browser
+ * qui filtrent correctement par URL.
+ */
 export async function getDetailedUmamiStats(publicId: string): Promise<DetailedUmamiStats | null> {
-  const UMAMI_API_KEY = process.env.UMAMI_API_KEY
-  const UMAMI_WEBSITE_ID = process.env.UMAMI_WEBSITE_ID
-  const UMAMI_API_BASE = 'https://api.umami.is/v1'
-
-  if (!UMAMI_API_KEY || !UMAMI_WEBSITE_ID) return null
+  const { apiKey, websiteId } = getUmamiEnv()
+  if (!apiKey || !websiteId) return null
 
   const path = `/carte/${publicId}`
-  const now = Date.now()
-  const startAt = now - 90 * 24 * 60 * 60 * 1000
-  const endAt = now
+  const { startAt, endAt } = getDefaultRange()
+  const encoded = encodeURIComponent(path)
 
   try {
-    // 1. Get Summary Stats (Views & Visitors)
-    const statsUrl = `${UMAMI_API_BASE}/websites/${UMAMI_WEBSITE_ID}/stats?startAt=${startAt}&endAt=${endAt}&url=${encodeURIComponent(path)}`
-    const statsRes = await fetch(statsUrl, {
-      headers: { 'Authorization': `Bearer ${UMAMI_API_KEY}` },
-      next: { revalidate: 3600 },
-    })
-    
-    // 2. Get Countries
-    const countriesUrl = `${UMAMI_API_BASE}/websites/${UMAMI_WEBSITE_ID}/metrics?type=country&startAt=${startAt}&endAt=${endAt}&url=${encodeURIComponent(path)}`
-    const countriesRes = await fetch(countriesUrl, {
-      headers: { 'Authorization': `Bearer ${UMAMI_API_KEY}` },
-      next: { revalidate: 3600 },
-    })
-
-    // 3. Get Browsers
-    const browsersUrl = `${UMAMI_API_BASE}/websites/${UMAMI_WEBSITE_ID}/metrics?type=browser&startAt=${startAt}&endAt=${endAt}&url=${encodeURIComponent(path)}`
-    const browsersRes = await fetch(browsersUrl, {
-      headers: { 'Authorization': `Bearer ${UMAMI_API_KEY}` },
-      next: { revalidate: 3600 },
-    })
-
-    const [statsData, countriesData, browsersData] = await Promise.all([
-      statsRes.ok ? statsRes.json() : { pageviews: { value: 0 }, visitors: { value: 0 } },
-      countriesRes.ok ? countriesRes.json() : [],
-      browsersRes.ok ? browsersRes.json() : [],
+    const [countriesRes, browsersRes, urlMetricsRes] = await Promise.all([
+      fetch(
+        `${UMAMI_API_BASE}/websites/${websiteId}/metrics?type=country&startAt=${startAt}&endAt=${endAt}&url=${encoded}`,
+        { headers: { Authorization: `Bearer ${apiKey}` }, next: { revalidate: 3600 } },
+      ),
+      fetch(
+        `${UMAMI_API_BASE}/websites/${websiteId}/metrics?type=browser&startAt=${startAt}&endAt=${endAt}&url=${encoded}`,
+        { headers: { Authorization: `Bearer ${apiKey}` }, next: { revalidate: 3600 } },
+      ),
+      fetch(
+        `${UMAMI_API_BASE}/websites/${websiteId}/metrics?type=url&startAt=${startAt}&endAt=${endAt}&limit=500`,
+        { headers: { Authorization: `Bearer ${apiKey}` }, next: { revalidate: 3600 } },
+      ),
     ])
 
+    const [countriesData, browsersData, urlMetrics]: [UmamiMetric[], UmamiMetric[], UmamiMetric[]] =
+      await Promise.all([
+        countriesRes.ok ? countriesRes.json() : [],
+        browsersRes.ok ? browsersRes.json() : [],
+        urlMetricsRes.ok ? urlMetricsRes.json() : [],
+      ])
+
+    // Le y du /metrics?type=url représente les visites pour cette URL
+    const urlEntry = urlMetrics.find((m) => m.x === path)
+    const visits = urlEntry?.y ?? 0
+
+    // La somme des pays = visiteurs identifiés par pays (par URL)
+    const visitors = countriesData.reduce((sum, c) => sum + c.y, 0)
+
     return {
-      views: statsData.pageviews?.value || 0,
-      visitors: statsData.visitors?.value || 0,
+      views: visits,
+      visitors,
       countries: countriesData,
       browsers: browsersData,
     }

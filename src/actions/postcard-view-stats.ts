@@ -26,9 +26,29 @@ export interface PostcardViewStats {
 }
 
 export async function getPostcardViewStats(postcardId: number): Promise<PostcardViewStats | null> {
-  await requireAdmin()
+  const user = await getCurrentUser()
+  if (!user) return null
+
   try {
     const payload = await getPayload({ config })
+
+    // Si l'utilisateur n'est pas admin, on vérifie qu'il est bien l'auteur de la carte
+    if (user.role !== 'admin') {
+      const postcard = await payload.findByID({
+        collection: 'postcards',
+        id: postcardId,
+        depth: 0,
+      })
+
+      const authorId =
+        typeof postcard.author === 'object' && postcard.author
+          ? postcard.author.id
+          : postcard.author
+      if (authorId !== user.id) {
+        return null
+      }
+    }
+
     const result = await payload.find({
       collection: 'postcard-view-events',
       where: { postcard: { equals: postcardId } },

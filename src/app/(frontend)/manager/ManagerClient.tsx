@@ -117,7 +117,7 @@ import { redeemPromoCodeForCredits } from '@/actions/leads-actions'
 import PostcardView from '@/components/postcard/PostcardView'
 import ShareContributionModal from '@/components/postcard/ShareContributionModal'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
-import EditPostcardDialog from './EditPostcardDialog'
+import EditPostcardDialog, { EditPostcardForm } from './EditPostcardDialog'
 import AlbumDialog from './AlbumDialog'
 
 export type StatusFilter = 'all' | 'published' | 'draft' | 'archived'
@@ -200,6 +200,10 @@ interface Props {
   initialCredits?: number
   userId?: string | number
   userEmail?: string | null
+  hideCredits?: boolean
+  hideStats?: boolean
+  hideToolbar?: boolean
+  limit?: number
 }
 
 export default function ManagerClient({
@@ -209,11 +213,20 @@ export default function ManagerClient({
   initialCredits,
   userId,
   userEmail,
+  hideCredits,
+  hideStats,
+  hideToolbar,
+  limit,
 }: Props) {
   const [data, setData] = useState(initialData)
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(
+    useEspaceClientActions ? 'published' : 'all',
+  )
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [selectedPostcardTab, setSelectedPostcardTab] = useState<'details' | 'stats' | 'edit'>(
+    'details',
+  )
   const [selectedPostcard, setSelectedPostcard] = useState<PayloadPostcard | null>(null)
   const [origin, setOrigin] = useState('')
 
@@ -328,18 +341,20 @@ export default function ManagerClient({
   const totalUmamiViews = Object.values(umamiStats).reduce((sum, v) => sum + v, 0)
 
   const fetchPostcards = useAgenceActions
-    ? async (filters?: { status?: StatusFilter; search?: string }) =>
+    ? async (filters?: { status?: StatusFilter; search?: string; limit?: number }) =>
         getAgencyPostcards({
           status: filters?.status !== 'all' ? filters?.status : undefined,
           search: filters?.search,
+          limit: filters?.limit ?? limit,
         })
     : useEspaceClientActions
-      ? async (filters?: { status?: StatusFilter; search?: string }) =>
+      ? async (filters?: { status?: StatusFilter; search?: string; limit?: number }) =>
           getMyPostcards({
             status: filters?.status !== 'all' ? filters?.status : undefined,
             search: filters?.search,
+            limit: filters?.limit ?? limit,
           })
-      : async (filters: any) => getAllPostcards(filters)
+      : async (filters: any) => getAllPostcards({ ...filters, limit: filters?.limit ?? limit })
   const updatePostcardFn = useAgenceActions
     ? updateAgencyPostcard
     : useEspaceClientActions
@@ -425,19 +440,19 @@ export default function ManagerClient({
     })
   }
 
-  const handleSetPublicVisibility = (id: number, isPublic: boolean) => {
+  const handleSetPublicVisibility = async (id: number, isPublic: boolean) => {
     if (!canTogglePublicVisibility) return
-    startTransition(async () => {
-      const result = await setMyPostcardPublicVisibility(id, isPublic)
-      if (result.success) {
-        refreshData()
-        if (selectedPostcard?.id === id) {
-          setSelectedPostcard((prev) => (prev ? { ...prev, isPublic } : prev))
-        }
-      } else if (result.error) {
-        alert(result.error)
+    const result = await setMyPostcardPublicVisibility(id, isPublic)
+    if (result.success) {
+      if (selectedPostcard?.id === id) {
+        setSelectedPostcard((prev) => (prev ? { ...prev, isPublic } : prev))
       }
-    })
+      startTransition(() => {
+        refreshData()
+      })
+    } else if (result.error) {
+      alert(result.error)
+    }
   }
 
   const formatDate = (date: string) => {
@@ -512,7 +527,7 @@ export default function ManagerClient({
     <div className="space-y-6">
       <>
         {/* Crédits (espace client) */}
-        {useEspaceClientActions && initialCredits != null && (
+        {!hideCredits && useEspaceClientActions && initialCredits != null && (
           <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-teal-200/60 bg-teal-50/40 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center text-teal-600">
@@ -592,7 +607,7 @@ export default function ManagerClient({
                 <label className="text-sm font-medium text-stone-700">Code promo (optionnel)</label>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Ex. COOLOS"
+                    placeholder="Votre code"
                     value={buyCreditsPromoCode}
                     onChange={(e) => setBuyCreditsPromoCode(e.target.value.toUpperCase().trim())}
                     className="font-mono uppercase flex-1"
@@ -717,131 +732,140 @@ export default function ManagerClient({
         </Dialog>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <StatCard icon={<Mail size={18} />} label="Total" value={totalCards} />
-          <StatCard icon={<Eye size={18} />} label="Vues (Int)" value={totalViews} variant="info" />
-          <StatCard
-            icon={<Share2 size={18} />}
-            label="Partages"
-            value={totalShares}
-            variant="info"
-          />
-        </div>
+        {!hideStats && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <StatCard icon={<Mail size={18} />} label="Total" value={totalCards} />
+            <StatCard
+              icon={<Eye size={18} />}
+              label="Vues (Int)"
+              value={totalViews}
+              variant="info"
+            />
+            <StatCard
+              icon={<Share2 size={18} />}
+              label="Partages"
+              value={totalShares}
+              variant="info"
+            />
+          </div>
+        )}
 
         {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center bg-card/50 backdrop-blur-md p-4 rounded-xl border border-border/50 shadow-sm">
-          <div className="relative flex-1">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              placeholder="Rechercher par nom, lieu, message..."
-              value={search}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="pl-9 bg-background/50 border-border/50 focus-visible:ring-teal-500/30"
-            />
-          </div>
+        {!hideToolbar && (
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center bg-card/50 backdrop-blur-md p-4 rounded-xl border border-border/50 shadow-sm">
+            <div className="relative flex-1">
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                placeholder="Rechercher par nom, lieu, message..."
+                value={search}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="pl-9 bg-background/50 border-border/50 focus-visible:ring-teal-500/30"
+              />
+            </div>
 
-          <div className="flex gap-1 bg-muted/30 p-1 rounded-lg border border-border/30">
-            {(['all', 'published', 'draft', 'archived'] as StatusFilter[]).map((s) => (
-              <Button
-                key={s}
-                variant={statusFilter === s ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => handleStatusFilter(s)}
-                className={cn(
-                  'px-3 text-xs h-8',
-                  statusFilter === s && 'bg-background shadow-sm hover:bg-background',
-                )}
-              >
-                {s === 'all' ? 'Tous' : statusConfig[s].label}
-              </Button>
-            ))}
-          </div>
-
-          <div className="flex gap-1 rounded-lg border border-border/30 p-1 bg-muted/30">
-            <Tooltip content="Mode grille">
-              <Button
-                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                size="icon"
-                className={cn(
-                  'h-8 w-8',
-                  viewMode === 'grid' && 'bg-background shadow-sm hover:bg-background',
-                )}
-                onClick={() => setViewMode('grid')}
-              >
-                <LayoutGrid size={16} />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Mode liste">
-              <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="icon"
-                className={cn(
-                  'h-8 w-8',
-                  viewMode === 'list' && 'bg-background shadow-sm hover:bg-background',
-                )}
-                onClick={() => setViewMode('list')}
-              >
-                <List size={16} />
-              </Button>
-            </Tooltip>
-          </div>
-
-          {viewMode === 'grid' && (
-            <div className="flex gap-1 rounded-lg border border-border/30 p-1 bg-muted/30">
-              <Tooltip content="Réduire le nombre de colonnes">
+            <div className="flex gap-1 bg-muted/30 p-1 rounded-lg border border-border/30">
+              {(['all', 'published', 'draft', 'archived'] as StatusFilter[]).map((s) => (
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:bg-muted"
-                  onClick={() => {
-                    setColumns(Math.max(1, columns - 1))
-                    setIsAuto(false)
-                  }}
-                  disabled={columns <= 1}
-                >
-                  <Minus size={14} />
-                </Button>
-              </Tooltip>
-              <Tooltip content={isAuto ? 'Passer en mode manuel' : 'Passer en mode automatique'}>
-                <Button
-                  variant="ghost"
+                  key={s}
+                  variant={statusFilter === s ? 'secondary' : 'ghost'}
                   size="sm"
+                  onClick={() => handleStatusFilter(s)}
                   className={cn(
-                    'flex items-center justify-center min-w-[40px] px-2 text-xs font-bold transition-all',
-                    isAuto
-                      ? 'text-teal-600 bg-teal-50/50 rounded-md ring-1 ring-teal-500/20 shadow-[0_0_10px_rgba(20,184,166,0.1)]'
-                      : 'text-stone-600',
+                    'px-3 text-xs h-8',
+                    statusFilter === s && 'bg-background shadow-sm hover:bg-background',
                   )}
-                  onClick={() => setIsAuto(!isAuto)}
                 >
-                  {columns}
-                  {isAuto && (
-                    <span className="ml-1 text-[8px] font-black tracking-tighter opacity-70">
-                      AUTO
-                    </span>
+                  {s === 'all' ? 'Tous' : statusConfig[s].label}
+                </Button>
+              ))}
+            </div>
+
+            <div className="flex gap-1 rounded-lg border border-border/30 p-1 bg-muted/30">
+              <Tooltip content="Mode grille">
+                <Button
+                  variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  className={cn(
+                    'h-8 w-8',
+                    viewMode === 'grid' && 'bg-background shadow-sm hover:bg-background',
                   )}
+                  onClick={() => setViewMode('grid')}
+                >
+                  <LayoutGrid size={16} />
                 </Button>
               </Tooltip>
-              <Tooltip content="Augmenter le nombre de colonnes">
+              <Tooltip content="Mode liste">
                 <Button
-                  variant="ghost"
+                  variant={viewMode === 'list' ? 'secondary' : 'ghost'}
                   size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:bg-muted"
-                  onClick={() => {
-                    setColumns(Math.min(maxAutoColumns, columns + 1))
-                    setIsAuto(false)
-                  }}
-                  disabled={columns >= maxAutoColumns}
+                  className={cn(
+                    'h-8 w-8',
+                    viewMode === 'list' && 'bg-background shadow-sm hover:bg-background',
+                  )}
+                  onClick={() => setViewMode('list')}
                 >
-                  <Plus size={14} />
+                  <List size={16} />
                 </Button>
               </Tooltip>
             </div>
-          )}
-        </div>
+
+            {viewMode === 'grid' && (
+              <div className="flex gap-1 rounded-lg border border-border/30 p-1 bg-muted/30">
+                <Tooltip content="Réduire le nombre de colonnes">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:bg-muted"
+                    onClick={() => {
+                      setColumns(Math.max(1, columns - 1))
+                      setIsAuto(false)
+                    }}
+                    disabled={columns <= 1}
+                  >
+                    <Minus size={14} />
+                  </Button>
+                </Tooltip>
+                <Tooltip content={isAuto ? 'Passer en mode manuel' : 'Passer en mode automatique'}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      'flex items-center justify-center min-w-[40px] px-2 text-xs font-bold transition-all',
+                      isAuto
+                        ? 'text-teal-600 bg-teal-50/50 rounded-md ring-1 ring-teal-500/20 shadow-[0_0_10px_rgba(20,184,166,0.1)]'
+                        : 'text-stone-600',
+                    )}
+                    onClick={() => setIsAuto(!isAuto)}
+                  >
+                    {columns}
+                    {isAuto && (
+                      <span className="ml-1 text-[8px] font-black tracking-tighter opacity-70">
+                        AUTO
+                      </span>
+                    )}
+                  </Button>
+                </Tooltip>
+                <Tooltip content="Augmenter le nombre de colonnes">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:bg-muted"
+                    onClick={() => {
+                      setColumns(Math.min(maxAutoColumns, columns + 1))
+                      setIsAuto(false)
+                    }}
+                    disabled={columns >= maxAutoColumns}
+                  >
+                    <Plus size={14} />
+                  </Button>
+                </Tooltip>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Bulk actions bar */}
         {selectedIds.size > 0 && (
@@ -936,8 +960,8 @@ export default function ManagerClient({
                 onToggleSelect={() => toggleSelect(postcard.id)}
                 onSelect={() => setSelectedPostcard(postcard)}
                 onEdit={() => {
-                  setEditingIsDuplicate(false)
-                  setEditingPostcard(postcard)
+                  setSelectedPostcardTab('edit')
+                  setSelectedPostcard(postcard)
                 }}
                 onEditAlbum={() => setAlbumPostcard(postcard)}
                 onEditInEditor={() => setEditorModalPostcard(postcard)}
@@ -997,8 +1021,8 @@ export default function ManagerClient({
                       onToggleSelect={() => toggleSelect(postcard.id)}
                       onSelect={() => setSelectedPostcard(postcard)}
                       onEdit={() => {
-                        setEditingIsDuplicate(false)
-                        setEditingPostcard(postcard)
+                        setSelectedPostcardTab('edit')
+                        setSelectedPostcard(postcard)
                       }}
                       onEditAlbum={() => setAlbumPostcard(postcard)}
                       onEditInEditor={() => setEditorModalPostcard(postcard)}
@@ -1027,15 +1051,15 @@ export default function ManagerClient({
 
         {/* Side Panel Details */}
         <DetailsSheet
+          activeTab={selectedPostcardTab}
+          onTabChange={setSelectedPostcardTab}
+          onSuccess={refreshData}
           postcard={selectedPostcard}
           viewStats={viewStats}
           umamiDetails={detailedUmamiStats}
           isOpen={!!selectedPostcard}
           onClose={() => setSelectedPostcard(null)}
-          onEdit={() => {
-            setEditingIsDuplicate(false)
-            setEditingPostcard(selectedPostcard)
-          }}
+          onEdit={() => setSelectedPostcardTab('edit')}
           onEditInEditor={
             selectedPostcard ? () => setEditorModalPostcard(selectedPostcard) : undefined
           }
@@ -1225,7 +1249,7 @@ export default function ManagerClient({
               <div className="grid gap-2">
                 <label className="text-sm font-medium text-stone-700">Code promo</label>
                 <Input
-                  placeholder="Ex. COOLOS"
+                  placeholder="Votre code"
                   value={promoCodeInput}
                   onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase().trim())}
                   className="font-mono uppercase"
@@ -1402,11 +1426,11 @@ function StatusDropdown({
       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
         <Button
           variant="ghost"
-          size="sm"
-          className="h-8 gap-1.5 text-[11px] text-muted-foreground hover:bg-muted/50 rounded-full border border-border/30"
+          size="icon"
+          className="h-6 w-6 text-muted-foreground hover:bg-muted/50 rounded-lg border border-border/30 shadow-sm"
+          title="Changer le statut"
         >
           <ArrowUpDown size={12} />
-          Statut
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -1583,115 +1607,113 @@ function GridCard({
                 </div>
               </div>
 
-              {/* Floating Actions Overlay (Visible on Hover) - Now properly inside the Front Face */}
-              <div className="absolute inset-x-0 bottom-0 z-20 h-16 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end p-3 translate-y-full group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
-                <div className="flex items-center justify-between w-full pointer-events-auto">
-                  <div className="flex gap-1.5">
-                    <Tooltip content="Ouvrir">
-                      <Link
-                        href={`/carte/${postcard.publicId}`}
-                        target="_blank"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Button
-                          size="icon"
-                          className="h-8 w-8 bg-white/20 hover:bg-white/40 text-white border border-white/30 backdrop-blur-sm rounded-lg transition-all active:scale-90"
-                        >
-                          <ExternalLink size={15} />
-                        </Button>
-                      </Link>
-                    </Tooltip>
-
-                    <Tooltip content="Infos & Stats">
+              {/* Actions Footer - Always Visible */}
+              <div className="px-2 py-1.5 border-t border-border/5 bg-white/30 backdrop-blur-md flex items-center justify-between w-full mt-auto">
+                <div className="flex gap-1">
+                  <Tooltip content="Ouvrir">
+                    <Link
+                      href={`/carte/${postcard.publicId}`}
+                      target="_blank"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Button
                         size="icon"
-                        className="h-8 w-8 bg-white/20 hover:bg-white/40 text-white border border-white/30 backdrop-blur-md rounded-lg transition-all active:scale-90"
+                        className="h-6 w-6 bg-stone-100/80 hover:bg-stone-200 text-stone-600 border border-stone-200/50 rounded-lg transition-all active:scale-90 shadow-sm"
+                      >
+                        <ExternalLink size={12} />
+                      </Button>
+                    </Link>
+                  </Tooltip>
+
+                  <Tooltip content="Modifier">
+                    <Button
+                      size="icon"
+                      className="h-6 w-6 bg-stone-100/80 hover:bg-stone-200 text-stone-600 border border-stone-200/50 rounded-lg transition-all active:scale-90 shadow-sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onEdit()
+                      }}
+                    >
+                      <Pencil size={12} />
+                    </Button>
+                  </Tooltip>
+
+                  {onEditAlbum && (
+                    <Tooltip content="Photos">
+                      <Button
+                        size="icon"
+                        className="h-6 w-6 bg-stone-100/80 hover:bg-stone-200 text-stone-600 border border-stone-200/50 rounded-lg transition-all active:scale-90 shadow-sm"
                         onClick={(e) => {
                           e.stopPropagation()
-                          onEdit()
+                          onEditAlbum()
                         }}
                       >
-                        <Pencil size={15} />
+                        <ImageIcon size={12} />
                       </Button>
                     </Tooltip>
+                  )}
 
-                    {onEditAlbum && (
-                      <Tooltip content="Photos">
-                        <Button
-                          size="icon"
-                          className="h-8 w-8 bg-white/20 hover:bg-white/40 text-white border border-white/30 backdrop-blur-md rounded-lg transition-all active:scale-90"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onEditAlbum()
-                          }}
-                        >
-                          <ImageIcon size={15} />
-                        </Button>
-                      </Tooltip>
-                    )}
-
-                    {onEditInEditor && (
-                      <Tooltip content="Design">
-                        <Button
-                          size="icon"
-                          className="h-8 w-8 bg-white/20 hover:bg-white/40 text-white border border-white/30 backdrop-blur-md rounded-lg transition-all active:scale-90"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onEditInEditor()
-                          }}
-                        >
-                          <PenTool size={15} />
-                        </Button>
-                      </Tooltip>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <StatusDropdown
-                      currentStatus={postcard.status || 'draft'}
-                      onUpdate={onUpdateStatus}
-                      postcardId={postcard.id}
-                    />
-
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          size="icon"
-                          className="h-8 w-8 bg-white/20 hover:bg-white/40 text-white border border-white/30 backdrop-blur-md rounded-lg transition-all"
-                        >
-                          <Menu size={15} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="w-44 p-1 backdrop-blur-xl bg-white/95 border-border/40 shadow-2xl"
+                  {onEditInEditor && (
+                    <Tooltip content="Design">
+                      <Button
+                        size="icon"
+                        className="h-6 w-6 bg-stone-100/80 hover:bg-stone-200 text-stone-600 border border-stone-200/50 rounded-lg transition-all active:scale-90 shadow-sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onEditInEditor()
+                        }}
                       >
-                        {onDuplicate && (
-                          <DropdownMenuItem
-                            onClick={onDuplicate}
-                            className="gap-2.5 py-2.5 rounded-lg"
-                          >
-                            <Copy size={14} className="text-stone-500" /> Dupliquer
-                          </DropdownMenuItem>
-                        )}
-                        {onOpenShareContribution && postcard.contributionToken && (
-                          <DropdownMenuItem
-                            onClick={onOpenShareContribution}
-                            className="gap-2.5 py-2.5 rounded-lg text-purple-600"
-                          >
-                            <Users size={14} /> Contribution
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSeparator className="bg-stone-100" />
+                        <PenTool size={12} />
+                      </Button>
+                    </Tooltip>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <StatusDropdown
+                    currentStatus={postcard.status || 'draft'}
+                    onUpdate={onUpdateStatus}
+                    postcardId={postcard.id}
+                  />
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        size="icon"
+                        className="h-6 w-6 bg-stone-100/80 hover:bg-stone-200 text-stone-600 border border-stone-200/50 rounded-lg transition-all shadow-sm"
+                      >
+                        <Menu size={12} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="w-44 p-1 backdrop-blur-xl bg-white/95 border-border/40 shadow-2xl"
+                    >
+                      {onDuplicate && (
                         <DropdownMenuItem
-                          onClick={() => onDelete(postcard.id)}
-                          className="gap-2.5 py-2.5 rounded-lg text-rose-600 focus:bg-rose-50"
+                          onClick={onDuplicate}
+                          className="gap-2.5 py-2.5 rounded-lg"
                         >
-                          <Trash2 size={14} /> Supprimer
+                          <Copy size={14} className="text-stone-500" /> Dupliquer
                         </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+                      )}
+                      {onOpenShareContribution && postcard.contributionToken && (
+                        <DropdownMenuItem
+                          onClick={onOpenShareContribution}
+                          className="gap-2.5 py-2.5 rounded-lg text-purple-600"
+                        >
+                          <Users size={14} /> Contribution
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator className="bg-stone-100" />
+                      <DropdownMenuItem
+                        onClick={() => onDelete(postcard.id)}
+                        className="gap-2.5 py-2.5 rounded-lg text-rose-600 focus:bg-rose-50"
+                      >
+                        <Trash2 size={14} /> Supprimer
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </Card>
@@ -1938,7 +1960,7 @@ function DetailsSheet(props: {
   onEdit: () => void
   onEditInEditor?: () => void
   onDuplicate?: (id: number) => void
-  onSetPublicVisibility?: (id: number, isPublic: boolean) => void
+  onSetPublicVisibility?: (id: number, isPublic: boolean) => Promise<void>
   onUpdateStatus: (id: number, status: 'published' | 'draft' | 'archived') => void
   onDelete: (id: number) => void
   formatDate: (d: string) => string
@@ -1949,8 +1971,14 @@ function DetailsSheet(props: {
   onOpenShareContribution?: () => void
   umamiViews?: number
   umamiDetails?: DetailedUmamiStats | null
+  activeTab: 'details' | 'stats' | 'edit'
+  onTabChange: (tab: 'details' | 'stats' | 'edit') => void
+  onSuccess: () => void
 }) {
   const {
+    activeTab,
+    onTabChange,
+    onSuccess,
     postcard,
     viewStats,
     isOpen,
@@ -1970,7 +1998,6 @@ function DetailsSheet(props: {
     umamiViews,
     umamiDetails,
   } = props
-  const [activePanelTab, setActivePanelTab] = useState<'details' | 'stats'>('details')
   const [trackingDialogOpen, setTrackingDialogOpen] = useState(false)
   const [emailDialogOpen, setEmailDialogOpen] = useState(false)
   const [emailDialogTracking, setEmailDialogTracking] = useState<PostcardTrackingLink | null>(null)
@@ -1990,10 +2017,7 @@ function DetailsSheet(props: {
     recipientLastName: '',
     description: '',
   } as CreateTrackingLinkData)
-
-  useEffect(() => {
-    setActivePanelTab('details')
-  }, [postcard?.id])
+  const [isTogglingPublic, setIsTogglingPublic] = useState(false)
 
   if (!postcard) return null
   const frontendPostcard = mapToFrontend(postcard)
@@ -2012,6 +2036,30 @@ function DetailsSheet(props: {
               </SheetDescription>
             </div>
             <div className="flex items-center gap-3">
+              {onSetPublicVisibility && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isTogglingPublic}
+                  onClick={async () => {
+                    setIsTogglingPublic(true)
+                    try {
+                      await onSetPublicVisibility(postcard.id, !(postcard.isPublic ?? true))
+                    } finally {
+                      setIsTogglingPublic(false)
+                    }
+                  }}
+                  className={cn(
+                    'h-7 px-2.5 rounded-full border-border/50 transition-colors text-xs font-medium gap-1.5',
+                    postcard.isPublic
+                      ? 'text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100'
+                      : 'text-stone-600 bg-stone-50 border-stone-200 hover:bg-stone-100',
+                  )}
+                >
+                  {isTogglingPublic && <Loader2 size={12} className="animate-spin" />}
+                  {postcard.isPublic ? '🌍 Publique' : '🔒 Privée'}
+                </Button>
+              )}
               <StatusBadge status={postcard.status || 'draft'} />
             </div>
           </div>
@@ -2019,10 +2067,10 @@ function DetailsSheet(props: {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setActivePanelTab('details')}
+              onClick={() => onTabChange('details')}
               className={cn(
                 'flex-1 h-9 rounded-lg px-3 text-sm font-semibold transition-all',
-                activePanelTab === 'details'
+                activeTab === 'details'
                   ? 'bg-background shadow-md text-teal-700'
                   : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
               )}
@@ -2032,10 +2080,24 @@ function DetailsSheet(props: {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setActivePanelTab('stats')}
+              onClick={() => onTabChange('edit')}
               className={cn(
                 'flex-1 h-9 rounded-lg px-3 text-sm font-semibold transition-all flex items-center gap-2 justify-center',
-                activePanelTab === 'stats'
+                activeTab === 'edit'
+                  ? 'bg-background shadow-md text-teal-700'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
+              )}
+            >
+              <Pencil size={16} />
+              Modifier
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onTabChange('stats')}
+              className={cn(
+                'flex-1 h-9 rounded-lg px-3 text-sm font-semibold transition-all flex items-center gap-2 justify-center',
+                activeTab === 'stats'
                   ? 'bg-background shadow-md text-teal-700'
                   : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
               )}
@@ -2048,14 +2110,16 @@ function DetailsSheet(props: {
 
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="p-4 sm:p-6 space-y-6">
-            {activePanelTab === 'details' ? (
+            {activeTab === 'details' && (
               <>
                 {/* Preview Section */}
                 <div className="bg-stone-50/50 rounded-2xl p-0 border border-stone-200/50 flex justify-center shadow-inner overflow-hidden relative group h-40 sm:h-52 items-center">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,128,128,0.05),transparent)] pointer-events-none" />
-                  <div className="transform scale-[0.4] sm:scale-[0.5] origin-center transition-transform hover:scale-[0.55] duration-700">
-                    <PostcardView postcard={frontendPostcard} isPreview />
-                  </div>
+                  <img
+                    src={frontendPostcard.frontImage}
+                    alt="Face avant"
+                    className="h-full w-full object-contain p-4 transition-transform hover:scale-[1.05] duration-700 relative z-10"
+                  />
                 </div>
 
                 {/* Metadatas Section */}
@@ -2261,7 +2325,9 @@ function DetailsSheet(props: {
                   </div>
                 )}
               </>
-            ) : (
+            )}
+
+            {activeTab === 'stats' && (
               <div className="space-y-6">
                 <div className="flex justify-end">
                   <Link href={`/${useEspaceClientActions ? 'espace-client' : 'manager'}/stats`}>
@@ -2452,6 +2518,16 @@ function DetailsSheet(props: {
                 </div>
               </div>
             )}
+
+            {activeTab === 'edit' && (
+              <EditPostcardForm
+                postcard={postcard}
+                isOpen={true}
+                onClose={onClose}
+                onSuccess={onSuccess}
+                className="bg-transparent"
+              />
+            )}
           </div>
         </div>
 
@@ -2535,22 +2611,6 @@ function DetailsSheet(props: {
                   title="Dupliquer la carte"
                 >
                   <Copy size={16} />
-                </Button>
-              )}
-              {onSetPublicVisibility && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onSetPublicVisibility(postcard.id, !(postcard.isPublic ?? true))}
-                  className={cn(
-                    'h-10 px-3 rounded-xl border-border/50 transition-colors text-xs',
-                    postcard.isPublic
-                      ? 'text-emerald-700 hover:bg-emerald-50'
-                      : 'text-stone-600 hover:bg-stone-50',
-                  )}
-                  title={postcard.isPublic ? 'Rendre la carte privee' : 'Rendre la carte publique'}
-                >
-                  {postcard.isPublic ? 'Publique' : 'Privee'}
                 </Button>
               )}
 

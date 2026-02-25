@@ -37,9 +37,11 @@ interface Stats {
 export function StatsOverview({
   stats,
   viewStats,
+  isClientView = false,
 }: {
   stats: Stats
   viewStats?: PostcardViewStats | null
+  isClientView?: boolean
 }) {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -59,7 +61,12 @@ export function StatsOverview({
       </div>
 
       {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div
+        className={cn(
+          'grid gap-4',
+          isClientView ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
+        )}
+      >
         <StatCard
           icon={<Mail size={22} />}
           label="Cartes Créées"
@@ -67,20 +74,24 @@ export function StatsOverview({
           trend="+12% ce mois"
           variant="teal"
         />
-        <StatCard
-          icon={<Users size={22} />}
-          label="Utilisateurs"
-          value={stats.totalUsers}
-          trend="+5nouveaux"
-          variant="blue"
-        />
-        <StatCard
-          icon={<Building2 size={22} />}
-          label="Agences"
-          value={stats.totalAgencies}
-          trend="Partenaires"
-          variant="orange"
-        />
+        {!isClientView && (
+          <StatCard
+            icon={<Users size={22} />}
+            label="Utilisateurs"
+            value={stats.totalUsers}
+            trend="+5nouveaux"
+            variant="blue"
+          />
+        )}
+        {!isClientView && (
+          <StatCard
+            icon={<Building2 size={22} />}
+            label="Agences"
+            value={stats.totalAgencies}
+            trend="Partenaires"
+            variant="orange"
+          />
+        )}
         <StatCard
           icon={<CreditCard size={22} />}
           label="Premium"
@@ -308,108 +319,114 @@ export function StatsOverview({
       )}
 
       {/* Tracking & Marketing Info */}
-      <Card className="border-border/50 bg-card/60 backdrop-blur-md shadow-sm overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-border/30 bg-muted/20 pb-4">
-          <CardTitle className="text-sm font-bold uppercase tracking-widest text-stone-500 flex items-center gap-2">
-            <TrendingUp size={16} className="text-blue-500" />
-            Tracking & Marketing
-          </CardTitle>
-          <Badge variant="outline" className="bg-background/50 border-border/50 shadow-none">
-            Configuration
-          </Badge>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Google Analytics */}
-            <div className="space-y-4 p-4 rounded-xl bg-white/40 border border-border/40 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#F9AB00] flex items-center justify-center text-white">
-                    <Activity size={18} />
+      {!isClientView && (
+        <Card className="border-border/50 bg-card/60 backdrop-blur-md shadow-sm overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border/30 bg-muted/20 pb-4">
+            <CardTitle className="text-sm font-bold uppercase tracking-widest text-stone-500 flex items-center gap-2">
+              <TrendingUp size={16} className="text-blue-500" />
+              Tracking & Marketing
+            </CardTitle>
+            <Badge variant="outline" className="bg-background/50 border-border/50 shadow-none">
+              Configuration
+            </Badge>
+          </CardHeader>
+          {!isClientView && (
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Google Analytics */}
+                <div className="space-y-4 p-4 rounded-xl bg-white/40 border border-border/40 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#F9AB00] flex items-center justify-center text-white">
+                        <Activity size={18} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-stone-800 leading-tight">
+                          Google Analytics 4
+                        </h4>
+                        <p className="text-[10px] uppercase font-bold text-stone-400 tracking-wider">
+                          Trafic & Audience
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none">
+                      Actif
+                    </Badge>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-stone-800 leading-tight">Google Analytics 4</h4>
-                    <p className="text-[10px] uppercase font-bold text-stone-400 tracking-wider">
-                      Trafic & Audience
-                    </p>
+                  <div className="space-y-1">
+                    <p className="text-xs text-stone-500">ID de mesure :</p>
+                    <code className="block p-2 bg-stone-100/80 rounded border border-stone-200 text-sm font-mono text-stone-800">
+                      G-D0R51ZLTS9
+                    </code>
                   </div>
+                  <p className="text-xs text-stone-500 leading-relaxed">
+                    Analyse le comportement des utilisateurs, les sources de trafic et les
+                    performances des pages.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-stone-200 hover:bg-stone-50 text-stone-600 gap-2 font-bold"
+                    asChild
+                  >
+                    <a
+                      href="https://analytics.google.com/analytics/web/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Ouvrir le Dashboard GA4 <ExternalLink size={14} />
+                    </a>
+                  </Button>
                 </div>
-                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none">
-                  Actif
-                </Badge>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs text-stone-500">ID de mesure :</p>
-                <code className="block p-2 bg-stone-100/80 rounded border border-stone-200 text-sm font-mono text-stone-800">
-                  G-D0R51ZLTS9
-                </code>
-              </div>
-              <p className="text-xs text-stone-500 leading-relaxed">
-                Analyse le comportement des utilisateurs, les sources de trafic et les performances
-                des pages.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full border-stone-200 hover:bg-stone-50 text-stone-600 gap-2 font-bold"
-                asChild
-              >
-                <a
-                  href="https://analytics.google.com/analytics/web/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Ouvrir le Dashboard GA4 <ExternalLink size={14} />
-                </a>
-              </Button>
-            </div>
 
-            {/* Facebook Pixel */}
-            <div className="space-y-4 p-4 rounded-xl bg-white/40 border border-border/40 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#0866FF] flex items-center justify-center text-white">
-                    <Share2 size={18} />
+                {/* Facebook Pixel */}
+                <div className="space-y-4 p-4 rounded-xl bg-white/40 border border-border/40 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#0866FF] flex items-center justify-center text-white">
+                        <Share2 size={18} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-stone-800 leading-tight">Meta Pixel</h4>
+                        <p className="text-[10px] uppercase font-bold text-stone-400 tracking-wider">
+                          Conversion & Ads
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none">
+                      Actif
+                    </Badge>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-stone-800 leading-tight">Meta Pixel</h4>
-                    <p className="text-[10px] uppercase font-bold text-stone-400 tracking-wider">
-                      Conversion & Ads
-                    </p>
+                  <div className="space-y-1">
+                    <p className="text-xs text-stone-500">ID du Pixel :</p>
+                    <code className="block p-2 bg-stone-100/80 rounded border border-stone-200 text-sm font-mono text-stone-800">
+                      {process.env.NEXT_PUBLIC_META_PIXEL_ID || 'Non configuré'}
+                    </code>
                   </div>
+                  <p className="text-xs text-stone-500 leading-relaxed">
+                    Suit les conversions et permet le reciblage publicitaire (retargeting) sur
+                    Facebook et Instagram.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-stone-200 hover:bg-stone-50 text-stone-600 gap-2 font-bold"
+                    asChild
+                  >
+                    <a
+                      href="https://adsmanager.facebook.com/events_manager2/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Ouvrir Events Manager <ExternalLink size={14} />
+                    </a>
+                  </Button>
                 </div>
-                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none">
-                  Actif
-                </Badge>
               </div>
-              <div className="space-y-1">
-                <p className="text-xs text-stone-500">ID du Pixel :</p>
-                <code className="block p-2 bg-stone-100/80 rounded border border-stone-200 text-sm font-mono text-stone-800">
-                  {process.env.NEXT_PUBLIC_META_PIXEL_ID || 'Non configuré'}
-                </code>
-              </div>
-              <p className="text-xs text-stone-500 leading-relaxed">
-                Suit les conversions et permet le reciblage publicitaire (retargeting) sur Facebook
-                et Instagram.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full border-stone-200 hover:bg-stone-50 text-stone-600 gap-2 font-bold"
-                asChild
-              >
-                <a
-                  href="https://adsmanager.facebook.com/events_manager2/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Ouvrir Events Manager <ExternalLink size={14} />
-                </a>
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          )}
+        </Card>
+      )}
     </div>
   )
 }

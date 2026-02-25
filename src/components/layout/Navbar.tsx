@@ -75,6 +75,12 @@ const dropdownFonctionnalites = [
 
 const dropdownDecouvrir = [
   {
+    href: '/cas-d-usage',
+    icon: Star,
+    title: "Cas d'utilisation",
+    description: 'Inspiration et exemples concrets',
+  },
+  {
     href: '/galerie',
     icon: ImageIcon,
     title: 'Galerie',
@@ -654,6 +660,19 @@ export const Navbar = () => {
                   >
                     <CreditCard className="w-6 h-6 text-pink-500 flex-shrink-0" />
                     Tarifs
+                  </Link>
+                  <Link
+                    href="/cas-d-usage"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      'flex items-center gap-4 px-4 py-3 rounded-2xl transition-colors font-bold text-[15px]',
+                      pathname === '/cas-d-usage'
+                        ? 'bg-pink-50 text-pink-900'
+                        : 'hover:bg-pink-50/80 text-stone-900',
+                    )}
+                  >
+                    <Star className="w-6 h-6 text-pink-500 flex-shrink-0" />
+                    Cas d'utilisation
                   </Link>
                   <Link
                     href="/galerie"

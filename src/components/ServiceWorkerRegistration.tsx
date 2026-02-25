@@ -22,8 +22,11 @@ export function ServiceWorkerRegistration() {
     }
     document.addEventListener('visibilitychange', onVisibilityChange)
 
+    const hadController = !!navigator.serviceWorker.controller
     const onControllerChange = () => {
-      window.location.reload()
+      if (hadController) {
+        window.location.reload()
+      }
     }
     navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
 

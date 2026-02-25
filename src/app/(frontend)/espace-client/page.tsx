@@ -1,13 +1,11 @@
 import React from 'react'
 import { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
-import { Mail, Plus, ArrowRight, Sparkles, ExternalLink, Calendar, MapPin } from 'lucide-react'
+import { Mail, Plus, ArrowRight, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getCurrentUser } from '@/lib/auth'
 import { getMyPostcards } from '@/actions/espace-client-actions'
-import { getOptimizedImageUrl } from '@/lib/image-processing'
-import type { Postcard, Media } from '@/payload-types'
+import ManagerClient from '@/app/(frontend)/manager/ManagerClient'
 
 export const metadata: Metadata = {
   title: 'Mon espace',
@@ -16,27 +14,11 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic'
 
-function isMedia(m: unknown): m is Media {
-  return !!m && typeof m === 'object' && 'url' in m && typeof (m as Media).url === 'string'
-}
-
-function getFrontImageUrl(postcard: Postcard): string {
-  if (postcard.frontImageURL) return postcard.frontImageURL
-  if (isMedia(postcard.frontImage) && postcard.frontImage?.url) return postcard.frontImage.url
-  return 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'
-}
-
-const statusLabels: Record<string, string> = {
-  published: 'Publiée',
-  draft: 'Brouillon',
-  archived: 'Archivée',
-}
-
 export default async function EspaceClientDashboardPage() {
   const user = await getCurrentUser()
   if (!user) return null
 
-  const { docs: lastPostcards } = await getMyPostcards({ limit: 6, sort: '-createdAt' })
+  const result = await getMyPostcards({ limit: 6, sort: '-createdAt' })
 
   return (
     <div className="space-y-8">
@@ -48,8 +30,8 @@ export default async function EspaceClientDashboardPage() {
           Bienvenue dans votre espace client. Gérez vos cartes postales et votre compte.
         </p>
         <p className="mt-3 text-sm text-stone-500">
-          <span className="font-medium text-stone-700">{user.credits ?? 0} crédits</span>
-          {' '}disponibles —{' '}
+          <span className="font-medium text-stone-700">{user.credits ?? 0} crédits</span>{' '}
+          disponibles —{' '}
           <Link
             href="/espace-client/credits"
             className="font-medium text-teal-600 hover:text-teal-700 underline underline-offset-2"
@@ -59,7 +41,7 @@ export default async function EspaceClientDashboardPage() {
         </p>
       </div>
 
-      {lastPostcards.length > 0 && (
+      {result.docs.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-stone-800">Mes dernières cartes</h2>
@@ -70,56 +52,16 @@ export default async function EspaceClientDashboardPage() {
               Voir toutes les cartes <ArrowRight size={16} />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {lastPostcards.map((card) => {
-              const imageUrl = getOptimizedImageUrl(getFrontImageUrl(card), { width: 400 })
-              const status = card.status || 'draft'
-              return (
-                <Link
-                  key={card.id}
-                  href={`/carte/${card.publicId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group block rounded-xl border border-stone-200 bg-white overflow-hidden shadow-sm hover:shadow-md hover:border-teal-200 transition-all"
-                >
-                  <div className="relative aspect-[4/3] bg-stone-100 overflow-hidden">
-                    <Image
-                      src={imageUrl}
-                      alt={card.recipientName || card.senderName || 'Carte postale'}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    />
-                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-medium bg-white/90 text-stone-600 border border-stone-200">
-                      {statusLabels[status] ?? status}
-                    </span>
-                  </div>
-                  <div className="p-3 space-y-1">
-                    <p className="text-sm font-semibold text-stone-800 truncate">
-                      {card.recipientName || 'Sans destinataire'}
-                    </p>
-                    <p className="text-xs text-stone-500 flex items-center gap-1">
-                      <Calendar size={12} className="shrink-0" />
-                      {new Date(card.date).toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </p>
-                    {card.location && (
-                      <p className="text-xs text-stone-500 flex items-center gap-1 truncate">
-                        <MapPin size={12} className="shrink-0" />
-                        {card.location}
-                      </p>
-                    )}
-                    <span className="inline-flex items-center gap-1 text-xs text-teal-600 font-medium mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      Voir la carte <ExternalLink size={12} />
-                    </span>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
+          <ManagerClient
+            initialData={result}
+            useEspaceClientActions
+            hideCredits
+            hideStats
+            hideToolbar
+            limit={6}
+            userId={user.id}
+            userEmail={user.email}
+          />
         </div>
       )}
 
