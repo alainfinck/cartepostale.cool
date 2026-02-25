@@ -1582,6 +1582,118 @@ function GridCard({
                   </Tooltip>
                 </div>
               </div>
+
+              {/* Floating Actions Overlay (Visible on Hover) - Now properly inside the Front Face */}
+              <div className="absolute inset-x-0 bottom-0 z-20 h-16 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end p-3 translate-y-full group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
+                <div className="flex items-center justify-between w-full pointer-events-auto">
+                  <div className="flex gap-1.5">
+                    <Tooltip content="Ouvrir">
+                      <Link
+                        href={`/carte/${postcard.publicId}`}
+                        target="_blank"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          size="icon"
+                          className="h-8 w-8 bg-white/20 hover:bg-white/40 text-white border border-white/30 backdrop-blur-sm rounded-lg transition-all active:scale-90"
+                        >
+                          <ExternalLink size={15} />
+                        </Button>
+                      </Link>
+                    </Tooltip>
+
+                    <Tooltip content="Infos & Stats">
+                      <Button
+                        size="icon"
+                        className="h-8 w-8 bg-white/20 hover:bg-white/40 text-white border border-white/30 backdrop-blur-md rounded-lg transition-all active:scale-90"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onEdit()
+                        }}
+                      >
+                        <Pencil size={15} />
+                      </Button>
+                    </Tooltip>
+
+                    {onEditAlbum && (
+                      <Tooltip content="Photos">
+                        <Button
+                          size="icon"
+                          className="h-8 w-8 bg-white/20 hover:bg-white/40 text-white border border-white/30 backdrop-blur-md rounded-lg transition-all active:scale-90"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onEditAlbum()
+                          }}
+                        >
+                          <ImageIcon size={15} />
+                        </Button>
+                      </Tooltip>
+                    )}
+
+                    {onEditInEditor && (
+                      <Tooltip content="Design">
+                        <Button
+                          size="icon"
+                          className="h-8 w-8 bg-white/20 hover:bg-white/40 text-white border border-white/30 backdrop-blur-md rounded-lg transition-all active:scale-90"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onEditInEditor()
+                          }}
+                        >
+                          <PenTool size={15} />
+                        </Button>
+                      </Tooltip>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <StatusDropdown
+                      currentStatus={postcard.status || 'draft'}
+                      onUpdate={onUpdateStatus}
+                      postcardId={postcard.id}
+                    />
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          size="icon"
+                          className="h-8 w-8 bg-white/20 hover:bg-white/40 text-white border border-white/30 backdrop-blur-md rounded-lg transition-all"
+                        >
+                          <Menu size={15} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="w-44 p-1 backdrop-blur-xl bg-white/95 border-border/40 shadow-2xl"
+                      >
+                        {onDuplicate && (
+                          <DropdownMenuItem
+                            onClick={onDuplicate}
+                            className="gap-2.5 py-2.5 rounded-lg"
+                          >
+                            <Copy size={14} className="text-stone-500" /> Dupliquer
+                          </DropdownMenuItem>
+                        )}
+                        {onOpenShareContribution && postcard.contributionToken && (
+                          <DropdownMenuItem
+                            onClick={onOpenShareContribution}
+                            className="gap-2.5 py-2.5 rounded-lg text-purple-600"
+                          >
+                            <Users size={14} /> Contribution
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator className="bg-stone-100" />
+                        <DropdownMenuItem
+                          onClick={() => onDelete(postcard.id)}
+                          className="gap-2.5 py-2.5 rounded-lg text-rose-600 focus:bg-rose-50"
+                        >
+                          <Trash2 size={14} /> Supprimer
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </div>
             </Card>
           </div>
 
@@ -1612,101 +1724,6 @@ function GridCard({
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Actions underneath the card */}
-      <div
-        className="flex items-center justify-between gap-1 px-1 h-9"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center gap-1">
-          <Tooltip content="Ouvrir">
-            <Link href={`/carte/${postcard.publicId}`} target="_blank">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-stone-500 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all"
-              >
-                <ExternalLink size={14} />
-              </Button>
-            </Link>
-          </Tooltip>
-          <Tooltip content="Infos">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onEdit}
-              className="h-8 w-8 text-stone-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
-            >
-              <Pencil size={14} />
-            </Button>
-          </Tooltip>
-          {onEditAlbum && (
-            <Tooltip content="Photos">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onEditAlbum}
-                className="h-8 w-8 text-stone-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-              >
-                <ImageIcon size={14} />
-              </Button>
-            </Tooltip>
-          )}
-          {onEditInEditor && (
-            <Tooltip content="Design">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onEditInEditor}
-                className="h-8 w-8 text-stone-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
-              >
-                <PenTool size={14} />
-              </Button>
-            </Tooltip>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1">
-          <StatusDropdown
-            currentStatus={postcard.status || 'draft'}
-            onUpdate={onUpdateStatus}
-            postcardId={postcard.id}
-          />
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-stone-500 hover:bg-stone-100 rounded-lg transition-all"
-              >
-                <Menu size={14} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40" onClick={(e) => e.stopPropagation()}>
-              {onDuplicate && (
-                <DropdownMenuItem onClick={onDuplicate} className="gap-2">
-                  <Copy size={14} /> Dupliquer
-                </DropdownMenuItem>
-              )}
-              {onOpenShareContribution && postcard.contributionToken && (
-                <DropdownMenuItem
-                  onClick={onOpenShareContribution}
-                  className="gap-2 text-purple-600"
-                >
-                  <Users size={14} /> Contribution
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem
-                onClick={() => onDelete(postcard.id)}
-                className="gap-2 text-rose-600"
-              >
-                <Trash2 size={14} /> Supprimer
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </div>
     </div>
