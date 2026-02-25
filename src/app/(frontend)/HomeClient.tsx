@@ -18,13 +18,22 @@ import {
   BookOpen,
   Video,
   Mic,
-  Map,
+  Map as MapIcon,
   Smartphone,
   Heart,
   Eye,
   Code,
   Copy,
   Check,
+  MessageCircle,
+  Facebook,
+  Instagram,
+  Mail,
+  Clock,
+  User,
+  Settings,
+  ShieldCheck,
+  Zap,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import PostcardView from '@/components/postcard/PostcardView'
@@ -368,7 +377,7 @@ export default function Home() {
 
             <div className="group flex flex-col p-8 md:p-10 rounded-3xl bg-white border border-stone-100 shadow-lg shadow-stone-200/30 hover:shadow-xl hover:shadow-pink-200/20 hover:border-pink-200/60 transition-all duration-300 hover:-translate-y-1">
               <div className="shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Map className="w-8 h-8 text-pink-600" />
+                <MapIcon className="w-8 h-8 text-pink-600" />
               </div>
               <h3 className="text-xl font-bold text-stone-800 mb-3">Carte Interactive</h3>
               <p className="text-stone-600 text-base leading-relaxed">
@@ -442,42 +451,90 @@ export default function Home() {
       {/* Section Partage social — accroche + image + partage */}
       <section
         id="partage-social"
-        className="relative py-20 md:py-28 overflow-hidden bg-gradient-to-b from-[#faf8f5] via-pink-50/40 to-purple-50/50 border-y border-stone-100"
+        className="relative py-24 md:py-32 overflow-hidden bg-white border-y border-stone-100"
       >
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-72 h-72 bg-pink-200/30 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-200/25 rounded-full blur-3xl" />
+          <div className="absolute top-[10%] right-[10%] w-[30%] h-[30%] bg-pink-100/40 rounded-full blur-[100px]" />
+          <div className="absolute bottom-[10%] left-[10%] w-[30%] h-[30%] bg-purple-100/40 rounded-full blur-[100px]" />
         </div>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <div className="text-center lg:text-left order-2 lg:order-1">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur border border-pink-200/60 text-pink-700 text-sm font-bold mb-6 shadow-sm">
-                <Share2 size={16} />
-                <span>Partagez l&apos;aventure</span>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pink-50 border border-pink-100 text-pink-700 text-sm font-bold mb-6">
+              <Share2 size={16} />
+              <span>Partage Simplifié</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold text-stone-900 mb-6">
+              Partagez l&apos;émotion, <span className="text-gradient-hero">partout.</span>
+            </h2>
+            <p className="text-stone-500 text-lg md:text-xl max-w-2xl mx-auto">
+              Une fois votre carte créée, un clic suffit pour l&apos;envoyer à tous ceux qui
+              comptent pour vous.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6 mb-16">
+            {[
+              {
+                name: 'WhatsApp',
+                Icon: MessageCircle,
+                iconColor: 'text-[#25D366]',
+                color: 'bg-[#25D366]/10',
+              },
+              {
+                name: 'Facebook',
+                Icon: Facebook,
+                iconColor: 'text-[#1877F2]',
+                color: 'bg-[#1877F2]/10',
+              },
+              {
+                name: 'Instagram',
+                Icon: Instagram,
+                iconColor: 'text-[#E4405F]',
+                color: 'bg-[#E4405F]/10',
+              },
+              { name: 'SMS', Icon: Smartphone, iconColor: 'text-stone-600', color: 'bg-stone-100' },
+              { name: 'Email', Icon: Mail, iconColor: 'text-[#EA4335]', color: 'bg-[#EA4335]/10' },
+            ].map((social, idx) => (
+              <div
+                key={idx}
+                className="group flex flex-col items-center p-8 rounded-[32px] bg-white border border-stone-100 hover:border-pink-200 hover:shadow-xl hover:shadow-pink-900/5 transition-all duration-300"
+              >
+                <div
+                  className={`w-16 h-16 ${social.color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}
+                >
+                  <social.Icon size={32} className={social.iconColor} />
+                </div>
+                <span className="font-bold text-stone-800">{social.name}</span>
               </div>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-stone-800 mb-5 leading-tight">
-                Une carte, un sourire, un souvenir&nbsp;! ✨
-              </h2>
-              <p className="text-stone-600 text-lg md:text-xl leading-relaxed mb-6 max-w-xl mx-auto lg:mx-0">
-                Vous aimez CartePostale.cool ? Parlez-en autour de vous&nbsp;! 📮 Faites découvrir à
-                vos proches la magie des cartes postales virtuelles — rapides, personnelles et
-                pleines d&apos;émotions. 💌
+            ))}
+          </div>
+
+          <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-[40px] p-12 flex flex-col lg:flex-row items-center gap-12 border border-pink-100/50">
+            <div className="flex-1 text-center lg:text-left">
+              <h3 className="text-2xl font-bold text-stone-900 mb-4">
+                Une expérience fluide pour vos proches
+              </h3>
+              <p className="text-stone-600 mb-8 max-w-lg">
+                Pas d&apos;application à installer. Vos destinataires reçoivent un lien sécurisé et
+                découvrent votre carte directement dans leur navigateur, avec tous les effets et
+                surprises.
               </p>
-              <p className="text-stone-500 text-base mb-8 max-w-lg mx-auto lg:mx-0">
-                Un clic pour créer, un clic pour partager. C&apos;est ça, la vie cool. 🌍❤️
-              </p>
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
                 <ShareHomeButtons />
               </div>
             </div>
-            <div className="order-1 lg:order-2 flex justify-center">
-              <div className="relative group">
-                <div className="absolute -inset-2 bg-gradient-to-r from-pink-400/20 to-purple-400/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
+            <div className="flex-1 relative">
+              <div className="relative z-10 animate-float">
                 <img
                   src="/media/image1-cartepostale.cool.jpeg"
-                  alt="CartePostale.cool - Créez et partagez vos cartes postales virtuelles"
-                  className="relative w-full max-w-md rounded-2xl shadow-xl shadow-stone-300/40 border border-stone-200/80 object-cover aspect-[4/3] group-hover:scale-[1.02] transition-transform duration-500"
+                  alt="Aperçu partage"
+                  className="rounded-3xl shadow-2xl border-8 border-white w-full max-w-md mx-auto"
                 />
+              </div>
+              <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl shadow-xl flex items-center gap-3 z-20">
+                <Zap className="text-amber-500" size={20} />
+                <span className="text-sm font-bold">Envoi Instantané</span>
               </div>
             </div>
           </div>
@@ -574,18 +631,42 @@ export default function Home() {
                 </span>
               </h2>
               <p className="text-xl text-teal-100/70 leading-relaxed max-w-2xl font-light">
-                Agences de tourisme, hôtels, restaurants ou entreprises : offrez une expérience
-                mémorable à vos clients tout en boostant votre visibilité organique.
+                Agences de tourisme, hôtels, restaurants ou organisateurs d&apos;événements : offrez
+                une expérience mémorable et un outil marketing puissant pour fidéliser vos clients.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 text-left">
+                <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                  <div className="p-2 bg-orange-500/20 rounded-lg text-orange-400">
+                    <Heart size={20} />
+                  </div>
+                  <div>
+                    <div className="text-white font-bold">Remerciements</div>
+                    <div className="text-teal-100/50 text-xs">
+                      Une attention unique après un séjour ou achat.
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                  <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400">
+                    <Plus size={20} />
+                  </div>
+                  <div>
+                    <div className="text-white font-bold">Invitations VIP</div>
+                    <div className="text-teal-100/50 text-xs">
+                      Sortez du lot pour vos événements.
+                    </div>
+                  </div>
+                </div>
                 <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
                   <div className="p-2 bg-orange-500/20 rounded-lg text-orange-400">
                     <Palette size={20} />
                   </div>
                   <div>
                     <div className="text-white font-bold">Co-Branding</div>
-                    <div className="text-teal-100/50 text-xs">Votre logo sur chaque carte.</div>
+                    <div className="text-teal-100/50 text-xs">
+                      Votre identité sur chaque carte partagée.
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
@@ -593,8 +674,10 @@ export default function Home() {
                     <BarChart3 size={20} />
                   </div>
                   <div>
-                    <div className="text-white font-bold">Analytics</div>
-                    <div className="text-teal-100/50 text-xs">Mesurez votre impact réel.</div>
+                    <div className="text-white font-bold">Dashboard Stats</div>
+                    <div className="text-teal-100/50 text-xs">
+                      Analysez la viralité de votre marque.
+                    </div>
                   </div>
                 </div>
               </div>
@@ -602,7 +685,7 @@ export default function Home() {
               <div className="pt-8">
                 <Link href="/business">
                   <Button className="bg-white text-teal-950 hover:bg-teal-50 px-10 py-7 rounded-2xl font-bold text-lg shadow-xl shadow-teal-950/20 border-0 flex items-center gap-3 transition-all h-auto">
-                    Découvrir l&apos;Espace Business{' '}
+                    Découvrir les Solutions Business{' '}
                     <ArrowRight size={20} className="text-teal-600" />
                   </Button>
                 </Link>
