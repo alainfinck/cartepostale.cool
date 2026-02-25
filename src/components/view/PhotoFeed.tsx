@@ -269,7 +269,7 @@ export default function PhotoFeed({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [isFlipped, setIsFlipped] = useState(false)
   const [slideDirection, setSlideDirection] = useState(0)
-  const [viewMode, setViewMode] = useState<'diapo' | 'full'>('full')
+  const [viewMode, setViewMode] = useState<'diapo' | 'full'>('diapo')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   const sessionId = useSessionId()
@@ -591,9 +591,7 @@ export default function PhotoFeed({
                 <div
                   className={cn(
                     'relative flex-1 w-full flex items-center justify-center min-h-0 overflow-hidden px-4',
-                    viewMode === 'diapo'
-                      ? 'max-w-[95vw] max-h-[85vh]'
-                      : 'max-w-[95vw]',
+                    viewMode === 'diapo' ? 'max-w-[95vw] max-h-[85vh]' : 'max-w-[95vw]',
                   )}
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -624,21 +622,20 @@ export default function PhotoFeed({
                       {/* Polaroid frame — diapo: contenu adapté à l'écran (object-contain) ; full: marge blanche uniforme */}
                       <div
                         className={cn(
-                          'relative w-full transition-transform duration-700 ease-in-out',
+                          'relative transition-transform duration-700 ease-in-out mx-auto',
                           viewMode === 'diapo'
-                            ? 'flex flex-col bg-white shadow-2xl rounded-sm p-3 sm:p-4 pb-16 sm:pb-24 max-h-[85vh] max-w-[95vw]'
-                            : 'inline-flex max-h-[85vh] max-w-[95vw] items-center justify-center',
+                            ? 'flex flex-col bg-white shadow-[0_60px_120px_-20px_rgba(0,0,0,0.5)] rounded-sm p-3.5 sm:p-6 pb-24 sm:pb-40 h-full max-h-[85vh] aspect-[3.5/4.5] shrink-0'
+                            : 'w-full inline-flex max-h-[85vh] max-w-[95vw] items-center justify-center',
                         )}
                         style={{
                           transformStyle: 'preserve-3d',
                           transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                          maxHeight: '85vh',
                         }}
                       >
                         {/* FRONT FACE — image */}
                         {viewMode === 'diapo' ? (
                           <div
-                            className="relative flex-1 min-h-0 overflow-hidden bg-stone-100 flex items-center justify-center"
+                            className="relative aspect-square w-full overflow-hidden bg-stone-100 flex items-center justify-center"
                             style={{ backfaceVisibility: 'hidden' }}
                           >
                             {sortedMediaItems[selectedIndex].type === 'video' ? (
@@ -648,15 +645,15 @@ export default function PhotoFeed({
                                 playsInline
                                 muted
                                 autoPlay
-                                className="max-w-full max-h-[calc(85vh-7rem)] object-contain"
+                                className="w-full h-full object-cover"
                               />
                             ) : (
                               <img
                                 src={getOptimizedImageUrl(sortedMediaItems[selectedIndex].url, {
-                                  width: 900,
+                                  width: 1200,
                                 })}
                                 alt={`Full photo ${selectedIndex + 1}`}
-                                className="max-w-full max-h-[calc(85vh-7rem)] w-auto h-auto object-contain block"
+                                className="w-full h-full object-cover block"
                                 onLoad={() => setIsImageLoading(false)}
                               />
                             )}
@@ -682,7 +679,7 @@ export default function PhotoFeed({
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 src={getOptimizedImageUrl(sortedMediaItems[selectedIndex].url, {
-                                  width: 900,
+                                  width: 1200,
                                 })}
                                 alt={`Full photo ${selectedIndex + 1}`}
                                 className="block w-auto h-auto max-h-[70vh] sm:max-h-[80vh] lg:max-h-[85vh] max-w-[85vw] sm:max-w-[80vw] lg:max-w-[85vw] object-contain"
@@ -703,19 +700,32 @@ export default function PhotoFeed({
                           </div>
                         )}
 
-                        {/* FRONT BOTTOM CONTROLS — Lire la note (diapo only) */}
-                        {viewMode === 'diapo' && sortedMediaItems[selectedIndex].note && (
+                        {/* FRONT BOTTOM CONTROLS — Métadonnées + Lire la note (diapo only) */}
+                        {viewMode === 'diapo' && (
                           <div
-                            className="absolute bottom-0 left-0 right-0 h-16 sm:h-20 px-4 sm:px-6 z-10 flex items-center justify-end"
+                            className="absolute bottom-0 left-0 right-0 h-24 sm:h-40 px-5 sm:px-8 z-10 flex flex-col justify-center items-center gap-4"
                             style={{ backfaceVisibility: 'hidden' }}
                           >
-                            <button
-                              onClick={() => setIsFlipped(true)}
-                              className="flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-full text-xs font-bold transition-all shadow-sm hover:scale-105 active:scale-95"
-                            >
-                              <StickyNote size={14} />
-                              <span>Lire la note</span>
-                            </button>
+                            {/* Métadonnées style Pola */}
+                            <div className="flex flex-col items-center gap-1 text-[10px] sm:text-[12px] uppercase font-black tracking-[0.2em] text-stone-400 text-center">
+                              <span className="text-stone-500">{senderName}</span>
+                              {sortedMediaItems[selectedIndex].location && (
+                                <span className="flex items-center gap-1.5">
+                                  <MapPin size={12} className="shrink-0" />
+                                  {String(sortedMediaItems[selectedIndex].location).trim()}
+                                </span>
+                              )}
+                            </div>
+
+                            {sortedMediaItems[selectedIndex].note && (
+                              <button
+                                onClick={() => setIsFlipped(true)}
+                                className="flex items-center gap-2 px-5 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all shadow-sm hover:scale-105 active:scale-95"
+                              >
+                                <StickyNote size={14} />
+                                <span>Lire la note</span>
+                              </button>
+                            )}
                           </div>
                         )}
 

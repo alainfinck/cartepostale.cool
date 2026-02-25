@@ -288,8 +288,8 @@ export default function Home() {
                 Une seule carte, destinataires illimités.
               </h3>
               <p className="text-teal-100/90 text-lg mb-8 max-w-2xl mx-auto">
-                Votre carte devient un souvenir partagé à l&apos;infini. Une petite attention à petit
-                prix qui fait toujours autant plaisir.
+                Votre carte devient un souvenir partagé à l&apos;infini. Une petite attention à
+                petit prix qui fait toujours autant plaisir.
               </p>
               <Link href="/editor">
                 <Button className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-10 py-7 rounded-2xl font-bold text-lg shadow-xl shadow-pink-500/30 border-0 flex items-center gap-3 transition-all h-auto mx-auto inline-flex hover:scale-[1.02] active:scale-[0.98]">
@@ -499,9 +499,9 @@ export default function Home() {
               Intégrez une carte à votre site
             </h2>
             <p className="text-stone-600 text-lg max-w-2xl mx-auto">
-              Affichez le composant carte postale (effet recto/verso) sur n&apos;importe quel site ou blog
-              avec un simple code à copier-coller. Idéal pour les blogs voyage, sites d&apos;agences ou
-              portfolios.
+              Affichez le composant carte postale (effet recto/verso) sur n&apos;importe quel site
+              ou blog avec un simple code à copier-coller. Idéal pour les blogs voyage, sites
+              d&apos;agences ou portfolios.
             </p>
           </div>
           <div className="rounded-2xl border border-stone-200 bg-stone-50/50 p-6 md:p-8">
@@ -552,7 +552,7 @@ export default function Home() {
               src={`${embedOrigin}/carte/${EMBED_DEMO_SLUG}?embed=1`}
               title="Aperçu carte postale intégrée"
               className="w-full border-0"
-              style={{ height: '360px' }}
+              style={{ height: '600px' }}
             />
           </div>
         </div>
