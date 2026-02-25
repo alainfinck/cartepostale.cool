@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Reply, MapPin } from 'lucide-react'
+import { Reply, MapPin, Heart, Sparkles } from 'lucide-react'
 import { useSessionId } from '@/hooks/useSessionId'
 import { getReactions, getUserReactions, getComments } from '@/actions/social-actions'
 import { recordPostcardView, recordPostcardViewClose } from '@/actions/analytics-actions'
@@ -153,24 +153,43 @@ export default function SocialBar({
   const reactionBarNode = (
     <section
       aria-labelledby="reactions-heading"
-      className="w-full max-w-4xl mx-auto px-4 pb-2 sm:pb-4 space-y-4"
+      className="w-full max-w-4xl mx-auto px-4 pb-8 pt-6 space-y-4"
     >
       <DistanceDisplay targetCoords={coords} senderName={senderName} />
-      <div className="rounded-xl border border-stone-200 bg-white/80 backdrop-blur-sm shadow-sm px-4 py-3 sm:px-5 sm:py-4">
-        <h2
-          id="reactions-heading"
-          className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-stone-400 mb-2 sm:mb-3"
-        >
-          Réactions
-        </h2>
-        <ReactionBar
-          postcardId={postcardId}
-          sessionId={sessionId}
-          counts={counts}
-          userReactions={userReactions}
-          views={views}
-          onReactionUpdate={handleReactionUpdate}
-        />
+      <div className="rounded-3xl border border-teal-100/50 bg-white/90 backdrop-blur-md shadow-[0_8px_30px_rgb(0,0,0,0.04)] px-3 py-6 sm:px-10 sm:py-10 relative overflow-hidden mt-4">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-teal-50/60 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-40 h-40 bg-orange-50/60 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col items-center text-center mb-6">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-teal-50 text-teal-600 rounded-full mb-4 shadow-sm border border-teal-100 relative group">
+            <Heart size={24} className="group-hover:scale-110 transition-transform duration-300" />
+            <Sparkles
+              size={14}
+              className="absolute -top-1 -right-1 text-orange-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            />
+          </div>
+          <h2
+            id="reactions-heading"
+            className="text-xl sm:text-2xl font-serif font-bold text-stone-800 mb-2"
+          >
+            Réagissez à la carte
+          </h2>
+          <p className="text-xs sm:text-sm text-stone-500 max-w-sm mx-auto mb-2 px-2">
+            Faites savoir à {senderName} que vous avez apprécié sa carte en choisissant une réaction
+            !
+          </p>
+        </div>
+
+        <div className="relative z-10 w-full overflow-hidden">
+          <ReactionBar
+            postcardId={postcardId}
+            sessionId={sessionId}
+            counts={counts}
+            userReactions={userReactions}
+            views={views}
+            onReactionUpdate={handleReactionUpdate}
+          />
+        </div>
       </div>
     </section>
   )
@@ -191,34 +210,54 @@ export default function SocialBar({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="w-full max-w-4xl mx-auto px-4 space-y-6 mb-12"
+        className="w-full max-w-4xl mx-auto px-4 space-y-8 mb-16"
       >
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="max-w-4xl mx-auto space-y-6">
           {/* Reactions: inline si pas de portal, sinon déjà rendues sous la carte */}
           {!reactionsPortalTargetId && reactionBarNode}
 
-          {/* Share + Reply */}
-          <div className="flex items-center gap-2 justify-end">
-            <Link
-              href={`/editor?replyTo=${encodeURIComponent(senderName)}`}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-stone-200 text-stone-600 text-xs sm:text-sm font-medium hover:bg-stone-50 transition-colors"
-            >
-              <Reply size={16} />
-              Répondre avec une carte
-            </Link>
-            <ShareButton postcardId={postcardId} publicId={publicId} senderName={senderName} />
-          </div>
-        </div>
+          {/* Interactions Section */}
+          <section
+            aria-labelledby="interaction-heading"
+            className="rounded-3xl border border-stone-100/80 bg-white/60 backdrop-blur-md shadow-[0_4px_20px_rgb(0,0,0,0.03)] p-4 sm:p-6"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-6 pb-4 border-b border-stone-100">
+              <div>
+                <h3
+                  id="interaction-heading"
+                  className="text-lg font-serif font-bold text-stone-800"
+                >
+                  Livre d'or et partage
+                </h3>
+                <p className="text-xs sm:text-sm text-stone-500 mt-1">
+                  Laissez un mot à {senderName}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <Link
+                  href={`/editor?replyTo=${encodeURIComponent(senderName)}`}
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full border border-stone-200 text-stone-600 text-xs sm:text-sm font-medium hover:bg-stone-50 transition-colors"
+                >
+                  <Reply size={16} />
+                  Répondre
+                </Link>
+                <ShareButton postcardId={postcardId} publicId={publicId} senderName={senderName} />
+              </div>
+            </div>
 
-        {/* Guestbook */}
-        {allowComments && (
-          <GuestbookSection
-            postcardId={postcardId}
-            sessionId={sessionId}
-            comments={comments}
-            onCommentAdded={handleCommentAdded}
-          />
-        )}
+            {/* Guestbook */}
+            {allowComments && (
+              <div className="">
+                <GuestbookSection
+                  postcardId={postcardId}
+                  sessionId={sessionId}
+                  comments={comments}
+                  onCommentAdded={handleCommentAdded}
+                />
+              </div>
+            )}
+          </section>
+        </div>
       </motion.div>
     </>
   )

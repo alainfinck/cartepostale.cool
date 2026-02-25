@@ -30,6 +30,7 @@ import {
   MoreHorizontal,
   Link2,
   Heart,
+  Eye,
 } from 'lucide-react'
 import { fireSideCannons } from '@/components/ui/confetti'
 import { cn, isCoordinate } from '@/lib/utils'
@@ -45,6 +46,7 @@ import dynamic from 'next/dynamic'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import { uploadContribution } from '@/actions/contribute-actions'
 import { useRouter } from 'next/navigation'
+import { NumberTicker } from '@/components/ui/number-ticker'
 
 // Dynamically import MapModal to avoid SSR issues with Leaflet
 const MapModal = dynamic(() => import('@/components/ui/MapModal'), {
@@ -91,6 +93,7 @@ interface PostcardViewProps {
   onCaptionPositionChange?: (pos: { x: number; y: number }) => void
   /** Réglages du verso ouverts ou fermés par défaut (défaut : true). */
   defaultActionsOpen?: boolean
+  views?: number
 }
 
 /** Position par défaut du texte d'accroche : en bas à gauche, au-dessus de la localisation */
@@ -166,6 +169,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   onCaptionPositionChange,
   defaultActionsOpen = true,
   isPreview = false,
+  views,
 }) => {
   const [isFlipped, setIsFlipped] = useState(flipped ?? false)
   const [hasBeenFlipped, setHasBeenFlipped] = useState(flipped ?? false)
@@ -657,7 +661,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const hasMedia = postcard.mediaItems && postcard.mediaItems.length > 0
 
   const actionButtonBase =
-    'flex-none inline-flex flex-col items-center justify-center gap-1 px-2 sm:px-3 py-1.5 rounded-lg text-[8px] sm:text-[9px] font-black uppercase active:scale-95 transition-all shadow-sm border text-center min-h-[40px] sm:min-h-[44px] min-w-[52px] sm:min-w-[64px] max-w-[80px] sm:max-w-[90px] overflow-hidden'
+    'flex-none inline-flex flex-row items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-[11px] font-semibold uppercase active:scale-95 transition-all shadow-sm border text-center min-h-[36px] sm:min-h-[44px] min-w-0 overflow-hidden whitespace-nowrap'
 
   useEffect(() => {
     setPortalRoot(document.body)
@@ -943,8 +947,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             !width &&
               !height &&
               (isLarge
-                ? 'w-[95vw] h-[65vw] max-w-[460px] max-h-[306px] sm:w-[552px] sm:h-[368px] md:w-[660px] md:h-[440px] lg:w-[780px] lg:h-[520px] xl:w-[840px] xl:h-[560px] sm:max-w-none sm:max-h-none portrait:max-h-none'
-                : 'w-full max-w-full sm:w-[552px] aspect-[3/2] sm:h-[368px]'),
+                ? 'w-[95vw] h-[71.25vw] max-w-[460px] max-h-[345px] sm:w-[552px] sm:h-[414px] md:w-[660px] md:h-[495px] lg:w-[780px] lg:h-[585px] xl:w-[840px] xl:h-[630px] sm:max-w-none sm:max-h-none portrait:max-h-none'
+                : 'w-full max-w-full sm:w-[552px] aspect-[4/3] sm:h-[414px]'),
             className,
           )}
           style={{ perspective: 1000, width, height }}
@@ -977,8 +981,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     className="absolute pointer-events-none"
                     style={(() => {
                       // Manual cover + user crop logic (matching EditorClient.tsx)
-                      // The container aspect is fixed at 3/2 (same as POSTCARD_ASPECT)
-                      const POSTCARD_ASPECT = 3 / 2
+                      // The container aspect is fixed at 4/3 (same as POSTCARD_ASPECT)
+                      const POSTCARD_ASPECT = 4 / 3
 
                       // We simulate the cover scale first
                       // In CSS %, we need to know the ratio.
@@ -1301,6 +1305,15 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   >
                     {postcard.frontCaption}
                   </p>
+                </div>
+              )}
+
+              {/* Views badge on front cover */}
+              {views !== undefined && views > 0 && (
+                <div className="absolute right-3 bottom-3 sm:right-5 sm:bottom-5 z-20 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-stone-200 shadow-xl text-stone-600 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest transform transition-all hover:scale-105 active:scale-95">
+                  <Eye size={12} className="text-teal-500 shrink-0" />
+                  <NumberTicker value={views} className="font-extrabold text-stone-800" />
+                  <span className="opacity-70">vues</span>
                 </div>
               )}
             </motion.div>
@@ -2030,7 +2043,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         <div
           className={cn(
             'flex flex-col items-center relative z-0 pb-12',
-            !width && !height && 'w-full max-w-full sm:w-[552px]',
+            !width && !height && 'w-full max-w-4xl',
           )}
           style={{
             marginTop: -12, // Collé au bas de la carte (languette barre et barre d’actions)
@@ -2053,7 +2066,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             className="w-full flex justify-center overflow-hidden"
             style={{ transformOrigin: 'top', transformStyle: 'preserve-3d' }}
           >
-            <div className="flex items-center justify-center w-[98%] sm:w-[90%] flex-wrap gap-1.5 sm:gap-2 rounded-b-2xl border-x border-b border-stone-100 bg-white shadow-[0_10px_30px_rgba(0,0,0,0.04)] px-2 sm:px-4 py-1.5 sm:py-2 min-h-[40px] sm:min-h-[48px]">
+            <div className="flex items-center justify-center w-[98%] max-w-3xl flex-wrap gap-2 sm:gap-4 rounded-b-[2.5rem] border-x border-b border-stone-200/40 bg-white/75 backdrop-blur-2xl shadow-[0_25px_70px_rgba(0,0,0,0.07)] px-4 sm:px-8 py-2 sm:py-3.5">
               {(hasMedia || canContribute) && (
                 <button
                   onClick={openAlbum}
@@ -2146,7 +2159,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/80 text-stone-600 hover:text-stone-800 transition-colors ml-1"
                 title="Masquer la barre"
               >
-                <ChevronUp size={22} strokeWidth={2.5} className="shrink-0" />
+                <ChevronUp size={24} strokeWidth={2} className="shrink-0" />
               </button>
             </div>
           </motion.div>

@@ -267,7 +267,7 @@ export default function BusinessClient() {
                   viewport={{ once: true }}
                   className="perspective-1000"
                 >
-                  <div className="relative aspect-[3/2] bg-white p-3 rounded-sm shadow-[0_20px_50px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.1)] transform-gpu hover:shadow-[0_40px_80px_rgba(0,0,0,0.5)] transition-all duration-500">
+                  <div className="relative aspect-[4/3] bg-white p-3 rounded-sm shadow-[0_20px_50px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.1)] transform-gpu hover:shadow-[0_40px_80px_rgba(0,0,0,0.5)] transition-all duration-500">
                     <div className="absolute inset-0 bg-[url('/images/ui/paper-texture.png')] opacity-20 pointer-events-none rounded-sm"></div>
                     <div className="w-full h-full overflow-hidden rounded-sm relative group">
                       <img
@@ -312,7 +312,7 @@ export default function BusinessClient() {
                   viewport={{ once: true }}
                   className="perspective-1000"
                 >
-                  <div className="relative aspect-[3/2] bg-[#fcfaf7] p-8 rounded-sm shadow-[20px_20px_60px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.05)] flex flex-col transform-gpu hover:shadow-[30px_30px_80px_rgba(0,0,0,0.5)] transition-all duration-500">
+                  <div className="relative aspect-[4/3] bg-[#fcfaf7] p-8 rounded-sm shadow-[20px_20px_60px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.05)] flex flex-col transform-gpu hover:shadow-[30px_30px_80px_rgba(0,0,0,0.5)] transition-all duration-500">
                     {/* Paper Texture and Grain */}
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-30 pointer-events-none"></div>
 

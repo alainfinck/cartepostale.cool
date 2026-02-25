@@ -23,7 +23,7 @@ export default function MobilePostcardView({ postcard }: MobilePostcardViewProps
     >
       {/* 1. Front Image — full width, tall */}
       <div className="relative w-full rounded-t-2xl overflow-hidden shadow-xl border border-stone-200 border-b-0">
-        <div className="w-full aspect-[3/2] relative">
+        <div className="w-full aspect-[4/3] relative">
           <Image
             loader={({ src, width, quality }) =>
               getOptimizedImageUrl(src, { width, quality: quality || 80 })

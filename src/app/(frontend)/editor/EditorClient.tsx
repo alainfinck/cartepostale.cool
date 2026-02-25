@@ -127,7 +127,7 @@ import { MusicLibraryModal } from '@/components/editor/MusicLibraryModal'
 import type { MusicTrack } from '@/components/editor/MusicLibraryModal'
 import { PACK_TIERS } from '@/components/pricing/PacksSlider'
 
-const POSTCARD_ASPECT = 3 / 2
+const POSTCARD_ASPECT = 4 / 3
 
 /** Génération d'image par IA : masqué pour l'instant, à réactiver plus tard */
 const SHOW_AI_IMAGE_GENERATION = false
@@ -2593,7 +2593,7 @@ export default function EditorPage() {
                   postcard={postcardForPreview}
                   flipped={showBack}
                   frontTextBgOpacity={frontTextBgOpacity}
-                  className="w-full h-auto aspect-[3/2] shadow-xl rounded-xl border border-stone-100"
+                  className="w-full h-auto aspect-[4/3] shadow-xl rounded-xl border border-stone-100"
                   onCaptionPositionChange={setFrontCaptionPosition}
                 />
                 <StickerLayer
@@ -5325,7 +5325,7 @@ export default function EditorPage() {
                   postcard={postcardForPreview}
                   flipped={showBack}
                   frontTextBgOpacity={frontTextBgOpacity}
-                  className="w-full max-w-[1700px] h-auto aspect-[3/2] shadow-2xl cursor-default"
+                  className="w-full max-w-[1700px] h-auto aspect-[4/3] shadow-2xl cursor-default"
                   onCaptionPositionChange={setFrontCaptionPosition}
                 />
               </div>
@@ -5408,7 +5408,7 @@ export default function EditorPage() {
             postcard={postcardForPreview}
             flipped={showBack}
             frontTextBgOpacity={frontTextBgOpacity}
-            className="w-full aspect-[3/2]"
+            className="w-full aspect-[4/3]"
             hideFullscreenButton
             hideFlipHints
             defaultActionsOpen={false}
@@ -5507,7 +5507,7 @@ export default function EditorPage() {
           <div className="grid gap-5 p-6 lg:grid-cols-[1.25fr_1fr]">
             <div
               ref={cropAreaRef}
-              className="relative w-full overflow-hidden rounded-2xl border-2 border-stone-200 bg-stone-100 aspect-[3/2] select-none cursor-grab active:cursor-grabbing"
+              className="relative w-full overflow-hidden rounded-2xl border-2 border-stone-200 bg-stone-100 aspect-[4/3] select-none cursor-grab active:cursor-grabbing"
               onPointerDown={handleCropPointerDown}
               onPointerMove={handleCropPointerMove}
               onPointerUp={handleCropPointerUp}

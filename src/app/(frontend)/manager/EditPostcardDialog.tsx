@@ -215,7 +215,7 @@ export default function EditPostcardDialog({
           {/* Image Upload Preview */}
           <div className="space-y-2">
             <Label>Photo de la carte</Label>
-            <div className="relative group aspect-[3/2] w-full rounded-xl overflow-hidden border-2 border-dashed border-border/50 hover:border-teal-500/50 transition-colors bg-muted/30">
+            <div className="relative group aspect-[4/3] w-full rounded-xl overflow-hidden border-2 border-dashed border-border/50 hover:border-teal-500/50 transition-colors bg-muted/30">
               {imagePreview ? (
                 <>
                   <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />

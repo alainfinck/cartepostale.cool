@@ -598,7 +598,7 @@ export default function GalerieClient() {
                     return (
                       <li
                         key={photo.id}
-                        className="overflow-hidden rounded-2xl shadow-lg shadow-stone-200/60 hover:shadow-xl hover:shadow-stone-300/50 transition-shadow bg-white border border-stone-100 flex flex-col aspect-[3/2]"
+                        className="overflow-hidden rounded-2xl shadow-lg shadow-stone-200/60 hover:shadow-xl hover:shadow-stone-300/50 transition-shadow bg-white border border-stone-100 flex flex-col aspect-[4/3]"
                       >
                         <div className="relative flex-1 min-h-0">
                           <img

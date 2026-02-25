@@ -88,7 +88,7 @@ export function GalleryMap({ postcards }: { postcards: Postcard[] }) {
                   <img
                     src={getOptimizedImageUrl(card.frontImage, { width: 200 })}
                     alt=""
-                    className="mt-2 w-full rounded-lg object-cover aspect-[3/2]"
+                    className="mt-2 w-full rounded-lg object-cover aspect-[4/3]"
                   />
                 )}
               </div>

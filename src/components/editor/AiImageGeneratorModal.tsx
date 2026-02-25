@@ -25,12 +25,36 @@ import { cn } from '@/lib/utils'
 const AI_GENERATION_PRICE_EUR = 0.99
 
 const PROMPT_SUGGESTIONS = [
-  { label: 'Plage paradisiaque', prompt: 'A stunning tropical beach with crystal clear turquoise water, white sand, palm trees, golden sunset light' },
-  { label: 'Paris romantique', prompt: 'Romantic view of the Eiffel Tower at sunset with warm golden light, Parisian rooftops, beautiful sky' },
-  { label: 'Montagne enneigée', prompt: 'Majestic snow-capped mountain peaks at sunrise with pink and orange sky, alpine landscape' },
-  { label: 'Village méditerranéen', prompt: 'Charming Mediterranean coastal village with colorful houses, blue sea, bougainvillea flowers' },
-  { label: 'Forêt enchantée', prompt: 'Magical enchanted forest with sunlight filtering through tall trees, moss-covered path, misty atmosphere' },
-  { label: 'Coucher de soleil', prompt: 'Breathtaking sunset over the ocean with dramatic clouds painted in orange, pink and purple' },
+  {
+    label: 'Plage paradisiaque',
+    prompt:
+      'A stunning tropical beach with crystal clear turquoise water, white sand, palm trees, golden sunset light',
+  },
+  {
+    label: 'Paris romantique',
+    prompt:
+      'Romantic view of the Eiffel Tower at sunset with warm golden light, Parisian rooftops, beautiful sky',
+  },
+  {
+    label: 'Montagne enneigée',
+    prompt:
+      'Majestic snow-capped mountain peaks at sunrise with pink and orange sky, alpine landscape',
+  },
+  {
+    label: 'Village méditerranéen',
+    prompt:
+      'Charming Mediterranean coastal village with colorful houses, blue sea, bougainvillea flowers',
+  },
+  {
+    label: 'Forêt enchantée',
+    prompt:
+      'Magical enchanted forest with sunlight filtering through tall trees, moss-covered path, misty atmosphere',
+  },
+  {
+    label: 'Coucher de soleil',
+    prompt:
+      'Breathtaking sunset over the ocean with dramatic clouds painted in orange, pink and purple',
+  },
 ]
 
 interface AiImageGeneratorModalProps {
@@ -166,7 +190,10 @@ export function AiImageGeneratorModal({
 
           {/* Prompt input */}
           <div className="relative group">
-            <Wand2 className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-violet-500 transition-colors" size={20} />
+            <Wand2
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-violet-500 transition-colors"
+              size={20}
+            />
             <Input
               placeholder="Décrivez votre image (ex: plage tropicale au coucher de soleil)"
               value={prompt}
@@ -220,7 +247,10 @@ export function AiImageGeneratorModal({
               <div className="flex flex-col items-center justify-center py-16 gap-4">
                 <div className="relative">
                   <div className="w-16 h-16 rounded-full border-4 border-violet-100 border-t-violet-500 animate-spin" />
-                  <Wand2 size={24} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-violet-500" />
+                  <Wand2
+                    size={24}
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-violet-500"
+                  />
                 </div>
                 <p className="text-stone-500 font-medium animate-pulse">
                   Notre IA crée votre image...
@@ -249,7 +279,7 @@ export function AiImageGeneratorModal({
                     <div
                       key={i}
                       className={cn(
-                        'group relative aspect-[3/2] rounded-xl overflow-hidden bg-stone-100 cursor-pointer border-2 transition-all duration-300',
+                        'group relative aspect-[4/3] rounded-xl overflow-hidden bg-stone-100 cursor-pointer border-2 transition-all duration-300',
                         selectedImage === url
                           ? 'border-violet-500 ring-2 ring-violet-200 shadow-lg'
                           : 'border-stone-200 hover:border-violet-300 hover:shadow-lg hover:-translate-y-0.5',
@@ -301,8 +331,7 @@ export function AiImageGeneratorModal({
         {/* Footer */}
         <div className="p-4 bg-stone-50 border-t border-stone-100 flex items-center justify-between">
           <p className="text-[10px] text-stone-400 font-medium flex items-center gap-1">
-            Propulsé par{' '}
-            <span className="font-bold text-violet-500">NanoBanana AI</span>
+            Propulsé par <span className="font-bold text-violet-500">NanoBanana AI</span>
           </p>
           <div className="flex items-center gap-2">
             <Button

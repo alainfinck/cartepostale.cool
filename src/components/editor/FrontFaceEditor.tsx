@@ -59,7 +59,7 @@ const buildFrontImageFilterCss = (filter?: FrontImageFilter): string => {
   ].join(' ')
 }
 
-const POSTCARD_ASPECT = 3 / 2
+const POSTCARD_ASPECT = 4 / 3
 
 // Composant interne pour un emoji sticker interactif (drag + pinch zoom)
 function EmojiStickerEl({
@@ -457,7 +457,7 @@ export default function FrontFaceEditor({
     <div className={cn('relative w-full', className)}>
       <div
         ref={containerRef}
-        className="relative w-full aspect-[3/2] rounded-xl overflow-hidden shadow-2xl border border-stone-200 bg-white"
+        className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-2xl border border-stone-200 bg-white"
       >
         <div className="absolute inset-0 z-0">
           {frontImageCrop && imgNaturalSize ? (

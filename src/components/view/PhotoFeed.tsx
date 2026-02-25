@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import Image from 'next/image'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MediaItem } from '@/types'
 import {
@@ -10,6 +11,8 @@ import {
   ChevronRight,
   X,
   StickyNote,
+  Clock,
+  ArrowUpDown,
   User,
   Heart,
   Send,
@@ -164,29 +167,30 @@ const InstaCard = ({
                 transition={{ duration: 0.15 }}
                 className="absolute right-0 top-full mt-1 py-1 min-w-[180px] bg-white border border-stone-200 rounded-lg shadow-lg z-50"
               >
+                <Link
+                  href="/editor"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-stone-700 hover:bg-stone-50"
+                  onClick={() => setMoreOpen(false)}
+                >
+                  <StickyNote size={16} className="text-teal-600" />
+                  Créer ma carte
+                </Link>
+                <Link
+                  href="/"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-stone-700 hover:bg-stone-50"
+                  onClick={() => setMoreOpen(false)}
+                >
+                  <Link2 size={16} />
+                  Page d&apos;accueil
+                </Link>
+                <div className="h-px bg-stone-100 my-1" />
                 <button
                   type="button"
                   onClick={handleShare}
                   className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-stone-700 hover:bg-stone-50"
                 >
                   <Share2 size={16} />
-                  Partager
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCopyLink}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-stone-700 hover:bg-stone-50"
-                >
-                  <Link2 size={16} />
-                  Copier le lien
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMoreOpen(false)}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-stone-500 hover:bg-stone-50"
-                >
-                  <Flag size={16} />
-                  Signaler
+                  Partager cette photo
                 </button>
               </motion.div>
             )}
@@ -259,43 +263,11 @@ const InstaCard = ({
             <button
               className="hover:text-stone-600 transition-colors shrink-0"
               type="button"
-              aria-label="Envoyer"
+              aria-label="Envoyer / Partager"
+              onClick={handleShare}
             >
               <Send className="w-5 h-5 sm:w-6 sm:h-6 text-stone-900 -mt-1 rotate-12" />
             </button>
-            {canShowReactions &&
-              ['🔥', '😂', '😮'].map((emoji) => {
-                const n = counts[emoji] ?? 0
-                return (
-                  <CoolMode
-                    key={emoji}
-                    options={{
-                      particle: emoji,
-                      loop: false,
-                      speed: 0.25,
-                      gravity: 0.1,
-                      particleCount: 2,
-                      effect: 'balloon',
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleToggleReaction(emoji)}
-                      className={cn(
-                        'flex items-center gap-0.5 sm:gap-1.5 text-base sm:text-lg transition-all duration-300 ease-out hover:scale-110 active:scale-95 opacity-70 hover:opacity-100 shrink-0',
-                        userReactions[emoji] && 'opacity-100 scale-110',
-                      )}
-                    >
-                      <span className="leading-none">{emoji}</span>
-                      {n > 0 && (
-                        <span className="text-xs sm:text-sm font-semibold text-stone-700 tabular-nums">
-                          {n}
-                        </span>
-                      )}
-                    </button>
-                  </CoolMode>
-                )
-              })}
           </div>
           <button
             type="button"
@@ -349,6 +321,7 @@ export default function PhotoFeed({
   const [isFlipped, setIsFlipped] = useState(false)
   const [slideDirection, setSlideDirection] = useState(0)
   const [viewMode, setViewMode] = useState<'diapo' | 'full'>('diapo')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   const sessionId = useSessionId()
   const [counts, setCounts] = useState<Record<string, number>>({})
@@ -358,16 +331,13 @@ export default function PhotoFeed({
 
   const sortedMediaItems = useMemo(() => {
     const items = [...mediaItems]
-    const hasAnyDates = items.some((item) => item.exif?.dateTime)
-    if (hasAnyDates) {
-      items.sort((a, b) => {
-        const dateA = a.exif?.dateTime ? new Date(a.exif.dateTime).getTime() : 0
-        const dateB = b.exif?.dateTime ? new Date(b.exif.dateTime).getTime() : 0
-        return dateA - dateB
-      })
-    }
+    items.sort((a, b) => {
+      const dateA = a.exif?.dateTime ? new Date(a.exif.dateTime).getTime() : 0
+      const dateB = b.exif?.dateTime ? new Date(b.exif.dateTime).getTime() : 0
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA
+    })
     return items
-  }, [mediaItems])
+  }, [mediaItems, sortOrder])
 
   useEffect(() => {
     if (!postcardId || !sessionId) return
@@ -468,107 +438,85 @@ export default function PhotoFeed({
       aria-labelledby="photo-feed-heading"
       className="w-full max-w-xl mx-auto mt-12 mb-20 px-3 sm:px-4 flex flex-col items-center min-w-0"
     >
-      <h2
-        id="photo-feed-heading"
-        className="w-full max-w-[470px] mx-auto mb-6 text-center text-stone-700 font-serif text-xl sm:text-2xl font-bold"
-      >
-        Album photo{senderName ? ` de ${senderName}` : ''}
-      </h2>
+      <div className="flex flex-col items-center gap-4 mb-8">
+        <h2
+          id="photo-feed-heading"
+          className="text-center text-stone-800 font-serif text-2xl sm:text-3xl font-bold tracking-tight"
+        >
+          Album photo{senderName ? ` de ${senderName}` : ''}
+        </h2>
 
-      <div className="w-full flex flex-col gap-6">
-        {/* Timeline Layout — photos apparaissent au scroll comme des dispos */}
-        <div className="relative w-full max-w-[470px] mx-auto">
-          {postcardDate && (
-            <div className="flex items-center gap-3 mb-8 pl-0.5">
-              <div className="w-3.5 h-3.5 rounded-full bg-teal-500 shadow-sm shadow-teal-200 ring-4 ring-teal-50 shrink-0" />
-              <span className="text-xs font-bold text-teal-600 uppercase tracking-wider">
-                {postcardDate}
-              </span>
-              <div className="flex-1 h-px bg-gradient-to-r from-teal-200 to-transparent" />
-            </div>
-          )}
-
-          <div className="relative px-4">
-            <div className="absolute left-[10px] top-0 bottom-0 w-px bg-gradient-to-b from-teal-200 via-stone-200 to-transparent" />
-
-            <div className="flex flex-col gap-10">
-              {sortedMediaItems.map((item, index) => {
-                const rotateVariation = index % 3 === 0 ? -2 : index % 3 === 1 ? 1.5 : -1
-                return (
-                  <motion.div
-                    key={item.id}
-                    className="relative"
-                    initial={{
-                      opacity: 0,
-                      y: 72,
-                      rotate: rotateVariation + 8,
-                      scale: 0.92,
-                      filter: 'blur(6px)',
-                    }}
-                    whileInView={{
-                      opacity: 1,
-                      y: 0,
-                      rotate: rotateVariation,
-                      scale: 1,
-                      filter: 'blur(0px)',
-                    }}
-                    viewport={{ once: true, margin: '-80px 0px -60px 0px', amount: 0.35 }}
-                    transition={{
-                      type: 'spring',
-                      stiffness: 120,
-                      damping: 22,
-                      mass: 0.8,
-                    }}
-                  >
-                    <motion.div
-                      className="absolute -left-[30px] top-5 w-[13px] h-[13px] rounded-full bg-white border-2 border-teal-300 shadow-sm z-10"
-                      initial={{ scale: 0, opacity: 0 }}
-                      whileInView={{ scale: 1, opacity: 1 }}
-                      viewport={{ once: true, margin: '-40px 0px', amount: 0.2 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.1 }}
-                    />
-
-                    <div className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                      {item.exif?.dateTime ? (
-                        <span className="text-teal-600">
-                          {new Date(item.exif.dateTime).toLocaleDateString('fr-FR', {
-                            day: '2-digit',
-                            month: 'short',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </span>
-                      ) : (
-                        <span>Souvenir {index + 1}</span>
-                      )}
-                    </div>
-
-                    <InstaCard
-                      item={item}
-                      index={index}
-                      totalCount={sortedMediaItems.length}
-                      senderName={senderName}
-                      postcardId={postcardId}
-                      sessionId={sessionId}
-                      canShowReactions={canShowReactions}
-                      counts={counts}
-                      userReactions={userReactions}
-                      onReactionUpdate={handleReactionUpdate}
-                      onImageClick={() => setSelectedIndex(index)}
-                    />
-                  </motion.div>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 mt-8 pl-0.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-stone-300 shrink-0" />
-            <span className="text-[10px] font-medium text-stone-400 uppercase tracking-wider">
-              Fin de l&apos;album
-            </span>
-          </div>
+        {/* Sort Controls */}
+        <div className="flex items-center gap-2 p-1.5 bg-stone-100/50 rounded-2xl border border-stone-200/50 backdrop-blur-sm">
+          <button
+            onClick={() => setSortOrder('asc')}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all',
+              sortOrder === 'asc'
+                ? 'bg-white text-teal-600 shadow-sm ring-1 ring-stone-200'
+                : 'text-stone-400 hover:text-stone-600',
+            )}
+          >
+            <Clock size={14} />
+            <span>Ancien</span>
+          </button>
+          <button
+            onClick={() => setSortOrder('desc')}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all',
+              sortOrder === 'desc'
+                ? 'bg-white text-teal-600 shadow-sm ring-1 ring-stone-200'
+                : 'text-stone-400 hover:text-stone-600',
+            )}
+          >
+            <ArrowUpDown size={14} className="rotate-180" />
+            <span>Récent</span>
+          </button>
         </div>
+      </div>
+
+      <div className="w-full max-w-[470px] mx-auto flex flex-col gap-10">
+        {sortedMediaItems.map((item, index) => {
+          const rotateVariation = index % 3 === 0 ? -1.5 : index % 3 === 1 ? 2 : -0.8
+          return (
+            <motion.div
+              key={item.id}
+              className="relative"
+              initial={{
+                opacity: 0,
+                y: 40,
+                rotate: rotateVariation + 5,
+                scale: 0.95,
+              }}
+              whileInView={{
+                opacity: 1,
+                y: 0,
+                rotate: rotateVariation,
+                scale: 1,
+              }}
+              viewport={{ once: true, margin: '-100px 0px', amount: 0.3 }}
+              transition={{
+                type: 'spring',
+                stiffness: 100,
+                damping: 20,
+              }}
+            >
+              <InstaCard
+                item={item}
+                index={index}
+                totalCount={sortedMediaItems.length}
+                senderName={senderName}
+                postcardId={postcardId}
+                sessionId={sessionId}
+                canShowReactions={canShowReactions}
+                counts={counts}
+                userReactions={userReactions}
+                onReactionUpdate={handleReactionUpdate}
+                onImageClick={() => setSelectedIndex(index)}
+              />
+            </motion.div>
+          )
+        })}
       </div>
 
       {/* Fullscreen Polaroid Lightbox with swipe — rendered in portal so backdrop covers navbar & scroll-to-top */}

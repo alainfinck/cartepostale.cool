@@ -48,7 +48,7 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
 
   const hasMap = Boolean(postcard.coords || postcard.location)
   const CARD_WIDTH = 'min(95vw, 960px)'
-  const CARD_HEIGHT = 'min(54vw, 540px)' // Further reduced height for better desktop fit
+  const CARD_HEIGHT = 'min(71.25vw, 720px)' // Adjusted for 4:3 ratio
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -92,12 +92,12 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
           </button>
           <ARButton
             postcard={postcard}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all text-stone-500 hover:text-stone-700 hover:bg-stone-50"
+            className="flex md:hidden items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all text-stone-500 hover:text-stone-700 hover:bg-stone-50"
           />
         </div>
       </div>
 
-      {/* Card view + compteur de vues (languette vues en bas à droite sur le côté de la carte) */}
+      {/* Card view */}
       <div className="w-full flex flex-col items-center">
         <div
           className="relative flex justify-center"
@@ -114,13 +114,8 @@ export default function PostcardViewToggle({ postcard, views }: PostcardViewTogg
                 className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] md:shadow-[0_30px_70px_rgba(0,0,0,0.2)] hover:shadow-[0_28px_60px_rgba(0,0,0,0.2)] md:hover:shadow-[0_40px_90px_rgba(0,0,0,0.25)]"
                 width={CARD_WIDTH}
                 height={CARD_HEIGHT}
+                views={views}
               />
-              {/* Languette vues : en bas à droite sur le côté de la carte */}
-              <div className="absolute right-0 bottom-4 sm:bottom-6 -mr-px flex items-center gap-2 pl-3 pr-2.5 py-2 rounded-l-2xl rounded-r-sm rounded-b-full sm:rounded-b-2xl bg-white/90 backdrop-blur-md border border-stone-200 border-r-0 shadow-lg text-stone-500 text-xs font-black uppercase tracking-[0.2em] transform transition-all hover:scale-[1.02] active:scale-95 z-10">
-                <Eye size={14} className="text-teal-500 shrink-0" />
-                <NumberTicker value={views} className="font-black text-stone-700" />
-                <span>vues</span>
-              </div>
             </>
           )}
         </div>

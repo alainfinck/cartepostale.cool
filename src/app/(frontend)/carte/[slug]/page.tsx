@@ -12,8 +12,8 @@ import { getOptimizedImageUrl } from '@/lib/image-processing'
 import * as motion from 'motion/react-client'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import SocialBar from '@/components/social/SocialBar'
-import ViewPageTitle from '@/components/view/ViewPageTitle'
 import PhotoFeed from '@/components/view/PhotoFeed'
+import ViewPageTitle from '@/components/view/ViewPageTitle'
 import EnvelopeExperience from '@/components/view/EnvelopeExperience'
 import { getCurrentUser } from '@/lib/auth'
 import { PostcardTracking } from '@/components/analytics/PostcardTracking'
@@ -502,21 +502,20 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
         <ScratchCardWrapper postcard={frontendPostcard} views={payloadPostcardViews} />
       </div>
 
-      {/* Cible pour la barre de réactions (rendue ici par SocialBar via portal) — collée à la carte / languette */}
-      <div id="reactions-under-card" className="w-full" />
-
-      {/* Galerie photo (avant le livre d'or) */}
       {frontendPostcard.mediaItems && frontendPostcard.mediaItems.length > 0 && (
         <PhotoFeed
           mediaItems={frontendPostcard.mediaItems}
           senderName={frontendPostcard.senderName}
-          postcardId={payloadPostcardId || 0}
+          postcardId={payloadPostcardId}
           postcardDate={frontendPostcard.date}
         />
       )}
 
+      {/* Cible pour la barre de réactions (rendue ici par SocialBar via portal) — collée à la carte / languette */}
+      <div id="reactions-under-card" className="w-full" />
+
       {/* Réactions (affichées sous la carte via portal), partage et livre d'or */}
-      <div className="w-full max-w-4xl px-4">
+      <div className="w-full">
         <SocialBar
           postcardId={payloadPostcardId || 0}
           publicId={slug}

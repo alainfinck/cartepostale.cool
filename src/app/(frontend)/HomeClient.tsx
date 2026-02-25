@@ -481,7 +481,7 @@ export default function Home() {
                   postcard={fullScreenPostcard}
                   isLarge={true}
                   width="min(95vw, 1200px)"
-                  height="min(63.3vw, 800px)"
+                  height="min(71.25vw, 900px)"
                   className="shadow-[0_20px_60px_rgba(0,0,0,0.15)]"
                 />
 

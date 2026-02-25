@@ -24,32 +24,30 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
     setContainer(el)
   }, [map])
 
-  // Initial animation: world to destination by steps (paliers)
+  // Initial animation: world to destination smoothly
   React.useEffect(() => {
     if (!hasAnimated && map) {
-      // First, center the view on the target but keep the world zoom level (no animation for this jump)
-      map.setView(center, 1, { animate: false })
+      // Force initial world view immediately just in case
+      map.setView([20, 0], 1, { animate: false })
 
-      let currentStepZoom = 1
-      const targetZoom = zoom
-      let timer: NodeJS.Timeout
+      const animationTimer = setTimeout(() => {
+        map.flyTo(center, zoom, {
+          animate: true,
+          duration: 5,
+          easeLinearity: 0.25,
+          noMoveStart: true,
+        })
 
-      const step = () => {
-        if (currentStepZoom < targetZoom) {
-          currentStepZoom += 1
-          // Increment zoom level
-          map.setZoom(currentStepZoom, { animate: true })
-          // Wait 600ms before next step to create a distinct "step" effect
-          timer = setTimeout(step, 600)
-        } else {
+        // Once the movement is finished, we mark it as animated
+        // to let the other useEffect take over for manual changes
+        map.once('moveend', () => {
           setHasAnimated(true)
-        }
+        })
+      }, 800)
+
+      return () => {
+        clearTimeout(animationTimer)
       }
-
-      // Start the sequence after a slight delay
-      timer = setTimeout(step, 800)
-
-      return () => clearTimeout(timer)
     }
   }, [map, center, zoom, hasAnimated])
 
@@ -94,8 +92,11 @@ const MiniMap: React.FC<MiniMapProps> = ({
   onClick,
   photoLocations = [],
 }) => {
-  // Prevent click propagation to parent if needed, but we typically want the click to trigger the full map
-  const position: [number, number] = [coords.lat, coords.lng]
+  // Prevent position array from being recreated on every render
+  const position = React.useMemo<[number, number]>(
+    () => [coords.lat, coords.lng],
+    [coords.lat, coords.lng],
+  )
 
   return (
     <div className={cn('relative w-full h-full z-0', className)} onClick={onClick}>
