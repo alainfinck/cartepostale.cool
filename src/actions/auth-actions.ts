@@ -2,9 +2,47 @@
 
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { getCurrentUser } from '@/lib/auth'
 import { generateMagicLinkEmail, sendEmail } from '@/lib/email-service'
 import { randomBytes } from 'crypto'
 import { headers } from 'next/headers'
+
+/**
+ * Links a postcard (by publicId) to the currently logged-in user.
+ * Use after login on the connexion page when linkPostcard param is set.
+ */
+export async function linkPostcardToCurrentUser(publicId: string): Promise<{
+  success: boolean
+  error?: string
+}> {
+  try {
+    const user = await getCurrentUser()
+    if (!user?.id) {
+      return { success: false, error: 'Non connecté' }
+    }
+
+    const payload = await getPayload({ config })
+    const postcardQuery = await payload.find({
+      collection: 'postcards',
+      where: { publicId: { equals: publicId } },
+      depth: 0,
+    })
+    if (postcardQuery.totalDocs === 0) {
+      return { success: false, error: 'Carte introuvable' }
+    }
+
+    const postcard = postcardQuery.docs[0]
+    await payload.update({
+      collection: 'postcards',
+      id: postcard.id,
+      data: { author: user.id } as any,
+    })
+    return { success: true }
+  } catch (error) {
+    console.error('Error in linkPostcardToCurrentUser:', error)
+    return { success: false, error: 'Impossible de lier la carte' }
+  }
+}
 
 export async function linkPostcardToUser(postcardId: string, email: string) {
   try {

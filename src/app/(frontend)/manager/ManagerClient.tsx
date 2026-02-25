@@ -76,7 +76,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Postcard as PayloadPostcard, Media, PostcardTrackingLink } from '@/payload-types'
+import {
+  Postcard as PayloadPostcard,
+  Media,
+  PostcardTrackingLink,
+  User as PayloadUser,
+} from '@/payload-types'
 import {
   getAllPostcards,
   getAllUsers,
@@ -1110,6 +1115,25 @@ export default function ManagerClient({
           onOpenAlbumEdit={
             selectedPostcard ? () => setAlbumPostcard(selectedPostcard) : undefined
           }
+          showAssignAuthor={!useEspaceClientActions && !useAgenceActions}
+          onAssignAuthor={
+            !useEspaceClientActions && !useAgenceActions
+              ? async (postcardId, authorId) => {
+                  const res = await updatePostcard(postcardId, { author: authorId })
+                  if (!res.success) {
+                    alert(res.error ?? 'Erreur lors de l\'attribution.')
+                    return
+                  }
+                  const next = await fetchPostcards({
+                    search,
+                    status: statusFilter !== 'all' ? statusFilter : undefined,
+                  })
+                  setData(next)
+                  const updated = next.docs.find((p) => p.id === postcardId)
+                  if (updated) setSelectedPostcard(updated)
+                }
+              : undefined
+          }
         />
 
         {/* Edit Dialog */}
@@ -2058,6 +2082,10 @@ function DetailsSheet(props: {
   onTabChange: (tab: 'details' | 'stats' | 'edit' | 'gallery') => void
   onSuccess: () => void
   onOpenAlbumEdit?: () => void
+  /** When true, show "Attribuer à un utilisateur" in the details tab (manager only). */
+  showAssignAuthor?: boolean
+  /** Callback to assign the card to a user (manager only). */
+  onAssignAuthor?: (postcardId: number, authorId: number | string | null) => Promise<void>
 }) {
   const {
     activeTab,
@@ -2082,6 +2110,8 @@ function DetailsSheet(props: {
     onRefreshTrackingLinks,
     umamiViews,
     umamiDetails,
+    showAssignAuthor,
+    onAssignAuthor,
   } = props
   const [trackingDialogOpen, setTrackingDialogOpen] = useState(false)
   const [emailDialogOpen, setEmailDialogOpen] = useState(false)
@@ -2103,6 +2133,27 @@ function DetailsSheet(props: {
     description: '',
   } as CreateTrackingLinkData)
   const [isTogglingPublic, setIsTogglingPublic] = useState(false)
+  const [assignUserSearch, setAssignUserSearch] = useState('')
+  const [assignUserResults, setAssignUserResults] = useState<PayloadUser[]>([])
+  const [isSearchingAssignUsers, setIsSearchingAssignUsers] = useState(false)
+  const [assignPending, setAssignPending] = useState(false)
+
+  useEffect(() => {
+    if (!showAssignAuthor || !assignUserSearch.trim()) {
+      setAssignUserResults([])
+      return
+    }
+    const timer = setTimeout(async () => {
+      setIsSearchingAssignUsers(true)
+      try {
+        const res = await getAllUsers({ search: assignUserSearch, limit: 10 })
+        setAssignUserResults(res.docs)
+      } finally {
+        setIsSearchingAssignUsers(false)
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [assignUserSearch, showAssignAuthor])
 
   if (!postcard) return null
   const frontendPostcard = mapToFrontend(postcard)
@@ -2252,6 +2303,92 @@ function DetailsSheet(props: {
                     }
                   />
                 </div>
+
+                {/* Attribuer à un utilisateur (manager only) */}
+                {showAssignAuthor && onAssignAuthor && (
+                  <div className="space-y-3 p-4 bg-teal-50/50 rounded-xl border border-teal-100/80">
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-80">
+                      Attribuer la carte à un utilisateur
+                    </h4>
+                    <p className="text-xs text-stone-600">
+                      Recherchez un client et sélectionnez-le pour lui attribuer cette carte.
+                    </p>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        value={assignUserSearch}
+                        onChange={(e) => setAssignUserSearch(e.target.value)}
+                        placeholder="Rechercher par nom ou email..."
+                        className="pl-9 bg-background/50"
+                      />
+                      {isSearchingAssignUsers && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <Loader2 size={14} className="animate-spin text-muted-foreground" />
+                        </div>
+                      )}
+                      {assignUserResults.length > 0 && (
+                        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg overflow-hidden max-h-48 overflow-y-auto">
+                          {assignUserResults.map((user) => (
+                            <button
+                              key={user.id}
+                              type="button"
+                              disabled={assignPending}
+                              className="w-full flex items-center gap-3 p-2 hover:bg-muted transition-colors text-left"
+                              onClick={async () => {
+                                setAssignPending(true)
+                                try {
+                                  await onAssignAuthor(postcard.id, user.id)
+                                  setAssignUserSearch('')
+                                  setAssignUserResults([])
+                                  onSuccess()
+                                } finally {
+                                  setAssignPending(false)
+                                }
+                              }}
+                            >
+                              <div className="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-[10px]">
+                                {(user.name || user.email).charAt(0).toUpperCase()}
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                <span className="text-xs font-medium truncate">
+                                  {user.name || 'Sans Nom'}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground truncate">
+                                  {user.email}
+                                </span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {typeof postcard.author === 'object' && postcard.author && (
+                      <div className="flex items-center justify-between p-2 bg-background rounded-lg border border-border/50">
+                        <span className="text-xs text-muted-foreground">
+                          Actuellement : {postcard.author.name || postcard.author.email}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={assignPending}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7 text-xs"
+                          onClick={async () => {
+                            setAssignPending(true)
+                            try {
+                              await onAssignAuthor(postcard.id, null)
+                              onSuccess()
+                            } finally {
+                              setAssignPending(false)
+                            }
+                          }}
+                        >
+                          Retirer l&apos;attribution
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Message Section */}
                 {postcard.message && (
@@ -2458,9 +2595,9 @@ function DetailsSheet(props: {
                     </Button>
                   )}
                 </div>
-                {frontendPostcard.mediaItems.length > 0 ? (
+                {(frontendPostcard.mediaItems?.length ?? 0) > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {frontendPostcard.mediaItems.map((item) => (
+                    {(frontendPostcard.mediaItems ?? []).map((item) => (
                       <div
                         key={item.id}
                         className="aspect-square rounded-xl overflow-hidden border border-border/50 bg-muted/30 shadow-sm"

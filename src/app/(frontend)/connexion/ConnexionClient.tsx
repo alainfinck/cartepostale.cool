@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { LogIn, Mail, Lock, AlertCircle, UserPlus, User, Gift } from 'lucide-react'
@@ -9,6 +9,9 @@ import { Input } from '@/components/ui/input'
 import { GoogleLoginButton } from '@/components/auth/GoogleLoginButton'
 import { useFacebookPixel } from '@/hooks/useFacebookPixel'
 import { addWelcomeCredit } from '@/actions/credit-actions'
+import { linkPostcardToCurrentUser } from '@/actions/auth-actions'
+
+const PENDING_LINK_KEY = 'pendingLinkPostcard'
 
 export default function ConnexionClient() {
   const router = useRouter()
@@ -19,9 +22,26 @@ export default function ConnexionClient() {
     [searchParams, isPromo],
   )
   const callbackUrl = useMemo(
-    () => searchParams.get('callbackUrl') || '/espace-client',
+    () =>
+      searchParams.get('callbackUrl') ||
+      searchParams.get('redirect') ||
+      '/espace-client',
     [searchParams],
   )
+  const linkPostcard = useMemo(
+    () => searchParams.get('linkPostcard')?.trim() || null,
+    [searchParams],
+  )
+
+  // If user came from editor "Plus tard" and has pending postcard in sessionStorage, add to URL
+  useEffect(() => {
+    if (typeof window === 'undefined' || linkPostcard) return
+    const pending = sessionStorage.getItem(PENDING_LINK_KEY)
+    if (!pending) return
+    const url = new URL(window.location.href)
+    url.searchParams.set('linkPostcard', pending)
+    router.replace(url.pathname + url.search)
+  }, [linkPostcard, router])
 
   const [flipped, setFlipped] = useState(initialFlipped)
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
@@ -63,6 +83,10 @@ export default function ConnexionClient() {
       }
       // Meta Pixel — Lead (connexion réussie)
       trackLead({ content_name: 'Connexion Email' })
+      if (linkPostcard) {
+        await linkPostcardToCurrentUser(linkPostcard)
+        sessionStorage.removeItem(PENDING_LINK_KEY)
+      }
       router.push(callbackUrl)
       router.refresh()
     } catch {
@@ -112,6 +136,10 @@ export default function ConnexionClient() {
       // Crédit offert si lien promotionnel
       if (isPromo) {
         await addWelcomeCredit()
+      }
+      if (linkPostcard) {
+        await linkPostcardToCurrentUser(linkPostcard)
+        sessionStorage.removeItem(PENDING_LINK_KEY)
       }
       router.push(callbackUrl)
       router.refresh()
@@ -175,7 +203,13 @@ export default function ConnexionClient() {
 
                   {googleClientId && (
                     <div className="space-y-6">
-                      <GoogleLoginButton redirectPath={callbackUrl} />
+                      <GoogleLoginButton
+                        redirectPath={
+                          linkPostcard
+                            ? `/api/link-postcard-and-redirect?postcard=${encodeURIComponent(linkPostcard)}&redirect=${encodeURIComponent(callbackUrl)}`
+                            : callbackUrl
+                        }
+                      />
                       <div className="relative">
                         <div className="absolute inset-0 flex items-center">
                           <div className="w-full border-t border-stone-200"></div>
@@ -276,7 +310,13 @@ export default function ConnexionClient() {
 
                   {googleClientId && (
                     <div className="space-y-6">
-                      <GoogleLoginButton redirectPath={callbackUrl} />
+                      <GoogleLoginButton
+                        redirectPath={
+                          linkPostcard
+                            ? `/api/link-postcard-and-redirect?postcard=${encodeURIComponent(linkPostcard)}&redirect=${encodeURIComponent(callbackUrl)}`
+                            : callbackUrl
+                        }
+                      />
                       <div className="relative">
                         <div className="absolute inset-0 flex items-center">
                           <div className="w-full border-t border-stone-200"></div>
