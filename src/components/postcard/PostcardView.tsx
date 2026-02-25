@@ -1704,7 +1704,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 <div
                   className={cn(
                     'min-w-0 flex flex-col justify-start relative pl-[2px] sm:pl-[2px] pr-2 sm:pr-4 mt-8 sm:mt-10', // Added mt to clear top controls
-                    isLarge ? 'flex-[2]' : 'flex-[1.5]',
+                    isLarge ? 'flex-[1.5]' : 'flex-[1.2]',
                   )}
                 >
                   {/* Infos en haut (Lieu & Date) */}
@@ -2002,7 +2002,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   )}
 
                   {/* Mini carte au verso : avec label de lieu juste au dessus */}
-                  {(postcard.coords || postcard.location) && (
+                  {!postcard.hideMap && (postcard.coords || postcard.location) && (
                     <div className="mt-auto flex flex-col gap-1.5 w-full flex-1 min-h-0">
                       <div className="px-2 sm:px-4 flex items-center gap-2 text-stone-500 shrink-0">
                         <MapPin size={14} className="text-teal-600" />
@@ -2012,7 +2012,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                       </div>
                       <div
                         className={cn(
-                          'mb-1 sm:mb-2 w-full flex-1 min-h-[120px] sm:min-h-[200px] lg:min-h-[280px] rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner relative',
+                          'mb-1 sm:mb-2 w-full flex-1 min-h-[120px] sm:min-h-[200px] lg:min-h-[350px] rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner relative',
                         )}
                       >
                         {postcard.coords ? (
@@ -2031,36 +2031,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 onClick={openMap}
                                 photoLocations={photoLocations}
                               />
-                            </div>
-                            {/* Boutons zoom +/- très petits en haut à droite */}
-                            <div
-                              className="absolute top-1 right-1 z-10 flex flex-col gap-px"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setBackMapZoom((z) => Math.min(18, z + 1))
-                                }}
-                                className="flex items-center justify-center bg-white/80 hover:bg-white/95 text-stone-600 hover:text-teal-600 border border-stone-300/60 rounded-full shadow transition-colors"
-                                style={{ width: 13, height: 13, minWidth: 13 }}
-                                aria-label="Zoom avant"
-                              >
-                                <span className="text-[9px] font-black leading-none">+</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setBackMapZoom((z) => Math.max(5, z - 1))
-                                }}
-                                className="flex items-center justify-center bg-white/80 hover:bg-white/95 text-stone-600 hover:text-teal-600 border border-stone-300/60 rounded-full shadow transition-colors"
-                                style={{ width: 13, height: 13, minWidth: 13 }}
-                                aria-label="Zoom arrière"
-                              >
-                                <span className="text-[9px] font-black leading-none">−</span>
-                              </button>
                             </div>
                             {/* Loupe dans un coin sans overlay au hover */}
                             <div className="absolute bottom-2 left-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">

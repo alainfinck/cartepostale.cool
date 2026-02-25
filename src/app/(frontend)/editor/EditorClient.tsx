@@ -135,6 +135,19 @@ const SHOW_AI_IMAGE_GENERATION = false
 /** Options carte à gratter et puzzle : masquées pour l'instant, à réactiver plus tard */
 const SHOW_SCRATCH_PUZZLE_OPTIONS = false
 
+/** Catégories pour lesquelles la carte au verso est masquée par défaut */
+const NO_MAP_CATEGORIES: TemplateCategory[] = [
+  'birthday',
+  'invitation',
+  'birth',
+  'christmas',
+  'wedding',
+  'graduation',
+  'romantic',
+  'festive',
+  'abstract',
+]
+
 const DEFAULT_FRONT_FILTER: FrontImageFilter = {
   brightness: 100,
   contrast: 100,
@@ -1016,6 +1029,7 @@ export default function EditorPage() {
   const [senderEmail, setSenderEmail] = useState('')
   const [location, setLocation] = useState('Antibes, France')
   const [suggestions, setSuggestions] = useState<any[]>([])
+  const [hideMap, setHideMap] = useState(false)
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [allowComments, setAllowComments] = useState(true)
   const [isPublic, setIsPublic] = useState(false)
@@ -1282,6 +1296,8 @@ export default function EditorPage() {
         if (doc.recipientName != null) setRecipientName(doc.recipientName)
         if (doc.senderName != null) setSenderName(doc.senderName)
         if (doc.location != null) setLocation(doc.location)
+        if (doc.hideMap != null) setHideMap(doc.hideMap)
+        if (doc.coords != null) setCoords(doc.coords)
         if (doc.frontCaption != null) setFrontCaption(doc.frontCaption)
         if (doc.frontEmoji != null) setFrontEmoji(doc.frontEmoji)
         if (doc.frontCaptionPosition?.x != null || doc.frontCaptionPosition?.y != null) {
@@ -1460,6 +1476,8 @@ export default function EditorPage() {
       senderName,
       senderEmail,
       location,
+      hideMap,
+      coords,
       stampStyle,
       stampLabel,
       stampYear,
@@ -1500,6 +1518,8 @@ export default function EditorPage() {
     senderName,
     senderEmail,
     location,
+    hideMap,
+    coords,
     stampStyle,
     stampLabel,
     stampYear,
@@ -1548,6 +1568,8 @@ export default function EditorPage() {
           if (data.senderName) setSenderName(data.senderName)
           if (data.senderEmail) setSenderEmail(data.senderEmail)
           if (data.location) setLocation(data.location)
+          if (data.hideMap != null) setHideMap(data.hideMap)
+          if (data.coords) setCoords(data.coords)
           if (data.stampStyle) setStampStyle(data.stampStyle)
           if (data.stampLabel) setStampLabel(data.stampLabel)
           if (data.stampYear) setStampYear(data.stampYear)
@@ -1774,7 +1796,10 @@ export default function EditorPage() {
     if (template.message) setMessage(template.message)
     if (template.location) setLocation(template.location)
     if (template.stampStyle) setStampStyle(template.stampStyle)
-    if (template.category) setEventType(template.category as TemplateCategory)
+    if (template.category) {
+      setHideMap(NO_MAP_CATEGORIES.includes(template.category))
+      setEventType(template.category as TemplateCategory)
+    }
     try {
       const resized = await urlToResizedDataUrl(template.imageUrl)
       setFrontImage(resized)
@@ -2201,8 +2226,9 @@ export default function EditorPage() {
       recipientName: recipientName || '',
       senderName: senderName || '',
       senderEmail: senderEmail || undefined,
-
       location: location || '',
+      hideMap,
+      coords: coords || undefined,
       stampStyle,
       stampLabel: stampLabel.trim() || undefined,
       stampYear: stampYear.trim() || undefined,
@@ -2216,7 +2242,6 @@ export default function EditorPage() {
       stickers,
       emojiStickers: emojiStickers.length > 0 ? emojiStickers : undefined,
       mediaItems,
-      coords: coords || undefined,
       scratchCardEnabled,
       puzzleCardEnabled,
       puzzleCardDifficulty,
@@ -2270,6 +2295,9 @@ export default function EditorPage() {
           ...currentPostcard,
           message: tpl.message ?? currentPostcard.message,
           location: tpl.location ?? currentPostcard.location,
+          hideMap: tpl.category
+            ? NO_MAP_CATEGORIES.includes(tpl.category)
+            : currentPostcard.hideMap,
           stampStyle: tpl.stampStyle ?? currentPostcard.stampStyle,
         }
       }
@@ -4675,6 +4703,21 @@ export default function EditorPage() {
                         <Locate size={18} />
                       </button>
                     </div>
+
+                    {/* Checkbox pour masquer la carte */}
+                    <div className="mt-3 flex items-center gap-2 mb-2">
+                      <input
+                        type="checkbox"
+                        id="show-map"
+                        checked={!hideMap}
+                        onChange={(e) => setHideMap(!e.target.checked)}
+                        className="w-4 h-4 rounded text-teal-600 focus:ring-teal-500 border-stone-300"
+                      />
+                      <label htmlFor="show-map" className="text-sm text-stone-700 cursor-pointer">
+                        Afficher la carte géographique au verso
+                      </label>
+                    </div>
+
                     <p className="mt-2 text-[11px] text-stone-400 flex items-start gap-1.5">
                       <Info size={12} className="shrink-0 mt-0.5" />
                       Ce lieu apparaîtra sur le timbre et la carte au verso.

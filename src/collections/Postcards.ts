@@ -410,5 +410,13 @@ export const Postcards: CollectionConfig = {
         description: "Titre de la musique d'ambiance pour affichage",
       },
     },
+    {
+      name: 'hideMap',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Masquer la carte géographique au verso de la carte',
+      },
+    },
   ],
 }

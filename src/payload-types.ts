@@ -439,6 +439,10 @@ export interface Postcard {
    * Titre de la musique d'ambiance pour affichage
    */
   backgroundMusicTitle?: string | null;
+  /**
+   * Masquer la carte géographique au verso de la carte
+   */
+  hideMap?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1081,6 +1085,7 @@ export interface PostcardsSelect<T extends boolean = true> {
   audioDuration?: T;
   backgroundMusic?: T;
   backgroundMusicTitle?: T;
+  hideMap?: T;
   updatedAt?: T;
   createdAt?: T;
 }

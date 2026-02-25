@@ -3,9 +3,12 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MediaItem } from '@/types'
-import { ChevronLeft, ChevronRight, X, StickyNote, MapPin } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X, StickyNote, MapPin, RotateCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getOptimizedImageUrl, DISPLAY_MAX_WIDTH } from '@/lib/image-processing'
+
+import dynamic from 'next/dynamic'
+const MiniMap = dynamic(() => import('@/components/postcard/MiniMap'), { ssr: false })
 
 export interface AlbumPolaroidLightboxProps {
   mediaItems: MediaItem[]
@@ -118,6 +121,16 @@ export default function AlbumPolaroidLightbox({
     e?.stopPropagation()
     paginate(1)
   }
+
+  useEffect(() => {
+    // Preload all images
+    sortedMediaItems.forEach((item) => {
+      if (item.type !== 'video' && item.url) {
+        const img = new Image()
+        img.src = getOptimizedImageUrl(item.url, { width: displayWidth })
+      }
+    })
+  }, [sortedMediaItems, displayWidth])
 
   if (sortedMediaItems.length === 0) return null
 
@@ -287,6 +300,29 @@ export default function AlbumPolaroidLightbox({
                       className="w-full h-auto block"
                     />
                   )}
+                  {/* Diapo Note Overlay directly on the photo */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                    {current.location && (
+                      <div className="flex items-center gap-1.5 text-white/90 text-xs font-semibold mb-2">
+                        <MapPin size={12} className="text-teal-400" />
+                        <span className="truncate">{current.location}</span>
+                      </div>
+                    )}
+                    {current.note && (
+                      <div className="group/note">
+                        <p className="text-white text-sm leading-relaxed line-clamp-2 md:line-clamp-3">
+                          {current.note}
+                        </p>
+                        <button
+                          onClick={() => setIsFlipped(true)}
+                          className="mt-2 flex items-center gap-1 text-teal-300 hover:text-teal-200 text-xs font-bold transition-colors opacity-100"
+                        >
+                          <RotateCw size={12} />
+                          <span>Voir où ça a été pris</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
                 /* Mode photo entière : bordure blanche épaisse uniquement autour de la photo */
@@ -313,94 +349,119 @@ export default function AlbumPolaroidLightbox({
                       style={{ maxHeight: 'calc(85vh - 20px)', maxWidth: 'calc(95vw - 20px)' }}
                     />
                   )}
-                  {current.location && (
-                    <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 px-3 py-1.5 bg-black/60 backdrop-blur-sm text-white rounded-full text-xs font-medium">
-                      <MapPin size={12} className="flex-none" />
-                      <span>{current.location}</span>
-                    </div>
-                  )}
-                  {current.note && (
-                    <div className="absolute bottom-3 right-3 z-10">
-                      <button
-                        onClick={() => setIsFlipped(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-black/60 hover:bg-black/80 text-white rounded-full text-xs font-bold transition-all backdrop-blur-sm border border-white/20"
-                      >
-                        <StickyNote size={14} />
-                        <span>Lire la note</span>
-                      </button>
-                    </div>
-                  )}
+                  {/* Entire Photo Note Overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                    {current.location && (
+                      <div className="flex items-center gap-1.5 text-white/90 text-xs font-semibold mb-2">
+                        <MapPin size={12} className="text-teal-400" />
+                        <span className="truncate">{current.location}</span>
+                      </div>
+                    )}
+                    {current.note && (
+                      <div className="max-w-xl">
+                        <p className="text-white text-sm leading-relaxed line-clamp-2 md:line-clamp-3">
+                          {current.note}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {/* FRONT BOTTOM — Localisation + Lire la note (diapo only) */}
-              {viewMode === 'diapo' && (current.note || current.location) && (
+              {/* FRONT BOTTOM — (diapo only, empty space to allow for authentic look since note is inside) */}
+              {viewMode === 'diapo' && (
                 <div
-                  className="absolute bottom-0 left-0 right-0 h-16 sm:h-20 px-4 sm:px-6 z-10 flex items-center justify-between gap-2"
+                  className="absolute bottom-0 left-0 right-0 h-16 sm:h-20 px-4 sm:px-6 z-10 flex items-center justify-end"
                   style={{ backfaceVisibility: 'hidden' }}
                 >
-                  {current.location ? (
-                    <div className="flex items-center gap-1 text-stone-400 text-xs min-w-0 flex-1">
-                      <MapPin size={11} className="text-teal-500 flex-none" />
-                      <span className="truncate">{current.location}</span>
-                    </div>
-                  ) : (
-                    <div />
-                  )}
-                  {current.note && (
-                    <button
-                      onClick={() => setIsFlipped(true)}
-                      className="flex-none flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-full text-xs font-bold transition-all shadow-sm hover:scale-105 active:scale-95"
-                    >
-                      <StickyNote size={14} />
-                      <span>Lire la note</span>
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setIsFlipped(true)}
+                    className="flex-none flex items-center gap-2 px-3 py-1.5 bg-stone-100/50 hover:bg-stone-200 text-stone-600 rounded-full text-[10px] uppercase font-bold tracking-widest transition-all shadow-sm hover:scale-105 active:scale-95 border border-stone-200"
+                    title="Voir au dos"
+                  >
+                    <RotateCw size={12} />
+                    <span>Tourner</span>
+                  </button>
                 </div>
               )}
 
-              {/* BACK FACE — note */}
+              {/* BACK FACE — Map / localisation */}
               <div
-                className="absolute inset-0 rounded-sm overflow-hidden flex flex-col items-center justify-center p-8 shadow-inner"
+                className="absolute inset-0 rounded-sm overflow-hidden flex flex-col p-4 bg-[#fdfbf7] shadow-inner"
                 style={{
                   backfaceVisibility: 'hidden',
                   transform: 'rotateY(180deg)',
-                  background:
-                    'linear-gradient(145deg, #fef3c7 0%, #fffbeb 30%, #fefce8 60%, #fef9c3 100%)',
+                  background: 'linear-gradient(145deg, #fdfbf7 0%, #f9f6ef 50%, #f4eee2 100%)',
                 }}
               >
                 <div
-                  className="absolute inset-0 opacity-[0.06]"
+                  className="absolute inset-0 opacity-[0.03] pointer-events-none z-0"
                   style={{
                     backgroundImage:
-                      'repeating-linear-gradient(0deg, transparent, transparent 31px, #92400e 31px, #92400e 32px)',
+                      'repeating-linear-gradient(45deg, #886240 0px, #886240 1px, transparent 1px, transparent 10px)',
                   }}
                 />
-                <div className="relative z-10 max-w-md text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 text-amber-600 rounded-full mb-6 shadow-sm">
-                    <StickyNote size={24} />
+
+                {/* Header dos */}
+                <div className="w-full flex justify-between items-start mb-4 relative z-10 px-2 pt-2">
+                  <div className="flex-1">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1 flex items-center gap-1.5">
+                      <MapPin size={10} className="text-teal-500" />
+                      Lieu de prise de vue
+                    </p>
+                    <h3 className="text-lg md:text-xl font-serif text-stone-800 font-bold leading-tight line-clamp-2">
+                      {current.location || 'Localisation inconnue'}
+                    </h3>
                   </div>
-                  <p className="text-xl md:text-2xl font-serif text-stone-800 leading-relaxed italic">
-                    &ldquo;
-                    {current.note || 'Pas de note pour cette photo.'}
-                    &rdquo;
-                  </p>
-                  <p className="mt-6 text-sm text-stone-500 font-bold uppercase tracking-wider">
-                    — {senderName}
-                  </p>
-                </div>
-                <div className="absolute top-4 right-4 opacity-20">
-                  <div className="w-16 h-20 border-2 border-dashed border-amber-800 rounded-sm flex items-center justify-center">
-                    <span className="text-2xl">📮</span>
+                  <div className="opacity-40">
+                    <div className="w-12 h-14 border-2 border-dashed border-stone-400 rounded-sm flex items-center justify-center bg-[#fdfbf7]">
+                      <span className="text-xs uppercase font-bold text-stone-300 transform -rotate-12">
+                        POST
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="absolute bottom-4 sm:bottom-6 left-0 right-0 flex justify-center z-20">
+
+                {/* Map Container */}
+                <div className="flex-1 w-full bg-stone-200 rounded-md overflow-hidden relative border border-stone-300 shadow-inner z-10 flex items-center justify-center">
+                  {current.exif &&
+                  (current.exif as any).latitude &&
+                  (current.exif as any).longitude ? (
+                    <div className="absolute inset-0">
+                      {/* Using dynamic import or standard MiniMap depending on how Leaflet handles it */}
+                      <MiniMap
+                        coords={{
+                          lat: (current.exif as any).latitude,
+                          lng: (current.exif as any).longitude,
+                        }}
+                        zoom={12}
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-stone-500 font-medium text-sm flex flex-col items-center gap-2">
+                      <MapPin size={24} className="text-teal-600/50" />
+                      <span>Coordonnées GPS absentes</span>
+                    </p>
+                  )}
+                </div>
+
+                {/* Note complete (if it was clamped) */}
+                {current.note && (
+                  <div className="mt-4 px-2 w-full relative z-10 text-center">
+                    <p className="text-sm font-serif text-stone-700 leading-relaxed italic line-clamp-3">
+                      &ldquo;{current.note}&rdquo;
+                    </p>
+                  </div>
+                )}
+
+                {/* Return button */}
+                <div className="mt-4 flex justify-center pb-2 relative z-10">
                   <button
                     onClick={() => setIsFlipped(false)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-sm font-bold shadow-lg transition-all hover:scale-105 active:scale-95"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-full text-sm font-bold shadow-lg transition-all hover:scale-105 active:scale-95"
                   >
-                    <StickyNote size={14} />
-                    <span>Voir la photo</span>
+                    <RotateCw size={14} className="transform scale-x-[-1]" />
+                    <span>Retourner</span>
                   </button>
                 </div>
               </div>

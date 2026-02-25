@@ -127,6 +127,7 @@ export interface Postcard {
   scratchCardImage?: string
   puzzleCardEnabled?: boolean
   puzzleCardDifficulty?: '3' | '4' | '5'
+  hideMap?: boolean
 }
 
 export interface Sticker {
