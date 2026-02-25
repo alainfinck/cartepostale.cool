@@ -281,16 +281,6 @@ export function EditPostcardForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="location">Lieu</Label>
-        <Input
-          id="location"
-          value={formData.location}
-          onChange={(e) => setFormData((prev) => ({ ...prev, location: e.target.value }))}
-          placeholder="Lieu (ex: Paris, France)"
-        />
-      </div>
-
-      <div className="space-y-2">
         <Label htmlFor="message">Message</Label>
         <Textarea
           id="message"
@@ -299,6 +289,16 @@ export function EditPostcardForm({
           placeholder="Écrivez votre message ici..."
           className="min-h-[380px] resize-none"
           required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="location">Lieu</Label>
+        <Input
+          id="location"
+          value={formData.location}
+          onChange={(e) => setFormData((prev) => ({ ...prev, location: e.target.value }))}
+          placeholder="Lieu (ex: Paris, France)"
         />
       </div>
 

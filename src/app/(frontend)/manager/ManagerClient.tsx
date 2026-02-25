@@ -1087,6 +1087,9 @@ export default function ManagerClient({
           onOpenShareContribution={
             useEspaceClientActions ? () => setShareContributionModalOpen(true) : undefined
           }
+          onOpenAlbumEdit={
+            selectedPostcard ? () => setAlbumPostcard(selectedPostcard) : undefined
+          }
         />
 
         {/* Edit Dialog */}
@@ -1519,13 +1522,13 @@ function GridCard({
               )}
               onClick={onSelect}
             >
-              <div className="absolute top-1 left-1 z-20" onClick={(e) => e.stopPropagation()}>
+              <div className="absolute top-0.5 left-0.5 z-20" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
                   checked={selected}
                   onChange={onToggleSelect}
                   onClick={(e) => e.stopPropagation()}
-                  className="h-2 w-2 rounded-[3px] border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer bg-white/90 shadow-sm transition-transform hover:scale-110"
+                  className="size-[25px] min-w-0 min-h-0 rounded-[3px] border border-stone-300 text-teal-600 focus:ring-1 focus:ring-teal-500 cursor-pointer bg-white/90 shadow-sm transition-transform hover:scale-110 appearance-none checked:bg-teal-500 checked:border-teal-500 checked:bg-no-repeat checked:bg-center checked:[background-image:url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%208%208%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%221.8%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M1%202.5L3%204.5L7%201%22%2F%3E%3C%2Fsvg%3E')] checked:[background-size:65%]"
                 />
               </div>
 
@@ -1995,12 +1998,14 @@ function DetailsSheet(props: {
   activeTab: 'details' | 'stats' | 'edit' | 'gallery'
   onTabChange: (tab: 'details' | 'stats' | 'edit' | 'gallery') => void
   onSuccess: () => void
+  onOpenAlbumEdit?: () => void
 }) {
   const {
     activeTab,
     onTabChange,
     onSuccess,
     postcard,
+    onOpenAlbumEdit,
     viewStats,
     isOpen,
     onClose,
@@ -2081,7 +2086,6 @@ function DetailsSheet(props: {
                   {postcard.isPublic ? '🌍 Publique' : '🔒 Privée'}
                 </Button>
               )}
-              <StatusBadge status={postcard.status || 'draft'} />
             </div>
           </div>
           <div className="mt-4 flex w-full rounded-xl border border-border/40 bg-muted/30 p-1">
@@ -2364,9 +2368,22 @@ function DetailsSheet(props: {
 
             {activeTab === 'gallery' && (
               <div className="space-y-6">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">
-                  Photos de la galerie
-                </h4>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">
+                    Photos de la galerie
+                  </h4>
+                  {onOpenAlbumEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onOpenAlbumEdit}
+                      className="gap-2 text-teal-700 border-teal-200 hover:bg-teal-50"
+                    >
+                      <Pencil size={14} />
+                      Modifier la galerie
+                    </Button>
+                  )}
+                </div>
                 {frontendPostcard.mediaItems.length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {frontendPostcard.mediaItems.map((item) => (
