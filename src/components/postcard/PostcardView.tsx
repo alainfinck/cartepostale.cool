@@ -2004,15 +2004,15 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   {/* Mini carte au verso : avec label de lieu juste au dessus */}
                   {(postcard.coords || postcard.location) && (
                     <div className="mt-auto flex flex-col gap-1.5 w-full flex-1 min-h-0">
-                      <div className="px-2 sm:px-3 flex items-center gap-1.5 text-stone-400 shrink-0">
-                        <MapPin size={10} className="text-teal-500/80" />
-                        <span className="text-[9px] font-bold uppercase tracking-[0.15em] truncate">
+                      <div className="px-2 sm:px-4 flex items-center gap-2 text-stone-500 shrink-0">
+                        <MapPin size={14} className="text-teal-600" />
+                        <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.2em] truncate">
                           {postcard.location || 'Localisation'}
                         </span>
                       </div>
                       <div
                         className={cn(
-                          'mb-1 sm:mb-2 w-full flex-1 min-h-[120px] rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner relative',
+                          'mb-1 sm:mb-2 w-full flex-1 min-h-[120px] sm:min-h-[200px] rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner relative',
                         )}
                       >
                         {postcard.coords ? (

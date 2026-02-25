@@ -262,25 +262,85 @@ const STEPS = [
 
 type StepId = (typeof STEPS)[number]['id']
 
-const TEMPLATE_CATEGORIES: { key: TemplateCategory | 'all'; label: string; icon?: string }[] = [
+const TEMPLATE_CATEGORIES: {
+  key: TemplateCategory | 'all'
+  label: string
+  icon?: string
+  imageUrl?: string
+}[] = [
   { key: 'all', label: 'Tous' },
   // Occasions
-  { key: 'birthday', label: 'Anniversaire', icon: '🎂' },
-  { key: 'vacation', label: 'Vacances', icon: '🌴' },
-  { key: 'invitation', label: 'Invitation', icon: '✉️' },
-  { key: 'birth', label: 'Naissance', icon: '👶' },
-  { key: 'christmas', label: 'Noël', icon: '🎄' },
-  { key: 'wedding', label: 'Mariage', icon: '💍' },
-  { key: 'graduation', label: 'Diplôme', icon: '🎓' },
+  {
+    key: 'birthday',
+    label: 'Anniversaire',
+    icon: '🎂',
+    imageUrl: '/images/themes/theme_birthday.png',
+  },
+  { key: 'vacation', label: 'Vacances', icon: '🌴', imageUrl: '/images/themes/theme_vacation.png' },
+  {
+    key: 'invitation',
+    label: 'Invitation',
+    icon: '✉️',
+    imageUrl: '/images/themes/theme_invitation.png',
+  },
+  { key: 'birth', label: 'Naissance', icon: '👶', imageUrl: '/images/themes/theme_birth.png' },
+  { key: 'christmas', label: 'Noël', icon: '🎄', imageUrl: '/images/themes/theme_christmas.png' },
+  { key: 'wedding', label: 'Mariage', icon: '💍', imageUrl: '/images/themes/theme_wedding.png' },
+  {
+    key: 'graduation',
+    label: 'Diplôme',
+    icon: '🎓',
+    imageUrl: '/images/themes/theme_graduation.png',
+  },
   // Destinations & scènes
-  { key: 'beach', label: 'Plage', icon: '\u{1F3D6}\u{FE0F}' },
-  { key: 'city', label: 'Ville', icon: '\u{1F3D9}\u{FE0F}' },
-  { key: 'nature', label: 'Nature', icon: '\u{1F33F}' },
-  { key: 'travel', label: 'Voyage', icon: '\u2708\u{FE0F}' },
-  { key: 'romantic', label: 'Romantique', icon: '\u2764\u{FE0F}' },
-  { key: 'festive', label: 'F\u00EAtes', icon: '\u{1F389}' },
-  { key: 'food', label: 'Gastronomie', icon: '\u{1F37D}\u{FE0F}' },
-  { key: 'abstract', label: 'Abstrait', icon: '\u{1F3A8}' },
+  {
+    key: 'beach',
+    label: 'Plage',
+    icon: '\u{1F3D6}\u{FE0F}',
+    imageUrl: '/images/themes/theme_beach_main.png',
+  },
+  {
+    key: 'city',
+    label: 'Ville',
+    icon: '\u{1F3D9}\u{FE0F}',
+    imageUrl: '/images/themes/theme_city.png',
+  },
+  {
+    key: 'nature',
+    label: 'Nature',
+    icon: '\u{1F33F}',
+    imageUrl: '/images/themes/theme_nature.png',
+  },
+  {
+    key: 'travel',
+    label: 'Voyage',
+    icon: '\u2708\u{FE0F}',
+    imageUrl: '/images/themes/theme_travel.png',
+  },
+  {
+    key: 'romantic',
+    label: 'Romantique',
+    icon: '\u2764\u{FE0F}',
+    imageUrl: '/images/themes/theme_romantic.png',
+  },
+  {
+    key: 'festive',
+    label: 'Fêtes',
+    icon: '\u{1F389}',
+    imageUrl: '/images/themes/theme_festive.png',
+  },
+  {
+    key: 'food',
+    label: 'Gastronomie',
+    icon: '\u{1F37D}\u{FE0F}',
+    imageUrl: '/images/themes/theme_food.png',
+  },
+  {
+    key: 'abstract',
+    label: 'Abstrait',
+    icon: '\u{1F3A8}',
+    imageUrl: '/images/themes/theme_abstract.png',
+  },
 ]
 
 /** Catégories d'occasions affichées en raccourcis dans la section templates */
@@ -303,7 +363,7 @@ const SAMPLE_TEMPLATES: Template[] = [
     id: 'tpl-1',
     name: 'Plage tropicale',
     description: 'Sable blanc et eaux cristallines',
-    imageUrl: 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg',
+    imageUrl: '/images/themes/theme_beach_main.png',
     category: 'beach',
     frontCaption: 'Paradis tropical',
     frontEmoji: '\u{1F334}',
@@ -343,7 +403,7 @@ const SAMPLE_TEMPLATES: Template[] = [
     id: 'tpl-4',
     name: 'Paris romantique',
     description: 'La Tour Eiffel au cr\u00E9puscule',
-    imageUrl: 'https://img.cartepostale.cool/demo/photo-1502602898657-3e91760cbb34.jpg',
+    imageUrl: '/images/themes/theme_city.png',
     category: 'city',
     frontCaption: 'Paris, je t\u2019aime',
     frontEmoji: '\u2764\u{FE0F}',
@@ -396,7 +456,7 @@ const SAMPLE_TEMPLATES: Template[] = [
     id: 'tpl-8',
     name: 'Alpes suisses',
     description: 'Sommets enneig\u00E9s majestueux',
-    imageUrl: 'https://img.cartepostale.cool/demo/photo-1531366936337-7c912a4589a7.jpg',
+    imageUrl: '/images/themes/theme_nature.png',
     category: 'nature',
     frontCaption: 'Sommets majestueux',
     frontEmoji: '\u{1F3D4}\u{FE0F}',
@@ -462,7 +522,7 @@ const SAMPLE_TEMPLATES: Template[] = [
     id: 'tpl-13',
     name: 'C\u00F4te Amalfitaine',
     description: 'Villages color\u00E9s sur les falaises',
-    imageUrl: 'https://img.cartepostale.cool/demo/photo-1534113414509-0eec2bfb493f.jpg',
+    imageUrl: '/images/themes/theme_travel.png',
     category: 'travel',
     frontCaption: 'Dolce Vita',
     frontEmoji: '\u{1F1EE}\u{1F1F9}',
@@ -515,7 +575,7 @@ const SAMPLE_TEMPLATES: Template[] = [
     id: 'tpl-17',
     name: 'Amour \u00E9ternel',
     description: 'Coucher de soleil romantique',
-    imageUrl: 'https://img.cartepostale.cool/demo/photo-1493976040374-85c8e12f0c0e.jpg',
+    imageUrl: '/images/themes/theme_romantic.png',
     category: 'romantic',
     frontCaption: 'Avec tout mon amour',
     frontEmoji: '\u{1F495}',
@@ -542,7 +602,7 @@ const SAMPLE_TEMPLATES: Template[] = [
     id: 'tpl-19',
     name: 'Feux d\u2019artifice',
     description: 'C\u00E9l\u00E9bration lumineuse dans le ciel',
-    imageUrl: 'https://img.cartepostale.cool/demo/photo-1530103043960-ef38714abb15.jpg',
+    imageUrl: '/images/themes/theme_festive.png',
     category: 'festive',
     frontCaption: 'F\u00EAte et lumi\u00E8res',
     frontEmoji: '\u{1F386}',
@@ -569,7 +629,7 @@ const SAMPLE_TEMPLATES: Template[] = [
     id: 'tpl-21',
     name: 'Pause caf\u00E9',
     description: 'Caf\u00E9 et douceurs du matin',
-    imageUrl: 'https://img.cartepostale.cool/demo/photo-1527333656061-ca7adf608ae1.jpg',
+    imageUrl: '/images/themes/theme_food.png',
     category: 'food',
     frontCaption: 'Coffee time',
     frontEmoji: '\u2615',
@@ -596,12 +656,12 @@ const SAMPLE_TEMPLATES: Template[] = [
     id: 'tpl-25',
     name: 'Joyeux anniversaire',
     description: 'Gâteau et bougies pour fêter le grand jour',
-    imageUrl: 'https://img.cartepostale.cool/demo/photo-1464349153735-7db50ed83c84.jpg',
+    imageUrl: '/images/themes/theme_birthday.png',
     category: 'birthday',
     frontCaption: 'Joyeux anniversaire !',
     frontEmoji: '🎂',
     message:
-      'En ce jour si spécial, je pense très fort à toi ! Que cette nouvelle année t\'apporte tout ce que tu mérites : bonheur, santé et plein de belles aventures. Je t\'embrasse très fort !',
+      "En ce jour si spécial, je pense très fort à toi ! Que cette nouvelle année t'apporte tout ce que tu mérites : bonheur, santé et plein de belles aventures. Je t'embrasse très fort !",
     stampStyle: 'modern',
   },
   {
@@ -613,7 +673,7 @@ const SAMPLE_TEMPLATES: Template[] = [
     frontCaption: "C'est ta fête !",
     frontEmoji: '🎉',
     message:
-      'Un anniversaire, ça n\'arrive qu\'une fois par an – alors on fête ça en grand ! Tous mes vœux du fond du cœur, que ce jour soit aussi extraordinaire que tu l\'es.',
+      "Un anniversaire, ça n'arrive qu'une fois par an – alors on fête ça en grand ! Tous mes vœux du fond du cœur, que ce jour soit aussi extraordinaire que tu l'es.",
     stampStyle: 'modern',
   },
   // === Vacances (vacation) ===
@@ -621,7 +681,7 @@ const SAMPLE_TEMPLATES: Template[] = [
     id: 'tpl-27',
     name: 'Paradis estival',
     description: 'Hamac et cocotiers au bord de la mer',
-    imageUrl: 'https://img.cartepostale.cool/demo/photo-1506197603052-3cc9c3a201bd.jpg',
+    imageUrl: '/images/themes/theme_vacation.png',
     category: 'vacation',
     frontCaption: 'En vacances !',
     frontEmoji: '🌴',
@@ -638,7 +698,7 @@ const SAMPLE_TEMPLATES: Template[] = [
     frontCaption: 'La route nous appelle',
     frontEmoji: '🚗',
     message:
-      'En route pour l\'aventure ! La fenêtre ouverte, la musique à fond et le paysage qui défile… Le road trip de rêve. On vous envoie plein de soleil depuis la route !',
+      "En route pour l'aventure ! La fenêtre ouverte, la musique à fond et le paysage qui défile… Le road trip de rêve. On vous envoie plein de soleil depuis la route !",
     stampStyle: 'modern',
   },
   // === Invitation ===
@@ -646,7 +706,7 @@ const SAMPLE_TEMPLATES: Template[] = [
     id: 'tpl-29',
     name: 'Soirée élégante',
     description: 'Table dressée pour une occasion spéciale',
-    imageUrl: 'https://img.cartepostale.cool/demo/photo-1524824267900-2b3a7fc8a408.jpg',
+    imageUrl: '/images/themes/theme_invitation.png',
     category: 'invitation',
     frontCaption: 'Vous êtes invités !',
     frontEmoji: '✉️',
@@ -656,7 +716,7 @@ const SAMPLE_TEMPLATES: Template[] = [
   },
   {
     id: 'tpl-30',
-    name: 'Fête d\'été',
+    name: "Fête d'été",
     description: 'Ambiance festive et conviviale',
     imageUrl: 'https://img.cartepostale.cool/demo/photo-1530103043960-ef38714abb15.jpg',
     category: 'invitation',
@@ -670,25 +730,25 @@ const SAMPLE_TEMPLATES: Template[] = [
   {
     id: 'tpl-31',
     name: 'Bienvenue au monde',
-    description: 'La magie d\'une nouvelle naissance',
-    imageUrl: 'https://img.cartepostale.cool/demo/photo-1519689680058-324335c77eba.jpg',
+    description: "La magie d'une nouvelle naissance",
+    imageUrl: '/images/themes/theme_birth.png',
     category: 'birth',
     frontCaption: 'Bienvenue petit(e) !',
     frontEmoji: '👶',
     message:
-      'Une nouvelle petite étoile vient d\'illuminer notre vie. On est fous de joie et on voulait partager cette merveilleuse nouvelle avec vous. Bébé et maman se portent à merveille !',
+      "Une nouvelle petite étoile vient d'illuminer notre vie. On est fous de joie et on voulait partager cette merveilleuse nouvelle avec vous. Bébé et maman se portent à merveille !",
     stampStyle: 'classic',
   },
   {
     id: 'tpl-32b',
-    name: 'Douceur de l\'enfance',
+    name: "Douceur de l'enfance",
     description: 'Tendresse et délicatesse pour accueillir bébé',
     imageUrl: 'https://img.cartepostale.cool/demo/photo-1555252333-9f8e92e65df9.jpg',
     category: 'birth',
     frontCaption: 'Notre trésor est né !',
     frontEmoji: '🌸',
     message:
-      'Après tant d\'impatience, notre petit miracle est arrivé. Les yeux grands ouverts sur le monde, il (elle) nous remplit déjà d\'un amour infini. Venez vite le (la) rencontrer !',
+      "Après tant d'impatience, notre petit miracle est arrivé. Les yeux grands ouverts sur le monde, il (elle) nous remplit déjà d'un amour infini. Venez vite le (la) rencontrer !",
     stampStyle: 'classic',
   },
   // === Noël (christmas) ===
@@ -696,7 +756,7 @@ const SAMPLE_TEMPLATES: Template[] = [
     id: 'tpl-32',
     name: 'Joyeux Noël',
     description: 'Lumières et magie de Noël',
-    imageUrl: 'https://img.cartepostale.cool/demo/photo-1512389142860-9c449e58a543.jpg',
+    imageUrl: '/images/themes/theme_christmas.png',
     category: 'christmas',
     frontCaption: 'Joyeux Noël !',
     frontEmoji: '🎄',
@@ -713,20 +773,20 @@ const SAMPLE_TEMPLATES: Template[] = [
     frontCaption: 'Magie de Noël',
     frontEmoji: '⛄',
     message:
-      'Le sapin scintille, la neige tombe et le chocolat chaud fume… C\'est Noël ! On pense à vous avec tout notre amour et on vous souhaite les plus belles fêtes de fin d\'année.',
+      "Le sapin scintille, la neige tombe et le chocolat chaud fume… C'est Noël ! On pense à vous avec tout notre amour et on vous souhaite les plus belles fêtes de fin d'année.",
     stampStyle: 'classic',
   },
   // === Mariage (wedding) ===
   {
     id: 'tpl-34',
     name: 'Notre plus beau jour',
-    description: 'Célébration d\'un amour éternel',
-    imageUrl: 'https://img.cartepostale.cool/demo/photo-1519741497674-611481863552.jpg',
+    description: "Célébration d'un amour éternel",
+    imageUrl: '/images/themes/theme_wedding.png',
     category: 'wedding',
     frontCaption: 'Nous nous sommes mariés !',
     frontEmoji: '💍',
     message:
-      'C\'est avec une joie immense que nous vous annonçons notre union. Ce jour restera gravé dans nos cœurs pour toujours. Merci d\'avoir partagé ce moment magique avec nous. Avec tout notre amour.',
+      "C'est avec une joie immense que nous vous annonçons notre union. Ce jour restera gravé dans nos cœurs pour toujours. Merci d'avoir partagé ce moment magique avec nous. Avec tout notre amour.",
     stampStyle: 'classic',
   },
   {
@@ -738,7 +798,7 @@ const SAMPLE_TEMPLATES: Template[] = [
     frontCaption: 'Oui, pour la vie !',
     frontEmoji: '💐',
     message:
-      'Entourés de ceux qu\'on aime, on a dit oui ! La cérémonie était absolument magique, les fleurs sublimes et les émotions au rendez-vous. On est si heureux de partager cette nouvelle avec vous !',
+      "Entourés de ceux qu'on aime, on a dit oui ! La cérémonie était absolument magique, les fleurs sublimes et les émotions au rendez-vous. On est si heureux de partager cette nouvelle avec vous !",
     stampStyle: 'modern',
   },
   // === Diplôme (graduation) ===
@@ -746,12 +806,12 @@ const SAMPLE_TEMPLATES: Template[] = [
     id: 'tpl-36',
     name: 'Félicitations diplômé !',
     description: 'Remise de diplôme et réussite scolaire',
-    imageUrl: 'https://img.cartepostale.cool/demo/photo-1523050854058-8df90110c9f1.jpg',
+    imageUrl: '/images/themes/theme_graduation.png',
     category: 'graduation',
     frontCaption: 'Mission accomplie !',
     frontEmoji: '🎓',
     message:
-      'Toutes mes félicitations pour l\'obtention de ton diplôme ! Des années de travail et de persévérance ont payé. Tu peux être très fier(ère) de toi. Un avenir brillant t\'attend – je le sais !',
+      "Toutes mes félicitations pour l'obtention de ton diplôme ! Des années de travail et de persévérance ont payé. Tu peux être très fier(ère) de toi. Un avenir brillant t'attend – je le sais !",
     stampStyle: 'modern',
   },
   // === Abstrait ===
@@ -759,7 +819,7 @@ const SAMPLE_TEMPLATES: Template[] = [
     id: 'tpl-23',
     name: 'D\u00E9sert dor\u00E9',
     description: 'Dunes de sable \u00E0 l\u2019infini',
-    imageUrl: 'https://img.cartepostale.cool/demo/photo-1509316785289-025f5b846b35.jpg',
+    imageUrl: '/images/themes/theme_abstract.png',
     category: 'abstract',
     frontCaption: 'Oc\u00E9an de sable',
     frontEmoji: '\u{1F3DC}\u{FE0F}',
@@ -1001,7 +1061,9 @@ export default function EditorPage() {
   const [showFullscreen, setShowFullscreen] = useState(false)
   const [showRecipientModal, setShowRecipientModal] = useState(false)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
-  const [templateModalCategory, setTemplateModalCategory] = useState<TemplateCategory | 'all'>('all')
+  const [templateModalCategory, setTemplateModalCategory] = useState<TemplateCategory | 'all'>(
+    'all',
+  )
   const [eventType, setEventType] = useState<TemplateCategory | null>(null)
   const [showPricingModal, setShowPricingModal] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<PostcardPlanId>('payant')
@@ -3022,6 +3084,49 @@ export default function EditorPage() {
                       </div>
                     </div>
 
+                    {/* Thèmes visuels avec images IA */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2.5">
+                        <p className="text-sm font-semibold text-stone-700">Explorer par Thèmes</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTemplateModalCategory('all')
+                            setShowTemplateModal(true)
+                          }}
+                          className="text-[10px] font-bold text-teal-600 uppercase tracking-widest hover:underline"
+                        >
+                          Tout voir
+                        </button>
+                      </div>
+                      <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-1 px-1">
+                        {TEMPLATE_CATEGORIES.filter((c) => c.key !== 'all').map((cat) => (
+                          <button
+                            key={cat.key}
+                            type="button"
+                            onClick={() => {
+                              setTemplateModalCategory(cat.key)
+                              setShowTemplateModal(true)
+                            }}
+                            className="flex-shrink-0 group relative w-28 h-20 rounded-2xl overflow-hidden border border-stone-100 shadow-sm transition-all hover:shadow-md hover:border-teal-200"
+                          >
+                            {cat.imageUrl && (
+                              <img
+                                src={cat.imageUrl}
+                                alt=""
+                                className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+                              />
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end p-2">
+                              <span className="text-[10px] font-bold text-white truncate w-full">
+                                {cat.label}
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     {/* Modèles sélectionnés */}
                     <div>
                       <div className="flex items-center justify-between mb-2.5">
@@ -3056,7 +3161,9 @@ export default function EditorPage() {
                                   ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-200'
                                   : 'border-stone-200 bg-white hover:border-teal-200 hover:bg-stone-50',
                               )}
-                              title={tpl.description ? `${tpl.name} – ${tpl.description}` : tpl.name}
+                              title={
+                                tpl.description ? `${tpl.name} – ${tpl.description}` : tpl.name
+                              }
                             >
                               <div className="h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-stone-100">
                                 <img
@@ -6279,25 +6386,41 @@ export default function EditorPage() {
               </button>
             </div>
 
-            {/* Category filter pills */}
-            <div className="shrink-0 border-b border-stone-100 px-4 py-3 overflow-x-auto">
-              <div className="flex gap-2 flex-nowrap min-w-max">
-                {TEMPLATE_CATEGORIES.map((cat) => (
-                  <button
-                    key={cat.key}
-                    type="button"
-                    onClick={() => setTemplateModalCategory(cat.key)}
-                    className={cn(
-                      'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all',
-                      templateModalCategory === cat.key
-                        ? 'bg-teal-500 text-white shadow-sm'
-                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200',
-                    )}
-                  >
-                    {cat.icon && <span>{cat.icon}</span>}
-                    {cat.label}
-                  </button>
-                ))}
+            {/* Category selection */}
+            <div className="shrink-0 border-b border-stone-100 bg-stone-50/30 px-4 py-4 overflow-x-auto">
+              <div className="flex gap-2.5 flex-nowrap min-w-max">
+                {TEMPLATE_CATEGORIES.map((cat) => {
+                  const isActive = templateModalCategory === cat.key
+                  return (
+                    <button
+                      key={cat.key}
+                      type="button"
+                      onClick={() => setTemplateModalCategory(cat.key)}
+                      className={cn(
+                        'group flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all border shadow-sm',
+                        isActive
+                          ? 'bg-teal-500 text-white border-teal-600 shadow-teal-100'
+                          : 'bg-white text-stone-600 border-stone-200 hover:border-teal-300 hover:bg-teal-50/50',
+                      )}
+                    >
+                      {cat.imageUrl ? (
+                        <div
+                          className={cn(
+                            'w-6 h-6 rounded-lg overflow-hidden border transition-all',
+                            isActive
+                              ? 'border-white/30'
+                              : 'border-stone-100 group-hover:border-teal-200',
+                          )}
+                        >
+                          <img src={cat.imageUrl} alt="" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        cat.icon && <span className="text-sm">{cat.icon}</span>
+                      )}
+                      {cat.label}
+                    </button>
+                  )
+                })}
               </div>
             </div>
 

@@ -34,7 +34,7 @@ export function FrontendLayoutWrapper({
       {!isPostcardView && <Navbar />}
       <main className="flex-grow">{children}</main>
       {!isPostcardView && <Footer />}
-      {!isPostcardView && <ScrollToTopButton />}
+      <ScrollToTopButton />
       {showExitIntent && <ExitIntentPopup />}
     </>
   )
