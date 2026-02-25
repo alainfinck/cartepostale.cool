@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Postcard } from '@/types'
 import { demoPostcards } from '@/data/demoPostcards'
@@ -22,20 +22,32 @@ import {
   Smartphone,
   Heart,
   Eye,
+  Code,
+  Copy,
+  Check,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import PostcardView from '@/components/postcard/PostcardView'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 import ComparisonSection from '@/components/home/ComparisonSection'
 import ShareHomeButtons from '@/components/social/ShareHomeButtons'
 import MobileFrame from '@/components/view/MobileFrame'
+
+const EMBED_DEMO_SLUG = 'demo-anniv'
 
 export default function Home() {
   const savedPostcards = demoPostcards
   const [fullScreenPostcard, setFullScreenPostcard] = useState<Postcard | null>(null)
   const [recipientViewPostcard, setRecipientViewPostcard] = useState<Postcard | null>(null)
   const [recipientModalEnvelopeOpened, setRecipientModalEnvelopeOpened] = useState(false)
+  const [embedOrigin, setEmbedOrigin] = useState('https://www.cartepostale.cool')
+  const [embedCopied, setEmbedCopied] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') setEmbedOrigin(window.location.origin)
+  }, [])
 
   const demoCard: Postcard = {
     id: 'demo-rv',
@@ -468,6 +480,79 @@ export default function Home() {
                 />
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section Intégrez une carte à votre site */}
+      <section
+        id="integrer"
+        className="relative py-20 md:py-24 overflow-hidden bg-white border-y border-stone-100"
+      >
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-teal-50 border border-teal-100 rounded-full text-teal-700 text-xs font-bold uppercase tracking-widest mb-4">
+              <Code size={12} />
+              <span>Intégration</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-4">
+              Intégrez une carte à votre site
+            </h2>
+            <p className="text-stone-600 text-lg max-w-2xl mx-auto">
+              Affichez une carte postale sur n&apos;importe quel site ou blog avec un simple code à
+              copier-coller. Idéal pour les blogs voyage, sites d&apos;agences ou portfolios.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-stone-200 bg-stone-50/50 p-6 md:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
+              <span className="text-sm font-semibold text-stone-700">Exemple de code iframe</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const code = `<iframe src="${embedOrigin}/carte/${EMBED_DEMO_SLUG}" width="100%" height="600" style="border:none; border-radius:12px; overflow:hidden;" title="Carte Postale"></iframe>`
+                  navigator.clipboard.writeText(code)
+                  setEmbedCopied(true)
+                  setTimeout(() => setEmbedCopied(false), 2000)
+                }}
+                className="shrink-0 border-stone-300 text-stone-700 hover:bg-teal-50 hover:border-teal-200"
+              >
+                {embedCopied ? (
+                  <>
+                    <Check size={14} className="mr-2 text-teal-600" />
+                    Copié
+                  </>
+                ) : (
+                  <>
+                    <Copy size={14} className="mr-2" />
+                    Copier le code
+                  </>
+                )}
+              </Button>
+            </div>
+            <Input
+              readOnly
+              value={`<iframe src="${embedOrigin}/carte/${EMBED_DEMO_SLUG}" width="100%" height="600" style="border:none; border-radius:12px; overflow:hidden;" title="Carte Postale"></iframe>`}
+              className="font-mono text-[10px] sm:text-xs text-stone-600 bg-white border-stone-200"
+            />
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/integrer">
+                <Button className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-semibold inline-flex items-center gap-2">
+                  Voir le guide d&apos;intégration <ArrowRight size={18} />
+                </Button>
+              </Link>
+            </div>
+          </div>
+          <div className="mt-8 rounded-2xl border border-stone-200 overflow-hidden bg-white shadow-sm">
+            <p className="text-center text-sm text-stone-500 py-2 bg-stone-50 border-b border-stone-100">
+              Aperçu
+            </p>
+            <iframe
+              src={`${embedOrigin}/carte/${EMBED_DEMO_SLUG}`}
+              title="Aperçu carte postale intégrée"
+              className="w-full border-0"
+              style={{ height: '360px' }}
+            />
           </div>
         </div>
       </section>

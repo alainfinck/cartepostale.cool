@@ -79,6 +79,7 @@ import {
 import { Postcard as PayloadPostcard, Media, PostcardTrackingLink } from '@/payload-types'
 import {
   getAllPostcards,
+  getAllUsers,
   updatePostcardStatus,
   deletePostcard,
   updatePostcard,

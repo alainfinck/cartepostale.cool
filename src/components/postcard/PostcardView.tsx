@@ -1176,7 +1176,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none z-0" />
 
-              {/* Loupe : afficher l'image de la face avant en grand */}
+              {/* Loupe : afficher l'image de la face avant en grand (en bas à droite) */}
               {!isFullscreen && !onCaptionPositionChange && frontImageSrc && (
                 <button
                   type="button"
@@ -1184,8 +1184,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     e.stopPropagation()
                     setIsFrontImageZoomOpen(true)
                   }}
-                  className="absolute z-30 flex items-center justify-center w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-lg border border-stone-200/80 text-stone-600 hover:text-stone-900 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-                  style={{ left: '776px', top: '655px' }}
+                  className="absolute right-12 bottom-3 sm:right-14 sm:bottom-4 z-30 flex items-center justify-center w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-lg border border-stone-200/80 text-stone-600 hover:text-stone-900 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   aria-label="Voir l'image en grand"
                 >
                   <Search size={18} strokeWidth={2} />
