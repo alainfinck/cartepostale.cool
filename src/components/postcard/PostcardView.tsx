@@ -1113,21 +1113,28 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {/* Emoji Stickers Rendering */}
               {postcard.emojiStickers && postcard.emojiStickers.length > 0 && (
                 <div className="absolute inset-0 pointer-events-none z-15">
-                  {postcard.emojiStickers.map((es) => (
-                    <div
+                  {postcard.emojiStickers.map((es, index) => (
+                    <motion.div
                       key={es.id}
                       className="absolute select-none"
+                      initial={{ opacity: 0, scale: 0, x: '-50%', y: '-50%' }}
+                      animate={{ opacity: 1, scale: es.scale, x: '-50%', y: '-50%' }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 260,
+                        damping: 20,
+                        delay: 0.5 + 0.1 * index,
+                      }}
                       style={{
                         left: `${es.x}%`,
                         top: `${es.y}%`,
-                        transform: `translate(-50%, -50%) scale(${es.scale})`,
                         fontSize: '48px',
                         lineHeight: 1,
                         userSelect: 'none',
                       }}
                     >
                       {es.emoji}
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               )}
