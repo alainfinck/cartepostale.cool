@@ -128,7 +128,9 @@ const InstaCard = ({
           />
         ) : (
           <img
-            src={getOptimizedImageUrl(item.url, { width: 470 })}
+            src={getOptimizedImageUrl(item.url, { width: 940 })}
+            srcSet={`${getOptimizedImageUrl(item.url, { width: 470 })} 470w, ${getOptimizedImageUrl(item.url, { width: 940 })} 940w`}
+            sizes="(max-width: 470px) 100vw, 470px"
             alt={`Photo ${index + 1}`}
             className="w-full h-auto block"
             loading="lazy"

@@ -246,6 +246,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   }, [isDraggingCaption, onCaptionPositionChange, localCaptionPos])
 
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isFrontImageZoomOpen, setIsFrontImageZoomOpen] = useState(false)
   const frontImageFilterCss = buildFrontImageFilterCss(postcard.frontImageFilter)
   const effectiveBgOpacity = postcard.frontTextBgOpacity ?? frontTextBgOpacity ?? 90
   const clampedFrontTextBgOpacity = Math.max(0, Math.min(100, effectiveBgOpacity))
@@ -276,6 +277,20 @@ const PostcardView: React.FC<PostcardViewProps> = ({
       }
     }
   }, [isFullscreen])
+
+  // Lock scroll when front image zoom lightbox is open; close on Escape
+  useEffect(() => {
+    if (!isFrontImageZoomOpen) return
+    document.body.style.overflow = 'hidden'
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsFrontImageZoomOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = ''
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [isFrontImageZoomOpen])
 
   const toggleFullscreen = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -1160,6 +1175,21 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               </AnimatePresence>
 
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none z-0" />
+
+              {/* Loupe : afficher l'image de la face avant en grand */}
+              {!isFullscreen && !onCaptionPositionChange && frontImageSrc && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setIsFrontImageZoomOpen(true)
+                  }}
+                  className="absolute bottom-3 right-3 z-30 flex items-center justify-center w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-lg border border-stone-200/80 text-stone-600 hover:text-stone-900 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  aria-label="Voir l'image en grand"
+                >
+                  <Search size={18} strokeWidth={2} />
+                </button>
+              )}
 
               {/* Message "Cliquer pour retourner" au survol (Front) — masqué en fullscreen, en mode éditeur (pour pouvoir déplacer le texte), ou via prop */}
               {!isFullscreen && !hideFlipHints && !onCaptionPositionChange && (

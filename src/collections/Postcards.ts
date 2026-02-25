@@ -1,5 +1,6 @@
 import crypto from 'node:crypto'
 import type { CollectionConfig } from 'payload'
+import { revalidateTag, revalidatePath } from 'next/cache'
 
 export const Postcards: CollectionConfig = {
   slug: 'postcards',
@@ -10,6 +11,15 @@ export const Postcards: CollectionConfig = {
           data.contributionToken = crypto.randomBytes(16).toString('hex')
         }
         return data
+      },
+    ],
+    afterChange: [
+      ({ doc }) => {
+        const publicId = doc?.publicId
+        if (publicId) {
+          revalidateTag(`postcard-${publicId}`)
+          revalidatePath(`/carte/${publicId}`)
+        }
       },
     ],
   },

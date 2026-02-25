@@ -5,7 +5,7 @@ import config from '@payload-config'
 import { Postcard } from '@/payload-types'
 import { getCurrentUser } from '@/lib/auth'
 import { sendEmail, generateCreatorConfirmationEmail } from '@/lib/email-service'
-import { revalidateTag } from 'next/cache'
+import { revalidateTag, revalidatePath } from 'next/cache'
 
 // Simple ID generator for public URLs (shorter than UUID)
 function generatePublicId(length = 4) {
@@ -274,8 +274,9 @@ export async function createPostcard(data: any): Promise<{
         depth: 0,
       })
       const token = (updated as { contributionToken?: string }).contributionToken
-      // Purge cache for this postcard
+      // Purge cache for this postcard (data cache + full-route cache)
       revalidateTag(`postcard-${data.id}`)
+      revalidatePath(`/carte/${data.id}`)
       return { success: true, id: existingId, publicId: data.id, contributionToken: token }
     } else {
       // Generate a unique public ID
@@ -380,8 +381,9 @@ export async function createPostcard(data: any): Promise<{
       }
 
       const token = (newPostcard as { contributionToken?: string }).contributionToken
-      // Purge cache (though new, it's good practice)
+      // Purge cache (data cache + full-route cache)
       revalidateTag(`postcard-${publicId}`)
+      revalidatePath(`/carte/${publicId}`)
       return { success: true, id: newPostcard.id, publicId, contributionToken: token }
     }
   } catch (error) {
@@ -424,67 +426,67 @@ export async function getContributionTokenForPostcard(publicId: string): Promise
 import { cache } from 'react'
 import { unstable_cache } from 'next/cache'
 
-const getCachedPostcard = (publicId: string) =>
-  unstable_cache(
-    async (id: string) => {
-      try {
-        const payload = await getPayload({ config })
-        const result = await payload.find({
-          collection: 'postcards',
-          where: {
-            and: [{ publicId: { equals: id } }, { isPublic: { equals: true } }],
-          },
-          depth: 2,
-          limit: 1,
-          overrideAccess: true,
-        })
+// Fetch Payload + population des médias – réutilisé par le cache ci-dessous
+async function fetchPostcardFromDb(publicId: string): Promise<Postcard | null> {
+  try {
+    const payload = await getPayload({ config })
+    const result = await payload.find({
+      collection: 'postcards',
+      where: {
+        and: [{ publicId: { equals: publicId } }, { isPublic: { equals: true } }],
+      },
+      depth: 2,
+      limit: 1,
+      overrideAccess: true,
+    })
 
-        if (result.totalDocs === 0) return null
-        const doc = result.docs[0] as Postcard & {
-          mediaItems?: Array<{
-            media?: number | unknown
-            type?: string
-            note?: string
-            id?: string
-          }>
-        }
+    if (result.totalDocs === 0) return null
+    const doc = result.docs[0] as Postcard & {
+      mediaItems?: Array<{
+        media?: number | unknown
+        type?: string
+        note?: string
+        id?: string
+      }>
+    }
 
-        // If mediaItems.media are IDs (number), populate them so the carte page can build gallery URLs
-        if (doc.mediaItems?.length) {
-          const populated = await Promise.all(
-            doc.mediaItems.map(async (item) => {
-              const mediaRef = item.media
-              if (typeof mediaRef === 'number') {
-                try {
-                  const mediaDoc = await payload.findByID({
-                    collection: 'media',
-                    id: mediaRef,
-                    depth: 0,
-                  })
-                  return { ...item, media: mediaDoc }
-                } catch {
-                  return item
-                }
-              }
+    // If mediaItems.media are IDs (number), populate them so the carte page can build gallery URLs
+    if (doc.mediaItems?.length) {
+      const populated = await Promise.all(
+        doc.mediaItems.map(async (item) => {
+          const mediaRef = item.media
+          if (typeof mediaRef === 'number') {
+            try {
+              const mediaDoc = await payload.findByID({
+                collection: 'media',
+                id: mediaRef,
+                depth: 0,
+              })
+              return { ...item, media: mediaDoc }
+            } catch {
               return item
-            }),
-          )
-          ;(doc as { mediaItems: typeof populated }).mediaItems = populated
-        }
+            }
+          }
+          return item
+        }),
+      )
+      ;(doc as { mediaItems: typeof populated }).mediaItems = populated
+    }
 
-        return doc as Postcard
-      } catch (error) {
-        console.error('Error fetching postcard:', error)
-        return null
-      }
-    },
-    ['postcard-detail'],
-    {
-      tags: [`postcard-${publicId}`],
-      revalidate: 3600, // 1 hour by default
-    },
-  )(publicId)
+    return doc as Postcard
+  } catch (error) {
+    console.error('Error fetching postcard:', error)
+    return null
+  }
+}
 
+// Cache avec tag dynamique par carte : corrige l'anti-pattern précédent où unstable_cache
+// était recréé à chaque appel. Ici, la fonction de fetch est stable (nommée), et le tag
+// inclut le publicId pour permettre une invalidation ciblée via revalidateTag.
 export const getPostcardByPublicId = cache(async (publicId: string): Promise<Postcard | null> => {
-  return getCachedPostcard(publicId)
+  const cachedFetch = unstable_cache(fetchPostcardFromDb, [`postcard-${publicId}`], {
+    tags: [`postcard-${publicId}`],
+    revalidate: 3600,
+  })
+  return cachedFetch(publicId)
 })
