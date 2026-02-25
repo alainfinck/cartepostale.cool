@@ -2377,32 +2377,20 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   <X size={24} className="sm:w-7 sm:h-7" strokeWidth={2.5} />
                 </button>
 
-                {/* Conteneur carte : centrée, marges, ne dépasse pas (portrait = 90vw, paysage = hauteur dispo × 1.5) */}
-                <div
-                  className="flex items-center justify-center shrink-0 max-w-full max-h-full relative"
-                  style={{
-                    width: 'min(90vw, calc((100dvh - 4rem) * 1.5))',
-                    height: 'min(calc(90vw / 1.5), calc(100dvh - 4rem))',
+                <PostcardView
+                  postcard={postcard}
+                  flipped={isFlipped}
+                  isLarge={true}
+                  hideFullscreenButton={true}
+                  hideFlipHints={true}
+                  isInsideFullscreen={true}
+                  onExitFullscreen={() => {
+                    if (document.fullscreenElement) {
+                      document.exitFullscreen().catch(() => {})
+                    }
+                    setIsFullscreen(false)
                   }}
-                >
-                  <PostcardView
-                    postcard={postcard}
-                    flipped={isFlipped}
-                    isLarge={true}
-                    width="100%"
-                    height="100%"
-                    className="shadow-2xl rounded-2xl overflow-hidden"
-                    hideFullscreenButton={true}
-                    hideFlipHints={true}
-                    isInsideFullscreen={true}
-                    onExitFullscreen={() => {
-                      if (document.fullscreenElement) {
-                        document.exitFullscreen().catch(() => {})
-                      }
-                      setIsFullscreen(false)
-                    }}
-                  />
-                </div>
+                />
               </motion.div>
             )}
           </AnimatePresence>,
