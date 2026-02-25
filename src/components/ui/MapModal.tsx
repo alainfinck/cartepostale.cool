@@ -234,6 +234,10 @@ const MapModal: React.FC<MapModalProps> = ({
             <MapContainer
               center={[20, 0]}
               zoom={2}
+              scrollWheelZoom={true}
+              wheelPxPerZoomLevel={60}
+              zoomSnap={0.1}
+              zoomDelta={0.5}
               style={{ width: '100%', height: '100%' }}
               className="z-0"
             >

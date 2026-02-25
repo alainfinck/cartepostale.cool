@@ -2012,7 +2012,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                       </div>
                       <div
                         className={cn(
-                          'mb-1 sm:mb-2 w-full flex-1 min-h-[120px] sm:min-h-[200px] rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner relative',
+                          'mb-1 sm:mb-2 w-full flex-1 min-h-[120px] sm:min-h-[200px] lg:min-h-[280px] rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner relative',
                         )}
                       >
                         {postcard.coords ? (
