@@ -972,7 +972,7 @@ export default function ManagerClient({
                         }}
                         onChange={toggleSelectAll}
                         onClick={(e) => e.stopPropagation()}
-                        className="h-3.5 w-3.5 rounded border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer transition-transform hover:scale-110"
+                        className="h-3 w-3 rounded border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer transition-transform hover:scale-110"
                       />
                     </TableHead>
                     <TableHead>Image</TableHead>
@@ -1499,7 +1499,7 @@ function GridCard({
                   checked={selected}
                   onChange={onToggleSelect}
                   onClick={(e) => e.stopPropagation()}
-                  className="h-3.5 w-3.5 rounded border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer bg-white/90 shadow-sm transition-transform hover:scale-110"
+                  className="h-3 w-3 rounded border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer bg-white/90 shadow-sm transition-transform hover:scale-110"
                 />
               </div>
 
@@ -1665,50 +1665,47 @@ function GridCard({
               </Button>
             </Tooltip>
           )}
-          {onDuplicate && (
-            <Tooltip content="Dupliquer">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onDuplicate}
-                className="h-8 w-8 text-stone-500 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-all"
-              >
-                <Copy size={14} />
-              </Button>
-            </Tooltip>
-          )}
         </div>
 
         <div className="flex items-center gap-1">
-          {onOpenShareContribution && postcard.contributionToken && (
-            <Tooltip content="Contribution">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onOpenShareContribution}
-                className="h-8 w-8 text-purple-600 hover:bg-purple-50 rounded-lg transition-all"
-              >
-                <Users size={14} />
-              </Button>
-            </Tooltip>
-          )}
-
           <StatusDropdown
             currentStatus={postcard.status || 'draft'}
             onUpdate={onUpdateStatus}
             postcardId={postcard.id}
           />
 
-          <Tooltip content="Supprimer">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onDelete(postcard.id)}
-              className="h-8 w-8 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-            >
-              <Trash2 size={14} />
-            </Button>
-          </Tooltip>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-stone-500 hover:bg-stone-100 rounded-lg transition-all"
+              >
+                <Menu size={14} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40" onClick={(e) => e.stopPropagation()}>
+              {onDuplicate && (
+                <DropdownMenuItem onClick={onDuplicate} className="gap-2">
+                  <Copy size={14} /> Dupliquer
+                </DropdownMenuItem>
+              )}
+              {onOpenShareContribution && postcard.contributionToken && (
+                <DropdownMenuItem
+                  onClick={onOpenShareContribution}
+                  className="gap-2 text-purple-600"
+                >
+                  <Users size={14} /> Contribution
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={() => onDelete(postcard.id)}
+                className="gap-2 text-rose-600"
+              >
+                <Trash2 size={14} /> Supprimer
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>
@@ -1760,7 +1757,7 @@ function ListRow({
           checked={selected}
           onChange={onToggleSelect}
           onClick={(e) => e.stopPropagation()}
-          className="h-3.5 w-3.5 rounded border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer transition-transform hover:scale-110"
+          className="h-3 w-3 rounded border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer transition-transform hover:scale-110"
         />
       </TableCell>
       <TableCell>
@@ -1871,48 +1868,44 @@ function ListRow({
             )}
           </div>
 
-          {onOpenShareContribution && postcard.contributionToken && (
-            <Tooltip content="Contribution">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 text-purple-600 border-purple-100 bg-purple-50/50 hover:bg-purple-100 rounded-lg transition-all shadow-sm"
-                onClick={() => onOpenShareContribution?.()}
-              >
-                <Users size={14} />
-              </Button>
-            </Tooltip>
-          )}
-
-          {onDuplicate && (
-            <Tooltip content="Dupliquer">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 text-stone-500 border-stone-200 bg-white hover:bg-stone-50 rounded-lg transition-all shadow-sm"
-                onClick={() => onDuplicate()}
-              >
-                <Copy size={14} />
-              </Button>
-            </Tooltip>
-          )}
-
           <StatusDropdown
             currentStatus={postcard.status || 'draft'}
             onUpdate={onUpdateStatus}
             postcardId={postcard.id}
           />
 
-          <Tooltip content="Supprimer">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 text-red-400 border-red-100 bg-red-50/50 hover:bg-red-100 rounded-lg transition-all shadow-sm"
-              onClick={() => onDelete(postcard.id)}
-            >
-              <Trash2 size={14} />
-            </Button>
-          </Tooltip>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 ml-1 text-stone-500 hover:bg-stone-100 rounded-lg transition-all"
+              >
+                <Menu size={14} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40" onClick={(e) => e.stopPropagation()}>
+              {onDuplicate && (
+                <DropdownMenuItem onClick={() => onDuplicate()} className="gap-2">
+                  <Copy size={14} /> Dupliquer
+                </DropdownMenuItem>
+              )}
+              {onOpenShareContribution && postcard.contributionToken && (
+                <DropdownMenuItem
+                  onClick={() => onOpenShareContribution?.()}
+                  className="gap-2 text-purple-600"
+                >
+                  <Users size={14} /> Contribution
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={() => onDelete(postcard.id)}
+                className="gap-2 text-rose-600"
+              >
+                <Trash2 size={14} /> Supprimer
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </TableCell>
     </TableRow>
@@ -2001,29 +1994,19 @@ function DetailsSheet(props: {
               </SheetDescription>
             </div>
             <div className="flex items-center gap-3">
-              <Link href="/manager/stats">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 gap-1.5 text-[11px] text-muted-foreground hover:bg-muted/50 rounded-full border border-border/30"
-                >
-                  <BarChart3 size={12} />
-                  Stats détaillées
-                </Button>
-              </Link>
               <StatusBadge status={postcard.status || 'draft'} />
             </div>
           </div>
-          <div className="mt-4 inline-flex rounded-lg border border-border/40 bg-muted/20 p-1">
+          <div className="mt-4 flex w-full rounded-xl border border-border/40 bg-muted/30 p-1">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setActivePanelTab('details')}
               className={cn(
-                'h-8 rounded-md px-3 text-xs',
+                'flex-1 h-9 rounded-lg px-3 text-sm font-semibold transition-all',
                 activePanelTab === 'details'
-                  ? 'bg-background shadow-sm text-foreground'
-                  : 'text-muted-foreground hover:text-foreground',
+                  ? 'bg-background shadow-md text-teal-700'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
               )}
             >
               Détails
@@ -2033,25 +2016,26 @@ function DetailsSheet(props: {
               size="sm"
               onClick={() => setActivePanelTab('stats')}
               className={cn(
-                'h-8 rounded-md px-3 text-xs',
+                'flex-1 h-9 rounded-lg px-3 text-sm font-semibold transition-all flex items-center gap-2 justify-center',
                 activePanelTab === 'stats'
-                  ? 'bg-background shadow-sm text-foreground'
-                  : 'text-muted-foreground hover:text-foreground',
+                  ? 'bg-background shadow-md text-teal-700'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
               )}
             >
-              Stats
+              <BarChart3 size={16} />
+              Statistiques
             </Button>
           </div>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="p-6 space-y-8">
+          <div className="p-4 sm:p-6 space-y-6">
             {activePanelTab === 'details' ? (
               <>
                 {/* Preview Section */}
-                <div className="bg-stone-50/50 rounded-2xl p-6 border border-stone-200/50 flex justify-center shadow-inner overflow-hidden relative group">
+                <div className="bg-stone-50/50 rounded-2xl p-0 border border-stone-200/50 flex justify-center shadow-inner overflow-hidden relative group h-40 sm:h-52 items-center">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,128,128,0.05),transparent)] pointer-events-none" />
-                  <div className="transform scale-[0.65] sm:scale-[0.85] origin-center transition-transform hover:scale-[0.88] duration-700">
+                  <div className="transform scale-[0.4] sm:scale-[0.5] origin-center transition-transform hover:scale-[0.55] duration-700">
                     <PostcardView postcard={frontendPostcard} isPreview />
                   </div>
                 </div>
@@ -2260,181 +2244,194 @@ function DetailsSheet(props: {
                 )}
               </>
             ) : (
-              <div className="p-4 bg-muted/30 rounded-xl border border-border/30 space-y-4">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4 opacity-50">
-                  Audience & Technique
-                </h4>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-[10px] text-teal-600 mb-1 uppercase tracking-tight font-bold flex items-center gap-1">
-                      <BarChart3 size={10} /> Umami
-                    </p>
-                    <p className="text-2xl font-bold text-teal-700">{umamiViews || 0}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-tight">
-                      Vues (Int.)
-                    </p>
-                    <p className="text-2xl font-bold text-foreground">{postcard.views || 0}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-tight">
-                      Partages
-                    </p>
-                    <p className="text-2xl font-bold text-foreground">{postcard.shares || 0}</p>
-                  </div>
+              <div className="space-y-6">
+                <div className="flex justify-end">
+                  <Link href={`/${useEspaceClientActions ? 'espace-client' : 'manager'}/stats`}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 text-teal-700 border-teal-200 bg-teal-50/50 hover:bg-teal-100"
+                    >
+                      <BarChart3 size={14} /> Stats globales détaillées
+                    </Button>
+                  </Link>
                 </div>
-                {viewStats ? (
-                  <>
-                    <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border/20">
-                      <div>
-                        <p className="text-[10px] text-muted-foreground mb-0.5 uppercase tracking-tight">
-                          Sessions uniques
-                        </p>
-                        <p className="text-lg font-semibold text-foreground">
-                          {viewStats.uniqueSessions}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-muted-foreground mb-0.5 uppercase tracking-tight">
-                          Temps moyen (s)
-                        </p>
-                        <p className="text-lg font-semibold text-foreground">
-                          {viewStats.avgDurationSeconds != null
-                            ? Math.round(viewStats.avgDurationSeconds)
-                            : '—'}
-                        </p>
-                      </div>
+                <div className="p-4 bg-muted/30 rounded-xl border border-border/30 space-y-4">
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4 opacity-50">
+                    Audience & Technique
+                  </h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-[10px] text-teal-600 mb-1 uppercase tracking-tight font-bold flex items-center gap-1">
+                        <BarChart3 size={10} /> Umami
+                      </p>
+                      <p className="text-2xl font-bold text-teal-700">{umamiViews || 0}</p>
                     </div>
-                    {(viewStats.byCountry.length > 0 || viewStats.byBrowser.length > 0) && (
-                      <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/20">
-                        {viewStats.byCountry.length > 0 && (
-                          <div>
-                            <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight">
-                              Pays (top)
-                            </p>
-                            <ul className="space-y-1 text-xs text-foreground">
-                              {viewStats.byCountry.slice(0, 5).map(({ country, count }) => (
-                                <li key={country} className="flex justify-between gap-2">
-                                  <span className="truncate">{country}</span>
-                                  <span className="font-medium tabular-nums">{count}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        {viewStats.byBrowser.length > 0 && (
-                          <div>
-                            <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight">
-                              Navigateurs (top)
-                            </p>
-                            <ul className="space-y-1 text-xs text-foreground">
-                              {viewStats.byBrowser.slice(0, 5).map(({ browser, count }) => (
-                                <li key={browser} className="flex justify-between gap-2">
-                                  <span className="truncate">{browser}</span>
-                                  <span className="font-medium tabular-nums">{count}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {viewStats.recentEvents.length > 0 && (
-                      <div className="pt-2 border-t border-border/20">
-                        <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight">
-                          Dernières ouvertures
-                        </p>
-                        <ul className="space-y-1.5 text-xs text-foreground max-h-64 overflow-y-auto">
-                          {viewStats.recentEvents.map((ev, i) => (
-                            <li
-                              key={i}
-                              className="flex justify-between gap-2 py-1 border-b border-border/10 last:border-0"
-                            >
-                              <span className="text-muted-foreground truncate">
-                                {new Date(ev.openedAt).toLocaleString('fr-FR', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </span>
-                              <span className="truncate">{ev.country ?? '—'}</span>
-                              <span className="truncate">{ev.browser ?? '—'}</span>
-                              <span className="tabular-nums">
-                                {ev.durationSeconds != null ? `${ev.durationSeconds}s` : '—'}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-sm text-muted-foreground border-t border-border/20 pt-3">
-                    Les statistiques détaillées se chargent ou ne sont pas encore disponibles pour
-                    cette carte.
-                  </p>
-                )}
-                {umamiDetails && (
-                  <div className="pt-4 border-t border-border/20 space-y-4">
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-teal-600 opacity-80 flex items-center gap-2">
-                      <BarChart3 size={12} /> Umami Analytics
-                    </h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 bg-teal-50/50 rounded-xl border border-teal-100/50">
-                        <p className="text-[10px] text-teal-600 mb-0.5 uppercase tracking-tight font-bold">
-                          Vues (Totales)
-                        </p>
-                        <p className="text-xl font-bold text-teal-700">{umamiDetails.views}</p>
-                      </div>
-                      <div className="p-3 bg-teal-50/50 rounded-xl border border-teal-100/50">
-                        <p className="text-[10px] text-teal-600 mb-0.5 uppercase tracking-tight font-bold">
-                          Visiteurs uniques
-                        </p>
-                        <p className="text-xl font-bold text-teal-700">{umamiDetails.visitors}</p>
-                      </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-tight">
+                        Vues (Int.)
+                      </p>
+                      <p className="text-2xl font-bold text-foreground">{postcard.views || 0}</p>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      {umamiDetails.countries.length > 0 && (
-                        <div>
-                          <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight font-bold">
-                            Top Pays
-                          </p>
-                          <ul className="space-y-1 text-xs">
-                            {umamiDetails.countries.slice(0, 5).map((c) => (
-                              <li
-                                key={c.x}
-                                className="flex justify-between items-center bg-stone-50/50 p-1 rounded px-2"
-                              >
-                                <span className="truncate max-w-[80px]">{c.x}</span>
-                                <span className="font-semibold">{c.y}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {umamiDetails.browsers.length > 0 && (
-                        <div>
-                          <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight font-bold">
-                            Top Navs
-                          </p>
-                          <ul className="space-y-1 text-xs">
-                            {umamiDetails.browsers.slice(0, 5).map((b) => (
-                              <li
-                                key={b.x}
-                                className="flex justify-between items-center bg-stone-50/50 p-1 rounded px-2"
-                              >
-                                <span className="truncate max-w-[80px]">{b.x}</span>
-                                <span className="font-semibold">{b.y}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
+                    <div>
+                      <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-tight">
+                        Partages
+                      </p>
+                      <p className="text-2xl font-bold text-foreground">{postcard.shares || 0}</p>
                     </div>
                   </div>
-                )}
+                  {viewStats ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border/20">
+                        <div>
+                          <p className="text-[10px] text-muted-foreground mb-0.5 uppercase tracking-tight">
+                            Sessions uniques
+                          </p>
+                          <p className="text-lg font-semibold text-foreground">
+                            {viewStats.uniqueSessions}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground mb-0.5 uppercase tracking-tight">
+                            Temps moyen (s)
+                          </p>
+                          <p className="text-lg font-semibold text-foreground">
+                            {viewStats.avgDurationSeconds != null
+                              ? Math.round(viewStats.avgDurationSeconds)
+                              : '—'}
+                          </p>
+                        </div>
+                      </div>
+                      {(viewStats.byCountry.length > 0 || viewStats.byBrowser.length > 0) && (
+                        <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/20">
+                          {viewStats.byCountry.length > 0 && (
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight">
+                                Pays (top)
+                              </p>
+                              <ul className="space-y-1 text-xs text-foreground">
+                                {viewStats.byCountry.slice(0, 5).map(({ country, count }) => (
+                                  <li key={country} className="flex justify-between gap-2">
+                                    <span className="truncate">{country}</span>
+                                    <span className="font-medium tabular-nums">{count}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {viewStats.byBrowser.length > 0 && (
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight">
+                                Navigateurs (top)
+                              </p>
+                              <ul className="space-y-1 text-xs text-foreground">
+                                {viewStats.byBrowser.slice(0, 5).map(({ browser, count }) => (
+                                  <li key={browser} className="flex justify-between gap-2">
+                                    <span className="truncate">{browser}</span>
+                                    <span className="font-medium tabular-nums">{count}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {viewStats.recentEvents.length > 0 && (
+                        <div className="pt-2 border-t border-border/20">
+                          <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight">
+                            Dernières ouvertures
+                          </p>
+                          <ul className="space-y-1.5 text-xs text-foreground max-h-64 overflow-y-auto">
+                            {viewStats.recentEvents.map((ev, i) => (
+                              <li
+                                key={i}
+                                className="flex justify-between gap-2 py-1 border-b border-border/10 last:border-0"
+                              >
+                                <span className="text-muted-foreground truncate">
+                                  {new Date(ev.openedAt).toLocaleString('fr-FR', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </span>
+                                <span className="truncate">{ev.country ?? '—'}</span>
+                                <span className="truncate">{ev.browser ?? '—'}</span>
+                                <span className="tabular-nums">
+                                  {ev.durationSeconds != null ? `${ev.durationSeconds}s` : '—'}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-sm text-muted-foreground border-t border-border/20 pt-3">
+                      Les statistiques détaillées se chargent ou ne sont pas encore disponibles pour
+                      cette carte.
+                    </p>
+                  )}
+                  {umamiDetails && (
+                    <div className="pt-4 border-t border-border/20 space-y-4">
+                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-teal-600 opacity-80 flex items-center gap-2">
+                        <BarChart3 size={12} /> Umami Analytics
+                      </h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-3 bg-teal-50/50 rounded-xl border border-teal-100/50">
+                          <p className="text-[10px] text-teal-600 mb-0.5 uppercase tracking-tight font-bold">
+                            Vues (Totales)
+                          </p>
+                          <p className="text-xl font-bold text-teal-700">{umamiDetails.views}</p>
+                        </div>
+                        <div className="p-3 bg-teal-50/50 rounded-xl border border-teal-100/50">
+                          <p className="text-[10px] text-teal-600 mb-0.5 uppercase tracking-tight font-bold">
+                            Visiteurs uniques
+                          </p>
+                          <p className="text-xl font-bold text-teal-700">{umamiDetails.visitors}</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        {umamiDetails.countries.length > 0 && (
+                          <div>
+                            <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight font-bold">
+                              Top Pays
+                            </p>
+                            <ul className="space-y-1 text-xs">
+                              {umamiDetails.countries.slice(0, 5).map((c) => (
+                                <li
+                                  key={c.x}
+                                  className="flex justify-between items-center bg-stone-50/50 p-1 rounded px-2"
+                                >
+                                  <span className="truncate max-w-[80px]">{c.x}</span>
+                                  <span className="font-semibold">{c.y}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {umamiDetails.browsers.length > 0 && (
+                          <div>
+                            <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-tight font-bold">
+                              Top Navs
+                            </p>
+                            <ul className="space-y-1 text-xs">
+                              {umamiDetails.browsers.slice(0, 5).map((b) => (
+                                <li
+                                  key={b.x}
+                                  className="flex justify-between items-center bg-stone-50/50 p-1 rounded px-2"
+                                >
+                                  <span className="truncate max-w-[80px]">{b.x}</span>
+                                  <span className="font-semibold">{b.y}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

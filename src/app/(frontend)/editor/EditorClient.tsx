@@ -96,7 +96,7 @@ import {
   JPEG_QUALITY,
 } from '@/lib/image-processing'
 import { extractExifData, ExifData } from '@/lib/extract-exif'
-import { CAPTION_PRESETS, getCaptionExtraStyle } from '@/lib/caption-style'
+import { CAPTION_PRESETS, getCaptionExtraStyle, captionPresetHidesBg } from '@/lib/caption-style'
 import { UnsplashSearchModal } from '@/components/UnsplashSearchModal'
 import {
   AiImageGeneratorModal,
@@ -2498,6 +2498,8 @@ export default function EditorPage() {
     // toast ?
   }
 
+  const captionHidesBg = captionPresetHidesBg(frontCaptionPreset)
+
   return (
     <div className="min-h-screen bg-[#fdfbf7]">
       {/* Step Progress Bar — collé sous la topbar ; top suit la hauteur navbar (réduite au scroll) */}
@@ -3084,25 +3086,27 @@ export default function EditorPage() {
                             <option value="emerald-900">Émeraude</option>
                           </select>
                         </div>
-                        <div>
-                          <div className="mb-1.5 flex items-center justify-between">
-                            <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider">
-                              Opacité du fond
-                            </label>
-                            <span className="text-xs font-medium text-stone-500 tabular-nums">
-                              {frontTextBgOpacity}%
-                            </span>
+                        {!captionHidesBg && (
+                          <div>
+                            <div className="mb-1.5 flex items-center justify-between">
+                              <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                                Opacité du fond
+                              </label>
+                              <span className="text-xs font-medium text-stone-500 tabular-nums">
+                                {frontTextBgOpacity}%
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min={0}
+                              max={100}
+                              step={1}
+                              value={frontTextBgOpacity}
+                              onChange={(e) => setFrontTextBgOpacity(Number(e.target.value))}
+                              className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
+                            />
                           </div>
-                          <input
-                            type="range"
-                            min={0}
-                            max={100}
-                            step={1}
-                            value={frontTextBgOpacity}
-                            onChange={(e) => setFrontTextBgOpacity(Number(e.target.value))}
-                            className="w-full h-2 rounded-full appearance-none bg-stone-200 accent-teal-500 cursor-pointer"
-                          />
-                        </div>
+                        )}
                       </>
                     )}
                     <div>
@@ -3318,6 +3322,7 @@ export default function EditorPage() {
                       frontEmoji={frontEmoji}
                       frontCaptionPosition={frontCaptionPosition}
                       frontTextBgOpacity={frontTextBgOpacity}
+                      frontCaptionPreset={frontCaptionPreset}
                       frontCaptionWidth={frontCaptionWidth}
                       location={location}
                       stickers={stickers}

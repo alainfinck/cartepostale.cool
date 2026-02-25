@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { cn } from '@/lib/utils'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
+import { captionPresetHidesBg } from '@/lib/caption-style'
 import {
   FrontCaptionPosition,
   FrontImageCrop,
@@ -21,6 +22,7 @@ interface FrontFaceEditorProps {
   frontEmoji?: string
   frontCaptionPosition: FrontCaptionPosition
   frontTextBgOpacity: number
+  frontCaptionPreset?: string
   frontCaptionWidth?: number
   location?: string
   stickers?: StickerPlacement[]
@@ -207,6 +209,7 @@ export default function FrontFaceEditor({
   frontEmoji,
   frontCaptionPosition,
   frontTextBgOpacity,
+  frontCaptionPreset,
   frontCaptionWidth,
   location,
   stickers,
@@ -257,6 +260,8 @@ export default function FrontFaceEditor({
   )
   const clampedOpacity = Math.max(0, Math.min(100, frontTextBgOpacity))
   const frontTextBgColor = `rgba(255, 255, 255, ${clampedOpacity / 100})`
+  const captionHidesBg = captionPresetHidesBg(frontCaptionPreset)
+  const captionBgColor = captionHidesBg ? 'transparent' : frontTextBgColor
 
   const showCaption = Boolean(frontCaption?.trim())
   const showCaptionWithEmoji = showCaption && Boolean(frontEmoji)
@@ -560,18 +565,18 @@ export default function FrontFaceEditor({
             ref={captionRef}
             className={cn(
               'absolute z-20 w-fit max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-3rem)] px-3 py-2 sm:px-4 sm:py-2.5',
-              'rounded-md border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)]',
-              'transition-shadow duration-200',
+              'rounded-md transition-shadow duration-200',
+              !captionHidesBg && 'border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)]',
               isDragging
                 ? 'cursor-grabbing shadow-[0_12px_40px_rgb(0,0,0,0.2)] ring-2 ring-teal-400/50'
-                : 'cursor-grab hover:shadow-[0_10px_35px_rgb(0,0,0,0.15)]',
+                : cn('cursor-grab', !captionHidesBg && 'hover:shadow-[0_10px_35px_rgb(0,0,0,0.15)]'),
               'touch-none select-none',
             )}
             style={{
               left: `${localPosition.x}%`,
               top: `${localPosition.y}%`,
               transform: captionTransform,
-              backgroundColor: frontTextBgColor,
+              backgroundColor: captionBgColor,
               willChange: isDragging ? 'transform, left, top' : 'auto',
               ...(frontCaptionWidth != null && { width: `${frontCaptionWidth}%` }),
             }}
@@ -605,19 +610,19 @@ export default function FrontFaceEditor({
             ref={captionRef}
             className={cn(
               'absolute z-20 flex items-center gap-3 rounded-2xl sm:rounded-3xl',
-              'border border-white/50 px-5 py-3.5 sm:px-6 sm:py-4',
-              'shadow-[0_8px_30px_rgb(0,0,0,0.12)] w-fit max-w-[calc(100%-2rem)]',
+              'px-5 py-3.5 sm:px-6 sm:py-4 w-fit max-w-[calc(100%-2rem)]',
+              !captionHidesBg && 'border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)]',
               'transition-shadow duration-200',
               isDragging
                 ? 'cursor-grabbing shadow-[0_12px_40px_rgb(0,0,0,0.2)] ring-2 ring-teal-400/50'
-                : 'cursor-grab hover:shadow-[0_10px_35px_rgb(0,0,0,0.15)]',
+                : cn('cursor-grab', !captionHidesBg && 'hover:shadow-[0_10px_35px_rgb(0,0,0,0.15)]'),
               'touch-none select-none group',
             )}
             style={{
               left: `${localPosition.x}%`,
               top: `${localPosition.y}%`,
               transform: captionTransform,
-              backgroundColor: frontTextBgColor,
+              backgroundColor: captionBgColor,
               willChange: isDragging ? 'transform, left, top' : 'auto',
               ...(frontCaptionWidth != null && { width: `${frontCaptionWidth}%` }),
             }}

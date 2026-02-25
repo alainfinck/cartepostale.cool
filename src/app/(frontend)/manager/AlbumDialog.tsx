@@ -10,8 +10,20 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Postcard } from '@/payload-types'
-import { Camera, Loader2, Save, X, Images, ImageIcon } from 'lucide-react'
+import {
+  Camera,
+  Loader2,
+  Save,
+  X,
+  Images,
+  ImageIcon,
+  ArrowLeft,
+  ArrowRight,
+  MessageSquare,
+  ArrowUpDown,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fileToProcessedDataUrl, dataUrlToBlob, getOptimizedImageUrl } from '@/lib/image-processing'
 import { UpdatePostcardFn } from './EditPostcardDialog'
@@ -51,6 +63,8 @@ export default function AlbumDialog({
   const [mediaItems, setMediaItems] = useState<any[]>([])
   const [isUploadingAlbum, setIsUploadingAlbum] = useState(false)
   const [galleryPickerOpen, setGalleryPickerOpen] = useState(false)
+  const [editingNoteIdx, setEditingNoteIdx] = useState<number | null>(null)
+  const [tempNote, setTempNote] = useState('')
 
   useEffect(() => {
     if (postcard) {
@@ -129,6 +143,21 @@ export default function AlbumDialog({
     })
   }
 
+  const moveItem = (idx: number, dir: 1 | -1) => {
+    setMediaItems((prev) => {
+      const next = [...prev]
+      if (idx + dir < 0 || idx + dir >= next.length) return prev
+      const temp = next[idx]
+      next[idx] = next[idx + dir]
+      next[idx + dir] = temp
+      return next
+    })
+  }
+
+  const reverseOrder = () => {
+    setMediaItems((prev) => [...prev].reverse())
+  }
+
   const handleSubmit = () => {
     if (!postcard || !updatePostcardFn) return
 
@@ -154,7 +183,10 @@ export default function AlbumDialog({
   if (!postcard) return null
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && !isPending && !isUploadingAlbum && onClose()}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => !open && !isPending && !isUploadingAlbum && onClose()}
+    >
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -164,9 +196,16 @@ export default function AlbumDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <Label>
-            {mediaItems.length} photo{mediaItems.length !== 1 ? 's' : ''} dans l&apos;album
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label>
+              {mediaItems.length} photo{mediaItems.length !== 1 ? 's' : ''} dans l&apos;album
+            </Label>
+            {mediaItems.length > 1 && (
+              <Button variant="outline" size="sm" onClick={reverseOrder} className="h-8 gap-1">
+                <ArrowUpDown size={14} /> Inverser l&apos;ordre
+              </Button>
+            )}
+          </div>
 
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
             {mediaItems.map((item, idx) => {
@@ -187,13 +226,53 @@ export default function AlbumDialog({
                       Erreur
                     </div>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => handleRemove(idx)}
-                    className="absolute top-1 right-1 w-6 h-6 bg-black/50 hover:bg-red-500/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X size={14} />
-                  </button>
+                  {item.note && (
+                    <div className="absolute top-1 left-1 bg-teal-500 text-white p-1 rounded-full w-5 h-5 flex items-center justify-center">
+                      <MessageSquare size={10} />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => moveItem(idx, -1)}
+                        className="w-7 h-7 bg-white/20 hover:bg-white/40 text-white rounded-full flex items-center justify-center disabled:opacity-30"
+                        disabled={idx === 0}
+                      >
+                        <ArrowLeft size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingNoteIdx(idx)
+                          setTempNote(item.note || '')
+                        }}
+                        className="w-7 h-7 bg-teal-500/80 hover:bg-teal-500 text-white rounded-full flex items-center justify-center"
+                      >
+                        <MessageSquare size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemove(idx)}
+                        className="w-7 h-7 bg-red-500/80 hover:bg-red-500 text-white rounded-full flex items-center justify-center"
+                      >
+                        <X size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveItem(idx, 1)}
+                        className="w-7 h-7 bg-white/20 hover:bg-white/40 text-white rounded-full flex items-center justify-center disabled:opacity-30"
+                        disabled={idx === mediaItems.length - 1}
+                      >
+                        <ArrowRight size={14} />
+                      </button>
+                    </div>
+                    {item.note && (
+                      <div className="text-[10px] text-white/90 truncate w-full px-2 text-center bg-black/20 py-0.5">
+                        {item.note}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )
             })}
@@ -257,10 +336,49 @@ export default function AlbumDialog({
             className="bg-teal-600 hover:bg-teal-700 text-white gap-2"
           >
             {isPending ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-            {isPending ? 'Enregistrement...' : 'Enregistrer l\'album'}
+            {isPending ? 'Enregistrement...' : "Enregistrer l'album"}
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <Dialog
+        open={editingNoteIdx !== null}
+        onOpenChange={(open) => !open && setEditingNoteIdx(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Commentaire de la photo</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <Textarea
+              value={tempNote}
+              onChange={(e) => setTempNote(e.target.value)}
+              placeholder="Ajouter un commentaire..."
+              className="resize-none h-32"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditingNoteIdx(null)}>
+              Annuler
+            </Button>
+            <Button
+              className="bg-teal-600 hover:bg-teal-700 text-white"
+              onClick={() => {
+                setMediaItems((prev) => {
+                  const next = [...prev]
+                  if (editingNoteIdx !== null) {
+                    next[editingNoteIdx] = { ...next[editingNoteIdx], note: tempNote.trim() }
+                  }
+                  return next
+                })
+                setEditingNoteIdx(null)
+              }}
+            >
+              Enregistrer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   )
 }

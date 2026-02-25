@@ -95,8 +95,9 @@ export default function Home() {
                 en quelques clics
               </h1>
               <p className="text-stone-600 text-lg md:text-xl leading-relaxed max-w-xl mx-auto lg:mx-0 mb-8">
-                Personnalisez votre carte postale virtuelle avec vos photos, vos messages et
-                partagez-la avec vos proches. Simple, fun et coloré !
+                Une seule carte à 2,50 €, une infinité de sourires. Partagez votre souvenir avec 1
+                ou 100 proches sans payer plus. Une petite attention à petit prix qui fait toujours
+                autant plaisir.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-6">
                 <Link href="/editor" className="inline-flex">
@@ -114,9 +115,9 @@ export default function Home() {
                 </Link>
               </div>
               <p className="text-stone-500 text-sm flex items-center justify-center lg:justify-start gap-2">
-                <span>À partir de 0€ par carte</span>
+                <span className="font-bold text-stone-800">2,50 € / destinataires illimités</span>
                 <span className="text-stone-300">·</span>
-                <span>Sans abonnement</span>
+                <span>Gratuit sans album</span>
               </p>
             </div>
 
@@ -197,6 +198,88 @@ export default function Home() {
 
       {/* Comparison Section */}
       <ComparisonSection />
+
+      {/* NEW: Benefits Section - Digital Superpowers */}
+      <section className="py-24 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-stone-900 mb-6">
+              Bien plus qu&apos;une simple image
+            </h2>
+            <p className="text-stone-500 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
+              La carte postale numérique offre des possibilités impossibles sur papier. Donnez enfin
+              vie à vos souvenirs les plus précieux.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="bg-teal-50/50 rounded-[32px] p-8 border border-teal-100/50 hover:shadow-xl hover:shadow-teal-900/5 transition-all duration-500">
+              <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6">
+                <Plus className="w-8 h-8 text-teal-600" />
+              </div>
+              <h3 className="text-xl font-bold text-stone-900 mb-4">Album Photos Intégré</h3>
+              <p className="text-stone-600 leading-relaxed mb-4">
+                Ne choisissez plus. Ajoutez un véritable album photo à votre carte (jusqu&apos;à 50
+                clichés) pour partager chaque instant de votre voyage.
+              </p>
+              <div className="flex -space-x-3 overflow-hidden">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="inline-block h-10 w-10 rounded-xl ring-2 ring-white bg-stone-200 overflow-hidden shadow-sm"
+                  >
+                    <img
+                      src={`https://img.cartepostale.cool/demo/photo-${1502602898657 + i}.jpg`}
+                      className="h-full w-full object-cover"
+                      alt="Album preview"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-rose-50/50 rounded-[32px] p-8 border border-rose-100/50 hover:shadow-xl hover:shadow-rose-900/5 transition-all duration-500">
+              <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6">
+                <Video className="w-8 h-8 text-rose-600" />
+              </div>
+              <h3 className="text-xl font-bold text-stone-900 mb-4">L&apos;émotion Vidéo</h3>
+              <p className="text-stone-600 leading-relaxed">
+                Le bruit des vagues, le rire des enfants, l&apos;ambiance du marché... Intégrez une
+                vidéo pour une immersion totale que le papier ne pourra jamais offrir.
+              </p>
+            </div>
+
+            <div className="bg-indigo-50/50 rounded-[32px] p-8 border border-indigo-100/50 hover:shadow-xl hover:shadow-indigo-900/5 transition-all duration-500">
+              <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6">
+                <Mic className="w-8 h-8 text-indigo-600" />
+              </div>
+              <h3 className="text-xl font-bold text-stone-900 mb-4">Message Vocal Personnel</h3>
+              <p className="text-stone-600 leading-relaxed">
+                Rien ne remplace le son de votre voix. Enregistrez un message vocal pour donner une
+                dimension humaine et chaleureuse à votre envoi.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-16 bg-gradient-to-br from-stone-900 to-stone-800 rounded-[40px] p-8 md:p-12 text-center text-white relative overflow-hidden shadow-2xl">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+            <div className="relative z-10">
+              <h3 className="text-2xl md:text-3xl font-bold mb-4">
+                Une seule carte, destinataires illimités.
+              </h3>
+              <p className="text-stone-300 text-lg mb-8 max-w-2xl mx-auto">
+                À 2,50 €, votre carte devient un souvenir partagé à l&apos;infini. Une petite
+                attention à petit prix qui fait toujours autant plaisir.
+              </p>
+              <Link href="/editor">
+                <Button className="bg-white text-stone-900 hover:bg-stone-50 px-10 py-7 rounded-2xl font-bold text-lg shadow-xl shadow-stone-900/20 border-0 flex items-center gap-3 transition-all h-auto mx-auto inline-flex">
+                  Essayer maintenant <ArrowRight size={20} className="text-stone-400" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Arguments : carte virtuelle, innovant, pratique, pas cher, social, partage */}
       <section

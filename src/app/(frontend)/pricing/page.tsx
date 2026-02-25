@@ -24,7 +24,7 @@ import { TextAnimate } from '@/components/ui/text-animate'
 export const metadata: Metadata = {
   title: 'Tarifs — Cartes postales numériques | CartePostale.cool',
   description:
-    'Prix unique tout compris : 2,50 €/carte. Photo, vidéo ou message vocal : même prix. Cartes 100 % virtuelles avec statistiques de visite. Carte gratuite sans limite de temps, modifiable via le lien reçu par email.',
+    'Prix unique tout compris : 2,50 € par carte, destinataires illimités. Photo, vidéo ou message vocal : une petite attention à petit prix qui fait toujours autant plaisir.',
 }
 
 type PlanColor = 'stone' | 'teal' | 'indigo' | 'violet' | 'amber' | 'rose' | 'orange'
@@ -148,11 +148,11 @@ const plans: PricingPlan[] = [
     name: "À l'unité",
     tagline: 'Prix unique tout compris',
     price: '2,50 €',
-    priceNote: 'par carte',
+    priceNote: 'par carte (destinataires illimités)',
     duration: 'Illimitée',
     features: [
       'Photo, vidéo ou message vocal : même prix',
-      'Envoi à un nombre illimité de destinataires par carte',
+      'Destinataires illimités : envoyez à 1 ou 100 personnes',
       'Cartes 100 % virtuelles, avec statistiques de visite',
       'Programmation : envoi le jour de l’anniversaire à 8h00',
       'Modifiable depuis votre compte',
@@ -209,10 +209,10 @@ export default function PricingPage() {
           <p className="text-2xl sm:text-3xl md:text-4xl font-serif font-semibold text-stone-700 mb-4 min-h-[2.5em] sm:min-h-[2em] flex items-center justify-center">
             <WordRotate
               words={[
-                'À un prix dérisoire face au papier',
-                'Envoi illimité de destinataires par carte',
-                'Photo, vidéo, message vocal : même prix',
-                'Cartes 100 % virtuelles, avec stats de visite',
+                '2,50 €, destinataires illimités',
+                'Une seule carte pour tout le monde',
+                'Petite attention, immense plaisir',
+                'Photo, vidéo ou vocal : même prix',
               ]}
               duration={4200}
               className="text-teal-600"
@@ -226,9 +226,9 @@ export default function PricingPage() {
             once
             delay={0.2}
           >
-            Photo, vidéo ou message vocal : même tarif. Cartes 100 % virtuelles, avec stats de
-            visite — sans timbre ni impression. Jusqu&apos;à 10× moins cher qu&apos;une carte
-            physique.
+            Pour 2,50 €, envoyez votre carte à autant de personnes que vous le souhaitez. Photo,
+            vidéo ou message vocal : une petite attention à petit prix qui fait toujours autant
+            plaisir.
           </TextAnimate>
 
           {/* Message clé + carte gratuite */}

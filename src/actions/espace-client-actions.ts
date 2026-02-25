@@ -106,7 +106,12 @@ export async function getMyPostcards(filters?: PostcardFilters): Promise<Postcar
     const docs = await Promise.all(
       result.docs.map(async (doc) => {
         const postcard = doc as Postcard & {
-          mediaItems?: Array<{ media?: number | unknown; type?: string; note?: string; id?: string }>
+          mediaItems?: Array<{
+            media?: number | unknown
+            type?: string
+            note?: string
+            id?: string
+          }>
         }
         if (postcard.mediaItems?.length) {
           const populated = await Promise.all(
@@ -573,4 +578,104 @@ export async function sendTrackingLinkByEmail(
   })
 
   return { success: true }
+}
+
+export interface EspaceClientStats {
+  totalPostcards: number
+  publishedPostcards: number
+  draftPostcards: number
+  archivedPostcards: number
+  totalViews: number
+  totalShares: number
+  totalUsers: number
+  totalAgencies: number
+  premiumPostcards: number
+}
+
+export async function getEspaceClientStats(): Promise<EspaceClientStats> {
+  const user = await getCurrentUser()
+  if (!user) {
+    return {
+      totalPostcards: 0,
+      publishedPostcards: 0,
+      draftPostcards: 0,
+      archivedPostcards: 0,
+      totalViews: 0,
+      totalShares: 0,
+      totalUsers: 1,
+      totalAgencies: 1,
+      premiumPostcards: 0,
+    }
+  }
+
+  try {
+    const payload = await getPayload({ config })
+    const postcards = await payload.find({
+      collection: 'postcards',
+      where: { author: { equals: user.id } },
+      limit: 0,
+      depth: 0,
+    })
+
+    const [publishedRes, draftRes, archivedRes, premiumRes] = await Promise.all([
+      payload.find({
+        collection: 'postcards',
+        where: { author: { equals: user.id }, status: { equals: 'published' } },
+        limit: 0,
+        depth: 0,
+      }),
+      payload.find({
+        collection: 'postcards',
+        where: { author: { equals: user.id }, status: { equals: 'draft' } },
+        limit: 0,
+        depth: 0,
+      }),
+      payload.find({
+        collection: 'postcards',
+        where: { author: { equals: user.id }, status: { equals: 'archived' } },
+        limit: 0,
+        depth: 0,
+      }),
+      payload.find({
+        collection: 'postcards',
+        where: { author: { equals: user.id }, isPremium: { equals: true } },
+        limit: 0,
+        depth: 0,
+      }),
+    ])
+
+    const allCards = await payload.find({
+      collection: 'postcards',
+      where: { author: { equals: user.id } },
+      limit: 1000,
+      depth: 0,
+    })
+    const totalViews = allCards.docs.reduce((sum, card) => sum + (card.views || 0), 0)
+    const totalShares = allCards.docs.reduce((sum, card) => sum + (card.shares || 0), 0)
+
+    return {
+      totalPostcards: postcards.totalDocs,
+      publishedPostcards: publishedRes.totalDocs,
+      draftPostcards: draftRes.totalDocs,
+      archivedPostcards: archivedRes.totalDocs,
+      premiumPostcards: premiumRes.totalDocs,
+      totalViews,
+      totalShares,
+      totalUsers: 1, // Placeholder since espace-client doesn't need these
+      totalAgencies: 1,
+    }
+  } catch (error) {
+    console.error('Error fetching espace client stats:', error)
+    return {
+      totalPostcards: 0,
+      publishedPostcards: 0,
+      draftPostcards: 0,
+      archivedPostcards: 0,
+      totalViews: 0,
+      totalShares: 0,
+      totalUsers: 1,
+      totalAgencies: 1,
+      premiumPostcards: 0,
+    }
+  }
 }
