@@ -11,6 +11,7 @@ import {
   StickerPlacement,
   EmojiSticker,
 } from '@/types'
+import { motion } from 'framer-motion'
 import { MapPin, Move, RotateCcw, Maximize2, GripVertical } from 'lucide-react'
 import { isCoordinate } from '@/lib/utils'
 
@@ -163,12 +164,18 @@ function EmojiStickerEl({
   }
 
   return (
-    <div
+    <motion.div
       className="absolute touch-none select-none group/es"
+      initial={{ opacity: 0, scale: 0, x: '-50%', y: '-50%' }}
+      animate={{ opacity: 1, scale: localScale, x: '-50%', y: '-50%' }}
+      transition={{
+        type: 'spring',
+        stiffness: 260,
+        damping: 20,
+      }}
       style={{
         left: `${localX}%`,
         top: `${localY}%`,
-        transform: `translate(-50%, -50%) scale(${localScale})`,
         fontSize: '48px',
         lineHeight: 1,
         zIndex: 25,
@@ -197,7 +204,7 @@ function EmojiStickerEl({
       >
         ×
       </button>
-    </div>
+    </motion.div>
   )
 }
 
@@ -569,7 +576,10 @@ export default function FrontFaceEditor({
               !captionHidesBg && 'border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)]',
               isDragging
                 ? 'cursor-grabbing shadow-[0_12px_40px_rgb(0,0,0,0.2)] ring-2 ring-teal-400/50'
-                : cn('cursor-grab', !captionHidesBg && 'hover:shadow-[0_10px_35px_rgb(0,0,0,0.15)]'),
+                : cn(
+                    'cursor-grab',
+                    !captionHidesBg && 'hover:shadow-[0_10px_35px_rgb(0,0,0,0.15)]',
+                  ),
               'touch-none select-none',
             )}
             style={{
@@ -615,7 +625,10 @@ export default function FrontFaceEditor({
               'transition-shadow duration-200',
               isDragging
                 ? 'cursor-grabbing shadow-[0_12px_40px_rgb(0,0,0,0.2)] ring-2 ring-teal-400/50'
-                : cn('cursor-grab', !captionHidesBg && 'hover:shadow-[0_10px_35px_rgb(0,0,0,0.15)]'),
+                : cn(
+                    'cursor-grab',
+                    !captionHidesBg && 'hover:shadow-[0_10px_35px_rgb(0,0,0,0.15)]',
+                  ),
               'touch-none select-none group',
             )}
             style={{

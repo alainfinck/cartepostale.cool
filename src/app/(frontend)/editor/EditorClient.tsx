@@ -1059,10 +1059,17 @@ export default function EditorPage() {
                 ? media.url
                 : origin + media.url
               : ''
+            const mediaId =
+              typeof media === 'object' && media?.id
+                ? media.id
+                : typeof media === 'number'
+                  ? media
+                  : undefined
             return {
               id: item.id || Math.random().toString(36).slice(2),
               type: item.type === 'video' ? ('video' as const) : ('image' as const),
               url: url || '',
+              ...(mediaId !== undefined && { media: mediaId }),
             }
           })
           setMediaItems(items)
@@ -6158,6 +6165,7 @@ export default function EditorPage() {
         open={showUserGalleryModal !== null}
         onOpenChange={(open) => !open && setShowUserGalleryModal(null)}
         onSelect={(payloadUrl) => {
+          // Uniquement pour le mode 'front' (sélection unique, sans bouton Valider)
           if (showUserGalleryModal === 'front') {
             const finalUrl = Array.isArray(payloadUrl) ? payloadUrl[0] : payloadUrl
             if (finalUrl) {
@@ -6168,32 +6176,33 @@ export default function EditorPage() {
               setFrontImageCrop({ scale: 1, x: 50, y: 50 })
               setFrontImageFilter(DEFAULT_FRONT_FILTER)
             }
-          } else if (showUserGalleryModal === 'back') {
-            const urls = Array.isArray(payloadUrl) ? payloadUrl : [payloadUrl]
-
-            setMediaItems((prev) => {
-              const currentMedia = prev || []
-              let imagesCount = currentMedia.filter((i) => i.type === 'image').length
-              const newItems: typeof currentMedia = []
-
-              for (const url of urls) {
-                if (imagesCount >= ALBUM_TIERS.paid.photos) {
-                  alert(
-                    `La limite est atteinte (${ALBUM_TIERS.paid.photos} photos max). Certaines images n'ont pas été ajoutées.`,
-                  )
-                  break
-                }
-                newItems.push({
-                  id: Date.now().toString() + Math.random().toString(),
-                  type: 'image' as const,
-                  url,
-                })
-                imagesCount++
-              }
-
-              return [...currentMedia, ...newItems]
-            })
           }
+        }}
+        onSelectMediaItems={(galleryItems) => {
+          // Mode 'back' : on reçoit les UserMediaItem complets avec l'ID Payload
+          setMediaItems((prev) => {
+            const currentMedia = prev || []
+            let imagesCount = currentMedia.filter((i) => i.type === 'image').length
+            const newItems: typeof currentMedia = []
+
+            for (const galleryItem of galleryItems) {
+              if (imagesCount >= ALBUM_TIERS.paid.photos) {
+                alert(
+                  `La limite est atteinte (${ALBUM_TIERS.paid.photos} photos max). Certaines images n'ont pas été ajoutées.`,
+                )
+                break
+              }
+              newItems.push({
+                id: Date.now().toString() + Math.random().toString(),
+                type: 'image' as const,
+                url: galleryItem.url,
+                media: galleryItem.id, // ID Payload → relation media correctement sauvegardée
+              })
+              imagesCount++
+            }
+
+            return [...currentMedia, ...newItems]
+          })
         }}
       />
 

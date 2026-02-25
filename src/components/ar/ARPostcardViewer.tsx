@@ -126,11 +126,14 @@ const ARPostcardViewer: React.FC<ARPostcardViewerProps> = ({ postcard, onClose }
     if (typeof DeviceOrientationEvent !== 'undefined') {
       const doeAny = DeviceOrientationEvent as any
       if (typeof doeAny.requestPermission === 'function') {
-        doeAny.requestPermission().then((response: string) => {
-          if (response === 'granted') {
-            window.addEventListener('deviceorientation', handleOrientation)
-          }
-        }).catch(() => {})
+        doeAny
+          .requestPermission()
+          .then((response: string) => {
+            if (response === 'granted') {
+              window.addEventListener('deviceorientation', handleOrientation)
+            }
+          })
+          .catch(() => {})
       } else {
         window.addEventListener('deviceorientation', handleOrientation)
       }
@@ -331,13 +334,44 @@ const ARPostcardViewer: React.FC<ARPostcardViewerProps> = ({ postcard, onClose }
                     </div>
                   ))}
 
+                  {/* Emoji Stickers Rendering */}
+                  {postcard.emojiStickers && postcard.emojiStickers.length > 0 && (
+                    <div className="absolute inset-0 pointer-events-none z-15">
+                      {postcard.emojiStickers.map((es, index) => (
+                        <motion.div
+                          key={es.id}
+                          className="absolute select-none"
+                          initial={{ opacity: 0, scale: 0, x: '-50%', y: '-50%' }}
+                          animate={{ opacity: 1, scale: es.scale, x: '-50%', y: '-50%' }}
+                          transition={{
+                            type: 'spring',
+                            stiffness: 260,
+                            damping: 20,
+                            delay: 0.5 + 0.1 * index,
+                          }}
+                          style={{
+                            left: `${es.x}%`,
+                            top: `${es.y}%`,
+                            fontSize: '48px',
+                            lineHeight: 1,
+                            userSelect: 'none',
+                          }}
+                        >
+                          {es.emoji}
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
 
                   {postcard.frontCaption?.trim() && (
                     <div className="absolute bottom-4 left-4 right-4 z-10">
                       <div className="flex items-center gap-2 bg-white/70 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/50 shadow-lg w-fit max-w-full">
                         {postcard.frontEmoji && (
-                          <span className="text-2xl leading-none shrink-0">{postcard.frontEmoji}</span>
+                          <span className="text-2xl leading-none shrink-0">
+                            {postcard.frontEmoji}
+                          </span>
                         )}
                         <p className="text-sm font-bold text-stone-900 leading-tight break-words">
                           {postcard.frontCaption}
@@ -349,9 +383,23 @@ const ARPostcardViewer: React.FC<ARPostcardViewerProps> = ({ postcard, onClose }
                   {postcard.location && (
                     <div className="absolute top-3 left-3 z-10">
                       <div className="bg-white/80 backdrop-blur-sm text-teal-900 px-2 py-1 rounded-md text-[10px] font-semibold shadow-lg flex items-center gap-1">
-                        <svg className="w-3 h-3 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <svg
+                          className="w-3 h-3 text-orange-500"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
                         </svg>
                         <span className="max-w-[120px] truncate">{postcard.location}</span>
                       </div>
@@ -468,11 +516,10 @@ const ARPostcardViewer: React.FC<ARPostcardViewerProps> = ({ postcard, onClose }
               <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-teal-500/20 flex items-center justify-center">
                 <Camera size={40} className="text-teal-400" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-3">
-                Réalité Augmentée
-              </h2>
+              <h2 className="text-2xl font-bold text-white mb-3">Réalité Augmentée</h2>
               <p className="text-stone-400 mb-8 leading-relaxed">
-                Visualisez votre carte postale dans votre environnement grâce à la caméra de votre appareil.
+                Visualisez votre carte postale dans votre environnement grâce à la caméra de votre
+                appareil.
               </p>
               {cameraError ? (
                 <div className="space-y-4">
@@ -567,7 +614,9 @@ const ARPostcardViewer: React.FC<ARPostcardViewerProps> = ({ postcard, onClose }
                 <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/60 transition-colors">
                   <ZoomOut size={18} />
                 </div>
-                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider">Réduire</span>
+                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider">
+                  Réduire
+                </span>
               </button>
 
               <button
@@ -578,7 +627,9 @@ const ARPostcardViewer: React.FC<ARPostcardViewerProps> = ({ postcard, onClose }
                 <div className="w-16 h-16 rounded-full bg-teal-500/80 backdrop-blur-md border-2 border-teal-400/50 text-white flex items-center justify-center hover:bg-teal-500 transition-all shadow-lg shadow-teal-500/30">
                   <RotateCw size={28} />
                 </div>
-                <span className="text-[10px] font-bold text-white uppercase tracking-wider">Retourner</span>
+                <span className="text-[10px] font-bold text-white uppercase tracking-wider">
+                  Retourner
+                </span>
               </button>
 
               <button
@@ -589,7 +640,9 @@ const ARPostcardViewer: React.FC<ARPostcardViewerProps> = ({ postcard, onClose }
                 <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/60 transition-colors">
                   <ZoomIn size={18} />
                 </div>
-                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider">Zoom</span>
+                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider">
+                  Zoom
+                </span>
               </button>
 
               <button
@@ -600,7 +653,9 @@ const ARPostcardViewer: React.FC<ARPostcardViewerProps> = ({ postcard, onClose }
                 <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/60 transition-colors">
                   <Maximize2 size={18} />
                 </div>
-                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider">Centrer</span>
+                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider">
+                  Centrer
+                </span>
               </button>
             </div>
           </div>

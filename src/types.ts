@@ -3,6 +3,8 @@ export interface MediaItem {
   type: 'image' | 'video'
   url: string
   key?: string
+  /** ID Payload du document media lié (pour la relation upload dans Postcards.mediaItems.media) */
+  media?: number
   mimeType?: string
   filesize?: number
   note?: string

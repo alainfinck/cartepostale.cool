@@ -1007,6 +1007,7 @@ export default function ManagerClient({
                     <TableHead>Lieu</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Statut</TableHead>
+                    <TableHead className="text-right">Album</TableHead>
                     <TableHead className="text-right">Vues</TableHead>
                     <TableHead className="text-right">Partages</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -1589,6 +1590,14 @@ function GridCard({
                 </div>
 
                 <div className="flex items-center gap-3 pt-2 text-[10px] text-stone-400 border-t border-border/5">
+                  {(postcard.mediaItems?.length ?? 0) > 0 && (
+                    <Tooltip content="Photos dans l'album">
+                      <span className="flex items-center gap-1 whitespace-nowrap text-stone-500">
+                        <ImageIcon size={11} className="text-stone-400" />
+                        {postcard.mediaItems!.length} photo{postcard.mediaItems!.length !== 1 ? 's' : ''}
+                      </span>
+                    </Tooltip>
+                  )}
                   <Tooltip content="Vues (Interne)">
                     <span className="flex items-center gap-1 whitespace-nowrap">
                       <Eye size={11} className="text-stone-300" /> {postcard.views || 0}
@@ -1831,6 +1840,18 @@ function ListRow({
       </TableCell>
       <TableCell>
         <StatusBadge status={postcard.status || 'draft'} />
+      </TableCell>
+      <TableCell className="text-right text-stone-500 text-xs">
+        {(postcard.mediaItems?.length ?? 0) > 0 ? (
+          <Tooltip content="Photos dans l'album">
+            <span className="inline-flex items-center gap-1">
+              <ImageIcon size={12} className="text-stone-400" />
+              {postcard.mediaItems!.length} photo{postcard.mediaItems!.length !== 1 ? 's' : ''}
+            </span>
+          </Tooltip>
+        ) : (
+          '—'
+        )}
       </TableCell>
       <TableCell className="text-right text-stone-500 font-medium">
         <Tooltip content="Vues (Interne)">
