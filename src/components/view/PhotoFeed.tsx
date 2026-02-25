@@ -254,7 +254,7 @@ export default function PhotoFeed({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [isFlipped, setIsFlipped] = useState(false)
   const [slideDirection, setSlideDirection] = useState(0)
-  const [viewMode, setViewMode] = useState<'diapo' | 'full'>('diapo')
+  const [viewMode, setViewMode] = useState<'diapo' | 'full'>('full')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   const sessionId = useSessionId()
@@ -572,9 +572,14 @@ export default function PhotoFeed({
                   )}
                 </AnimatePresence>
 
-                {/* Polaroid card container — centered vertically */}
+                {/* Polaroid card container — plus large sur desktop en diapo, centré */}
                 <div
-                  className="relative flex-1 w-full max-w-md md:max-w-lg lg:max-w-xl flex items-center justify-center min-h-0 overflow-hidden px-4"
+                  className={cn(
+                    'relative flex-1 w-full flex items-center justify-center min-h-0 overflow-hidden px-4',
+                    viewMode === 'diapo'
+                      ? 'max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl'
+                      : 'max-w-[95vw]',
+                  )}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
@@ -656,7 +661,7 @@ export default function PhotoFeed({
                                 playsInline
                                 muted
                                 autoPlay
-                                className="block w-auto h-auto max-h-[70vh] sm:max-h-[80vh] max-w-[85vw] sm:max-w-[75vw] object-contain"
+                                className="block w-auto h-auto max-h-[70vh] sm:max-h-[80vh] lg:max-h-[85vh] max-w-[85vw] sm:max-w-[80vw] lg:max-w-[85vw] object-contain"
                               />
                             ) : (
                               // eslint-disable-next-line @next/next/no-img-element
@@ -665,7 +670,7 @@ export default function PhotoFeed({
                                   width: 900,
                                 })}
                                 alt={`Full photo ${selectedIndex + 1}`}
-                                className="block w-auto h-auto max-h-[70vh] sm:max-h-[80vh] max-w-[85vw] sm:max-w-[75vw] object-contain"
+                                className="block w-auto h-auto max-h-[70vh] sm:max-h-[80vh] lg:max-h-[85vh] max-w-[85vw] sm:max-w-[80vw] lg:max-w-[85vw] object-contain"
                                 onLoad={() => setIsImageLoading(false)}
                               />
                             )}

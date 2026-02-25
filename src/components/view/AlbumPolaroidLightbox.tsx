@@ -49,7 +49,7 @@ export default function AlbumPolaroidLightbox({
   )
   const [isFlipped, setIsFlipped] = useState(false)
   const [slideDirection, setSlideDirection] = useState(0)
-  const [viewMode, setViewMode] = useState<'diapo' | 'full'>('diapo')
+  const [viewMode, setViewMode] = useState<'diapo' | 'full'>('full')
   const [displayWidth, setDisplayWidth] = useState(DISPLAY_MAX_WIDTH)
 
   useEffect(() => {
@@ -223,7 +223,7 @@ export default function AlbumPolaroidLightbox({
       <div
         className={cn(
           'relative flex-1 w-full flex items-center justify-center min-h-0 overflow-hidden px-4',
-          viewMode === 'diapo' ? 'max-w-md md:max-w-lg lg:max-w-xl' : 'max-w-[95vw]',
+          viewMode === 'diapo' ? 'max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl' : 'max-w-[95vw]',
         )}
         onClick={(e) => e.stopPropagation()}
       >
