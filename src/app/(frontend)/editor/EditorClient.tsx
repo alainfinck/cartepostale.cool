@@ -1002,6 +1002,7 @@ export default function EditorPage() {
   const [showRecipientModal, setShowRecipientModal] = useState(false)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [templateModalCategory, setTemplateModalCategory] = useState<TemplateCategory | 'all'>('all')
+  const [eventType, setEventType] = useState<TemplateCategory | null>(null)
   const [showPricingModal, setShowPricingModal] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<PostcardPlanId>('payant')
   const [showTemplateSection, setShowTemplateSection] = useState(false) // Mobile-friendly: hide templates by default
@@ -1406,6 +1407,7 @@ export default function EditorPage() {
       stickers,
       emojiStickers,
       selectedTemplateId,
+      eventType,
       updatedAt: Date.now(),
     }
 
@@ -1493,6 +1495,7 @@ export default function EditorPage() {
           if (data.stickers) setStickers(data.stickers)
           if (data.emojiStickers) setEmojiStickers(data.emojiStickers)
           if (data.selectedTemplateId) setSelectedTemplateId(data.selectedTemplateId)
+          if (data.eventType) setEventType(data.eventType)
         } else {
           localStorage.removeItem(LOCAL_STORAGE_KEY)
         }
@@ -1709,6 +1712,7 @@ export default function EditorPage() {
     if (template.message) setMessage(template.message)
     if (template.location) setLocation(template.location)
     if (template.stampStyle) setStampStyle(template.stampStyle)
+    if (template.category) setEventType(template.category as TemplateCategory)
     try {
       const resized = await urlToResizedDataUrl(template.imageUrl)
       setFrontImage(resized)
@@ -2156,6 +2160,7 @@ export default function EditorPage() {
       puzzleCardDifficulty,
       backgroundMusic,
       backgroundMusicTitle,
+      eventType: eventType ?? undefined,
     }),
     [
       createdPostcardId,
@@ -2190,6 +2195,7 @@ export default function EditorPage() {
       puzzleCardDifficulty,
       backgroundMusic,
       backgroundMusicTitle,
+      eventType,
     ],
   )
 

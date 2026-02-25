@@ -95,6 +95,7 @@ export interface Postcard {
     lng: number
   }
   greeting?: string
+  eventType?: TemplateCategory
   stampStyle: 'classic' | 'modern' | 'airmail'
   /** Personnalisation du timbre (ex: "Digital Poste") */
   stampLabel?: string

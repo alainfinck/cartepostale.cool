@@ -64,7 +64,7 @@ const buildFrontImageFilterCss = (filter?: FrontImageFilter): string => {
 
 const POSTCARD_ASPECT = 4 / 3
 
-// Composant interne pour un emoji sticker interactif (drag + pinch zoom)
+// Composant interne pour un emoji sticker interactif (drag + pinch zoom + poignées)
 function EmojiStickerEl({
   sticker,
   containerRef,
@@ -82,19 +82,22 @@ function EmojiStickerEl({
   const [localY, setLocalY] = useState(sticker.y)
   const [localScale, setLocalScale] = useState(sticker.scale)
   const draggingRef = useRef(false)
+  const [isResizing, setIsResizing] = useState(false)
+  const resizeStateRef = useRef<{ startDist: number; startScale: number } | null>(null)
   const touchRef = useRef<{ dist: number; scale: number } | null>(null)
 
-  // Sync depuis les props quand on ne drag pas
+  // Sync depuis les props quand on ne drag/resize pas
   useEffect(() => {
-    if (!draggingRef.current) {
+    if (!draggingRef.current && !isResizing) {
       posRef.current = { x: sticker.x, y: sticker.y }
       scaleRef.current = sticker.scale
       setLocalX(sticker.x)
       setLocalY(sticker.y)
       setLocalScale(sticker.scale)
     }
-  }, [sticker.x, sticker.y, sticker.scale])
+  }, [sticker.x, sticker.y, sticker.scale, isResizing])
 
+  // Dragging logic
   const handlePointerDown = (e: React.PointerEvent) => {
     if (e.button === 2) return // clic droit → ignorer
     e.stopPropagation()
@@ -120,6 +123,46 @@ function EmojiStickerEl({
     if (!draggingRef.current) return
     ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
     draggingRef.current = false
+    onUpdate({ ...sticker, x: posRef.current.x, y: posRef.current.y, scale: scaleRef.current })
+  }
+
+  // Resizing logic (handles)
+  const handleResizeStart = (e: React.PointerEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    const container = containerRef.current
+    if (!container) return
+    const rect = container.getBoundingClientRect()
+    const cx = rect.left + (posRef.current.x / 100) * rect.width
+    const cy = rect.top + (posRef.current.y / 100) * rect.height
+    const dist = Math.sqrt(Math.pow(e.clientX - cx, 2) + Math.pow(e.clientY - cy, 2))
+    resizeStateRef.current = { startDist: dist, startScale: scaleRef.current }
+    setIsResizing(true)
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+  }
+
+  const handleResizeMove = (e: React.PointerEvent) => {
+    if (!isResizing || !resizeStateRef.current) return
+    e.stopPropagation()
+    const container = containerRef.current
+    if (!container) return
+    const rect = container.getBoundingClientRect()
+    const cx = rect.left + (posRef.current.x / 100) * rect.width
+    const cy = rect.top + (posRef.current.y / 100) * rect.height
+    const dist = Math.sqrt(Math.pow(e.clientX - cx, 2) + Math.pow(e.clientY - cy, 2))
+    const newScale = Math.max(
+      0.3,
+      Math.min(5, (dist / resizeStateRef.current.startDist) * resizeStateRef.current.startScale),
+    )
+    scaleRef.current = newScale
+    setLocalScale(newScale)
+  }
+
+  const handleResizeEnd = (e: React.PointerEvent) => {
+    if (!isResizing) return
+    ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+    setIsResizing(false)
+    resizeStateRef.current = null
     onUpdate({ ...sticker, x: posRef.current.x, y: posRef.current.y, scale: scaleRef.current })
   }
 
@@ -179,7 +222,7 @@ function EmojiStickerEl({
         fontSize: '48px',
         lineHeight: 1,
         zIndex: 25,
-        cursor: draggingRef.current ? 'grabbing' : 'grab',
+        cursor: draggingRef.current ? 'grabbing' : isResizing ? 'nwse-resize' : 'grab',
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -191,7 +234,8 @@ function EmojiStickerEl({
       onTouchEnd={handleTouchEnd}
     >
       <span style={{ userSelect: 'none', pointerEvents: 'none' }}>{sticker.emoji}</span>
-      {/* Bouton supprimer au survol */}
+
+      {/* Bouton supprimer au survol - plus petit */}
       <button
         type="button"
         onClick={(e) => {
@@ -199,11 +243,26 @@ function EmojiStickerEl({
           onRemove(sticker.id)
         }}
         onPointerDown={(e) => e.stopPropagation()}
-        className="absolute -top-2 -right-2 hidden group-hover/es:flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold shadow-lg"
-        style={{ fontSize: '10px', lineHeight: 1 }}
+        className="absolute -top-1.5 -right-1.5 hidden group-hover/es:flex items-center justify-center w-3.5 h-3.5 rounded-full bg-red-500 text-white shadow-md z-30 transition-transform hover:scale-110 active:scale-95"
       >
-        ×
+        <span style={{ fontSize: '9px', lineHeight: 1, fontWeight: 'bold' }}>×</span>
       </button>
+
+      {/* Handle de redimensionnement (en bas à droite) */}
+      <div
+        className="absolute -bottom-1.5 -right-1.5 hidden group-hover/es:flex items-center justify-center w-4 h-4 rounded-full bg-teal-500 text-white shadow-md cursor-nwse-resize z-30 transition-transform hover:scale-110 active:scale-95"
+        onPointerDown={handleResizeStart}
+        onPointerMove={handleResizeMove}
+        onPointerUp={handleResizeEnd}
+        onPointerCancel={handleResizeEnd}
+      >
+        <Maximize2 size={8} strokeWidth={3} className="rotate-45" />
+      </div>
+
+      {/* Guide visuel pendant le déplacement ou redimensionnement */}
+      {(draggingRef.current || isResizing) && (
+        <div className="absolute inset-x-[-15%] inset-y-[-10%] border-2 border-dashed border-teal-400 rounded-lg pointer-events-none opacity-50" />
+      )}
     </motion.div>
   )
 }

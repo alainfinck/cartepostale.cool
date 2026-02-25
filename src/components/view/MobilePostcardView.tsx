@@ -145,7 +145,7 @@ export default function MobilePostcardView({ postcard }: MobilePostcardViewProps
       </div>
 
       {/* 2. Message Section — styled as the verso */}
-      <div className="relative w-full bg-[#FFFDF9] rounded-b-2xl shadow-xl border border-stone-200 border-t-0 p-6 pb-8">
+      <div className="relative w-full bg-[#fdfbf7] rounded-b-2xl shadow-xl border border-stone-200 border-t-0 p-6 pb-8">
         {/* Decorative postal lines */}
         <div
           className="absolute inset-0 rounded-b-2xl overflow-hidden opacity-[0.03]"

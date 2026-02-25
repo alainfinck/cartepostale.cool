@@ -698,7 +698,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         <motion.div
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
-          className="w-full max-w-[95vw] md:max-w-2xl max-h-[85dvh] md:max-h-[75vh] md:h-auto min-h-0 bg-[#FFFDF9] rounded-2xl shadow-2xl p-4 md:p-6 relative overflow-hidden flex flex-col items-center text-center border-4 border-white/50"
+          className="w-full max-w-[95vw] md:max-w-2xl max-h-[85dvh] md:max-h-[75vh] md:h-auto min-h-0 bg-[#fdfbf7] rounded-2xl shadow-2xl p-4 md:p-6 relative overflow-hidden flex flex-col items-center text-center border-4 border-white/50"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Background decorations */}
@@ -1366,7 +1366,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             {/* Back of Card — masqué en mode recto (Safari: backface-visibility insuffisant) */}
             <motion.div
               className={cn(
-                'absolute w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#FFFDF9] paper-texture border border-stone-200/60 flex flex-col overflow-hidden',
+                'absolute w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#fdfbf7] paper-texture border border-stone-200/60 flex flex-col overflow-hidden',
                 isLarge ? 'p-3 sm:p-8 pl-5 sm:pl-10' : 'p-3 sm:p-8 pl-4 sm:pl-8',
                 !isFlipped ? 'pointer-events-none' : '',
               )}

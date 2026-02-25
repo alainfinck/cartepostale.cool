@@ -431,7 +431,7 @@ const ARPostcardViewer: React.FC<ARPostcardViewerProps> = ({ postcard, onClose }
                 {/* Back face */}
                 <div
                   className={cn(
-                    'absolute inset-0 rounded-xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.5)] border-2 border-white/30 bg-[#FFFDF9] p-4 sm:p-6 flex flex-col',
+                    'absolute inset-0 rounded-xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.5)] border-2 border-white/30 bg-[#fdfbf7] p-4 sm:p-6 flex flex-col',
                     !isFlipped ? 'pointer-events-none' : '',
                   )}
                   style={{

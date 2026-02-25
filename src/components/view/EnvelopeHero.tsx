@@ -5,6 +5,8 @@ import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import { Heart } from 'lucide-react'
 import { fireSideCannons } from '@/components/ui/confetti'
+import type { TemplateCategory } from '@/types'
+import { getEventTheme } from '@/lib/event-theme'
 
 const MiniMap = dynamic(() => import('@/components/postcard/MiniMap'), {
   ssr: false,
@@ -17,6 +19,7 @@ interface EnvelopeHeroProps {
   date?: string
   coords?: { lat: number; lng: number }
   isOpened?: boolean
+  eventType?: TemplateCategory
 }
 
 /** Épingle rouge type Google Maps — SVG drop shape */
@@ -49,7 +52,9 @@ export default function EnvelopeHero({
   date,
   coords,
   isOpened = false,
+  eventType,
 }: EnvelopeHeroProps) {
+  const theme = getEventTheme(eventType)
   useEffect(() => {
     if (isOpened) {
       const timer = setTimeout(() => {
@@ -72,7 +77,7 @@ export default function EnvelopeHero({
           startOnView={false}
           className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-stone-800 leading-tight mx-auto max-w-xs sm:max-w-none"
         >
-          Vous avez reçu une carte postale de la part de
+          {theme.icon ? `${theme.heroTitle} ${theme.icon}` : theme.heroTitle}
         </TextAnimate>
 
         <motion.div

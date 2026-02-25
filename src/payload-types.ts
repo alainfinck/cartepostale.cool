@@ -352,6 +352,10 @@ export interface Postcard {
     lat?: number | null;
     lng?: number | null;
   };
+  /**
+   * Type d'événement : adapte le thème visuel de la page de réception
+   */
+  eventType?: ('birthday' | 'vacation' | 'invitation' | 'birth' | 'christmas' | 'wedding' | 'graduation') | null;
   stampStyle?: ('classic' | 'modern' | 'airmail') | null;
   stampLabel?: string | null;
   stampYear?: string | null;
@@ -1043,6 +1047,7 @@ export interface PostcardsSelect<T extends boolean = true> {
         lat?: T;
         lng?: T;
       };
+  eventType?: T;
   stampStyle?: T;
   stampLabel?: T;
   stampYear?: T;

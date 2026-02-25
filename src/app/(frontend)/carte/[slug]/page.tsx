@@ -327,6 +327,7 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
       : undefined,
     puzzleCardEnabled: payloadPostcard.puzzleCardEnabled || false,
     puzzleCardDifficulty: (payloadPostcard.puzzleCardDifficulty as '3' | '4' | '5') || '3',
+    eventType: (payloadPostcard as any).eventType ?? undefined,
   }
 }
 
@@ -437,6 +438,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 import EnvelopeHero from '@/components/view/EnvelopeHero'
 import PostcardSuccessQRBlock from '@/components/postcard/PostcardSuccessQRBlock'
 import PostcardEmbedView from '@/components/view/PostcardEmbedView'
+import { getEventTheme } from '@/lib/event-theme'
 
 export default async function PostcardPage({ params, searchParams }: PageProps) {
   const { slug } = await params
@@ -515,12 +517,15 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
     }
   }
 
+  const theme = getEventTheme(frontendPostcard.eventType)
+
   const heroSection = showEnvelope ? (
     <EnvelopeHero
       senderName={frontendPostcard.senderName}
       location={frontendPostcard.location}
       date={frontendPostcard.date}
       coords={frontendPostcard.coords}
+      eventType={frontendPostcard.eventType}
     />
   ) : (
     <ViewPageTitle
@@ -528,11 +533,12 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
       senderName={frontendPostcard.senderName}
       location={frontendPostcard.location}
       date={frontendPostcard.date}
+      eventType={frontendPostcard.eventType}
     />
   )
 
   const pageContent = (
-    <div className="w-full bg-[#fdfbf7] flex flex-col items-center landscape:justify-center landscape:pb-4 relative pt-0">
+    <div className={`w-full ${theme.pageBg} flex flex-col items-center landscape:justify-center landscape:pb-4 relative pt-0`}>
       <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-0 px-2 md:px-4 min-h-[70vh] md:min-h-[80vh] justify-center">
         <ScratchCardWrapper postcard={frontendPostcard} views={payloadPostcardViews} />
       </div>
@@ -572,7 +578,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
           transition={{ duration: 1, ease: 'easeOut' }}
           className="relative inline-block"
         >
-          <p className="font-serif font-bold text-teal-700 text-4xl sm:text-5xl md:text-6xl -rotate-2 drop-shadow-sm tracking-tight">
+          <p className={`font-serif font-bold ${theme.signatureColor} text-4xl sm:text-5xl md:text-6xl -rotate-2 drop-shadow-sm tracking-tight`}>
             — {frontendPostcard.senderName}
           </p>
           <div className="absolute -bottom-3 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-teal-300/40 to-transparent" />
@@ -593,11 +599,11 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
 
         <div className="max-w-3xl mx-auto">
           <div className="bg-white rounded-[3rem] p-10 md:p-20 shadow-[0_50px_120px_rgba(0,0,0,0.06)] border border-stone-100 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-teal-50/50 rounded-full blur-3xl -mr-40 -mt-40" />
-            <div className="absolute bottom-0 left-0 w-80 h-80 bg-orange-50/50 rounded-full blur-3xl -ml-40 -mb-40" />
+            <div className={`absolute top-0 right-0 w-80 h-80 ${theme.ctaBlob1} rounded-full blur-3xl -mr-40 -mt-40`} />
+            <div className={`absolute bottom-0 left-0 w-80 h-80 ${theme.ctaBlob2} rounded-full blur-3xl -ml-40 -mb-40`} />
 
             <div className="relative z-10 text-center">
-              <div className="inline-flex items-center justify-center w-14 h-14 bg-orange-50 text-orange-500 rounded-2xl rotate-6 mb-6 shadow-sm border border-orange-100/50 group hover:rotate-12 transition-transform duration-500">
+              <div className={`inline-flex items-center justify-center w-14 h-14 ${theme.ctaIconBg} ${theme.ctaIconColor} rounded-2xl rotate-6 mb-6 shadow-sm border border-white/50 group hover:rotate-12 transition-transform duration-500`}>
                 <Sparkles size={28} className="group-hover:scale-110 transition-transform" />
               </div>
 

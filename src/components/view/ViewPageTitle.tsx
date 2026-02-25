@@ -5,6 +5,8 @@ import { motion, easeOut } from 'framer-motion'
 import { Heart } from 'lucide-react'
 import { fireSideCannons } from '@/components/ui/confetti'
 import { TextAnimate } from '@/components/ui/text-animate'
+import type { TemplateCategory } from '@/types'
+import { getEventTheme } from '@/lib/event-theme'
 
 /** Épingle rouge type Google Maps — SVG drop shape */
 function GooglePinIcon({ className }: { className?: string }) {
@@ -33,9 +35,12 @@ interface ViewPageTitleProps {
   senderName: string
   location?: string
   date?: string
+  eventType?: TemplateCategory
 }
 
-export default function ViewPageTitle({ title, senderName, location, date }: ViewPageTitleProps) {
+export default function ViewPageTitle({ title, senderName, location, date, eventType }: ViewPageTitleProps) {
+  const theme = getEventTheme(eventType)
+
   useEffect(() => {
     // Confettis une seule fois, après que le titre, l'expéditeur et le pin soient affichés
     const timer = setTimeout(() => {
@@ -53,7 +58,7 @@ export default function ViewPageTitle({ title, senderName, location, date }: Vie
         startOnView={false}
         className="text-xl sm:text-2xl md:text-4xl font-serif font-bold text-stone-800 leading-tight tracking-tight [-webkit-font-smoothing:antialiased] mx-auto max-w-xs sm:max-w-none"
       >
-        {`Vous avez reçu une carte postale de la part de`}
+        {theme.icon ? `${theme.heroTitle} ${theme.icon}` : theme.heroTitle}
       </TextAnimate>
       <motion.div
         className="flex items-center justify-center text-stone-500"

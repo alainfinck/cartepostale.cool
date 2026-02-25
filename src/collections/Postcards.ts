@@ -186,6 +186,23 @@ export const Postcards: CollectionConfig = {
       ],
     },
     {
+      name: 'eventType',
+      type: 'select',
+      admin: {
+        description: "Type d'événement : adapte le thème visuel de la page de réception",
+        position: 'sidebar',
+      },
+      options: [
+        { label: 'Anniversaire', value: 'birthday' },
+        { label: 'Vacances', value: 'vacation' },
+        { label: 'Invitation', value: 'invitation' },
+        { label: 'Naissance', value: 'birth' },
+        { label: 'Noël', value: 'christmas' },
+        { label: 'Mariage', value: 'wedding' },
+        { label: 'Diplôme', value: 'graduation' },
+      ],
+    },
+    {
       name: 'stampStyle',
       type: 'select',
       options: [
