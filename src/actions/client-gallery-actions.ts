@@ -9,6 +9,7 @@ export interface UserMediaItem {
   url: string
   alt: string
   addedAt: string // ISO string date
+  filesize?: number
 }
 
 export async function getUserGalleryMedia(): Promise<UserMediaItem[]> {
@@ -49,6 +50,7 @@ export async function getUserGalleryMedia(): Promise<UserMediaItem[]> {
             url: m.url || `/media/${encodeURIComponent(m.filename)}`,
             alt: m.alt || `Face avant - ${(pc.recipientName || 'sans nom').toString()}`,
             addedAt: pcDate,
+            filesize: m.filesize,
           })
         }
       }
@@ -65,6 +67,7 @@ export async function getUserGalleryMedia(): Promise<UserMediaItem[]> {
                 url: m.url || `/media/${encodeURIComponent(m.filename)}`,
                 alt: m.alt || `Photo dos - ${(pc.recipientName || '').toString()}`,
                 addedAt: pcDate,
+                filesize: m.filesize,
               })
             }
           }
@@ -90,6 +93,7 @@ export async function getUserGalleryMedia(): Promise<UserMediaItem[]> {
           url: m.url || `/media/${encodeURIComponent(m.filename || '')}`,
           alt: m.alt || 'Image téléchargée',
           addedAt: m.createdAt || new Date().toISOString(),
+          filesize: m.filesize ?? undefined,
         })
       }
     }
@@ -211,5 +215,56 @@ export async function deleteUserGalleryImage(
   } catch (err: any) {
     console.error('Error deleting user gallery image:', err)
     return { success: false, error: err.message || 'Erreur lors de la suppression' }
+  }
+}
+
+export async function deleteUserGalleryMediaItems(
+  imageIds: number[],
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return { success: false, error: 'Non authentifié' }
+    }
+
+    const payload = await getPayload({ config })
+
+    // Verify ownership for all items
+    const mediaItems = await payload.find({
+      collection: 'media',
+      where: {
+        id: { in: imageIds },
+      },
+      limit: imageIds.length,
+    })
+
+    const unauthorized = mediaItems.docs.some((m: any) => {
+      const authorId = typeof m.author === 'object' ? m.author?.id : m.author
+      return authorId !== user.id
+    })
+
+    const foundIds = mediaItems.docs.map((m) => m.id as number)
+    if (unauthorized || foundIds.length !== imageIds.length) {
+      return {
+        success: false,
+        error: 'Vous n’êtes pas autorisé à supprimer certains de ces médias',
+      }
+    }
+
+    // Delete from Payload
+    await Promise.all(
+      imageIds.map((id) =>
+        payload.delete({
+          collection: 'media',
+          id,
+          overrideAccess: true,
+        }),
+      ),
+    )
+
+    return { success: true }
+  } catch (err: any) {
+    console.error('Error deleting user gallery images:', err)
+    return { success: false, error: err.message || 'Erreur lors de la suppression groupée' }
   }
 }

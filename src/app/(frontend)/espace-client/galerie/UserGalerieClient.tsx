@@ -10,14 +10,19 @@ import {
   X,
   Send,
   Trash2,
+  CheckCircle2,
+  Copy,
+  LayoutGrid,
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
+import { cn } from '@/lib/utils'
 import {
   type UserMediaItem,
   addUserGalleryImage,
   deleteUserGalleryImage,
+  deleteUserGalleryMediaItems,
 } from '@/actions/client-gallery-actions'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import { fileToProcessedDataUrl, dataUrlToBlob } from '@/lib/image-processing'
@@ -34,12 +39,83 @@ export default function UserGalerieClient({ items: initialItems }: Props) {
   const [search, setSearch] = useState('')
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState<number | null>(null)
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
   const [selectedImage, setSelectedImage] = useState<UserMediaItem | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
 
   const filteredItems = items.filter((item) => {
     if (!search) return true
     return item.alt.toLowerCase().includes(search.toLowerCase())
   })
+
+  const handleToggleSelect = (id: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    const newSelected = new Set(selectedIds)
+    if (newSelected.has(id)) {
+      newSelected.delete(id)
+    } else {
+      newSelected.add(id)
+    }
+    setSelectedIds(newSelected)
+    if (newSelected.size > 0) {
+      setIsSelectionMode(true)
+    } else {
+      setIsSelectionMode(false)
+    }
+  }
+
+  const handleDetectDuplicates = () => {
+    const dups = new Set<number>()
+    const seenFilesizes = new Map<number, number>() // size -> first id
+
+    // We can also use URLs or names, but size + name is safer if size is accurate
+    // items are sorted by date desc, so we keep the first one (most recent)
+    items.forEach((item) => {
+      if (item.filesize) {
+        if (seenFilesizes.has(item.filesize)) {
+          dups.add(item.id)
+        } else {
+          seenFilesizes.set(item.filesize, item.id)
+        }
+      }
+    })
+
+    if (dups.size === 0) {
+      alert('Aucun doublon détecté (basé sur la taille du fichier).')
+      return
+    }
+
+    setSelectedIds(dups)
+    setIsSelectionMode(true)
+    alert(`${dups.size} doublon(s) potentiel(s) sélectionné(s).`)
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return
+    if (
+      !confirm(`Êtes-vous sûr de vouloir supprimer les ${selectedIds.size} images sélectionnées ?`)
+    )
+      return
+
+    setIsBulkDeleting(true)
+    try {
+      const idsArray = Array.from(selectedIds)
+      const res = await deleteUserGalleryMediaItems(idsArray)
+      if (res.success) {
+        setItems((prev) => prev.filter((i) => !selectedIds.has(i.id)))
+        setSelectedIds(new Set())
+        setIsSelectionMode(false)
+      } else {
+        alert(res.error || 'Erreur lors de la suppression groupée')
+      }
+    } catch (err) {
+      console.error('Bulk Delete Error:', err)
+      alert('Une erreur est survenue lors de la suppression groupée.')
+    } finally {
+      setIsBulkDeleting(false)
+    }
+  }
 
   // Handle local file selection and R2 upload (one file)
   const uploadFile = async (file: File) => {
@@ -89,6 +165,7 @@ export default function UserGalerieClient({ items: initialItems }: Props) {
         url: `/media/${encodeURIComponent(key)}`,
         alt: file.name,
         addedAt: new Date().toISOString(),
+        filesize: filesize,
       }
       setItems((prev) => [newItem, ...prev])
     } catch (err: any) {
@@ -209,9 +286,56 @@ export default function UserGalerieClient({ items: initialItems }: Props) {
         </div>
 
         {filteredItems.length > 0 && (
-          <p className="text-xs text-stone-400 font-medium">
-            {filteredItems.length} image{filteredItems.length > 1 ? 's' : ''}
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-stone-400 font-medium whitespace-nowrap">
+              {filteredItems.length} image{filteredItems.length > 1 ? 's' : ''}
+            </p>
+
+            <div className="h-4 w-[1px] bg-stone-200 hidden sm:block" />
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDetectDuplicates}
+                className="h-8 text-[11px] gap-1.5 border-stone-200 text-stone-600 hover:bg-stone-50"
+              >
+                <Copy className="h-3 w-3" />
+                Détecter doublons
+              </Button>
+
+              {isSelectionMode && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleBulkDelete}
+                  disabled={isBulkDeleting}
+                  className="h-8 text-[11px] gap-1.5"
+                >
+                  {isBulkDeleting ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-3 w-3" />
+                  )}
+                  Supprimer ({selectedIds.size})
+                </Button>
+              )}
+
+              {isSelectionMode && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedIds(new Set())
+                    setIsSelectionMode(false)
+                  }}
+                  className="h-8 text-[11px] text-stone-500"
+                >
+                  Annuler
+                </Button>
+              )}
+            </div>
+          </div>
         )}
       </div>
 
@@ -230,17 +354,53 @@ export default function UserGalerieClient({ items: initialItems }: Props) {
           {filteredItems.map((item) => (
             <div
               key={item.id}
-              onClick={() => setSelectedImage(item)}
-              className="group relative rounded-xl border border-stone-200 bg-white overflow-hidden hover:shadow-md transition-all cursor-pointer"
+              onClick={() => {
+                if (isSelectionMode) {
+                  handleToggleSelect(item.id)
+                } else {
+                  setSelectedImage(item)
+                }
+              }}
+              className={cn(
+                'group relative rounded-xl border transition-all cursor-pointer overflow-hidden',
+                selectedIds.has(item.id)
+                  ? 'border-teal-500 ring-2 ring-teal-500/20 shadow-md'
+                  : 'border-stone-200 bg-white hover:shadow-md',
+              )}
             >
               <div className="aspect-square bg-stone-100 relative">
                 <Image
                   src={getOptimizedImageUrl(item.url, { width: 400, quality: 80 })}
                   alt={item.alt}
                   fill
-                  className="object-cover"
+                  className={cn(
+                    'object-cover transition-transform duration-500',
+                    !selectedIds.has(item.id) && 'group-hover:scale-105',
+                  )}
                   sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                 />
+
+                {/* Selection Checkbox (always visible if selective, or on hover) */}
+                <div
+                  className={cn(
+                    'absolute top-2 left-2 z-10 transition-opacity',
+                    isSelectionMode || selectedIds.has(item.id)
+                      ? 'opacity-100'
+                      : 'opacity-0 group-hover:opacity-100',
+                  )}
+                  onClick={(e) => handleToggleSelect(item.id, e)}
+                >
+                  <div
+                    className={cn(
+                      'size-6 rounded-full border-2 flex items-center justify-center transition-colors',
+                      selectedIds.has(item.id)
+                        ? 'bg-teal-500 border-teal-500 text-white'
+                        : 'bg-white/80 border-stone-300 text-transparent',
+                    )}
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                  </div>
+                </div>
               </div>
               <div className="p-3 bg-white">
                 <h3 className="font-medium text-xs text-stone-700 truncate" title={item.alt}>

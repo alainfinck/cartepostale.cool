@@ -1019,7 +1019,7 @@ export default function ManagerClient({
                         }}
                         onChange={toggleSelectAll}
                         onClick={(e) => e.stopPropagation()}
-                        className="h-2.5 w-2.5 rounded-md border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer transition-transform hover:scale-110"
+                        className="size-5 rounded-md border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer transition-transform hover:scale-110 appearance-none checked:bg-teal-500 checked:border-teal-500 checked:bg-no-repeat checked:bg-center checked:[background-image:url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%208%208%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%221.8%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M1%202.5L3%204.5L7%201%22%2F%3E%3C%2Fsvg%3E')] checked:[background-size:65%]"
                       />
                     </TableHead>
                     <TableHead>Image</TableHead>
@@ -1418,7 +1418,7 @@ function Tooltip({ children, content }: { children: React.ReactNode; content: st
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 5, scale: 0.95 }}
             transition={{ duration: 0.1, ease: 'easeOut' }}
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-stone-900/95 backdrop-blur-md text-white text-sm font-medium rounded-lg shadow-2xl whitespace-nowrap z-[9999] pointer-events-none border border-white/10"
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-stone-900/95 backdrop-blur-md text-white text-sm font-medium rounded-lg shadow-2xl whitespace-nowrap z-[10000] pointer-events-none border border-white/10"
           >
             {content}
             <div className="absolute top-full left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-stone-900/90" />
@@ -1896,7 +1896,7 @@ function ListRow({
           checked={selected}
           onChange={onToggleSelect}
           onClick={(e) => e.stopPropagation()}
-          className="h-2.5 w-2.5 rounded-md border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer transition-transform hover:scale-110"
+          className="size-5 rounded-md border-stone-300 text-teal-600 focus:ring-teal-500 cursor-pointer transition-transform hover:scale-110 appearance-none bg-white checked:bg-teal-500 checked:border-teal-500 checked:bg-no-repeat checked:bg-center checked:[background-image:url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%208%208%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%221.8%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M1%202.5L3%204.5L7%201%22%2F%3E%3C%2Fsvg%3E')] checked:[background-size:65%] shadow-sm"
         />
       </TableCell>
       <TableCell>
@@ -1934,8 +1934,8 @@ function ListRow({
       <TableCell className="text-right text-stone-500 text-xs">
         {(postcard.mediaItems?.length ?? 0) > 0 ? (
           <Tooltip content="Photos dans l'album">
-            <span className="inline-flex items-center gap-1">
-              <ImageIcon size={12} className="text-stone-400" />
+            <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-teal-50 text-teal-700 rounded-full font-bold border border-teal-100 shadow-sm whitespace-nowrap transition-transform hover:scale-105 active:scale-95">
+              <ImageIcon size={12} className="text-teal-500" />
               {postcard.mediaItems!.length} photo{postcard.mediaItems!.length !== 1 ? 's' : ''}
             </span>
           </Tooltip>
