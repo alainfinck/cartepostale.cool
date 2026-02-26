@@ -50,7 +50,7 @@ export async function getUserGalleryMedia(): Promise<UserMediaItem[]> {
             url: m.url || `/media/${encodeURIComponent(m.filename)}`,
             alt: m.alt || `Face avant - ${(pc.recipientName || 'sans nom').toString()}`,
             addedAt: pcDate,
-            filesize: m.filesize,
+            filesize: m.filesize ?? undefined,
           })
         }
       }
@@ -67,7 +67,7 @@ export async function getUserGalleryMedia(): Promise<UserMediaItem[]> {
                 url: m.url || `/media/${encodeURIComponent(m.filename)}`,
                 alt: m.alt || `Photo dos - ${(pc.recipientName || '').toString()}`,
                 addedAt: pcDate,
-                filesize: m.filesize,
+                filesize: m.filesize ?? undefined,
               })
             }
           }
