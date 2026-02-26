@@ -236,7 +236,9 @@ export default function AlbumPolaroidLightbox({
       <div
         className={cn(
           'relative flex-1 w-full flex items-center justify-center min-h-0 overflow-hidden px-4',
-          viewMode === 'diapo' ? 'max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl' : 'max-w-[95vw]',
+          viewMode === 'diapo'
+            ? 'scale-90 sm:scale-100 max-w-[85vw] sm:max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl'
+            : 'max-w-[95vw]',
         )}
         onClick={(e) => e.stopPropagation()}
       >
@@ -268,7 +270,7 @@ export default function AlbumPolaroidLightbox({
               className={cn(
                 'relative w-full transition-transform duration-700 ease-in-out',
                 viewMode === 'diapo'
-                  ? 'bg-white shadow-2xl rounded-sm p-3 sm:p-4 pb-16 sm:pb-24'
+                  ? 'bg-white shadow-2xl rounded-sm p-2.5 sm:p-4 pb-10 sm:pb-16'
                   : 'inline-flex max-h-[85vh] max-w-[95vw] items-center justify-center',
               )}
               style={{
@@ -371,7 +373,7 @@ export default function AlbumPolaroidLightbox({
               {/* FRONT BOTTOM — (diapo only, empty space to allow for authentic look since note is inside) */}
               {viewMode === 'diapo' && (
                 <div
-                  className="absolute bottom-0 left-0 right-0 h-16 sm:h-20 px-4 sm:px-6 z-10 flex items-center justify-end"
+                  className="absolute bottom-0 left-0 right-0 h-10 sm:h-16 px-3 sm:px-6 z-10 flex items-center justify-end"
                   style={{ backfaceVisibility: 'hidden' }}
                 >
                   <button
