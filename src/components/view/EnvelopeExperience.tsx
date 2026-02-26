@@ -107,13 +107,13 @@ export default function EnvelopeExperience({
                   {/* Photo de la carte postale qui dépasse de l'enveloppe */}
                   {frontImage && (
                     <motion.div
-                      className="absolute top-[5%] right-[22%] w-[60%] aspect-[3/2] rounded-md shadow-md border border-white/50 z-0"
+                      className="absolute top-[2%] right-[8%] w-[55%] aspect-[3/2] rounded-md shadow-md border border-white/50 z-0"
                       variants={{
-                        rest: { y: 0, x: 0, rotate: 0 },
+                        rest: { y: 0, x: 0, rotate: 5 },
                         floating: {
-                          y: [0, -3, 0],
-                          x: [0, 2, 0],
-                          rotate: [0, 2, 0],
+                          y: [0, -2, 0],
+                          x: [0, 1, 0],
+                          rotate: [5, 7, 5],
                           transition: {
                             type: 'spring',
                             stiffness: 100,
@@ -124,8 +124,8 @@ export default function EnvelopeExperience({
                           },
                         },
                         hover: {
-                          y: -40,
-                          x: 90,
+                          y: -35,
+                          x: 60,
                           rotate: 15,
                           transition: { type: 'spring', stiffness: 200, damping: 20 },
                         },
