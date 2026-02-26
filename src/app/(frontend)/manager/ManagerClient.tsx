@@ -1659,10 +1659,10 @@ function GridCard({
                 <div className="flex items-center gap-3 pt-2 text-[10px] text-stone-400 border-t border-border/5">
                   {(postcard.mediaItems?.length ?? 0) > 0 && (
                     <Tooltip content="Photos dans l'album">
-                      <span className="flex items-center gap-1 whitespace-nowrap text-stone-500">
-                        <ImageIcon size={11} className="text-stone-400" />
-                        {postcard.mediaItems!.length} photo
-                        {postcard.mediaItems!.length !== 1 ? 's' : ''}
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 bg-teal-50 text-teal-700 rounded-full font-bold border border-teal-100/50 whitespace-nowrap transition-all hover:scale-105">
+                        <ImageIcon size={11} className="text-teal-500" />
+                        {postcard.mediaItems!.length}{' '}
+                        {postcard.mediaItems!.length !== 1 ? 'photos' : 'photo'}
                       </span>
                     </Tooltip>
                   )}

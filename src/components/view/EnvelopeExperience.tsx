@@ -118,13 +118,17 @@ export default function EnvelopeExperience({
                           rotate: 5,
                         },
                         floating: {
-                          y: [0, -2, 0],
-                          x: [0, 1, 0],
-                          rotate: [5, 7, 5],
+                          y: 0,
+                          x: 0,
+                          rotate: 5,
                           transition: {
                             y: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
                             x: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
                             rotate: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+                            // Add smooth transition for returning from hover
+                            type: 'spring',
+                            stiffness: 80,
+                            damping: 25,
                           },
                         },
                         hover: {
