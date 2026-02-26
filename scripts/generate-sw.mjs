@@ -24,10 +24,12 @@ function getVersion() {
   if (process.env.GIT_COMMIT) {
     return String(process.env.GIT_COMMIT).slice(0, 12)
   }
-  try {
-    return execSync('git rev-parse --short=12 HEAD', { encoding: 'utf-8' }).trim()
-  } catch {
-    // no git or not a repo
+  if (fs.existsSync(path.join(root, '.git'))) {
+    try {
+      return execSync('git rev-parse --short=12 HEAD', { encoding: 'utf-8' }).trim()
+    } catch {
+      // ignore
+    }
   }
   return String(Date.now())
 }
@@ -36,10 +38,7 @@ const version = getVersion()
 const cacheName = `cartepostale-${version}`
 
 let content = fs.readFileSync(swPath, 'utf-8')
-content = content.replace(
-  /const CACHE_NAME = '[^']+'/,
-  `const CACHE_NAME = '${cacheName}'`
-)
+content = content.replace(/const CACHE_NAME = '[^']+'/, `const CACHE_NAME = '${cacheName}'`)
 fs.writeFileSync(swPath, content)
 
 console.log('[generate-sw] CACHE_NAME set to', cacheName)
