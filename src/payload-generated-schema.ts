@@ -100,7 +100,7 @@ export const enum_email_templates_target_role = pgEnum('enum_email_templates_tar
 ])
 export const enum_feedback_status = pgEnum('enum_feedback_status', ['new', 'read', 'processed'])
 
-export const users = pgTable(
+export const users: any = pgTable(
   'users',
   {
     id: varchar('id').primaryKey(),
