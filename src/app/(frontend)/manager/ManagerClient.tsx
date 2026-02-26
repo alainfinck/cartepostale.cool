@@ -1112,16 +1112,14 @@ export default function ManagerClient({
           onOpenShareContribution={
             useEspaceClientActions ? () => setShareContributionModalOpen(true) : undefined
           }
-          onOpenAlbumEdit={
-            selectedPostcard ? () => setAlbumPostcard(selectedPostcard) : undefined
-          }
+          onOpenAlbumEdit={selectedPostcard ? () => setAlbumPostcard(selectedPostcard) : undefined}
           showAssignAuthor={!useEspaceClientActions && !useAgenceActions}
           onAssignAuthor={
             !useEspaceClientActions && !useAgenceActions
               ? async (postcardId, authorId) => {
                   const res = await updatePostcard(postcardId, { author: authorId })
                   if (!res.success) {
-                    alert(res.error ?? 'Erreur lors de l\'attribution.')
+                    alert(res.error ?? "Erreur lors de l'attribution.")
                     return
                   }
                   const next = await fetchPostcards({
@@ -1207,9 +1205,7 @@ export default function ManagerClient({
                 </DialogDescription>
               </DialogHeader>
               <PostcardQRCode
-                postcardUrl={
-                  origin ? `${origin}/carte/${qrCodePostcard.publicId}` : ''
-                }
+                postcardUrl={origin ? `${origin}/carte/${qrCodePostcard.publicId}` : ''}
                 showPrintHint
                 compact
                 size={180}
@@ -1665,7 +1661,8 @@ function GridCard({
                     <Tooltip content="Photos dans l'album">
                       <span className="flex items-center gap-1 whitespace-nowrap text-stone-500">
                         <ImageIcon size={11} className="text-stone-400" />
-                        {postcard.mediaItems!.length} photo{postcard.mediaItems!.length !== 1 ? 's' : ''}
+                        {postcard.mediaItems!.length} photo
+                        {postcard.mediaItems!.length !== 1 ? 's' : ''}
                       </span>
                     </Tooltip>
                   )}
@@ -1771,15 +1768,21 @@ function GridCard({
                     >
                       {onDuplicate && (
                         <DropdownMenuItem
-                          onClick={onDuplicate}
-                          className="gap-2.5 py-2.5 rounded-lg"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onDuplicate()
+                          }}
+                          className="gap-2.5 py-2.5 rounded-lg text-stone-600 focus:bg-stone-50 text-sm"
                         >
-                          <Copy size={14} className="text-stone-500" /> Dupliquer
+                          <Copy size={16} /> Dupliquer
                         </DropdownMenuItem>
                       )}
                       {onOpenShareContribution && postcard.contributionToken && (
                         <DropdownMenuItem
-                          onClick={onOpenShareContribution}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onOpenShareContribution()
+                          }}
                           className="gap-2.5 py-2.5 rounded-lg text-purple-600"
                         >
                           <Users size={14} /> Contribution
@@ -1787,7 +1790,10 @@ function GridCard({
                       )}
                       {onShowQRCode && (
                         <DropdownMenuItem
-                          onClick={onShowQRCode}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onShowQRCode()
+                          }}
                           className="gap-2.5 py-2.5 rounded-lg text-teal-600"
                         >
                           <QrCode size={14} /> QR code
@@ -1795,7 +1801,10 @@ function GridCard({
                       )}
                       <DropdownMenuSeparator className="bg-stone-100" />
                       <DropdownMenuItem
-                        onClick={() => onDelete(postcard.id)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onDelete(postcard.id)
+                        }}
                         className="gap-2.5 py-2.5 rounded-lg text-rose-600 focus:bg-rose-50"
                       >
                         <Trash2 size={14} /> Supprimer
@@ -2028,25 +2037,43 @@ function ListRow({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40" onClick={(e) => e.stopPropagation()}>
               {onDuplicate && (
-                <DropdownMenuItem onClick={() => onDuplicate()} className="gap-2">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onDuplicate()
+                  }}
+                  className="gap-2"
+                >
                   <Copy size={14} /> Dupliquer
                 </DropdownMenuItem>
               )}
               {onOpenShareContribution && postcard.contributionToken && (
                 <DropdownMenuItem
-                  onClick={() => onOpenShareContribution?.()}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onOpenShareContribution?.()
+                  }}
                   className="gap-2 text-purple-600"
                 >
                   <Users size={14} /> Contribution
                 </DropdownMenuItem>
               )}
               {onShowQRCode && (
-                <DropdownMenuItem onClick={onShowQRCode} className="gap-2 text-teal-600">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onShowQRCode()
+                  }}
+                  className="gap-2 text-teal-600"
+                >
                   <QrCode size={14} /> QR code
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem
-                onClick={() => onDelete(postcard.id)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDelete(postcard.id)
+                }}
                 className="gap-2 text-rose-600"
               >
                 <Trash2 size={14} /> Supprimer

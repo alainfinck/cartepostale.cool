@@ -3401,6 +3401,7 @@ export default function EditorPage() {
                             <option value="sans">Sans-serif</option>
                             <option value="cursive">Script / Cursive</option>
                             <option value="display">Display</option>
+                            <option value="architectsDaughter">Architects Daughter</option>
                           </select>
                         </div>
                         <div>

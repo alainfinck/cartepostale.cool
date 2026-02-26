@@ -7,6 +7,7 @@ export const CAPTION_FONT_FAMILY: Record<FrontCaptionFontFamily, string> = {
   sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   cursive: "'Segoe Script', 'Brush Script MT', 'Comic Sans MS', cursive",
   display: "'Impact', 'Arial Black', sans-serif",
+  architectsDaughter: "'Architects Daughter', cursive",
 }
 
 /** Legacy: anciennes valeurs sm/md/lg/xl → px (pour docs existants). */
@@ -33,13 +34,12 @@ export function getCaptionStyle(postcard: Postcard): {
   fontSize: string
   color: string
 } {
-  const fontFamily =
-    CAPTION_FONT_FAMILY[postcard.frontCaptionFontFamily ?? 'sans']
+  const fontFamily = CAPTION_FONT_FAMILY[postcard.frontCaptionFontFamily ?? 'sans']
   const raw = postcard.frontCaptionFontSize
   const fontSize =
     typeof raw === 'number'
       ? `${raw}px`
-      : LEGACY_FONT_SIZE[String(raw)] ?? `${CAPTION_FONT_SIZE_DEFAULT}px`
+      : (LEGACY_FONT_SIZE[String(raw)] ?? `${CAPTION_FONT_SIZE_DEFAULT}px`)
   const color = CAPTION_COLOR[postcard.frontCaptionColor ?? 'stone-900']
   return { fontFamily, fontSize, color }
 }

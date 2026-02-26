@@ -73,7 +73,12 @@ export async function getAllPostcards(filters?: PostcardFilters): Promise<Postca
     const docs = await Promise.all(
       result.docs.map(async (doc) => {
         const postcard = doc as Postcard & {
-          mediaItems?: Array<{ media?: number | unknown; type?: string; note?: string; id?: string }>
+          mediaItems?: Array<{
+            media?: number | unknown
+            type?: string
+            note?: string
+            id?: string
+          }>
         }
         if (postcard.mediaItems?.length) {
           const populated = await Promise.all(
@@ -705,7 +710,6 @@ export async function getAgencyUsersMap(): Promise<Record<number, User[]>> {
 export async function getAgencyPanelLoginLink(
   agencyId: number | string,
 ): Promise<{ success: boolean; url?: string; error?: string }> {
-  const { headers } = await import('next/headers')
   const { randomBytes } = await import('crypto')
   await requireAdmin()
   try {
@@ -741,10 +745,7 @@ export async function getAgencyPanelLoginLink(
         magicLinkExpires: expires.toISOString(),
       } as any,
     })
-    const headersList = await headers()
-    const host = headersList.get('host') || 'localhost:3000'
-    const protocol = host.includes('localhost') ? 'http' : 'https'
-    const url = `${protocol}://${host}/api/magic-login?token=${token}&redirect=${encodeURIComponent('/espace-agence')}`
+    const url = `/api/magic-login?token=${token}&redirect=${encodeURIComponent('/espace-agence')}`
     return { success: true, url }
   } catch (error: any) {
     console.error('Error generating agency panel link:', error)

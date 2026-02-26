@@ -46,7 +46,7 @@ export interface FrontCaptionPosition {
 }
 
 /** Style du texte accroche (face avant). */
-export type FrontCaptionFontFamily = 'serif' | 'sans' | 'cursive' | 'display'
+export type FrontCaptionFontFamily = 'serif' | 'sans' | 'cursive' | 'display' | 'architectsDaughter'
 /** Taille du texte accroche en pixels (ex. 16). Utilisé avec boutons − / +. */
 export const CAPTION_FONT_SIZE_MIN = 12
 export const CAPTION_FONT_SIZE_MAX = 28
