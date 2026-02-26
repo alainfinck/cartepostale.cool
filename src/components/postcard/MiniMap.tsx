@@ -51,13 +51,40 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
     }
   }, [map, center, zoom, hasAnimated])
 
+  const prevZoomRef = React.useRef(zoom)
+  const prevCenterRef = React.useRef(center)
+
+  // Sync manual zoom changes back to parent state if needed
+  React.useEffect(() => {
+    const onZoomEnd = () => {
+      prevZoomRef.current = map.getZoom()
+    }
+    const onMoveEnd = () => {
+      const c = map.getCenter()
+      prevCenterRef.current = [c.lat, c.lng]
+    }
+    map.on('zoomend', onZoomEnd)
+    map.on('moveend', onMoveEnd)
+    return () => {
+      map.off('zoomend', onZoomEnd)
+      map.off('moveend', onMoveEnd)
+    }
+  }, [map])
+
   // Handle standard zoom/center changes (e.g. from buttons) AFTER initial animation
   React.useEffect(() => {
-    if (hasAnimated) {
+    const zoomChanged = zoom !== prevZoomRef.current
+    const centerChanged =
+      center[0] !== prevCenterRef.current[0] || center[1] !== prevCenterRef.current[1]
+
+    if (hasAnimated && (zoomChanged || centerChanged)) {
       map.setView(center, zoom, {
         animate: true,
-        duration: 0.5,
+        duration: 0.8,
+        easeLinearity: 0.25,
       })
+      prevZoomRef.current = zoom
+      prevCenterRef.current = center
     }
   }, [center, zoom, map, hasAnimated])
 
@@ -110,8 +137,10 @@ const MiniMap: React.FC<MiniMapProps> = ({
         zoomControl={false}
         scrollWheelZoom={true}
         wheelPxPerZoomLevel={60}
-        zoomSnap={0.1}
-        zoomDelta={0.5}
+        zoomSnap={0} // Completely fluid zoom
+        zoomAnimation={true}
+        fadeAnimation={true}
+        markerZoomAnimation={true}
         dragging={true}
         doubleClickZoom={true}
         touchZoom={true}

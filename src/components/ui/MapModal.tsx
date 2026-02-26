@@ -30,37 +30,36 @@ function MapEffects({ center, zoom }: { center: [number, number]; zoom: number }
     setContainer(el)
   }, [map])
 
-  // Initial animation: world to destination by steps (paliers)
+  // Initial animation: world to destination using flyTo for a premium fluid experience
   useEffect(() => {
     if (!hasAnimated && map) {
       // First, center the view on the target but keep the world zoom level
-      map.setView(center, 2, { animate: false })
+      map.setView([20, 0], 2, { animate: false })
 
-      let currentStepZoom = 2
-      const targetZoom = zoom
-      let timer: NodeJS.Timeout
+      const animationTimer = setTimeout(() => {
+        map.flyTo(center, zoom, {
+          animate: true,
+          duration: 3.5,
+          easeLinearity: 0.25,
+          noMoveStart: true,
+        })
 
-      const step = () => {
-        if (currentStepZoom < targetZoom) {
-          currentStepZoom += 1
-          map.setZoom(currentStepZoom, { animate: true })
-          timer = setTimeout(step, 600)
-        } else {
+        map.once('moveend', () => {
           setHasAnimated(true)
-        }
-      }
+        })
+      }, 500)
 
-      // Slightly longer delay for modal transition to finish
-      timer = setTimeout(step, 1000)
-
-      return () => clearTimeout(timer)
+      return () => clearTimeout(animationTimer)
     }
   }, [map, center, zoom, hasAnimated])
 
   // Handle standard zoom/center changes AFTER initial animation
   useEffect(() => {
     if (hasAnimated) {
-      map.setView(center, zoom)
+      map.setView(center, zoom, {
+        animate: true,
+        duration: 0.5,
+      })
     }
   }, [center, zoom, map, hasAnimated])
 
@@ -235,9 +234,11 @@ const MapModal: React.FC<MapModalProps> = ({
               center={[20, 0]}
               zoom={2}
               scrollWheelZoom={true}
-              wheelPxPerZoomLevel={60}
-              zoomSnap={0.1}
-              zoomDelta={0.5}
+              wheelPxPerZoomLevel={50} // Slightly more responsive
+              zoomSnap={0} // Completely fluid zoom
+              zoomAnimation={true}
+              fadeAnimation={true}
+              markerZoomAnimation={true}
               style={{ width: '100%', height: '100%' }}
               className="z-0"
             >
