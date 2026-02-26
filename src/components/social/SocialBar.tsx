@@ -209,7 +209,7 @@ export default function SocialBar({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="w-full max-w-4xl mx-auto px-4 space-y-8 mb-16"
+        className="w-full max-w-4xl mx-auto px-4 space-y-8 mb-4"
       >
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Reactions: inline si pas de portal, sinon déjà rendues sous la carte */}
