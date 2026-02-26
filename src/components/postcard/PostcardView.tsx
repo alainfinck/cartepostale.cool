@@ -141,6 +141,18 @@ const BACK_MESSAGE_FONTS = [
     fontFamily: "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif",
     className: 'font-serif',
   },
+  {
+    id: 'indieFlower' as const,
+    name: 'Indie Flower',
+    fontFamily: "'Indie Flower', cursive",
+    className: 'font-handwriting-indieflower',
+  },
+  {
+    id: 'gochiHand' as const,
+    name: 'Gochi Hand',
+    fontFamily: "'Gochi Hand', cursive",
+    className: 'font-handwriting-gochihand',
+  },
 ]
 
 const buildFrontImageFilterCss = (filter?: FrontImageFilter): string => {
@@ -387,7 +399,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const [backTextScale, setBackTextScale] = useState(isLarge ? 0.95 : 0.78)
   // Police du message au verso (dancing = défaut, greatVibes, parisienne, sans, serif)
   const [backMessageFont, setBackMessageFont] = useState<
-    'dancing' | 'greatVibes' | 'parisienne' | 'sans' | 'serif'
+    'dancing' | 'greatVibes' | 'parisienne' | 'sans' | 'serif' | 'indieFlower' | 'gochiHand'
   >('dancing')
   const [isFontMenuOpen, setIsFontMenuOpen] = useState(false)
   // Zoom de la mini-carte au verso (pour que + / - fonctionnent sans déclencher le flip)
@@ -2194,7 +2206,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 >
                   <Camera size={14} className="text-amber-700 shrink-0" />
                   <span className="truncate text-center leading-tight text-[9px] sm:text-[11px] font-semibold">
-                    ALBUM
+                    ALBUM ({postcard.mediaItems?.length || 0})
                   </span>
                 </button>
               )}

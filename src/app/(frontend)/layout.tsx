@@ -1,5 +1,7 @@
 import { Metadata, Viewport } from 'next'
 
+import '@fontsource/indie-flower'
+import '@fontsource/gochi-hand'
 import './styles.css'
 import { Toaster } from 'sonner'
 import { FrontendLayoutWrapper } from '@/components/layout/FrontendLayoutWrapper'
