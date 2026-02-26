@@ -24,6 +24,7 @@ export default function EnvelopeExperience({
 }: EnvelopeExperienceProps) {
   const [isRevealed, setIsRevealed] = useState(!enabled)
   const [isOpening, setIsOpening] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
   const overlayActive = enabled && !isRevealed
   const showHeroInContent = hero && (!enabled || isRevealed)
 
@@ -69,17 +70,18 @@ export default function EnvelopeExperience({
                 type="button"
                 onClick={handleOpen}
                 initial="rest"
-                animate={isOpening ? 'opening' : 'floating'}
-                whileHover={isOpening ? '' : 'hover'}
+                animate={isOpening ? 'opening' : isHovered ? 'hover' : 'floating'}
+                onMouseEnter={() => !isOpening && setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
                 className="flex flex-col items-center gap-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/80 group"
               >
                 <motion.div
                   className="relative w-[min(600px,95vw)] aspect-[5/3] overflow-visible"
+                  transition={{ type: 'spring', stiffness: 100, damping: 20 }}
                   variants={{
                     rest: {
                       y: 8,
                       scale: 0.92,
-                      transition: { duration: 1.5, ease: 'easeOut' },
                     },
                     floating: {
                       y: [0, -10, 0],
@@ -88,7 +90,7 @@ export default function EnvelopeExperience({
                       transition: {
                         y: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
                         rotate: { duration: 5, repeat: Infinity, ease: 'easeInOut' },
-                        scale: { duration: 1.5, ease: 'easeOut' },
+                        scale: { duration: 1.5 },
                       },
                     },
                     hover: {
@@ -108,16 +110,18 @@ export default function EnvelopeExperience({
                   {frontImage && (
                     <motion.div
                       className="absolute top-[2%] right-[8%] w-[55%] aspect-[3/2] rounded-md shadow-md border border-white/50 z-0"
+                      transition={{ type: 'spring', stiffness: 80, damping: 20 }}
                       variants={{
-                        rest: { y: 0, x: 0, rotate: 5 },
+                        rest: {
+                          y: 0,
+                          x: 0,
+                          rotate: 5,
+                        },
                         floating: {
                           y: [0, -2, 0],
                           x: [0, 1, 0],
                           rotate: [5, 7, 5],
                           transition: {
-                            type: 'spring',
-                            stiffness: 100,
-                            damping: 20,
                             y: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
                             x: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
                             rotate: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
