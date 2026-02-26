@@ -166,5 +166,46 @@ export const Users: CollectionConfig = {
       name: 'mobileUploadCodeExpires',
       type: 'date',
     },
+    {
+      name: 'socials',
+      type: 'group',
+      fields: [
+        {
+          name: 'instagram',
+          type: 'text',
+          label: 'Instagram',
+        },
+        {
+          name: 'tiktok',
+          type: 'text',
+          label: 'TikTok',
+        },
+        {
+          name: 'facebook',
+          type: 'text',
+          label: 'Facebook',
+        },
+        {
+          name: 'linkedin',
+          type: 'text',
+          label: 'LinkedIn',
+        },
+        {
+          name: 'twitter',
+          type: 'text',
+          label: 'Twitter (X)',
+        },
+        {
+          name: 'youtube',
+          type: 'text',
+          label: 'YouTube',
+        },
+        {
+          name: 'website',
+          type: 'text',
+          label: 'Site Web',
+        },
+      ],
+    },
   ],
 }

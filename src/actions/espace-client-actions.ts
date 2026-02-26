@@ -716,3 +716,34 @@ export async function getEspaceClientStats(): Promise<EspaceClientStats> {
     }
   }
 }
+
+export async function updateUserProfile(data: {
+  name?: string
+  company?: string
+  socials?: {
+    instagram?: string
+    tiktok?: string
+    facebook?: string
+    linkedin?: string
+    twitter?: string
+    youtube?: string
+    website?: string
+  }
+}): Promise<{ success: boolean; error?: string }> {
+  const user = await getCurrentUser()
+  if (!user) return { success: false, error: 'Non connecté.' }
+
+  try {
+    const payload = await getPayload({ config })
+    await payload.update({
+      collection: 'users',
+      id: user.id,
+      data,
+    })
+    return { success: true }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erreur lors de la mise à jour du profil.'
+    console.error('Error updating user profile:', err)
+    return { success: false, error: message }
+  }
+}

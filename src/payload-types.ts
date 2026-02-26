@@ -184,6 +184,15 @@ export interface User {
    */
   mobileUploadCode?: string | null;
   mobileUploadCodeExpires?: string | null;
+  socials?: {
+    instagram?: string | null;
+    tiktok?: string | null;
+    facebook?: string | null;
+    linkedin?: string | null;
+    twitter?: string | null;
+    youtube?: string | null;
+    website?: string | null;
+  };
   accounts?:
     | {
         provider: string;
@@ -933,6 +942,17 @@ export interface UsersSelect<T extends boolean = true> {
       };
   mobileUploadCode?: T;
   mobileUploadCodeExpires?: T;
+  socials?:
+    | T
+    | {
+        instagram?: T;
+        tiktok?: T;
+        facebook?: T;
+        linkedin?: T;
+        twitter?: T;
+        youtube?: T;
+        website?: T;
+      };
   accounts?:
     | T
     | {

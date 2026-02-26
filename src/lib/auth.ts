@@ -3,7 +3,7 @@ import type { User } from '@/payload-types'
 
 export type CurrentUser = Pick<
   User,
-  'id' | 'email' | 'name' | 'role' | 'plan' | 'company' | 'cardsCreated' | 'credits'
+  'id' | 'email' | 'name' | 'role' | 'plan' | 'company' | 'cardsCreated' | 'credits' | 'socials'
 > & {
   agency?: number | null
 }
@@ -44,6 +44,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
       cardsCreated: u.cardsCreated ?? null,
       credits: u.credits ?? 0,
       agency: agencyId,
+      socials: u.socials ?? undefined,
     }
   } catch {
     return null
