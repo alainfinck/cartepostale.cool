@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "prebuild": "node scripts/generate-sw.mjs",
-    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
+    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=4096\" next build",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev --turbo",
     "devsafe": "rm -rf .next && cross-env NODE_OPTIONS=--no-deprecation next dev --turbo",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
