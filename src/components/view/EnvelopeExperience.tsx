@@ -74,7 +74,7 @@ export default function EnvelopeExperience({
                 className="flex flex-col items-center gap-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/80 group"
               >
                 <motion.div
-                  className="relative w-[min(480px,90vw)] aspect-[5/3] overflow-visible"
+                  className="relative w-[min(540px,95vw)] aspect-[5/3] overflow-visible"
                   variants={{
                     rest: {
                       y: 8,
@@ -92,8 +92,8 @@ export default function EnvelopeExperience({
                       },
                     },
                     hover: {
-                      scale: 1.08,
-                      y: -25,
+                      scale: 1.05,
+                      y: -20,
                       rotate: 0,
                       transition: { duration: 1.5, ease: 'easeOut' },
                     },
@@ -107,13 +107,13 @@ export default function EnvelopeExperience({
                   {/* Photo de la carte postale qui dépasse de l'enveloppe */}
                   {frontImage && (
                     <motion.div
-                      className="absolute top-[-10%] right-[-5%] w-[65%] aspect-[3/2] rounded-md shadow-md border border-white/50 z-0"
+                      className="absolute top-[-5%] right-[2%] w-[68%] aspect-[3/2] rounded-md shadow-md border border-white/50 z-0"
                       variants={{
-                        rest: { y: 0, x: 0, rotate: 6 },
+                        rest: { y: 0, x: 0, rotate: 3 },
                         floating: {
-                          y: [0, -8, 0],
-                          x: [0, 6, 0],
-                          rotate: [6, 8, 6],
+                          y: [0, -3, 0],
+                          x: [0, 2, 0],
+                          rotate: [3, 5, 3],
                           transition: {
                             y: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
                             x: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
@@ -121,9 +121,9 @@ export default function EnvelopeExperience({
                           },
                         },
                         hover: {
-                          y: -35,
-                          x: 25,
-                          rotate: 12,
+                          y: -30,
+                          x: 50,
+                          rotate: 15,
                           transition: { duration: 0.4, ease: 'easeOut' },
                         },
                         opening: {
