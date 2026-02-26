@@ -100,50 +100,6 @@ export const enum_email_templates_target_role = pgEnum('enum_email_templates_tar
 ])
 export const enum_feedback_status = pgEnum('enum_feedback_status', ['new', 'read', 'processed'])
 
-export const users_sessions = pgTable(
-  'users_sessions',
-  {
-    _order: integer('_order').notNull(),
-    _parentID: varchar('_parent_id').notNull(),
-    id: varchar('id').primaryKey(),
-    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 }),
-    expiresAt: timestamp('expires_at', { mode: 'string', withTimezone: true, precision: 3 }),
-    userAgent: varchar('user_agent'),
-    ip: varchar('ip'),
-  },
-  (columns) => [
-    index('users_sessions_order_idx').on(columns._order),
-    index('users_sessions_parent_id_idx').on(columns._parentID),
-    foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [users.id],
-      name: 'users_sessions_parent_id_fk',
-    }).onDelete('cascade'),
-  ],
-)
-
-export const users_accounts = pgTable(
-  'users_accounts',
-  {
-    _order: integer('_order').notNull(),
-    _parentID: varchar('_parent_id').notNull(),
-    id: varchar('id').primaryKey(),
-    provider: varchar('provider').notNull(),
-    providerAccountId: varchar('provider_account_id').notNull(),
-    type: varchar('type').notNull(),
-  },
-  (columns) => [
-    index('users_accounts_order_idx').on(columns._order),
-    index('users_accounts_parent_id_idx').on(columns._parentID),
-    index('users_accounts_provider_account_id_idx').on(columns.providerAccountId),
-    foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [users.id],
-      name: 'users_accounts_parent_id_fk',
-    }).onDelete('cascade'),
-  ],
-)
-
 export const users = pgTable(
   'users',
   {
@@ -175,6 +131,13 @@ export const users = pgTable(
       withTimezone: true,
       precision: 3,
     }),
+    socials_instagram: varchar('socials_instagram'),
+    socials_tiktok: varchar('socials_tiktok'),
+    socials_facebook: varchar('socials_facebook'),
+    socials_linkedin: varchar('socials_linkedin'),
+    socials_twitter: varchar('socials_twitter'),
+    socials_youtube: varchar('socials_youtube'),
+    socials_website: varchar('socials_website'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -199,6 +162,50 @@ export const users = pgTable(
     index('users_updated_at_idx').on(columns.updatedAt),
     index('users_created_at_idx').on(columns.createdAt),
     uniqueIndex('users_email_idx').on(columns.email),
+  ],
+)
+
+export const users_sessions = pgTable(
+  'users_sessions',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: varchar('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    expiresAt: timestamp('expires_at', { mode: 'string', withTimezone: true, precision: 3 }),
+    userAgent: varchar('user_agent'),
+    ip: varchar('ip'),
+  },
+  (columns) => [
+    index('users_sessions_order_idx').on(columns._order),
+    index('users_sessions_parent_id_idx').on(columns._parentID),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [(users as any).id],
+      name: 'users_sessions_parent_id_fk',
+    }).onDelete('cascade'),
+  ],
+)
+
+export const users_accounts = pgTable(
+  'users_accounts',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: varchar('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    provider: varchar('provider').notNull(),
+    providerAccountId: varchar('provider_account_id').notNull(),
+    type: varchar('type').notNull(),
+  },
+  (columns) => [
+    index('users_accounts_order_idx').on(columns._order),
+    index('users_accounts_parent_id_idx').on(columns._parentID),
+    index('users_accounts_provider_account_id_idx').on(columns.providerAccountId),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [(users as any).id],
+      name: 'users_accounts_parent_id_fk',
+    }).onDelete('cascade'),
   ],
 )
 
