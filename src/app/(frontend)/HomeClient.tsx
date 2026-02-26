@@ -50,7 +50,6 @@ export default function Home() {
   const savedPostcards = demoPostcards
   const [fullScreenPostcard, setFullScreenPostcard] = useState<Postcard | null>(null)
   const [recipientViewPostcard, setRecipientViewPostcard] = useState<Postcard | null>(null)
-  const [recipientModalEnvelopeOpened, setRecipientModalEnvelopeOpened] = useState(false)
   const [embedOrigin, setEmbedOrigin] = useState('https://www.cartepostale.cool')
   const [embedCopied, setEmbedCopied] = useState(false)
 
@@ -718,14 +717,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Modal "Comme un destinataire" : enveloppe puis carte dans un faux mobile */}
+      {/* Modal "Comme un destinataire" : iframe dans un faux mobile */}
       <AnimatePresence>
         {recipientViewPostcard && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-gradient-to-br from-[#fffdf7] via-[#f7f2ea] to-[#f1e8d6] backdrop-blur-md flex flex-col items-center justify-start pt-6 pb-8 px-4 md:px-8 overflow-y-auto"
+            className="fixed inset-0 z-[200] bg-gradient-to-br from-[#fffdf7] via-[#f7f2ea] to-[#f1e8d6] backdrop-blur-md flex flex-col items-center justify-center p-4 md:p-8 overflow-hidden"
           >
             <button
               onClick={() => {
@@ -738,89 +737,21 @@ export default function Home() {
               <X size={24} />
             </button>
 
-            {!recipientModalEnvelopeOpened ? (
-              /* Étape 1 : enveloppe à ouvrir */
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col items-center justify-center flex-1 w-full pt-[8vh]"
-              >
-                <p className="text-stone-600 font-medium mb-6 text-center">
-                  Vous avez reçu une carte postale…
-                </p>
-                <motion.button
-                  type="button"
-                  onClick={() => setRecipientModalEnvelopeOpened(true)}
-                  className="flex flex-col items-center gap-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-400"
-                >
-                  <motion.div
-                    className="relative w-[min(320px,85vw)] aspect-[5/3] cursor-pointer"
-                    whileHover={{ scale: 1.05, y: -8 }}
-                    whileTap={{ scale: 0.98 }}
-                    style={{
-                      backgroundImage: 'url(/media/enveloppe1.png)',
-                      backgroundSize: 'contain',
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat',
-                    }}
-                  >
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-3">
-                      <div className="bg-white/95 backdrop-blur-md p-2.5 rounded-full shadow-xl border border-red-100/50">
-                        <Heart size={28} fill="#ef4444" className="text-red-500" />
-                      </div>
-                      <span className="text-base font-bold uppercase text-stone-700 tracking-widest">
-                        Ouvrir
-                      </span>
-                    </div>
-                  </motion.div>
-                </motion.button>
-              </motion.div>
-            ) : (
-              /* Étape 2 : contenu dans un faux mobile */
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.35, ease: 'easeOut' }}
-                className="w-full flex flex-col items-center mt-2"
-              >
-                <MobileFrame width={320} height="min(85vh, 640px)">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="text-center">
-                      <p className="text-base text-stone-600 font-medium">
-                        Vous avez reçu une carte postale
-                      </p>
-                      <p className="font-handwriting text-teal-600 text-2xl sm:text-3xl mt-0.5">
-                        {recipientViewPostcard.senderName}
-                      </p>
-                    </div>
-
-                    <div className="w-full flex justify-center flex-1 min-h-0">
-                      <PostcardView
-                        postcard={recipientViewPostcard}
-                        isLarge={false}
-                        isPreview={false}
-                        width="280px"
-                        height="210px"
-                        className="shadow-lg rounded-xl"
-                      />
-                    </div>
-
-                    <Link
-                      href={`/carte/${recipientViewPostcard.id}`}
-                      className="inline-flex w-full justify-center"
-                    >
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-full border-teal-200 text-teal-700 hover:bg-teal-50 w-full max-w-[240px]"
-                      >
-                        Ouvrir en pleine page
-                      </Button>
-                    </Link>
-                  </div>
-                </MobileFrame>
-              </motion.div>
-            )}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+              className="w-full flex flex-col items-center max-h-full"
+            >
+              <MobileFrame width={360} height="min(85vh, 720px)">
+                <iframe
+                  src={`/carte/${recipientViewPostcard.id}?embed=1`}
+                  className="absolute inset-0 w-full h-full border-0 bg-transparent"
+                  title="Aperçu de la carte"
+                  style={{ borderRadius: '0' }}
+                />
+              </MobileFrame>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

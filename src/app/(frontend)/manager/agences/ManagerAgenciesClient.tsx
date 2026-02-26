@@ -51,6 +51,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog'
 import {
   getAllAgencies,
@@ -59,6 +60,8 @@ import {
   deleteAgency,
   getAgencyPanelLoginLink,
   getAgencyUsersMap,
+  associateUserWithAgency,
+  getAllUsers,
 } from '@/actions/manager-actions'
 import type { Agency, User } from '@/payload-types'
 import { SendEmailModal } from '../SendEmailModal'
@@ -377,6 +380,7 @@ export function ManagerAgenciesClient({
         onRefresh={() => refreshData()}
         onOpenAgencyPanel={handleOpenAgencyPanel}
         panelLinkAgencyId={panelLinkAgencyId}
+        startTransitionMain={startTransition}
       />
 
       {/* Delete confirmation */}
@@ -428,6 +432,7 @@ function AgencySheet({
   onRefresh,
   onOpenAgencyPanel,
   panelLinkAgencyId,
+  startTransitionMain,
 }: {
   agency: any | null
   agencyUsers: User[]
@@ -436,9 +441,33 @@ function AgencySheet({
   onRefresh: () => void
   onOpenAgencyPanel?: (agency: Agency) => void
   panelLinkAgencyId?: number | string | null
+  startTransitionMain: (cb: () => Promise<void>) => void
 }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+
+  const handleAssociateUser = async (userId: string | number, role: 'agence' | 'client') => {
+    if (!agency) return
+    startTransitionMain(async () => {
+      const res = await associateUserWithAgency(userId, agency.id, role)
+      if (res.success) {
+        onRefresh()
+      } else {
+        setError(res.error || 'Erreur lors de l’association')
+      }
+    })
+  }
+
+  const handleUnassociateUser = async (userId: string | number) => {
+    startTransitionMain(async () => {
+      const res = await associateUserWithAgency(userId, null, 'user')
+      if (res.success) {
+        onRefresh()
+      } else {
+        setError(res.error || 'Erreur lors de la désassociation')
+      }
+    })
+  }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -648,10 +677,13 @@ function AgencySheet({
 
             {agency && (
               <div className="space-y-4 pt-4 border-t border-border/30">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50 flex items-center gap-2">
-                  <Users size={12} />
-                  Utilisateurs associés
-                </h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-50 flex items-center gap-2">
+                    <Users size={12} />
+                    Utilisateurs associés
+                  </h4>
+                  <UserSearch onSelect={handleAssociateUser} />
+                </div>
                 {agencyUsers.length === 0 ? (
                   <p className="text-sm text-stone-500">
                     Aucun utilisateur (Agence ou Client) lié à cette agence.
@@ -661,7 +693,7 @@ function AgencySheet({
                     {agencyUsers.map((u) => (
                       <li
                         key={u.id}
-                        className="flex items-center justify-between gap-2 py-2 px-3 rounded-lg bg-muted/40 border border-border/50"
+                        className="flex items-center justify-between gap-2 py-2 px-3 rounded-lg bg-muted/40 border border-border/50 group/user"
                       >
                         <div className="min-w-0">
                           <span className="font-medium text-stone-800 block truncate">
@@ -671,17 +703,29 @@ function AgencySheet({
                             <span className="text-xs text-stone-500 truncate block">{u.email}</span>
                           )}
                         </div>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            'shrink-0 text-[10px] px-2 py-0',
-                            u.role === 'agence'
-                              ? 'bg-teal-50 text-teal-700 border-teal-200'
-                              : 'bg-violet-50 text-violet-700 border-violet-200',
-                          )}
-                        >
-                          {u.role === 'agence' ? 'Agence' : 'Client'}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              'shrink-0 text-[10px] px-2 py-0',
+                              u.role === 'agence'
+                                ? 'bg-teal-50 text-teal-700 border-teal-200'
+                                : 'bg-violet-50 text-violet-700 border-violet-200',
+                            )}
+                          >
+                            {u.role === 'agence' ? 'Agence' : 'Client'}
+                          </Badge>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-stone-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover/user:opacity-100 transition-all rounded-full"
+                            onClick={() => handleUnassociateUser(u.id)}
+                            title="Retirer l'accès"
+                          >
+                            <Trash2 size={12} />
+                          </Button>
+                        </div>
                       </li>
                     ))}
                   </ul>
@@ -702,5 +746,107 @@ function AgencySheet({
         </form>
       </SheetContent>
     </Sheet>
+  )
+}
+
+function UserSearch({
+  onSelect,
+}: {
+  onSelect: (userId: string | number, role: 'agence' | 'client') => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<User[]>([])
+  const [loading, setLoading] = useState(false)
+
+  const handleSearch = async (val: string) => {
+    setQuery(val)
+    if (val.length < 2) {
+      setResults([])
+      return
+    }
+    setLoading(true)
+    const res = await getAllUsers({ search: val, limit: 5 })
+    setResults(res.docs)
+    setLoading(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 text-[11px] font-bold uppercase tracking-tight text-teal-600 hover:text-teal-700 hover:bg-teal-50 gap-1 rounded-lg"
+        >
+          <Plus size={12} />
+          Associer un utilisateur
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Associer un utilisateur</DialogTitle>
+          <DialogDescription>
+            Recherchez un utilisateur par nom ou email pour lui donner accès à cette agence.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+            <Input
+              placeholder="Nom ou email..."
+              value={query}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="pl-9 h-11"
+              autoFocus
+            />
+          </div>
+
+          <div className="space-y-2">
+            {loading && <p className="text-xs text-stone-500 animate-pulse">Recherche...</p>}
+            {!loading && query.length >= 2 && results.length === 0 && (
+              <p className="text-xs text-stone-500">Aucun utilisateur trouvé.</p>
+            )}
+            {results.map((user) => (
+              <div
+                key={user.id}
+                className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-stone-50/50 hover:bg-stone-50 transition-colors"
+              >
+                <div className="min-w-0">
+                  <span className="font-medium text-stone-800 block truncate">
+                    {user.name || user.email}
+                  </span>
+                  <span className="text-xs text-stone-500 block truncate">{user.email}</span>
+                </div>
+                <div className="flex gap-1.5">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 text-[10px] font-bold uppercase tracking-tight bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100"
+                    onClick={() => {
+                      onSelect(user.id, 'agence')
+                      setOpen(false)
+                    }}
+                  >
+                    Rôle Agence
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 text-[10px] font-bold uppercase tracking-tight bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100"
+                    onClick={() => {
+                      onSelect(user.id, 'client')
+                      setOpen(false)
+                    }}
+                  >
+                    Rôle Client
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }

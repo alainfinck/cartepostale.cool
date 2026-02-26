@@ -19,21 +19,32 @@ export function FrontendLayoutWrapper({
 }) {
   const pathname = usePathname()
   const isManager = pathname?.startsWith('/manager')
+  const isEspaceAgence = pathname?.startsWith('/espace-agence')
+  const isDashboard = pathname?.startsWith('/dashboard')
   const isEspaceClient = pathname?.startsWith('/espace-client')
   const isPostcardView = pathname?.startsWith('/carte/')
 
-  if (isManager) {
-    return <>{children}</>
+  // On /manager and /espace-agence we don't show the public Navbar/Footer
+  if (isManager || isEspaceAgence) {
+    return (
+      <>
+        <ServiceWorkerRegistration />
+        <main className="flex-grow">{children}</main>
+        <ScrollToTopButton />
+      </>
+    )
   }
 
   const showExitIntent = !isEspaceClient && !isPostcardView && exitIntentEnabled
 
+  const hideNavAndFooter = isPostcardView || isDashboard
+
   return (
     <>
       <ServiceWorkerRegistration />
-      {!isPostcardView && <Navbar />}
+      {!hideNavAndFooter && <Navbar />}
       <main className="flex-grow">{children}</main>
-      {!isPostcardView && <Footer />}
+      {!hideNavAndFooter && <Footer />}
       <ScrollToTopButton />
       {showExitIntent && <ExitIntentPopup />}
     </>

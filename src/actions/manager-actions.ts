@@ -706,6 +706,37 @@ export async function getAgencyUsersMap(): Promise<Record<number, User[]>> {
   }
 }
 
+/** Associates a user with an agency and optionally updates their role. */
+export async function associateUserWithAgency(
+  userId: number | string,
+  agencyId: number | string | null,
+  role?: 'agence' | 'client' | 'user' | 'admin',
+): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin()
+  try {
+    const payload = await getPayload({ config })
+
+    const data: any = {
+      agency:
+        agencyId === null ? null : typeof agencyId === 'string' ? parseInt(agencyId, 10) : agencyId,
+    }
+
+    if (role) {
+      data.role = role
+    }
+
+    await payload.update({
+      collection: 'users',
+      id: userId,
+      data,
+    })
+    return { success: true }
+  } catch (error: any) {
+    console.error('Error associating user with agency:', error)
+    return { success: false, error: error.message || 'Failed to associate user' }
+  }
+}
+
 /** Returns a one-time magic link for an agency user so the manager can open the agency panel as that agency. */
 export async function getAgencyPanelLoginLink(
   agencyId: number | string,

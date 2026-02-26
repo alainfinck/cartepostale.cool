@@ -5,30 +5,30 @@ import config from '@payload-config'
 import type { Gallery, GalleryCategory, GalleryTag } from '@/payload-types'
 import { getCurrentUser } from '@/lib/auth'
 
-async function requireAgence(): Promise<{ userId: string; agencyId: number }> {
+async function requireAgence(): Promise<{ userId: string; agencyId: number | null; role: string }> {
   const user = await getCurrentUser()
   if (!user || (user.role !== 'agence' && user.role !== 'admin')) {
     throw new Error('Non autorisé')
   }
-  if (!user.agency && user.role !== 'admin') {
+  if (user.role === 'agence' && !user.agency) {
     throw new Error('Non autorisé: aucune agence associée')
   }
-  if (!user.agency) {
-    throw new Error('Non autorisé: agence requise pour la galerie')
-  }
-  return { userId: user.id, agencyId: user.agency }
+  return { userId: user.id, agencyId: user.agency ?? null, role: user.role }
 }
 
 export async function getAgencyGallery() {
-  const auth = await requireAgence()
-  const { agencyId } = auth
+  const { agencyId, role } = await requireAgence()
   try {
     const payload = await getPayload({ config })
+    const where: any =
+      role === 'admin' && !agencyId
+        ? {}
+        : {
+            or: [{ agency: { equals: agencyId } }, { agency: { exists: false } }],
+          }
     const result = await payload.find({
       collection: 'gallery',
-      where: {
-        or: [{ agency: { equals: agencyId } }, { agency: { exists: false } }],
-      },
+      where,
       depth: 2,
       limit: 500,
     })
@@ -40,15 +40,18 @@ export async function getAgencyGallery() {
 }
 
 export async function getGalleryCategories() {
-  const auth = await requireAgence()
-  const { agencyId } = auth
+  const { agencyId, role } = await requireAgence()
   try {
     const payload = await getPayload({ config })
+    const where: any =
+      role === 'admin' && !agencyId
+        ? {}
+        : {
+            or: [{ agency: { equals: agencyId } }, { agency: { exists: false } }],
+          }
     const result = await payload.find({
       collection: 'gallery-categories',
-      where: {
-        or: [{ agency: { equals: agencyId } }, { agency: { exists: false } }],
-      },
+      where,
       depth: 0,
       limit: 100,
     })
@@ -59,15 +62,18 @@ export async function getGalleryCategories() {
 }
 
 export async function getGalleryTags() {
-  const auth = await requireAgence()
-  const { agencyId } = auth
+  const { agencyId, role } = await requireAgence()
   try {
     const payload = await getPayload({ config })
+    const where: any =
+      role === 'admin' && !agencyId
+        ? {}
+        : {
+            or: [{ agency: { equals: agencyId } }, { agency: { exists: false } }],
+          }
     const result = await payload.find({
       collection: 'gallery-tags',
-      where: {
-        or: [{ agency: { equals: agencyId } }, { agency: { exists: false } }],
-      },
+      where,
       depth: 0,
       limit: 100,
     })
@@ -78,8 +84,7 @@ export async function getGalleryTags() {
 }
 
 export async function deleteAgencyGalleryItem(id: number) {
-  const auth = await requireAgence()
-  const { agencyId } = auth
+  const { agencyId, role } = await requireAgence()
 
   try {
     const payload = await getPayload({ config })
@@ -87,7 +92,7 @@ export async function deleteAgencyGalleryItem(id: number) {
     const doc = await payload.findByID({ collection: 'gallery', id, depth: 0 })
     const docAgencyId =
       typeof doc.agency === 'object' && doc.agency ? (doc.agency as any).id : doc.agency
-    if (docAgencyId !== agencyId) {
+    if (role !== 'admin' && docAgencyId !== agencyId) {
       throw new Error('Vous ne pouvez supprimer que vos propres images.')
     }
 
@@ -105,8 +110,7 @@ export async function createAgencyGalleryItem(data: {
   categoryId?: number
   tagIds?: number[]
 }) {
-  const auth = await requireAgence()
-  const { agencyId } = auth
+  const { agencyId } = await requireAgence()
 
   try {
     const payload = await getPayload({ config })
