@@ -698,12 +698,14 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         <motion.div
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
-          className="w-full max-w-[95vw] md:max-w-2xl max-h-[85dvh] md:max-h-[75vh] md:h-auto min-h-0 bg-[#FCF5EB] rounded-2xl shadow-2xl p-4 md:p-6 relative overflow-hidden flex flex-col items-center text-center border-4 border-white/50"
+          className="w-full max-w-[95vw] md:max-w-2xl max-h-[85dvh] md:max-h-[75vh] md:h-auto min-h-0 bg-[#FCF5EB] rounded-2xl shadow-2xl p-4 md:p-6 relative flex flex-col items-center text-center border-4 border-white/50"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Background decorations */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500/5 rounded-full -ml-16 -mb-16 blur-3xl"></div>
+          <div className="absolute inset-0 overflow-hidden rounded-[inherit] pointer-events-none">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500/5 rounded-full -ml-16 -mb-16 blur-3xl"></div>
+          </div>
 
           <button
             onClick={() => setIsMessageOpen(false)}
@@ -732,8 +734,13 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
           <div className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden custom-scrollbar px-4 flex flex-col pt-0">
             <p
-              className="font-handwriting text-stone-700 leading-relaxed text-center whitespace-pre-wrap pt-2 pb-6 w-full max-w-full break-words"
-              style={{ fontSize: `${messageModalFontSize}rem` }}
+              className="text-stone-700 leading-relaxed text-center whitespace-pre-wrap pt-2 pb-6 w-full max-w-full break-words"
+              style={{
+                fontSize: `${messageModalFontSize}rem`,
+                fontFamily:
+                  BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily ??
+                  "'Dancing Script', cursive",
+              }}
             >
               {postcard.message}
             </p>
@@ -753,34 +760,108 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               </p>
             </div>
 
-            {/* Size Controls */}
-            <div className="flex items-center gap-1.5 shrink-0 bg-stone-50/50 p-1 rounded-full border border-stone-100">
-              <button
-                type="button"
-                onClick={() =>
-                  setMessageModalFontSize((s) => Math.max(1, Number((s - 0.1).toFixed(1))))
-                }
-                className="p-1 rounded-full hover:bg-stone-200 text-stone-600 transition-colors bg-white shadow-sm"
-                title="Diminuer la taille"
-              >
-                <Minus size={12} />
-              </button>
-              <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">
-                Taille
-              </span>
-              <button
-                type="button"
-                onClick={() =>
-                  setMessageModalFontSize((s) => Math.min(4, Number((s + 0.1).toFixed(1))))
-                }
-                className="p-1 rounded-full hover:bg-stone-200 text-stone-600 transition-colors bg-white shadow-sm"
-                title="Augmenter la taille"
-              >
-                <Plus size={12} />
-              </button>
-              <span className="text-[9px] font-medium text-stone-500 tabular-nums w-6 text-right">
-                {Math.round(messageModalFontSize * 100)}%
-              </span>
+            <div className="flex items-center gap-1.5 shrink-0 z-50">
+              {/* Font Selector */}
+              <div className="relative flex">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setIsFontMenuOpen((o) => !o)
+                  }}
+                  className={cn(
+                    'h-full flex items-center justify-center p-1.5 px-3 rounded-full border shadow-sm transition-all',
+                    isFontMenuOpen
+                      ? 'bg-teal-50 border-teal-200 text-teal-700'
+                      : 'bg-white border-stone-100 hover:bg-stone-200 text-stone-600',
+                  )}
+                  title="Changer la police"
+                >
+                  <span
+                    className="text-xs font-bold select-none pt-0.5"
+                    style={{
+                      fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)
+                        ?.fontFamily,
+                    }}
+                  >
+                    Aa
+                  </span>
+                </button>
+                <AnimatePresence>
+                  {isFontMenuOpen && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-[64]"
+                        onClick={() => setIsFontMenuOpen(false)}
+                        aria-hidden
+                      />
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 4 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 4 }}
+                        className="absolute bottom-full left-0 mb-2 w-40 sm:w-44 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-stone-200 overflow-hidden z-[70] py-1.5"
+                      >
+                        {BACK_MESSAGE_FONTS.map((font) => (
+                          <button
+                            key={font.id}
+                            type="button"
+                            onClick={() => {
+                              setBackMessageFont(font.id)
+                              setIsFontMenuOpen(false)
+                            }}
+                            className={cn(
+                              'w-full flex items-center gap-2 sm:gap-3 px-3 py-2 rounded-xl text-left transition-colors',
+                              backMessageFont === font.id
+                                ? 'bg-teal-50 text-teal-700'
+                                : 'hover:bg-stone-50 text-stone-600',
+                            )}
+                          >
+                            <span
+                              className="text-base font-bold"
+                              style={{ fontFamily: font.fontFamily }}
+                            >
+                              Aa
+                            </span>
+                            <span className="text-[10px] sm:text-xs font-medium truncate">
+                              {font.name}
+                            </span>
+                          </button>
+                        ))}
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Size Controls */}
+              <div className="flex items-center gap-1.5 bg-stone-50/50 p-1 rounded-full border border-stone-100">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMessageModalFontSize((s) => Math.max(1, Number((s - 0.1).toFixed(1))))
+                  }
+                  className="p-1 rounded-full hover:bg-stone-200 text-stone-600 transition-colors bg-white shadow-sm"
+                  title="Diminuer la taille"
+                >
+                  <Minus size={12} />
+                </button>
+                <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest hidden sm:inline-block">
+                  Taille
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMessageModalFontSize((s) => Math.min(4, Number((s + 0.1).toFixed(1))))
+                  }
+                  className="p-1 rounded-full hover:bg-stone-200 text-stone-600 transition-colors bg-white shadow-sm"
+                  title="Augmenter la taille"
+                >
+                  <Plus size={12} />
+                </button>
+                <span className="text-[9px] font-medium text-stone-500 tabular-nums w-6 text-right">
+                  {Math.round(messageModalFontSize * 100)}%
+                </span>
+              </div>
             </div>
 
             <p className="font-handwriting font-semibold text-teal-700 text-lg md:text-2xl rotate-[-2deg] shrink-0 text-right">
