@@ -1176,7 +1176,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none z-0" />
 
-              {/* Loupe : afficher l'image de la face avant en grand (en bas à droite) */}
+              {/* Loupe : afficher l'image de la face avant en grand (en bas à droite, à gauche du nombre de vues) */}
               {!isFullscreen && !onCaptionPositionChange && frontImageSrc && (
                 <button
                   type="button"
@@ -1184,10 +1184,15 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     e.stopPropagation()
                     setIsFrontImageZoomOpen(true)
                   }}
-                  className="absolute right-12 bottom-3 sm:right-14 sm:bottom-4 z-30 flex items-center justify-center w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-lg border border-stone-200/80 text-stone-600 hover:text-stone-900 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  className={cn(
+                    'absolute bottom-2.5 z-30 flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/70 backdrop-blur-sm hover:bg-white/90 shadow-sm border border-stone-200/50 text-stone-600 hover:text-stone-900 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
+                    views !== undefined && views > 0
+                      ? 'right-20 sm:right-[5.5rem]'
+                      : 'right-3 sm:right-4',
+                  )}
                   aria-label="Voir l'image en grand"
                 >
-                  <Search size={18} strokeWidth={2} />
+                  <Search size={14} strokeWidth={2} className="sm:w-[15px] sm:h-[15px]" />
                 </button>
               )}
 
@@ -1218,11 +1223,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {postcard.frontCaption?.trim() && !postcard.frontEmoji && (
                 <div
                   className={cn(
-                    'z-20 w-fit max-w-[calc(100%-2rem)] sm:max-w-[calc(100%-3rem)] px-3 py-2 sm:px-4 sm:py-2.5 rounded-md transition-all',
+                    'z-20 w-fit max-w-[calc(100%-1rem)] px-2 py-1.5 sm:px-3 sm:py-2 rounded-md transition-all',
                     !captionHidesBg && 'border border-white/50',
                     usePositionedCaption
                       ? 'absolute'
-                      : 'absolute left-4 sm:left-6 bottom-14 sm:bottom-16',
+                      : 'absolute right-3 sm:right-4 bottom-14 sm:bottom-16',
                     onCaptionPositionChange &&
                       'cursor-grab active:cursor-grabbing touch-none select-none',
                     isDraggingCaption
@@ -1261,10 +1266,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   })}
                 >
                   <p
-                    className="m-0 font-bold leading-tight tracking-tight break-words"
+                    className="m-0 font-bold leading-tight tracking-tight break-words text-[10px] sm:text-xs"
                     style={{
                       fontFamily: captionStyle.fontFamily,
-                      fontSize: captionStyle.fontSize,
+                      fontSize: !usePositionedCaption ? undefined : captionStyle.fontSize,
                       color: captionStyle.color,
                       textShadow:
                         captionStyle.color === '#ffffff' || captionStyle.color === '#000000'
@@ -1292,11 +1297,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {postcard.frontCaption?.trim() && postcard.frontEmoji && (
                 <div
                   className={cn(
-                    'z-20 flex items-center gap-3 rounded-2xl sm:rounded-3xl px-5 py-3.5 sm:px-6 sm:py-4 transition-all w-fit max-w-[calc(100%-2rem)]',
+                    'z-20 flex items-center gap-2 sm:gap-3 rounded-xl sm:rounded-2xl px-3 py-2 sm:px-4 sm:py-3 transition-all w-fit max-w-[calc(100%-1rem)]',
                     !captionHidesBg && 'border border-white/50',
                     usePositionedCaption
                       ? 'absolute'
-                      : 'absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6',
+                      : 'absolute bottom-11 right-3 sm:bottom-12 sm:right-4',
                     onCaptionPositionChange &&
                       'cursor-grab active:cursor-grabbing touch-none select-none',
                     isDraggingCaption
@@ -1332,14 +1337,14 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     onClick: (e: React.MouseEvent) => e.stopPropagation(),
                   })}
                 >
-                  <span className="text-xl sm:text-4xl leading-none shrink-0" aria-hidden>
+                  <span className="text-sm sm:text-xl leading-none shrink-0" aria-hidden>
                     {postcard.frontEmoji}
                   </span>
                   <p
-                    className="m-0 font-bold leading-tight tracking-tight break-words line-clamp-2"
+                    className="m-0 font-bold leading-tight tracking-tight break-words line-clamp-2 text-[10px] sm:text-xs"
                     style={{
                       fontFamily: captionStyle.fontFamily,
-                      fontSize: captionStyle.fontSize,
+                      fontSize: !usePositionedCaption ? undefined : captionStyle.fontSize,
                       color: captionStyle.color,
                       textShadow:
                         captionStyle.color === '#ffffff' || captionStyle.color === '#000000'
@@ -1355,8 +1360,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
               {/* Views badge on front cover */}
               {views !== undefined && views > 0 && (
-                <div className="absolute right-3 bottom-3 sm:right-5 sm:bottom-5 z-20 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-stone-200 shadow-xl text-stone-600 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest transform transition-all hover:scale-105 active:scale-95">
-                  <Eye size={12} className="text-teal-500 shrink-0" />
+                <div className="absolute right-3 bottom-2.5 z-20 flex items-center gap-1 px-1.5 py-1 sm:px-2.5 sm:py-1.5 rounded-full bg-white/70 backdrop-blur-sm border border-stone-200/50 shadow-sm text-stone-600 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider transform transition-all hover:scale-105 active:scale-95">
+                  <Eye size={10} className="text-teal-500 shrink-0" />
                   <NumberTicker value={views} className="font-extrabold text-stone-800" />
                   <span className="opacity-70">vues</span>
                 </div>
@@ -2096,14 +2101,14 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             className="w-full flex justify-center overflow-hidden"
             style={{ transformOrigin: 'top', transformStyle: 'preserve-3d' }}
           >
-            <div className="flex items-center justify-center w-full flex-nowrap gap-2 sm:gap-3 px-4 sm:px-8 py-4">
+            <div className="flex items-center justify-between sm:justify-center w-full flex-nowrap gap-1 sm:gap-3 px-2 sm:px-8 py-4">
               {(hasMedia || canContribute) && (
                 <button
                   onClick={openAlbum}
                   title={hasMedia ? 'Voir les photos de la carte' : 'Ajouter des photos'}
                   className={cn(
                     actionButtonBase,
-                    'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100 hover:border-amber-300 transition-colors shrink-0',
+                    'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100 hover:border-amber-300 transition-colors shrink-1 min-w-0 flex-1 sm:flex-none justify-center px-1 sm:px-4',
                   )}
                 >
                   <Camera size={14} className="text-amber-700 shrink-0" />
@@ -2118,7 +2123,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   onClick={openMap}
                   className={cn(
                     actionButtonBase,
-                    'bg-teal-100 border-teal-200 text-teal-900 hover:bg-teal-200 transition-all shrink-0',
+                    'bg-teal-100 border-teal-200 text-teal-900 hover:bg-teal-200 transition-all shrink-1 min-w-0 flex-1 sm:flex-none justify-center px-1 sm:px-4',
                   )}
                   title="Localiser le lieu sur la carte"
                 >
@@ -2132,7 +2137,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   onClick={toggleMusic}
                   className={cn(
                     actionButtonBase,
-                    'shrink-0',
+                    'shrink-1 min-w-0 flex-1 sm:flex-none justify-center px-1 sm:px-4',
                     isPlayingMusic
                       ? 'bg-violet-600 text-white border-violet-700'
                       : 'bg-violet-100 border-violet-200 text-violet-900 hover:bg-violet-200 transition-all',
@@ -2152,14 +2157,15 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   onClick={toggleFullscreen}
                   className={cn(
                     actionButtonBase,
-                    'group bg-white border-stone-200 text-stone-900 hover:text-teal-600 hover:bg-stone-50 transition-all shrink-0',
+                    'group bg-white border-stone-200 text-stone-900 hover:text-teal-600 hover:bg-stone-50 transition-all shrink-1 min-w-0 flex-1 sm:flex-none justify-center px-1 sm:px-4',
                   )}
                 >
                   <Maximize2
                     size={14}
                     className="group-hover:scale-105 transition-transform shrink-0"
                   />
-                  <span className="truncate">PLEIN ÉCRAN</span>
+                  <span className="truncate hidden sm:inline">PLEIN ÉCRAN</span>
+                  <span className="truncate sm:hidden">RÉDUIRE</span>
                 </button>
               )}
 
@@ -2170,7 +2176,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 }}
                 className={cn(
                   actionButtonBase,
-                  'group bg-white border-stone-200 text-stone-900 hover:text-teal-600 hover:bg-stone-50 transition-all shrink-0',
+                  'group bg-white border-stone-200 text-stone-900 hover:text-teal-600 hover:bg-stone-50 transition-all shrink-1 min-w-0 flex-1 sm:flex-none justify-center px-1 sm:px-4',
                 )}
                 title="Retourner la carte"
               >
