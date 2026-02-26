@@ -82,7 +82,7 @@ export default function EnvelopeExperience({
                       transition: { duration: 1.5, ease: 'easeOut' },
                     },
                     floating: {
-                      y: [0, -15, 0],
+                      y: [0, -10, 0],
                       rotate: [0, 1, -1, 0],
                       scale: 1,
                       transition: {
@@ -93,9 +93,9 @@ export default function EnvelopeExperience({
                     },
                     hover: {
                       scale: 1.05,
-                      y: -20,
+                      y: -15,
                       rotate: 0,
-                      transition: { duration: 1.5, ease: 'easeOut' },
+                      transition: { type: 'spring', stiffness: 300, damping: 20 },
                     },
                     opening: {
                       y: 0,
@@ -107,24 +107,26 @@ export default function EnvelopeExperience({
                   {/* Photo de la carte postale qui dépasse de l'enveloppe */}
                   {frontImage && (
                     <motion.div
-                      className="absolute top-[-5%] right-[2%] w-[68%] aspect-[3/2] rounded-md shadow-md border border-white/50 z-0"
+                      className="absolute top-[2%] right-[15%] w-[65%] aspect-[3/2] rounded-md shadow-md border border-white/50 z-0"
                       variants={{
-                        rest: { y: 0, x: 0, rotate: 3 },
+                        rest: { y: 0, x: 0, rotate: 0 },
                         floating: {
                           y: [0, -3, 0],
                           x: [0, 2, 0],
-                          rotate: [3, 5, 3],
+                          rotate: [0, 3, 0],
                           transition: {
+                            // On définit une duration spécifique pour le retour de hover
+                            duration: 0.5,
                             y: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
                             x: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
                             rotate: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
                           },
                         },
                         hover: {
-                          y: -30,
-                          x: 50,
+                          y: -35,
+                          x: 75,
                           rotate: 15,
-                          transition: { duration: 0.4, ease: 'easeOut' },
+                          transition: { type: 'spring', stiffness: 250, damping: 20 },
                         },
                         opening: {
                           y: -120,
