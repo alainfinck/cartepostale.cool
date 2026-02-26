@@ -678,7 +678,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const hasMedia = postcard.mediaItems && postcard.mediaItems.length > 0
 
   const actionButtonBase =
-    'flex-none inline-flex flex-row items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-[11px] font-semibold uppercase active:scale-95 transition-all shadow-sm border text-center min-h-[36px] sm:min-h-[44px] min-w-0 overflow-hidden whitespace-nowrap'
+    'flex-none inline-flex flex-row items-center justify-center gap-1.5 sm:gap-2 px-1.5 sm:px-4 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[11px] font-semibold uppercase active:scale-95 transition-all shadow-sm border text-center min-h-[30px] sm:min-h-[44px] min-w-0 overflow-hidden whitespace-nowrap'
 
   useEffect(() => {
     setPortalRoot(document.body)
@@ -2183,18 +2183,18 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             style={{ transformOrigin: 'top', transformStyle: 'preserve-3d' }}
           >
             <div className="flex items-center justify-between sm:justify-center w-full flex-nowrap gap-1 sm:gap-3 px-2 sm:px-8 py-4">
-              {(hasMedia || canContribute) && (
+              {hasMedia && (
                 <button
                   onClick={openAlbum}
-                  title={hasMedia ? 'Voir les photos de la carte' : 'Ajouter des photos'}
+                  title="Voir les photos de la carte"
                   className={cn(
                     actionButtonBase,
                     'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100 hover:border-amber-300 transition-colors shrink-1 min-w-0 flex-1 sm:flex-none justify-center px-1 sm:px-4',
                   )}
                 >
                   <Camera size={14} className="text-amber-700 shrink-0" />
-                  <span className="truncate text-center leading-tight text-[10px] sm:text-[11px] font-semibold">
-                    {hasMedia ? 'ALBUM' : '+ PHOTOS'}
+                  <span className="truncate text-center leading-tight text-[9px] sm:text-[11px] font-semibold">
+                    ALBUM
                   </span>
                 </button>
               )}
@@ -2245,8 +2245,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     size={14}
                     className="group-hover:scale-105 transition-transform shrink-0"
                   />
-                  <span className="truncate hidden sm:inline">PLEIN ÉCRAN</span>
-                  <span className="truncate sm:hidden">RÉDUIRE</span>
+                  <span className="truncate">PLEIN ÉCRAN</span>
                 </button>
               )}
 
