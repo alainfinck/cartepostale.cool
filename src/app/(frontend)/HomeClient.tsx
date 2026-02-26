@@ -729,7 +729,6 @@ export default function Home() {
             <button
               onClick={() => {
                 setRecipientViewPostcard(null)
-                setRecipientModalEnvelopeOpened(false)
               }}
               className="absolute top-4 right-4 z-[210] p-2.5 bg-white hover:bg-stone-100 text-stone-600 rounded-full transition-all border border-stone-200 shadow-sm"
               aria-label="Fermer"

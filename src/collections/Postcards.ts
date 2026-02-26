@@ -17,8 +17,14 @@ export const Postcards: CollectionConfig = {
       ({ doc }) => {
         const publicId = doc?.publicId
         if (publicId) {
-          revalidateTag(`postcard-${publicId}`)
-          revalidatePath(`/carte/${publicId}`)
+          try {
+            revalidateTag(`postcard-${publicId}`)
+            revalidatePath(`/carte/${publicId}`)
+          } catch (e) {
+            console.warn(
+              `Could not revalidate for postcard ${publicId}. May be running outside Next.js request.`,
+            )
+          }
         }
       },
     ],

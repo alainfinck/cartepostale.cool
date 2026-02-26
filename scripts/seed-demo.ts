@@ -1,7 +1,6 @@
-import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
-import configPromise from '@payload-config'
-import { demoPostcards } from '@/data/demoPostcards'
+import configPromise from '../src/payload.config'
+import { demoPostcards } from '../src/data/demoPostcards'
 
 // Helper to convert French date string to ISO
 function parseFrenchDate(dateStr: string): string {
@@ -46,7 +45,7 @@ function parseFrenchDate(dateStr: string): string {
   return new Date().toISOString()
 }
 
-export async function GET() {
+async function run() {
   const payload = await getPayload({ config: configPromise })
 
   let demoUser = await payload.find({
@@ -56,6 +55,7 @@ export async function GET() {
 
   let userId
   if (demoUser.totalDocs === 0) {
+    console.log('Creating demo user...')
     const newUser = await payload.create({
       collection: 'users',
       data: {
@@ -70,8 +70,7 @@ export async function GET() {
     userId = demoUser.docs[0].id
   }
 
-  const added = []
-
+  let added = 0
   for (const pc of demoPostcards) {
     const existing = await payload.find({
       collection: 'postcards',
@@ -79,16 +78,17 @@ export async function GET() {
     })
 
     if (existing.totalDocs === 0) {
+      console.log(`Adding ${pc.id}...`)
       await payload.create({
         collection: 'postcards',
         data: {
           publicId: pc.id,
           frontImageURL: pc.frontImage,
-          frontCaption: pc.frontCaption,
-          location: pc.location,
-          message: pc.message,
-          recipientName: pc.recipientName,
-          senderName: pc.senderName,
+          frontCaption: pc.frontCaption || '',
+          location: pc.location || '',
+          message: pc.message || '',
+          recipientName: pc.recipientName || '',
+          senderName: pc.senderName || '',
           stampStyle: pc.stampStyle || 'classic',
           date: parseFrenchDate(pc.date),
           isPremium: pc.isPremium || false,
@@ -97,9 +97,17 @@ export async function GET() {
           coords: pc.coords,
         },
       })
-      added.push(pc.id)
+      added++
+    } else {
+      console.log(`Already exists: ${pc.id}`)
     }
   }
 
-  return NextResponse.json({ success: true, user: userId, added })
+  console.log(`Done! Added ${added} postcards.`)
+  process.exit(0)
 }
+
+run().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})
