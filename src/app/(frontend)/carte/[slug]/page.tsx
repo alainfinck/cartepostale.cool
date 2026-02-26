@@ -570,7 +570,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
       </div>
 
       {/* Signature de l'expéditeur + lieu et date stylisés */}
-      <div className="w-full py-8 md:py-12 text-center space-y-10">
+      <div className="w-full pt-4 pb-12 text-center space-y-6">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -578,12 +578,20 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
           transition={{ duration: 1, ease: 'easeOut' }}
           className="relative inline-block"
         >
-          <p
-            className={`font-serif font-bold ${theme.signatureColor} text-4xl sm:text-5xl md:text-6xl -rotate-2 drop-shadow-sm tracking-tight`}
-          >
-            — {frontendPostcard.senderName}
-          </p>
-          <div className="absolute -bottom-3 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-teal-300/40 to-transparent" />
+          <div className={`flex items-center justify-center gap-3 ${theme.signatureColor} mb-2`}>
+            <span className="text-3xl md:text-4xl opacity-50 font-light">—</span>
+            <TextAnimate
+              by="character"
+              animation="fadeIn"
+              duration={1.5}
+              startOnView
+              once
+              className="font-handwriting text-5xl sm:text-6xl md:text-7xl -rotate-1 drop-shadow-sm tracking-tight"
+            >
+              {frontendPostcard.senderName}
+            </TextAnimate>
+          </div>
+          <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-teal-300/30 to-transparent" />
         </motion.div>
       </div>
 
