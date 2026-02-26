@@ -110,7 +110,7 @@ export default function EnvelopeExperience({
                   {frontImage && (
                     <motion.div
                       className="absolute top-[2%] right-[8%] w-[55%] aspect-[3/2] rounded-md shadow-md border border-white/50 z-0"
-                      transition={{ type: 'spring', stiffness: 80, damping: 20 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                       variants={{
                         rest: {
                           y: 0,
@@ -121,28 +121,19 @@ export default function EnvelopeExperience({
                           y: 0,
                           x: 0,
                           rotate: 5,
-                          transition: {
-                            y: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
-                            x: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
-                            rotate: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
-                            // Add smooth transition for returning from hover
-                            type: 'spring',
-                            stiffness: 80,
-                            damping: 25,
-                          },
                         },
                         hover: {
                           y: -35,
                           x: 60,
                           rotate: 15,
-                          transition: { type: 'spring', stiffness: 200, damping: 20 },
+                          transition: { type: 'spring', stiffness: 400, damping: 25 },
                         },
                         opening: {
                           y: -120,
                           x: 0,
                           rotate: 0,
                           opacity: 0,
-                          transition: { duration: 0.6 },
+                          transition: { duration: 0.4 },
                         },
                       }}
                       style={{

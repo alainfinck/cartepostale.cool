@@ -94,7 +94,7 @@ export default function EnvelopeHero({
 
       {/* MiniMap container - Hidden once opened as requested */}
       {!isOpened && (
-        <div className="w-full max-w-sm aspect-video rounded-3xl overflow-hidden shadow-xl border-4 border-white relative mt-2">
+        <div className="w-full max-w-sm md:max-w-xl lg:max-w-2xl aspect-video rounded-3xl overflow-hidden shadow-xl border-4 border-white relative mt-2">
           {coords ? (
             <div className="w-full h-full relative">
               <MiniMap coords={coords} zoom={5} className="w-full h-full" />
