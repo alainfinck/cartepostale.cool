@@ -155,7 +155,6 @@ export default function SocialBar({
       aria-labelledby="reactions-heading"
       className="w-full max-w-4xl mx-auto px-4 pb-8 pt-6 space-y-4"
     >
-      <DistanceDisplay targetCoords={coords} senderName={senderName} />
       <div className="rounded-3xl border border-teal-100/50 bg-white/90 backdrop-blur-md shadow-[0_8px_30px_rgb(0,0,0,0.04)] px-3 py-6 sm:px-10 sm:py-10 relative overflow-hidden mt-4">
         <div className="absolute top-0 right-0 w-40 h-40 bg-teal-50/60 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-40 h-40 bg-orange-50/60 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
