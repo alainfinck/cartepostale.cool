@@ -69,8 +69,8 @@ export default function EnvelopeExperience({
                 type="button"
                 onClick={handleOpen}
                 initial="rest"
-                animate="floating"
-                whileHover="hover"
+                animate={isOpening ? 'opening' : 'floating'}
+                whileHover={isOpening ? '' : 'hover'}
                 className="flex flex-col items-center gap-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/80 group"
               >
                 <motion.div
@@ -97,62 +97,90 @@ export default function EnvelopeExperience({
                       rotate: 0,
                       transition: { duration: 1.5, ease: 'easeOut' },
                     },
-                  }}
-                  style={{
-                    backgroundImage: 'url(/media/enveloppe1.png)',
-                    backgroundSize: 'contain',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
+                    opening: {
+                      y: 0,
+                      scale: 1.1,
+                      transition: { duration: 0.6, ease: 'easeInOut' },
+                    },
                   }}
                 >
                   {/* Photo de la carte postale qui dépasse de l'enveloppe */}
                   {frontImage && (
                     <motion.div
-                      className="absolute top-[-12%] left-[15%] w-[70%] aspect-[3/2] rounded-md shadow-md border border-white/50"
-                      initial={{ y: 0, rotate: -2 }}
-                      animate={
-                        isOpening
-                          ? { y: -80, rotate: 4, opacity: 0, transition: { duration: 0.6 } }
-                          : {
-                              y: [0, -8, 0],
-                              rotate: [-2, 1, -2],
-                              transition: {
-                                y: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
-                                rotate: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
-                              },
-                            }
-                      }
+                      className="absolute top-[-10%] right-[-5%] w-[65%] aspect-[3/2] rounded-md shadow-md border border-white/50 z-0"
+                      variants={{
+                        rest: { y: 0, x: 0, rotate: 6 },
+                        floating: {
+                          y: [0, -8, 0],
+                          x: [0, 6, 0],
+                          rotate: [6, 8, 6],
+                          transition: {
+                            y: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
+                            x: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+                            rotate: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+                          },
+                        },
+                        hover: {
+                          y: -35,
+                          x: 25,
+                          rotate: 12,
+                          transition: { duration: 0.4, ease: 'easeOut' },
+                        },
+                        opening: {
+                          y: -120,
+                          x: 0,
+                          rotate: 0,
+                          opacity: 0,
+                          transition: { duration: 0.6 },
+                        },
+                      }}
                       style={{
                         backgroundImage: `url(${frontImage})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
-                        zIndex: -1, // S'affiche sous l'enveloppe car le parent forme un conteneur de pile
                       }}
                     />
                   )}
+
+                  {/* L'image de l'enveloppe au-dessus de la photo */}
+                  <div
+                    className="absolute inset-0 z-10 pointer-events-none"
+                    style={{
+                      backgroundImage: 'url(/media/enveloppe1.png)',
+                      backgroundSize: 'contain',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat',
+                    }}
+                  />
+
                   {/* Heart Seal (slow beat) + Ouvrir text fixed below */}
                   <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none flex flex-col items-center gap-4">
                     <motion.div
                       className="relative"
                       style={{ willChange: 'transform, opacity' }}
-                      initial={{ scale: 0.8, opacity: 0, rotate: -5 }}
-                      animate={
-                        isOpening
-                          ? {
-                              scale: 15,
-                              opacity: 0,
-                              transition: { duration: 0.7, ease: [0.4, 0, 0.2, 1] },
-                            }
-                          : {
-                              scale: [1, 1.12, 1],
-                              opacity: 1,
-                              rotate: 0,
-                              transition: {
-                                scale: { duration: 2.2, repeat: Infinity, ease: 'easeInOut' },
-                                opacity: { delay: 0.5, duration: 0.5 },
-                              },
-                            }
-                      }
+                      variants={{
+                        rest: { scale: 0.8, opacity: 0, rotate: -5 },
+                        floating: {
+                          scale: [1, 1.12, 1],
+                          opacity: 1,
+                          rotate: 0,
+                          transition: {
+                            scale: { duration: 2.2, repeat: Infinity, ease: 'easeInOut' },
+                            opacity: { delay: 0.5, duration: 0.5 },
+                          },
+                        },
+                        hover: {
+                          scale: 1.15,
+                          opacity: 1,
+                          rotate: 0,
+                          transition: { duration: 0.3 },
+                        },
+                        opening: {
+                          scale: 15,
+                          opacity: 0,
+                          transition: { duration: 0.7, ease: [0.4, 0, 0.2, 1] },
+                        },
+                      }}
                     >
                       {!isOpening && (
                         <motion.div
