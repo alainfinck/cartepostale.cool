@@ -1,10 +1,10 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Postcard } from '@/types'
-import { MapPin, Mail } from 'lucide-react'
+import { MapPin, Mail, Minus, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import { getCaptionStyle, getCaptionBgColor } from '@/lib/caption-style'
@@ -14,6 +14,8 @@ interface MobilePostcardViewProps {
 }
 
 export default function MobilePostcardView({ postcard }: MobilePostcardViewProps) {
+  const [backTextScale, setBackTextScale] = useState(0.92)
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -21,6 +23,21 @@ export default function MobilePostcardView({ postcard }: MobilePostcardViewProps
       transition={{ duration: 0.6 }}
       className="w-full max-w-2xl mx-auto px-4 flex flex-col gap-0"
     >
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+      `}</style>
       {/* 1. Front Image — full width, tall */}
       <div className="relative w-full rounded-t-2xl overflow-hidden shadow-xl border border-stone-200 border-b-0">
         <div className="w-full aspect-[4/3] relative">
@@ -156,17 +173,48 @@ export default function MobilePostcardView({ postcard }: MobilePostcardViewProps
         />
 
         <div className="relative z-10">
-          {/* Header */}
-          <div className="flex items-center gap-2 mb-4">
-            <Mail size={14} className="text-teal-600" />
-            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em]">
-              Message de {postcard.senderName}
-            </span>
+          {/* Header + boutons − / + pour la taille du texte */}
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2">
+              <Mail size={14} className="text-teal-600" />
+              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em]">
+                Message de {postcard.senderName}
+              </span>
+            </div>
+            <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setBackTextScale((s) => Math.max(0.65, Number((s - 0.08).toFixed(2))))}
+                className="w-9 h-9 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-r border-stone-100"
+                title="Réduire la taille du texte"
+                aria-label="Réduire la taille du texte"
+              >
+                <Minus size={18} strokeWidth={2.5} />
+                <span className="sr-only">−</span>
+              </button>
+              <span className="px-2 text-xs font-bold text-stone-500 select-none">A</span>
+              <button
+                type="button"
+                onClick={() => setBackTextScale((s) => Math.min(1.35, Number((s + 0.08).toFixed(2))))}
+                className="w-9 h-9 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-l border-stone-100"
+                title="Agrandir la taille du texte"
+                aria-label="Agrandir la taille du texte"
+              >
+                <Plus size={18} strokeWidth={2.5} />
+                <span className="sr-only">+</span>
+              </button>
+            </div>
           </div>
 
-          {/* Message */}
-          <div className="min-h-[120px]">
-            <p className="font-handwriting text-stone-700 text-xl leading-relaxed whitespace-pre-wrap break-words">
+          {/* Message — scrollbar si débordement, ne sort pas de la carte */}
+          <div className="max-h-[40vh] min-h-[80px] overflow-y-auto overflow-x-hidden custom-scrollbar pr-1 -mx-1">
+            <p
+              className="font-handwriting text-stone-700 leading-relaxed whitespace-pre-wrap break-words max-w-full"
+              style={{
+                fontSize: `${1.15 * backTextScale}rem`,
+                fontFamily: "'Dancing Script', cursive",
+              }}
+            >
               {postcard.message}
             </p>
           </div>

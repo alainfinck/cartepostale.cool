@@ -12,6 +12,8 @@ import {
   Mail,
   X,
   ChevronRight,
+  Minus,
+  Plus,
 } from 'lucide-react'
 import ARButton from '@/components/ar/ARButton'
 import dynamic from 'next/dynamic'
@@ -92,6 +94,7 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
   const [isMapModalOpen, setIsMapModalOpen] = useState(false)
   const [activePhotoIndex, setActivePhotoIndex] = useState<number | null>(null)
   const [direction, setDirection] = useState(0) // -1 for prev, 1 for next
+  const [backTextScale, setBackTextScale] = useState(0.9)
 
   const messageRef = useRef<HTMLDivElement>(null)
   const albumRef = useRef<HTMLDivElement>(null)
@@ -182,6 +185,21 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f3f4f6] text-stone-900 pb-40">
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+      `}</style>
       {/* Main Content Area */}
       <div className="max-w-5xl mx-auto w-full pt-12 px-4 md:pt-20">
         {/* Navigation Tabs - Removed Redundant header as per user request */}
@@ -269,13 +287,59 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
               }}
             >
               <div className="h-full bg-[#fdfaf3] p-6 md:p-10 rounded-2xl shadow-[0_30px_80px_rgba(0,0,0,0.15)] border border-stone-200/50 flex flex-col">
-                <div className="flex flex-1 gap-6 md:gap-10">
-                  {/* Left Column: Message */}
-                  <div className="flex-1 flex flex-col pt-4 overflow-hidden">
-                    <div className="font-handwriting text-xl md:text-3xl text-stone-700 leading-relaxed italic overflow-y-auto custom-scrollbar">
-                      {message}
+                <div className="flex flex-1 gap-6 md:gap-10 min-h-0">
+                  {/* Left Column: Message — placement et style comme sur la carte, avec -/+ et scrollbar */}
+                  <div className="flex-1 flex flex-col pt-4 overflow-hidden min-h-0">
+                    {/* Boutons − / + pour la taille du texte (mobile et desktop) */}
+                    <div
+                      className="flex items-center gap-2 shrink-0 mb-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setBackTextScale((s) => Math.max(0.6, Number((s - 0.08).toFixed(2))))
+                          }}
+                          className="w-9 h-9 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-r border-stone-100"
+                          title="Réduire la taille du texte"
+                          aria-label="Réduire la taille du texte"
+                        >
+                          <Minus size={18} strokeWidth={2.5} />
+                          <span className="sr-only">−</span>
+                        </button>
+                        <span className="px-2 text-xs font-bold text-stone-500 select-none">A</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setBackTextScale((s) => Math.min(1.5, Number((s + 0.08).toFixed(2))))
+                          }}
+                          className="w-9 h-9 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-l border-stone-100"
+                          title="Agrandir la taille du texte"
+                          aria-label="Agrandir la taille du texte"
+                        >
+                          <Plus size={18} strokeWidth={2.5} />
+                          <span className="sr-only">+</span>
+                        </button>
+                      </div>
+                      <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">
+                        Taille
+                      </span>
                     </div>
-                    <div className="mt-auto font-handwriting text-2xl md:text-4xl text-teal-700 pt-4">
+                    <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pr-1">
+                      <p
+                        className="font-handwriting text-stone-700 leading-relaxed italic whitespace-pre-wrap break-words max-w-full"
+                        style={{
+                          fontSize: `clamp(0.875rem, ${1.15 * backTextScale}rem, 1.75rem)`,
+                          fontFamily: "'Dancing Script', cursive",
+                        }}
+                      >
+                        {message}
+                      </p>
+                    </div>
+                    <div className="mt-auto font-handwriting text-2xl md:text-4xl text-teal-700 pt-4 shrink-0">
                       — {senderName}
                     </div>
                   </div>

@@ -401,6 +401,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const [isFontMenuOpen, setIsFontMenuOpen] = useState(false)
   // Zoom de la mini-carte au verso (pour que + / - fonctionnent sans déclencher le flip)
   const [backMapZoom, setBackMapZoom] = useState(6)
+  const [showPhotosOnMap, setShowPhotosOnMap] = useState(true)
   const [isActionsOpen, setIsActionsOpen] = useState(defaultActionsOpen)
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false)
@@ -1507,10 +1508,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                         e.stopPropagation()
                         setBackTextScale((s) => Math.max(0.7, Number((s - 0.05).toFixed(2))))
                       }}
-                      className="w-8 sm:w-10 h-full flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-r border-stone-100"
+                      className="w-8 sm:w-10 h-full flex items-center justify-center gap-0.5 hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-r border-stone-100"
                       title="Réduire la taille du texte"
+                      aria-label="Réduire la taille du texte"
                     >
                       <Minus size={16} strokeWidth={2.5} />
+                      <span className="text-xs font-bold sm:hidden">−</span>
                     </button>
                     <div className="w-8 sm:w-10 h-full flex items-center justify-center bg-white/50">
                       <span className="text-sm sm:text-base font-bold text-stone-600 select-none">
@@ -1523,10 +1526,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                         e.stopPropagation()
                         setBackTextScale((s) => Math.min(2.2, Number((s + 0.05).toFixed(2))))
                       }}
-                      className="w-8 sm:w-10 h-full flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-l border-stone-100"
+                      className="w-8 sm:w-10 h-full flex items-center justify-center gap-0.5 hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-l border-stone-100"
                       title="Agrandir la taille du texte"
+                      aria-label="Agrandir la taille du texte"
                     >
                       <Plus size={16} strokeWidth={2.5} />
+                      <span className="text-xs font-bold sm:hidden">+</span>
                     </button>
                   </div>
 
@@ -1813,12 +1818,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     {/* Removed individual loupe here */}
                     <div
                       ref={messageContainerRef}
-                      className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 pl-1 sm:pl-2 block"
+                      className="flex-1 w-full min-h-0 overflow-y-scroll overflow-x-hidden custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 pl-1 sm:pl-2 block"
                       onClick={openMessage}
                     >
                       <p
                         ref={messageTextRef}
-                        className="text-stone-700 leading-[1.2] text-left whitespace-pre-wrap w-full max-w-full break-words pl-2 sm:pl-3"
+                        className="text-stone-700 leading-[1.2] text-left whitespace-pre-wrap w-full max-w-full break-words pl-2 sm:pl-3 overflow-x-hidden"
                         style={{
                           fontSize: `${autoFontSize * backTextScale}rem`,
                           fontFamily:
@@ -2096,7 +2101,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     </div>
                   )}
 
-                  {/* Mini carte au verso : avec label de lieu juste au dessus */}
+                  {/* Mini carte au verso : avec label de lieu et toggle PHOTOS au-dessus */}
                   {!postcard.hideMap && (postcard.coords || postcard.location) && (
                     <div className="mt-auto flex flex-col gap-1.5 w-full flex-1 min-h-0">
                       <div className="px-2 sm:px-4 flex items-center gap-2 text-stone-500 shrink-0">
@@ -2105,9 +2110,42 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           {postcard.location || 'Localisation'}
                         </span>
                       </div>
+                      {/* Toggle PHOTOS au-dessus de la carte (en dehors) */}
+                      {postcard.coords && photoLocations.length > 0 && (
+                        <div className="flex justify-end px-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setShowPhotosOnMap((v) => !v)
+                            }}
+                            className={cn(
+                              'px-4 py-2.5 rounded-2xl shadow-lg border-2 transition-all active:scale-95 flex items-center gap-3 font-bold text-xs',
+                              showPhotosOnMap
+                                ? 'bg-teal-600 text-white border-teal-400'
+                                : 'bg-white/95 text-stone-600 border-stone-200',
+                            )}
+                          >
+                            <div
+                              className={cn(
+                                'w-8 h-4 rounded-full relative transition-colors duration-200',
+                                showPhotosOnMap ? 'bg-white/30' : 'bg-stone-200',
+                              )}
+                            >
+                              <div
+                                className={cn(
+                                  'absolute top-0.5 w-3 h-3 rounded-full transition-all duration-200 shadow-sm',
+                                  showPhotosOnMap ? 'left-4.5 bg-white' : 'left-0.5 bg-white',
+                                )}
+                              />
+                            </div>
+                            <span className="uppercase tracking-widest">Photos</span>
+                          </button>
+                        </div>
+                      )}
                       <div
                         className={cn(
-                          'mb-1 sm:mb-2 w-full flex-1 min-h-[160px] sm:min-h-[260px] lg:min-h-[420px] rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner relative',
+                          'mb-1 sm:mb-2 w-full flex-1 min-h-[220px] sm:min-h-[320px] lg:min-h-[500px] rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner relative',
                         )}
                       >
                         {postcard.coords ? (
@@ -2125,6 +2163,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 zoom={backMapZoom}
                                 onClick={openMap}
                                 photoLocations={photoLocations}
+                                toggleOutside={photoLocations.length > 0}
+                                showPhotos={showPhotosOnMap}
+                                onShowPhotosChange={setShowPhotosOnMap}
                               />
                             </div>
                             {/* Loupe dans un coin sans overlay au hover */}

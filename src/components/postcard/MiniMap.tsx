@@ -21,6 +21,11 @@ interface MiniMapProps {
   onClick?: (e: React.MouseEvent) => void
   photoLocations?: PhotoLocation[]
   interactive?: boolean
+  /** When true, parent renders the PHOTOS toggle above the map; MiniMap does not render it. */
+  toggleOutside?: boolean
+  /** Controlled visibility of photo markers (used when toggleOutside is true). */
+  showPhotos?: boolean
+  onShowPhotosChange?: (show: boolean) => void
 }
 
 function InteractionHandler({ isInteractive }: { isInteractive: boolean }) {
@@ -206,9 +211,15 @@ const MiniMap: React.FC<MiniMapProps> = ({
   onClick,
   photoLocations = [],
   interactive = false,
+  toggleOutside = false,
+  showPhotos: controlledShowPhotos,
+  onShowPhotosChange,
 }) => {
   const [isInteractive, setIsInteractive] = React.useState(false)
-  const [showPhotos, setShowPhotos] = React.useState(true)
+  const [internalShowPhotos, setInternalShowPhotos] = React.useState(true)
+  const showPhotos = controlledShowPhotos ?? internalShowPhotos
+  const setShowPhotos =
+    onShowPhotosChange != null ? onShowPhotosChange : setInternalShowPhotos
 
   // Auto-lock when scrolling the page
   React.useEffect(() => {
@@ -306,8 +317,8 @@ const MiniMap: React.FC<MiniMapProps> = ({
         {showPhotos && photoLocations.map((loc) => <PhotoMarker key={loc.id} location={loc} />)}
       </MapContainer>
 
-      {/* Photo Toggle Button */}
-      {photoLocations.length > 0 && (
+      {/* Photo Toggle Button — only when not rendered outside by parent */}
+      {photoLocations.length > 0 && !toggleOutside && (
         <button
           onClick={(e) => {
             e.stopPropagation()
