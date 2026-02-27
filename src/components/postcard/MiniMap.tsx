@@ -233,7 +233,12 @@ const MiniMap: React.FC<MiniMapProps> = ({
         <LeafletFix />
         <ChangeView center={position} zoom={zoom} />
         <InteractionHandler isInteractive={isInteractive} />
-        {isInteractive && (
+        {!isInteractive ? (
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+        ) : (
           <>
             <ZoomControl position="bottomright" />
             <LayersControl position="topleft">
