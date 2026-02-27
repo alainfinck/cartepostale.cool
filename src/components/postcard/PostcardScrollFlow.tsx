@@ -11,7 +11,6 @@ import {
   Map as MapIcon,
   Mail,
   X,
-  ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
 import ARButton from '@/components/ar/ARButton'
@@ -92,6 +91,7 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
   const [isFlipped, setIsFlipped] = useState(false)
   const [isMapModalOpen, setIsMapModalOpen] = useState(false)
   const [activePhotoIndex, setActivePhotoIndex] = useState<number | null>(null)
+  const [direction, setDirection] = useState(0) // -1 for prev, 1 for next
 
   const messageRef = useRef<HTMLDivElement>(null)
   const albumRef = useRef<HTMLDivElement>(null)
@@ -133,6 +133,7 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
     (e?: React.MouseEvent) => {
       e?.stopPropagation()
       if (activePhotoIndex === null) return
+      setDirection(1)
       setActivePhotoIndex((activePhotoIndex + 1) % mediaItems.length)
     },
     [activePhotoIndex, mediaItems.length],
@@ -142,6 +143,7 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
     (e?: React.MouseEvent) => {
       e?.stopPropagation()
       if (activePhotoIndex === null) return
+      setDirection(-1)
       setActivePhotoIndex((activePhotoIndex - 1 + mediaItems.length) % mediaItems.length)
     },
     [activePhotoIndex, mediaItems.length],
@@ -537,46 +539,91 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
               onClick={(e) => e.stopPropagation()}
             >
               {/* Previous Button */}
-              <button
-                onClick={prevPhoto}
-                className="absolute left-0 md:-left-20 text-white/40 hover:text-white transition-colors p-4 rounded-full hover:bg-white/5 z-[110]"
-              >
-                <ChevronLeft size={48} strokeWidth={1.5} />
-              </button>
+              {/* Photo with Adaptive White Border Effect */}
+              <div className="relative w-full h-[70dvh] md:h-[80dvh] flex items-center justify-center pointer-events-none">
+                <AnimatePresence initial={false} custom={direction} mode="popLayout">
+                  <motion.div
+                    key={activePhotoIndex}
+                    custom={direction}
+                    variants={{
+                      enter: (direction: number) => ({
+                        x: direction > 0 ? 600 : -600,
+                        rotate: direction > 0 ? 15 : -15,
+                        opacity: 0,
+                        scale: 0.8,
+                      }),
+                      center: {
+                        zIndex: 1,
+                        x: 0,
+                        rotate: 0,
+                        opacity: 1,
+                        scale: 1,
+                      },
+                      exit: (direction: number) => ({
+                        zIndex: 0,
+                        x: direction < 0 ? 600 : -600,
+                        rotate: direction < 0 ? 15 : -15,
+                        opacity: 0,
+                        scale: 0.8,
+                      }),
+                    }}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{
+                      x: { type: 'spring', stiffness: 200, damping: 25 },
+                      rotate: { type: 'spring', stiffness: 200, damping: 25 },
+                      opacity: { duration: 0.3 },
+                      scale: { duration: 0.3 },
+                    }}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={1}
+                    onDragEnd={(e, { offset, velocity }) => {
+                      const swipe = Math.abs(offset.x) > 50 && Math.abs(velocity.x) > 500
+                      if (swipe) {
+                        if (offset.x > 0) {
+                          prevPhoto()
+                        } else {
+                          nextPhoto()
+                        }
+                      }
+                    }}
+                    className="relative bg-white p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] shadow-2xl flex flex-col items-center pointer-events-auto touch-none"
+                  >
+                    <div className="overflow-hidden rounded-xl md:rounded-[2rem] bg-stone-100 relative">
+                      {mediaItems[activePhotoIndex].type === 'video' ? (
+                        <video
+                          src={mediaItems[activePhotoIndex].url}
+                          controls
+                          playsInline
+                          className="max-h-[60dvh] md:max-h-[70dvh] w-auto h-auto block"
+                        />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={mediaItems[activePhotoIndex].url}
+                          alt=""
+                          className="max-h-[60dvh] md:max-h-[70dvh] w-auto h-auto block object-contain"
+                        />
+                      )}
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
-              {/* Photo with White Border Effect */}
-              <motion.div
-                key={activePhotoIndex}
-                initial={{ opacity: 0, scale: 0.9, x: 20 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0.9, x: -20 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                className="relative bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-2xl flex flex-col items-center"
-              >
-                <div className="overflow-hidden rounded-lg bg-stone-100 relative min-w-[300px] min-h-[300px]">
-                  <Image
-                    src={mediaItems[activePhotoIndex].url}
-                    alt=""
-                    width={1200}
-                    height={900}
-                    className="max-w-full max-h-[70vh] object-contain"
-                    priority
-                  />
-                </div>
-
-                {/* Slide Context */}
-                <div className="mt-4 flex items-center justify-between w-full px-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-                    Photo {activePhotoIndex + 1} / {mediaItems.length}
+              {/* Slide Context */}
+              <div className="absolute -bottom-16 left-0 right-0 flex items-center justify-between w-full px-6 md:px-12 pointer-events-none">
+                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 bg-black/20 backdrop-blur-sm px-4 py-1.5 rounded-full">
+                  {activePhotoIndex + 1} / {mediaItems.length}
+                </span>
+                {(mediaItems[activePhotoIndex] as any).exif?.gps?.city && (
+                  <span className="text-[11px] font-bold text-teal-400 flex items-center gap-2 bg-black/20 backdrop-blur-sm px-4 py-1.5 rounded-full">
+                    <MapPin size={14} />
+                    {(mediaItems[activePhotoIndex] as any).exif.gps.city}
                   </span>
-                  {(mediaItems[activePhotoIndex] as any).exif?.gps?.city && (
-                    <span className="text-[10px] font-bold text-teal-600 flex items-center gap-1.5">
-                      <MapPin size={12} />
-                      {(mediaItems[activePhotoIndex] as any).exif.gps.city}
-                    </span>
-                  )}
-                </div>
-              </motion.div>
+                )}
+              </div>
 
               {/* Next Button */}
               <button

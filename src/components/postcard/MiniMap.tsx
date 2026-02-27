@@ -49,15 +49,33 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
   const map = useMap()
   const [container, setContainer] = React.useState<HTMLElement | null>(null)
   const [hasAnimated, setHasAnimated] = React.useState(false)
+  const [isInView, setIsInView] = React.useState(false)
 
   React.useEffect(() => {
     const el = map.getContainer()
     setContainer(el)
   }, [map])
 
+  // Detect when map is in view to start animation
+  React.useEffect(() => {
+    if (!container || hasAnimated) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true)
+        }
+      },
+      { threshold: 0.2 },
+    )
+
+    observer.observe(container)
+    return () => observer.disconnect()
+  }, [container, hasAnimated])
+
   // Initial animation: world to destination smoothly
   React.useEffect(() => {
-    if (!hasAnimated && map) {
+    if (!hasAnimated && map && isInView) {
       // Force initial world view immediately just in case
       map.setView([20, 0], 1, { animate: false })
 
@@ -108,7 +126,7 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
         clearTimeout(animationTimer)
       }
     }
-  }, [map, center, zoom, hasAnimated])
+  }, [map, center, zoom, hasAnimated, isInView])
 
   const prevZoomRef = React.useRef(zoom)
   const prevCenterRef = React.useRef(center)
@@ -296,7 +314,7 @@ const MiniMap: React.FC<MiniMapProps> = ({
             setShowPhotos(!showPhotos)
           }}
           className={cn(
-            'absolute top-4 left-16 z-[1002] px-4 py-2.5 rounded-2xl shadow-2xl border-2 transition-all active:scale-95 flex items-center gap-3 font-bold text-xs',
+            'absolute top-20 right-4 z-[1002] px-4 py-2.5 rounded-2xl shadow-2xl border-2 transition-all active:scale-95 flex items-center gap-3 font-bold text-xs',
             showPhotos
               ? 'bg-teal-600 text-white border-teal-400'
               : 'bg-white/95 text-stone-600 border-stone-100',
