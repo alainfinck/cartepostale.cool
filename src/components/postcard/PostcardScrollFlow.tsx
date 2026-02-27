@@ -128,6 +128,25 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
     return Object.values(groups)
   }, [mediaItems])
 
+  // Preload adjacent images for fluidity
+  useEffect(() => {
+    if (!mediaItems || mediaItems.length <= 1 || activePhotoIndex === null) return
+
+    const indicesToPreload = [
+      (activePhotoIndex + 1) % mediaItems.length,
+      (activePhotoIndex + 2) % mediaItems.length,
+      (activePhotoIndex - 1 + mediaItems.length) % mediaItems.length,
+    ]
+
+    indicesToPreload.forEach((idx) => {
+      const item = mediaItems[idx]
+      if (item && item.type === 'image' && item.url) {
+        const img = new window.Image()
+        img.src = item.url
+      }
+    })
+  }, [activePhotoIndex, mediaItems])
+
   // Navigation handlers for slideshow
   const nextPhoto = useCallback(
     (e?: React.MouseEvent) => {
@@ -571,10 +590,10 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
                     animate="center"
                     exit="exit"
                     transition={{
-                      x: { type: 'spring', stiffness: 200, damping: 25 },
-                      rotate: { type: 'spring', stiffness: 200, damping: 25 },
-                      opacity: { duration: 0.3 },
-                      scale: { duration: 0.3 },
+                      x: { type: 'spring', stiffness: 60, damping: 20 },
+                      rotate: { type: 'spring', stiffness: 60, damping: 20 },
+                      opacity: { duration: 0.6 },
+                      scale: { duration: 0.6 },
                     }}
                     drag="x"
                     dragConstraints={{ left: 0, right: 0 }}

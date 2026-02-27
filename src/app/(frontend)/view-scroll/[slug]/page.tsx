@@ -71,6 +71,11 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
     }),
     mediaItems,
     isPremium: payloadPostcard.isPremium || false,
+    stampStyle: payloadPostcard.stampStyle || 'classic',
+    stampLabel: payloadPostcard.stampLabel || undefined,
+    stampYear: payloadPostcard.stampYear || undefined,
+    postmarkText: payloadPostcard.postmarkText || undefined,
+    eventType: (payloadPostcard as any).eventType || undefined,
     coords:
       payloadPostcard.coords?.lat && payloadPostcard.coords?.lng
         ? {

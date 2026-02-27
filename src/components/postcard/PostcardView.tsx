@@ -64,6 +64,8 @@ const AlbumPolaroidLightbox = dynamic(
   { ssr: false },
 )
 
+import FlipCard from '@/components/ui/FlipCard'
+
 // Dynamic import for JournalModal
 const JournalModal = dynamic(() => import('@/components/postcard/JournalModal'), {
   ssr: false,
@@ -354,13 +356,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
   // Motion values for rotation
   const rotateY = useMotionValue(flipped ? 180 : 0)
-  // Slightly more responsive spring so the keyframed animation isn't over-smoothed
-  const springRotateY = useSpring(rotateY, { stiffness: 40, damping: 25 })
-
-  // Derived opacity for faces to avoid ghosting in Safari/Chrome during 3D flip
-  // Values derived from springRotateY to sync with animation and avoid "flash"
-  const frontOpacity = useTransform(springRotateY, [88, 92, 268, 272], [1, 0, 0, 1])
-  const backOpacity = useTransform(springRotateY, [88, 92, 268, 272], [0, 1, 1, 0])
 
   useEffect(() => {
     if (flipped !== undefined) {
@@ -2110,7 +2105,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                       </div>
                       <div
                         className={cn(
-                          'mb-1 sm:mb-2 w-full flex-1 min-h-[120px] sm:min-h-[200px] lg:min-h-[350px] rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner relative',
+                          'mb-1 sm:mb-2 w-full flex-1 min-h-[160px] sm:min-h-[260px] lg:min-h-[420px] rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner relative',
                         )}
                       >
                         {postcard.coords ? (
