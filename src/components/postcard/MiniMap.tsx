@@ -241,7 +241,30 @@ const MiniMap: React.FC<MiniMapProps> = ({
   )
 
   return (
-    <div className={cn('relative w-full h-full z-0', className)} onClick={onClick}>
+    <div className={cn('relative w-full h-full z-0 minimap-controls', className)} onClick={onClick}>
+      <style jsx global>{`
+        .minimap-controls .leaflet-control-zoom {
+          border: none !important;
+        }
+        .minimap-controls .leaflet-bar {
+          border: none !important;
+          box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+          border-radius: 6px;
+          overflow: hidden;
+        }
+        .minimap-controls .leaflet-control-zoom a {
+          width: 28px !important;
+          height: 28px !important;
+          line-height: 28px !important;
+          font-size: 18px !important;
+          text-indent: 0;
+        }
+        .minimap-controls .leaflet-touch .leaflet-control-zoom a {
+          width: 28px !important;
+          height: 28px !important;
+          line-height: 28px !important;
+        }
+      `}</style>
       {/* ... comments ... */}
       <MapContainer
         center={[20, 0]}
@@ -317,7 +340,7 @@ const MiniMap: React.FC<MiniMapProps> = ({
         {showPhotos && photoLocations.map((loc) => <PhotoMarker key={loc.id} location={loc} />)}
       </MapContainer>
 
-      {/* Photo Toggle Button — only when not rendered outside by parent */}
+      {/* Toggle Photos — sous Verrouiller (top-14 pour laisser la place au bouton verrouiller) */}
       {photoLocations.length > 0 && !toggleOutside && (
         <button
           onClick={(e) => {
@@ -325,7 +348,7 @@ const MiniMap: React.FC<MiniMapProps> = ({
             setShowPhotos(!showPhotos)
           }}
           className={cn(
-            'absolute top-20 right-4 z-[1002] px-4 py-2.5 rounded-2xl shadow-2xl border-2 transition-all active:scale-95 flex items-center gap-3 font-bold text-xs',
+            'absolute top-14 right-2 sm:right-4 z-[1002] px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl shadow-lg border-2 transition-all active:scale-95 flex items-center gap-2 sm:gap-3 font-bold text-[10px] sm:text-xs',
             showPhotos
               ? 'bg-teal-600 text-white border-teal-400'
               : 'bg-white/95 text-stone-600 border-stone-100',
@@ -333,14 +356,14 @@ const MiniMap: React.FC<MiniMapProps> = ({
         >
           <div
             className={cn(
-              'w-8 h-4 rounded-full relative transition-colors duration-200',
+              'w-6 h-3 sm:w-8 sm:h-4 rounded-full relative transition-colors duration-200 shrink-0',
               showPhotos ? 'bg-white/30' : 'bg-stone-200',
             )}
           >
             <div
               className={cn(
-                'absolute top-0.5 w-3 h-3 rounded-full transition-all duration-200 shadow-sm',
-                showPhotos ? 'left-4.5 bg-white' : 'left-0.5 bg-white',
+                'absolute top-0.5 w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-200 shadow-sm',
+                showPhotos ? 'left-3.5 sm:left-4.5 bg-white' : 'left-0.5 bg-white',
               )}
             />
           </div>
@@ -379,16 +402,16 @@ const MiniMap: React.FC<MiniMapProps> = ({
         </>
       )}
 
-      {/* Lock button to exit interactive mode */}
+      {/* Verrouiller — au-dessus du toggle Photos */}
       {isInteractive && (
         <button
           onClick={(e) => {
             e.stopPropagation()
             setIsInteractive(false)
           }}
-          className="absolute top-4 right-4 z-[1001] bg-white/90 hover:bg-white text-stone-800 px-4 py-2 rounded-xl shadow-xl border border-stone-200 flex items-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all active:scale-95"
+          className="absolute top-2 right-2 sm:top-4 sm:right-4 z-[1001] bg-white/90 hover:bg-white text-stone-800 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl shadow-lg border border-stone-200 flex items-center gap-1.5 sm:gap-2 font-bold text-[9px] sm:text-[10px] uppercase tracking-widest transition-all active:scale-95"
         >
-          <Lock size={14} className="text-teal-600" />
+          <Lock size={12} className="sm:w-[14px] sm:h-[14px] text-teal-600 shrink-0" />
           Verrouiller
         </button>
       )}

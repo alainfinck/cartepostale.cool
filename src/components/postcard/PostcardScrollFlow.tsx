@@ -478,10 +478,10 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
           </motion.div>
         </section>
 
-        {/* Map Section */}
+        {/* Map Section — moins de marge sur mobile pour carte plus grande */}
         {coords && (
-          <section ref={mapSectionRef} className="mt-16 overflow-hidden">
-            <div className="flex items-center gap-4 mb-10 px-4">
+          <section ref={mapSectionRef} className="mt-16 overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="flex items-center gap-4 mb-6 sm:mb-10 px-0 sm:px-4">
               <div className="w-12 h-px bg-stone-300/50" />
               <h3 className="text-[11px] font-black uppercase tracking-widest text-stone-400">
                 Localisation
@@ -492,9 +492,9 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="aspect-[16/9] bg-white p-2 rounded-[2rem] shadow-xl border border-stone-200/40 relative group"
+              className="aspect-[16/9] bg-white p-1 sm:p-2 rounded-xl sm:rounded-[2rem] shadow-xl border border-stone-200/40 relative group"
             >
-              <div className="w-full h-full rounded-3xl overflow-hidden grayscale-[0.2] contrast-[1.1]">
+              <div className="w-full h-full rounded-lg sm:rounded-3xl overflow-hidden grayscale-[0.2] contrast-[1.1]">
                 <MiniMap
                   coords={coords}
                   zoom={10}
@@ -516,7 +516,7 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
               </h3>
               <div className="flex-1 h-px bg-stone-300/50" />
             </div>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {mediaItems.map((item, idx) => (
                 <GalleryImage
                   key={item.id || idx}
@@ -530,55 +530,55 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
         )}
       </div>
 
-      {/* Modern Sticky Navigation Tabs */}
-      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-lg z-50">
-        <div className="bg-white/98 backdrop-blur-3xl rounded-[2.5rem] p-3 flex items-center justify-around shadow-[0_30px_60px_rgba(0,0,0,0.2)] border border-stone-200/60">
+      {/* Barre fixe compacte en bas */}
+      <nav className="fixed bottom-3 left-1/2 -translate-x-1/2 w-[calc(100%-1.5rem)] max-w-md z-50">
+        <div className="bg-white/98 backdrop-blur-xl rounded-2xl py-2 px-2 flex items-center justify-around shadow-lg border border-stone-200/60">
           <button
             onClick={() => scrollTo(messageRef)}
-            className="flex flex-col items-center gap-1.5 px-3 py-2 rounded-2xl transition-all hover:bg-stone-50 active:scale-90 group"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-stone-50 active:scale-90 group"
           >
-            <div className="w-11 h-11 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors shadow-sm">
-              <Mail size={20} className="stroke-[2.5]" />
+            <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <Mail size={16} className="stroke-[2.5]" />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-stone-500">
+            <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">
               Carte
             </span>
           </button>
 
           <ARButton
             postcard={postcard}
-            className="flex flex-col items-center gap-1.5 px-3 py-2 rounded-2xl transition-all hover:bg-stone-50 active:scale-90 group"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-stone-50 active:scale-90 group"
           />
 
           <button
             onClick={() => (coords ? scrollTo(mapSectionRef) : setIsMapModalOpen(true))}
-            className="flex flex-col items-center gap-1.5 px-3 py-2 rounded-2xl transition-all hover:bg-stone-50 active:scale-90 group"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-stone-50 active:scale-90 group"
           >
-            <div className="w-11 h-11 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors shadow-sm">
-              <MapIcon size={20} className="stroke-[2.5]" />
+            <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <MapIcon size={16} className="stroke-[2.5]" />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-stone-500">
+            <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">
               Carte
             </span>
           </button>
 
           <button
             onClick={() => scrollTo(albumRef)}
-            className="flex flex-col items-center gap-1.5 px-3 py-2 rounded-2xl transition-all hover:bg-stone-50 active:scale-90 group"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-stone-50 active:scale-90 group"
           >
-            <div className="w-11 h-11 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors shadow-sm">
-              <ImageIcon size={20} className="stroke-[2.5]" />
+            <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <ImageIcon size={16} className="stroke-[2.5]" />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-stone-500">
+            <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">
               Album
             </span>
           </button>
 
-          <button className="flex flex-col items-center gap-1.5 px-3 py-2 rounded-2xl transition-all hover:bg-stone-50 active:scale-90 group">
-            <div className="w-11 h-11 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors shadow-sm">
-              <Share2 size={20} className="stroke-[2.5]" />
+          <button className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-stone-50 active:scale-90 group">
+            <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <Share2 size={16} className="stroke-[2.5]" />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-stone-500">
+            <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">
               Partage
             </span>
           </button>
