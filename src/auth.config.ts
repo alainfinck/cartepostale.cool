@@ -3,7 +3,25 @@ import Google from 'next-auth/providers/google'
 import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 
+const parseBooleanEnv = (value?: string): boolean | undefined => {
+  if (!value) return undefined
+
+  const normalized = value.trim().toLowerCase()
+  if (normalized === 'true') return true
+  if (normalized === 'false') return false
+  return undefined
+}
+
+const authUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL
+const trustHostFromEnv =
+  parseBooleanEnv(process.env.AUTH_TRUST_HOST) ?? parseBooleanEnv(process.env.NEXTAUTH_TRUST_HOST)
+const trustHost =
+  trustHostFromEnv !== undefined
+    ? trustHostFromEnv
+    : Boolean(authUrl) || process.env.NODE_ENV === 'production'
+
 export const authConfig: NextAuthConfig = {
+  trustHost,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
