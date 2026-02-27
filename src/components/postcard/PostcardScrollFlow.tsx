@@ -17,6 +17,7 @@ import {
 import ARButton from '@/components/ar/ARButton'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
+import { cn } from '@/lib/utils'
 
 // Helper component for smooth image loading in the gallery
 const GalleryImage = ({ item, idx, onClick }: { item: any; idx: number; onClick: () => void }) => {
@@ -24,25 +25,34 @@ const GalleryImage = ({ item, idx, onClick }: { item: any; idx: number; onClick:
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      whileInView={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, y: 10 }}
+      whileInView={{ opacity: 1, y: 0 }}
       whileHover={{ y: -5 }}
       viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.6, delay: (idx % 2) * 0.1, ease: 'easeOut' }}
+      transition={{ duration: 0.4, delay: (idx % 2) * 0.05 }}
       onClick={onClick}
-      className="aspect-square bg-white p-2 rounded-[2.5rem] shadow-md border border-stone-200/30 overflow-hidden cursor-pointer active:scale-95 transition-all relative group"
+      className="aspect-square rounded-[2.5rem] relative group cursor-pointer active:scale-95 transition-transform"
     >
+      {/* The "Card" container only shows when loaded for maximum fluidity */}
       <div
-        className={`w-full h-full relative overflow-hidden rounded-[2rem] bg-stone-50 transition-colors duration-500 ${!isLoaded ? 'animate-pulse' : ''}`}
+        className={cn(
+          'w-full h-full p-2 bg-white shadow-md border border-stone-200/30 rounded-[2.5rem] transition-opacity duration-500',
+          isLoaded ? 'opacity-100' : 'opacity-0',
+        )}
       >
-        <Image
-          src={item.url}
-          alt=""
-          fill
-          sizes="(max-width: 768px) 50vw, 33vw"
-          className={`object-cover transition-opacity duration-700 ease-in-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-          onLoad={() => setIsLoaded(true)}
-        />
+        <div className="w-full h-full relative overflow-hidden rounded-[2rem] bg-stone-50/50">
+          <Image
+            src={item.url}
+            alt=""
+            fill
+            sizes="(max-width: 768px) 50vw, 33vw"
+            className={cn(
+              'object-cover transition-all duration-700 ease-out',
+              isLoaded ? 'scale-100 opacity-100' : 'scale-110 opacity-0',
+            )}
+            onLoad={() => setIsLoaded(true)}
+          />
+        </div>
       </div>
     </motion.div>
   )
