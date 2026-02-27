@@ -5,10 +5,14 @@ import { StatsOverview } from '../StatsOverview'
 export const dynamic = 'force-dynamic'
 
 export default async function StatsPage() {
-    const [stats, viewStats] = await Promise.all([
-        getManagerStats(),
-        getGlobalViewStats(),
-    ])
+  const [stats, viewStats] = await Promise.all([getManagerStats(), getGlobalViewStats()])
 
-    return <StatsOverview stats={stats} viewStats={viewStats} />
+  return (
+    <StatsOverview
+      stats={stats}
+      viewStats={viewStats}
+      metaPixelId={process.env.META_PIXEL_ID}
+      metaAccessToken={process.env.META_ACCESS_TOKEN}
+    />
+  )
 }

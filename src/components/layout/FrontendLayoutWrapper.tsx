@@ -22,7 +22,7 @@ export function FrontendLayoutWrapper({
   const isEspaceAgence = pathname?.startsWith('/espace-agence')
   const isDashboard = pathname?.startsWith('/dashboard')
   const isEspaceClient = pathname?.startsWith('/espace-client')
-  const isPostcardView = pathname?.startsWith('/carte/')
+  const isPostcardView = pathname?.startsWith('/carte/') || pathname?.startsWith('/view-scroll/')
 
   // On /manager and /espace-agence we don't show the public Navbar/Footer
   if (isManager || isEspaceAgence) {

@@ -1,4 +1,5 @@
 'use client'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,6 +23,13 @@ import {
 import { cn } from '@/lib/utils'
 import type { PostcardViewStats } from '@/actions/postcard-view-stats'
 
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void
+    fbq: (...args: unknown[]) => void
+  }
+}
+
 interface Stats {
   totalPostcards: number
   publishedPostcards: number
@@ -37,12 +45,39 @@ interface Stats {
 export function StatsOverview({
   stats,
   viewStats,
+  metaPixelId,
+  metaAccessToken,
   isClientView = false,
 }: {
   stats: Stats
   viewStats?: PostcardViewStats | null
+  metaPixelId?: string
+  metaAccessToken?: string
   isClientView?: boolean
 }) {
+  const handleTestGA = () => {
+    if (window.gtag) {
+      window.gtag('event', 'test_ga_event', {
+        event_category: 'testing',
+        event_label: 'Stats Page Test',
+        value: 1,
+      })
+      toast.success('Événement de test GA4 envoyé !')
+    } else {
+      toast.error("Google Analytics n'est pas chargé.")
+    }
+  }
+
+  const handleTestPixel = () => {
+    if (window.fbq) {
+      window.fbq('trackCustom', 'TestStatsPageEvent', {
+        content_name: 'Stats Page Test Button',
+      })
+      toast.success('Événement de test Meta Pixel envoyé !')
+    } else {
+      toast.error("Meta Pixel n'est pas chargé.")
+    }
+  }
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Title & Date */}
@@ -98,7 +133,6 @@ export function StatsOverview({
           value={stats.premiumPostcards}
           trend={`${Math.round((stats.premiumPostcards / stats.totalPostcards) * 100)}% du total`}
           variant="amber"
-          isPremium
         />
       </div>
 
@@ -363,20 +397,30 @@ export function StatsOverview({
                     Analyse le comportement des utilisateurs, les sources de trafic et les
                     performances des pages.
                   </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full border-stone-200 hover:bg-stone-50 text-stone-600 gap-2 font-bold"
-                    asChild
-                  >
-                    <a
-                      href="https://analytics.google.com/analytics/web/"
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-stone-200 hover:bg-stone-50 text-stone-600 gap-2 font-bold"
+                      asChild
                     >
-                      Ouvrir le Dashboard GA4 <ExternalLink size={14} />
-                    </a>
-                  </Button>
+                      <a
+                        href="https://analytics.google.com/analytics/web/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Ouvrir le Dashboard GA4 <ExternalLink size={14} />
+                      </a>
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleTestGA}
+                      className="w-full gap-2 font-bold"
+                    >
+                      Tester la balise GA4 <Activity size={14} />
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Facebook Pixel */}
@@ -399,28 +443,49 @@ export function StatsOverview({
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs text-stone-500">ID du Pixel :</p>
-                    <code className="block p-2 bg-stone-100/80 rounded border border-stone-200 text-sm font-mono text-stone-800">
-                      {process.env.NEXT_PUBLIC_META_PIXEL_ID || 'Non configuré'}
+                    <code className="block p-2 bg-stone-100/80 rounded border border-stone-200 text-sm font-mono text-stone-800 break-all">
+                      {metaPixelId || 'Non configuré'}
                     </code>
                   </div>
+                  {metaAccessToken && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-stone-500">Access Token (Server-side) :</p>
+                      <div className="p-2 bg-stone-100/80 rounded border border-stone-200">
+                        <code className="text-[10px] font-mono text-stone-600 break-all leading-tight">
+                          {metaAccessToken.substring(0, 10)}...
+                          {metaAccessToken.substring(metaAccessToken.length - 10)}
+                        </code>
+                      </div>
+                    </div>
+                  )}
                   <p className="text-xs text-stone-500 leading-relaxed">
                     Suit les conversions et permet le reciblage publicitaire (retargeting) sur
                     Facebook et Instagram.
                   </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full border-stone-200 hover:bg-stone-50 text-stone-600 gap-2 font-bold"
-                    asChild
-                  >
-                    <a
-                      href="https://adsmanager.facebook.com/events_manager2/"
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-stone-200 hover:bg-stone-50 text-stone-600 gap-2 font-bold"
+                      asChild
                     >
-                      Ouvrir Events Manager <ExternalLink size={14} />
-                    </a>
-                  </Button>
+                      <a
+                        href="https://adsmanager.facebook.com/events_manager2/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Ouvrir Events Manager <ExternalLink size={14} />
+                      </a>
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleTestPixel}
+                      className="w-full gap-2 font-bold"
+                    >
+                      Tester le Pixel <Share2 size={14} />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -437,14 +502,12 @@ function StatCard({
   value,
   trend,
   variant,
-  isPremium,
 }: {
   icon: React.ReactNode
   label: string
   value: number
   trend: string
   variant: 'teal' | 'blue' | 'orange' | 'amber'
-  isPremium?: boolean
 }) {
   const themes = {
     teal: 'from-teal-500 to-teal-600 text-teal-600 shadow-teal-500/10',
