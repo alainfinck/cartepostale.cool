@@ -62,12 +62,40 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
       map.setView([20, 0], 1, { animate: false })
 
       const animationTimer = setTimeout(() => {
-        map.flyTo(center, zoom, {
-          animate: true,
-          duration: 5,
-          easeLinearity: 0.25,
-          noMoveStart: true,
-        })
+        if (!map) return
+
+        const container = map.getContainer()
+        if (!container || container.offsetWidth === 0) {
+          // Map is hidden or not in DOM with size yet, skip animation for now
+          // and mark as animated so it just shows the destination next time
+          setHasAnimated(true)
+          return
+        }
+
+        // Safety check to prevent Leaflet crashes if coords are invalid
+        const isValidCenter = center && !isNaN(center[0]) && !isNaN(center[1])
+        const isValidZoom = typeof zoom === 'number' && !isNaN(zoom)
+
+        if (isValidCenter && isValidZoom) {
+          try {
+            // Force a size recalculation before animating
+            map.invalidateSize()
+
+            map.flyTo(center, zoom, {
+              animate: true,
+              duration: 5,
+              easeLinearity: 0.25,
+              noMoveStart: true,
+            })
+          } catch (err) {
+            console.error('MiniMap: flyTo failed', err)
+            setHasAnimated(true)
+          }
+        } else {
+          console.warn('MiniMap: Invalid center or zoom for initial animation', { center, zoom })
+          setHasAnimated(true) // Don't try again
+          return
+        }
 
         // Once the movement is finished, we mark it as animated
         // to let the other useEffect take over for manual changes
@@ -109,13 +137,18 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
       center[0] !== prevCenterRef.current[0] || center[1] !== prevCenterRef.current[1]
 
     if (hasAnimated && (zoomChanged || centerChanged)) {
-      map.setView(center, zoom, {
-        animate: true,
-        duration: 0.8,
-        easeLinearity: 0.25,
-      })
-      prevZoomRef.current = zoom
-      prevCenterRef.current = center
+      const isValidCenter = center && !isNaN(center[0]) && !isNaN(center[1])
+      const isValidZoom = typeof zoom === 'number' && !isNaN(zoom)
+
+      if (isValidCenter && isValidZoom) {
+        map.setView(center, zoom, {
+          animate: true,
+          duration: 0.8,
+          easeLinearity: 0.25,
+        })
+        prevZoomRef.current = zoom
+        prevCenterRef.current = center
+      }
     }
   }, [center, zoom, map, hasAnimated])
 
@@ -200,35 +233,38 @@ const MiniMap: React.FC<MiniMapProps> = ({
         <LeafletFix />
         <ChangeView center={position} zoom={zoom} />
         <InteractionHandler isInteractive={isInteractive} />
-        {isInteractive && <ZoomControl position="bottomright" />}
+        {isInteractive && (
+          <>
+            <ZoomControl position="bottomright" />
+            <LayersControl position="topleft">
+              <LayersControl.BaseLayer checked name="Plan">
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+              </LayersControl.BaseLayer>
+
+              <LayersControl.BaseLayer name="Satellite">
+                <TileLayer
+                  attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community"
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                />
+              </LayersControl.BaseLayer>
+
+              <LayersControl.BaseLayer name="Hybride">
+                <TileLayer
+                  attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community"
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                />
+                <TileLayer
+                  url="https://stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}{r}.png"
+                  opacity={0.7}
+                />
+              </LayersControl.BaseLayer>
+            </LayersControl>
+          </>
+        )}
         <ScaleControl position="bottomleft" />
-
-        <LayersControl position="topleft">
-          <LayersControl.BaseLayer checked name="Plan">
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-          </LayersControl.BaseLayer>
-
-          <LayersControl.BaseLayer name="Satellite">
-            <TileLayer
-              attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community"
-              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            />
-          </LayersControl.BaseLayer>
-
-          <LayersControl.BaseLayer name="Hybride">
-            <TileLayer
-              attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community"
-              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            />
-            <TileLayer
-              url="https://stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}{r}.png"
-              opacity={0.7}
-            />
-          </LayersControl.BaseLayer>
-        </LayersControl>
         <Marker
           position={position}
           icon={
@@ -255,7 +291,7 @@ const MiniMap: React.FC<MiniMapProps> = ({
             setShowPhotos(!showPhotos)
           }}
           className={cn(
-            'absolute top-4 left-4 z-[1002] px-4 py-2.5 rounded-2xl shadow-2xl border-2 transition-all active:scale-95 flex items-center gap-3 font-bold text-xs',
+            'absolute top-4 left-16 z-[1002] px-4 py-2.5 rounded-2xl shadow-2xl border-2 transition-all active:scale-95 flex items-center gap-3 font-bold text-xs',
             showPhotos
               ? 'bg-teal-600 text-white border-teal-400'
               : 'bg-white/95 text-stone-600 border-stone-100',

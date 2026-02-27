@@ -14,6 +14,12 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.990.0
         version: 3.990.0
+      '@fontsource/gochi-hand':
+        specifier: ^5.2.8
+        version: 5.2.8
+      '@fontsource/indie-flower':
+        specifier: ^5.2.7
+        version: 5.2.7
       '@libsql/client':
         specifier: ^0.17.0
         version: 0.17.0
@@ -1208,6 +1214,12 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+
+  '@fontsource/gochi-hand@5.2.8':
+    resolution: {integrity: sha512-29XgI4temBWT9GE3hP4fgMtNv+s2pSLePmnxZEszS7RD/3BHL25om/4sxa6aA3fdSMImddi1PzLzbdqBP/DzLw==}
+
+  '@fontsource/indie-flower@5.2.7':
+    resolution: {integrity: sha512-vu9yEMW3Be2TXRkw2NYMLK1C4KQOUme3SUtqSha/wGzvBgzc2llT/lQ3bzZZ4aoCeF4x9ghGV+iwW+4hVr+Yhg==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -7210,6 +7222,10 @@ snapshots:
       tabbable: 6.4.0
 
   '@floating-ui/utils@0.2.10': {}
+
+  '@fontsource/gochi-hand@5.2.8': {}
+
+  '@fontsource/indie-flower@5.2.7': {}
 
   '@humanfs/core@0.19.1': {}
 
