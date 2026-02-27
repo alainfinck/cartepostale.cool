@@ -1,5 +1,13 @@
 import React from 'react'
-import { MapContainer, TileLayer, Marker, useMap, ScaleControl } from 'react-leaflet'
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMap,
+  ScaleControl,
+  ZoomControl,
+  LayersControl,
+} from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { cn } from '@/lib/utils'
@@ -12,6 +20,29 @@ interface MiniMapProps {
   className?: string
   onClick?: (e: React.MouseEvent) => void
   photoLocations?: PhotoLocation[]
+  interactive?: boolean
+}
+
+function InteractionHandler({ isInteractive }: { isInteractive: boolean }) {
+  const map = useMap()
+
+  React.useEffect(() => {
+    if (!map) return
+
+    if (isInteractive) {
+      map.dragging.enable()
+      map.scrollWheelZoom.enable()
+      map.doubleClickZoom.enable()
+      map.touchZoom.enable()
+    } else {
+      map.dragging.disable()
+      map.scrollWheelZoom.disable()
+      map.doubleClickZoom.disable()
+      map.touchZoom.disable()
+    }
+  }, [map, isInteractive])
+
+  return null
 }
 
 function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }) {
@@ -115,13 +146,32 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
   return null
 }
 
+import { Lock, Navigation } from 'lucide-react'
+
 const MiniMap: React.FC<MiniMapProps> = ({
   coords,
   zoom,
   className,
   onClick,
   photoLocations = [],
+  interactive = false,
 }) => {
+  const [isInteractive, setIsInteractive] = React.useState(false)
+  const [showPhotos, setShowPhotos] = React.useState(true)
+
+  // Auto-lock when scrolling the page
+  React.useEffect(() => {
+    if (!isInteractive) return
+
+    const handleWindowScroll = () => {
+      setIsInteractive(false)
+    }
+
+    // Use passive listener for performance
+    window.addEventListener('scroll', handleWindowScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleWindowScroll)
+  }, [isInteractive])
+
   // Prevent position array from being recreated on every render
   const position = React.useMemo<[number, number]>(
     () => [coords.lat, coords.lng],
@@ -149,11 +199,36 @@ const MiniMap: React.FC<MiniMapProps> = ({
       >
         <LeafletFix />
         <ChangeView center={position} zoom={zoom} />
+        <InteractionHandler isInteractive={isInteractive} />
+        {isInteractive && <ZoomControl position="bottomright" />}
         <ScaleControl position="bottomleft" />
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+
+        <LayersControl position="topleft">
+          <LayersControl.BaseLayer checked name="Plan">
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+          </LayersControl.BaseLayer>
+
+          <LayersControl.BaseLayer name="Satellite">
+            <TileLayer
+              attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community"
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            />
+          </LayersControl.BaseLayer>
+
+          <LayersControl.BaseLayer name="Hybride">
+            <TileLayer
+              attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community"
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            />
+            <TileLayer
+              url="https://stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}{r}.png"
+              opacity={0.7}
+            />
+          </LayersControl.BaseLayer>
+        </LayersControl>
         <Marker
           position={position}
           icon={
@@ -169,16 +244,84 @@ const MiniMap: React.FC<MiniMapProps> = ({
             })
           }
         />
-
-        {photoLocations.map((loc) => (
-          <PhotoMarker
-            key={loc.id}
-            location={loc}
-            // On MiniMap, clicking a photo marker should probably just open the full map
-            // or we could let it propagate to the parent onClick
-          />
-        ))}
+        {showPhotos && photoLocations.map((loc) => <PhotoMarker key={loc.id} location={loc} />)}
       </MapContainer>
+
+      {/* Photo Toggle Button */}
+      {photoLocations.length > 0 && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            setShowPhotos(!showPhotos)
+          }}
+          className={cn(
+            'absolute top-4 left-4 z-[1002] px-4 py-2.5 rounded-2xl shadow-2xl border-2 transition-all active:scale-95 flex items-center gap-3 font-bold text-xs',
+            showPhotos
+              ? 'bg-teal-600 text-white border-teal-400'
+              : 'bg-white/95 text-stone-600 border-stone-100',
+          )}
+        >
+          <div
+            className={cn(
+              'w-8 h-4 rounded-full relative transition-colors duration-200',
+              showPhotos ? 'bg-white/30' : 'bg-stone-200',
+            )}
+          >
+            <div
+              className={cn(
+                'absolute top-0.5 w-3 h-3 rounded-full transition-all duration-200 shadow-sm',
+                showPhotos ? 'left-4.5 bg-white' : 'left-0.5 bg-white',
+              )}
+            />
+          </div>
+          <span className="uppercase tracking-widest">Photos</span>
+        </button>
+      )}
+
+      {/* Activation Overlays */}
+      {interactive && !isInteractive && (
+        <>
+          {/* Full area transparent overlay to catch clicks anywhere on the map */}
+          <div
+            className="absolute inset-0 z-[999] cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsInteractive(true)
+            }}
+          />
+
+          {/* Discreet button in corner as visual hint */}
+          <div className="absolute top-4 right-4 z-[1000] pointer-events-none">
+            <div className="bg-white/95 px-4 py-2 rounded-xl shadow-xl border border-stone-200 flex items-center gap-2 transform hover:scale-105 transition-all duration-300">
+              <div className="bg-teal-50 w-8 h-8 rounded-lg flex items-center justify-center text-teal-600">
+                <Navigation size={16} className="animate-pulse" />
+              </div>
+              <div className="flex flex-col">
+                <p className="text-[10px] font-black uppercase tracking-widest text-stone-800 leading-tight">
+                  Explorer
+                </p>
+                <p className="text-[8px] font-bold text-stone-400 uppercase tracking-tighter">
+                  Cliquer pour interagir
+                </p>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Lock button to exit interactive mode */}
+      {isInteractive && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            setIsInteractive(false)
+          }}
+          className="absolute top-4 right-4 z-[1001] bg-white/90 hover:bg-white text-stone-800 px-4 py-2 rounded-xl shadow-xl border border-stone-200 flex items-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all active:scale-95"
+        >
+          <Lock size={14} className="text-teal-600" />
+          Verrouiller
+        </button>
+      )}
     </div>
   )
 }

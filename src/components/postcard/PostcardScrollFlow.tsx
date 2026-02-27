@@ -163,38 +163,8 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
     <div className="flex flex-col min-h-screen bg-[#f3f4f6] text-stone-900 pb-40">
       {/* Main Content Area */}
       <div className="max-w-5xl mx-auto w-full pt-12 px-4 md:pt-20">
-        {/* Mockup Header Section */}
-        <header className="flex flex-col items-center text-center mb-16">
-          <motion.h2
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-base md:text-lg font-serif font-black text-stone-800 leading-snug mb-2"
-          >
-            Vous avez reçu une carte postale de la part de
-          </motion.h2>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-            className="font-handwriting text-7xl md:text-8xl text-teal-600 mb-6 drop-shadow-sm"
-          >
-            {senderName}
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="flex items-center gap-2 text-teal-600 font-bold text-[10px] md:text-xs uppercase tracking-[0.2em] mb-10"
-          >
-            <MapPin size={14} className="fill-teal-600/10" />
-            <span>
-              ENVOYÉE DE {location || "L'INCONNU"}, LE {date}
-            </span>
-          </motion.div>
-
-          {/* Page Tabs - CARTE / LECTURE */}
+        {/* Navigation Tabs - Removed Redundant header as per user request */}
+        <div className="flex justify-center mb-10">
           <div className="flex bg-white rounded-2xl p-1.5 shadow-sm border border-stone-200/50">
             <button className="px-8 py-2.5 rounded-xl bg-teal-600 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-teal-500/20">
               <Mail size={14} />
@@ -208,7 +178,7 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
               LECTURE
             </button>
           </div>
-        </header>
+        </div>
 
         {/* Flippable Hero Postcard Section */}
         <section className="relative mb-16" style={{ perspective: '1000px' }}>
@@ -329,8 +299,32 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
                     </div>
 
                     {/* Back MiniMap in Bottom Right */}
-                    <div className="absolute bottom-2 right-2 w-40 h-40 md:w-64 md:h-64 rounded-xl overflow-hidden border-4 border-white shadow-xl transform rotate-1 z-20">
-                      <MiniMap coords={coords || { lat: 0, lng: 0 }} zoom={10} />
+                    <div
+                      className="absolute bottom-2 right-2 w-40 h-40 md:w-64 md:h-64 rounded-xl overflow-hidden border-4 border-white shadow-xl transform rotate-1 z-20 group/map cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation() // Prevents flipping the card when interacting with the map
+                        setIsMapModalOpen(true)
+                      }}
+                    >
+                      {coords && (
+                        <div className="w-full h-full relative">
+                          <div className="absolute inset-0 bg-black/0 group-hover/map:bg-black/10 transition-colors z-10 flex items-center justify-center pointer-events-none">
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              whileHover={{ opacity: 1, scale: 1 }}
+                              className="bg-white/90 p-3 rounded-full shadow-lg text-teal-600"
+                            >
+                              <MapIcon size={24} />
+                            </motion.div>
+                          </div>
+                          <MiniMap
+                            coords={coords}
+                            zoom={12}
+                            className="w-full h-full grayscale-[0.3]"
+                            photoLocations={photoLocations}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -413,18 +407,15 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="aspect-[16/9] bg-white p-2 rounded-[2rem] shadow-xl border border-stone-200/40 relative group cursor-pointer"
-              onClick={() => setIsMapModalOpen(true)}
+              className="aspect-[16/9] bg-white p-2 rounded-[2rem] shadow-xl border border-stone-200/40 relative group"
             >
               <div className="w-full h-full rounded-3xl overflow-hidden grayscale-[0.2] contrast-[1.1]">
-                <MiniMap coords={coords} zoom={12} photoLocations={photoLocations} />
-              </div>
-              {/* Map Overlay Button */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5 rounded-3xl">
-                <div className="bg-white px-6 py-2.5 rounded-full shadow-2xl font-bold text-xs uppercase tracking-widest text-stone-800 flex items-center gap-2">
-                  <Compass size={16} className="text-teal-500" />
-                  Explorer la carte
-                </div>
+                <MiniMap
+                  coords={coords}
+                  zoom={10}
+                  photoLocations={photoLocations}
+                  interactive={true}
+                />
               </div>
             </motion.div>
           </section>
