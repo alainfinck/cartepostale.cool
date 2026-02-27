@@ -356,6 +356,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
   // Motion values for rotation
   const rotateY = useMotionValue(flipped ? 180 : 0)
+  const frontOpacity = useTransform(rotateY, [0, 180], [1, 0])
+  const backOpacity = useTransform(rotateY, [0, 180], [0, 1])
 
   useEffect(() => {
     if (flipped !== undefined) {
@@ -1061,7 +1063,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
           <motion.div
             className={cn('relative w-full h-full transform-style-3d')}
             style={{
-              rotateY: springRotateY,
+              rotateY,
               transformStyle: 'preserve-3d',
             }}
           >
