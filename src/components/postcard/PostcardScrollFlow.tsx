@@ -23,6 +23,7 @@ import ARButton from '@/components/ar/ARButton'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { getOptimizedImageUrl } from '@/lib/image-processing'
 import { CoolMode } from '@/components/ui/cool-mode'
 import { useSessionId } from '@/hooks/useSessionId'
 import { getReactions, getUserReactions, toggleReaction } from '@/actions/social-actions'
@@ -64,7 +65,7 @@ const GalleryImage = ({
       >
         <div className="w-full h-full relative overflow-hidden rounded-[2rem] bg-stone-50/50">
           <Image
-            src={item.url}
+            src={getOptimizedImageUrl(item.url, { width: 400, fit: 'cover' })}
             alt=""
             fill
             sizes="(max-width: 768px) 50vw, 33vw"
@@ -97,6 +98,11 @@ const GalleryImage = ({
                   )}
                   strokeWidth={isLiked ? 0 : 2.5}
                 />
+                {likeCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-sm border border-white">
+                    {likeCount}
+                  </span>
+                )}
               </button>
             </CoolMode>
           </div>
@@ -185,54 +191,82 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
   } = postcard
 
   const sessionId = useSessionId()
-  const [counts, setCounts] = useState<Record<string, number>>({})
-  const [userReactions, setUserReactions] = useState<Record<string, boolean>>({})
+  const [counts, setCounts] = useState<Record<string, number>>({}) // Key: "emoji" or "emoji_mediaItemId"
+  const [userReactions, setUserReactions] = useState<Record<string, boolean>>({}) // Key: "emoji" or "emoji_mediaItemId"
 
   useEffect(() => {
     if (!postcardId || !sessionId) return
     const load = async () => {
+      // Load postcard-level reactions
       const [reactionsData, userReactionsData] = await Promise.all([
         getReactions(postcardId),
         getUserReactions(postcardId, sessionId),
       ])
-      setCounts(reactionsData.counts)
-      setUserReactions(userReactionsData)
+
+      const newCounts = { ...reactionsData.counts }
+      const newUserReactions = { ...userReactionsData }
+
+      // Load reactions for each media item
+      if (mediaItems.length > 0) {
+        const mediaReactions = await Promise.all(
+          mediaItems.map((item) =>
+            Promise.all([
+              getReactions(postcardId, item.id),
+              getUserReactions(postcardId, sessionId, item.id),
+            ]),
+          ),
+        )
+
+        mediaItems.forEach((item, idx) => {
+          const [rData, urData] = mediaReactions[idx]
+          Object.entries(rData.counts).forEach(([emoji, count]) => {
+            newCounts[`${emoji}_${item.id}`] = count
+          })
+          Object.entries(urData).forEach(([emoji, active]) => {
+            newUserReactions[`${emoji}_${item.id}`] = active
+          })
+        })
+      }
+
+      setCounts(newCounts)
+      setUserReactions(newUserReactions)
     }
     load()
-  }, [postcardId, sessionId])
+  }, [postcardId, sessionId, mediaItems])
 
-  const handleToggleReaction = async (emoji: string) => {
+  const handleToggleReaction = async (emoji: string, mediaItemId?: string) => {
     if (!postcardId || !sessionId) return
 
-    const wasActive = userReactions[emoji]
-    const currentCount = counts[emoji] || 0
+    const key = mediaItemId ? `${emoji}_${mediaItemId}` : emoji
+    const wasActive = userReactions[key]
+    const currentCount = counts[key] || 0
     const newCount = wasActive ? currentCount - 1 : currentCount + 1
 
     // Optimistic update
-    setCounts((prev) => ({ ...prev, [emoji]: newCount }))
+    setCounts((prev) => ({ ...prev, [key]: newCount }))
     setUserReactions((prev) => {
       const next = { ...prev }
-      if (!wasActive) next[emoji] = true
-      else delete next[emoji]
+      if (!wasActive) next[key] = true
+      else delete next[key]
       return next
     })
 
     try {
-      const result = await toggleReaction(postcardId, emoji, sessionId)
-      setCounts((prev) => ({ ...prev, [emoji]: result.newCount }))
+      const result = await toggleReaction(postcardId, emoji, sessionId, mediaItemId)
+      setCounts((prev) => ({ ...prev, [key]: result.newCount }))
       setUserReactions((prev) => {
         const next = { ...prev }
-        if (result.added) next[emoji] = true
-        else delete next[emoji]
+        if (result.added) next[key] = true
+        else delete next[key]
         return next
       })
     } catch {
       // Revert on error
-      setCounts((prev) => ({ ...prev, [emoji]: currentCount }))
+      setCounts((prev) => ({ ...prev, [key]: currentCount }))
       setUserReactions((prev) => {
         const next = { ...prev }
-        if (wasActive) next[emoji] = true
-        else delete next[emoji]
+        if (wasActive) next[key] = true
+        else delete next[key]
         return next
       })
     }
@@ -247,6 +281,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
     'dancing' | 'greatVibes' | 'parisienne' | 'sans' | 'serif' | 'indieFlower' | 'gochiHand'
   >('dancing')
   const [isFontMenuOpen, setIsFontMenuOpen] = useState(false)
+  const [showMapPhotos, setShowMapPhotos] = useState(true)
 
   const messageRef = useRef<HTMLDivElement>(null)
   const albumRef = useRef<HTMLDivElement>(null)
@@ -408,7 +443,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
               >
                 <div className="w-full h-full overflow-hidden rounded-xl relative bg-stone-100">
                   <Image
-                    src={frontImage}
+                    src={getOptimizedImageUrl(frontImage, { width: 1200 })}
                     alt="Carte Postale Front"
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -745,13 +780,106 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
               </h2>
             </div>
 
+            {/* Font & Style Controls for main message */}
+            <div className="flex items-center gap-4 mb-8">
+              <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setBackTextScale((s) => Math.max(0.6, Number((s - 0.08).toFixed(2))))
+                  }
+                  className="w-9 h-9 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-r border-stone-100"
+                >
+                  <Minus size={18} strokeWidth={2.5} />
+                </button>
+                <span className="px-2 text-xs font-bold text-stone-500 select-none">A</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setBackTextScale((s) => Math.min(1.5, Number((s + 0.08).toFixed(2))))
+                  }
+                  className="w-9 h-9 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-l border-stone-100"
+                >
+                  <Plus size={18} strokeWidth={2.5} />
+                </button>
+              </div>
+
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsFontMenuOpen(!isFontMenuOpen)}
+                  className={cn(
+                    'h-9 flex items-center justify-center px-4 rounded-xl border shadow-sm transition-all',
+                    isFontMenuOpen
+                      ? 'bg-teal-50 border-teal-200 text-teal-700'
+                      : 'bg-white/90 border-stone-200 text-stone-600',
+                  )}
+                >
+                  <span
+                    className="text-xs font-bold pt-0.5"
+                    style={{
+                      fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)
+                        ?.fontFamily,
+                    }}
+                  >
+                    Aa
+                  </span>
+                  <ChevronDown size={14} className="ml-2 opacity-50" />
+                </button>
+                <AnimatePresence>
+                  {isFontMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute top-full left-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-stone-200 z-[100] py-1.5"
+                    >
+                      {BACK_MESSAGE_FONTS.map((font) => (
+                        <button
+                          key={font.id}
+                          onClick={() => {
+                            setBackMessageFont(font.id)
+                            setIsFontMenuOpen(false)
+                          }}
+                          className={cn(
+                            'w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-stone-50',
+                            backMessageFont === font.id && 'bg-teal-50 text-teal-700',
+                          )}
+                        >
+                          <span
+                            className="text-lg font-bold w-6 text-center"
+                            style={{ fontFamily: font.fontFamily }}
+                          >
+                            Aa
+                          </span>
+                          <span className="text-xs font-medium">{font.name}</span>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
             {/* Message Body */}
-            <div className="font-serif text-2xl md:text-4xl text-stone-700 leading-[1.8] md:leading-[1.9] mb-12 whitespace-pre-wrap italic">
+            <div
+              className="text-2xl md:text-4xl text-stone-700 leading-[1.8] md:leading-[1.9] mb-12 whitespace-pre-wrap italic transition-all duration-300"
+              style={{
+                fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily,
+                fontSize: `clamp(1.25rem, ${1.8 * backTextScale}rem, 4rem)`,
+              }}
+            >
               {message}
             </div>
 
             {/* Signature */}
-            <div className="font-handwriting text-5xl md:text-6xl text-teal-700 mb-20 decoration-teal-500/10">
+            <div
+              className="text-5xl md:text-6xl text-teal-700 mb-20 decoration-teal-500/10 transition-all duration-300"
+              style={{
+                fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily,
+                fontSize: `clamp(2rem, ${3 * backTextScale}rem, 6rem)`,
+              }}
+            >
               — {senderName}
             </div>
 
@@ -775,15 +903,45 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
           </motion.div>
         </section>
 
-        {/* Map Section — moins de marge sur mobile pour carte plus grande */}
+        {/* Map Section */}
         {coords && (
           <section ref={mapSectionRef} className="mt-16 overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="flex items-center gap-4 mb-6 sm:mb-10 px-0 sm:px-4">
-              <div className="w-12 h-px bg-stone-300/50" />
-              <h3 className="text-[11px] font-black uppercase tracking-widest text-stone-400">
-                Localisation
-              </h3>
-              <div className="flex-1 h-px bg-stone-300/50" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-10 px-0 sm:px-4">
+              <div className="flex items-center gap-4 flex-1">
+                <div className="w-12 h-px bg-stone-300/50" />
+                <h3 className="text-[11px] font-black uppercase tracking-widest text-stone-400 whitespace-nowrap">
+                  Localisation
+                </h3>
+                <div className="flex-1 h-px bg-stone-300/50" />
+              </div>
+
+              {/* Photo Toggle relocated above map */}
+              {photoLocations.length > 0 && (
+                <button
+                  onClick={() => setShowMapPhotos(!showMapPhotos)}
+                  className={cn(
+                    'px-4 py-2 rounded-xl shadow-sm border-2 transition-all active:scale-95 flex items-center gap-2 font-bold text-[10px] uppercase tracking-widest h-fit self-end sm:self-auto',
+                    showMapPhotos
+                      ? 'bg-teal-600 text-white border-teal-400'
+                      : 'bg-white text-stone-600 border-stone-100',
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'w-6 h-3 rounded-full relative transition-colors',
+                      showMapPhotos ? 'bg-white/30' : 'bg-stone-200',
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'absolute top-0.5 w-2 h-2 rounded-full transition-all',
+                        showMapPhotos ? 'left-3.5 bg-white' : 'left-0.5 bg-white',
+                      )}
+                    />
+                  </div>
+                  Photos
+                </button>
+              )}
             </div>
             <motion.div
               initial={{ opacity: 0 }}
@@ -797,6 +955,9 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                   zoom={10}
                   photoLocations={photoLocations}
                   interactive={true}
+                  toggleOutside={true}
+                  showPhotos={showMapPhotos}
+                  onShowPhotosChange={setShowMapPhotos}
                 />
               </div>
             </motion.div>
@@ -822,10 +983,10 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                   onClick={() => setActivePhotoIndex(idx)}
                   onLike={(e) => {
                     e.stopPropagation()
-                    handleToggleReaction('❤️')
+                    handleToggleReaction('❤️', item.id)
                   }}
-                  isLiked={!!userReactions['❤️']}
-                  likeCount={counts['❤️'] || 0}
+                  isLiked={!!userReactions[`❤️_${item.id}`]}
+                  likeCount={counts[`❤️_${item.id}`] || 0}
                 />
               ))}
             </div>
@@ -834,57 +995,57 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
       </div>
 
       {/* Barre fixe compacte en bas */}
-      <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm z-50">
-        <div className="bg-white/70 backdrop-blur-xl rounded-2xl py-1.5 px-2 flex items-center justify-around shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-white/40">
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-50">
+        <div className="bg-white/80 backdrop-blur-2xl rounded-2xl py-2 px-3 flex items-center justify-around shadow-[0_12px_40px_rgba(0,0,0,0.15)] border border-white/50">
           <button
             onClick={() => scrollTo(messageRef)}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
+            className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
           >
-            <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
-              <Mail size={14} className="stroke-[2.5]" />
+            <div className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <Mail size={18} className="stroke-[2.5]" />
             </div>
-            <span className="text-[7px] font-black uppercase tracking-wider text-stone-500">
+            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-stone-500">
               Carte
             </span>
           </button>
 
           <ARButton
             postcard={postcard}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
+            className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all hover:bg-white/50 active:scale-95 group scale-110"
           />
 
           <button
             onClick={() => scrollTo(mapSectionRef)}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
+            className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
           >
-            <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
-              <MapIcon size={14} className="stroke-[2.5]" />
+            <div className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <MapIcon size={18} className="stroke-[2.5]" />
             </div>
-            <span className="text-[7px] font-black uppercase tracking-wider text-stone-500">
-              Carte
+            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-stone-500">
+              Localisation
             </span>
           </button>
 
           <button
             onClick={() => scrollTo('social-section')}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
+            className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
           >
-            <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
-              <MessageCircle size={14} className="stroke-[2.5]" />
+            <div className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <MessageCircle size={18} className="stroke-[2.5]" />
             </div>
-            <span className="text-[7px] font-black uppercase tracking-wider text-stone-500">
+            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-stone-500">
               Message
             </span>
           </button>
 
           <button
             onClick={() => scrollTo(albumRef)}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
+            className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
           >
-            <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
-              <ImageIcon size={14} className="stroke-[2.5]" />
+            <div className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <ImageIcon size={18} className="stroke-[2.5]" />
             </div>
-            <span className="text-[7px] font-black uppercase tracking-wider text-stone-500">
+            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-stone-500">
               Album
             </span>
           </button>
@@ -991,7 +1152,9 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                       ) : (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={mediaItems[activePhotoIndex].url}
+                          src={getOptimizedImageUrl(mediaItems[activePhotoIndex].url, {
+                            width: 1200,
+                          })}
                           alt=""
                           className="max-h-[60dvh] md:max-h-[70dvh] w-auto h-auto block object-contain"
                         />
@@ -1008,22 +1171,26 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                           }}
                         >
                           <button
-                            onClick={() => handleToggleReaction('❤️')}
+                            onClick={() =>
+                              handleToggleReaction('❤️', mediaItems[activePhotoIndex].id)
+                            }
                             className="w-14 h-14 rounded-full bg-white/90 backdrop-blur-md shadow-2xl border border-white/50 flex items-center justify-center transition-all hover:scale-110 active:scale-90 group/heart"
                           >
                             <Heart
                               size={28}
                               className={cn(
                                 'transition-all duration-300',
-                                userReactions['❤️']
+                                userReactions[`❤️_${mediaItems[activePhotoIndex].id}`]
                                   ? 'fill-red-500 text-red-500 scale-110'
                                   : 'text-stone-800',
                               )}
-                              strokeWidth={userReactions['❤️'] ? 0 : 2}
+                              strokeWidth={
+                                userReactions[`❤️_${mediaItems[activePhotoIndex].id}`] ? 0 : 2
+                              }
                             />
-                            {counts['❤️'] > 0 && (
+                            {counts[`❤️_${mediaItems[activePhotoIndex].id}`] > 0 && (
                               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-6 h-6 rounded-full flex items-center justify-center shadow-md border-2 border-white">
-                                {counts['❤️']}
+                                {counts[`❤️_${mediaItems[activePhotoIndex].id}`]}
                               </span>
                             )}
                           </button>

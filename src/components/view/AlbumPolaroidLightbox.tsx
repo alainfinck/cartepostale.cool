@@ -63,70 +63,8 @@ export default function AlbumPolaroidLightbox({
   const [counts, setCounts] = useState<Record<string, number>>({})
   const [userReactions, setUserReactions] = useState<Record<string, boolean>>({})
 
-  useEffect(() => {
-    if (!postcardId || !sessionId) return
-    const load = async () => {
-      const [reactionsData, userReactionsData] = await Promise.all([
-        getReactions(postcardId),
-        getUserReactions(postcardId, sessionId),
-      ])
-      setCounts(reactionsData.counts)
-      setUserReactions(userReactionsData)
-    }
-    load()
-  }, [postcardId, sessionId])
-
-  const handleToggleReaction = async (emoji: string) => {
-    if (!postcardId || !sessionId) return
-
-    const wasActive = userReactions[emoji]
-    const currentCount = counts[emoji] || 0
-    const newCount = wasActive ? currentCount - 1 : currentCount + 1
-
-    // Optimistic update
-    setCounts((prev) => ({ ...prev, [emoji]: newCount }))
-    setUserReactions((prev) => {
-      const next = { ...prev }
-      if (!wasActive) next[emoji] = true
-      else delete next[emoji]
-      return next
-    })
-
-    try {
-      const result = await toggleReaction(postcardId, emoji, sessionId)
-      setCounts((prev) => ({ ...prev, [emoji]: result.newCount }))
-      setUserReactions((prev) => {
-        const next = { ...prev }
-        if (result.added) next[emoji] = true
-        else delete next[emoji]
-        return next
-      })
-    } catch {
-      // Revert
-      setCounts((prev) => ({ ...prev, [emoji]: currentCount }))
-      setUserReactions((prev) => {
-        const next = { ...prev }
-        if (wasActive) next[emoji] = true
-        else delete next[emoji]
-        return next
-      })
-    }
-  }
   const [viewMode, setViewMode] = useState<'diapo' | 'full'>('full')
   const [displayWidth, setDisplayWidth] = useState(DISPLAY_MAX_WIDTH)
-
-  useEffect(() => {
-    const updateWidth = () => {
-      const w =
-        typeof window !== 'undefined'
-          ? window.innerWidth * (window.devicePixelRatio || 1)
-          : DISPLAY_MAX_WIDTH
-      setDisplayWidth(Math.min(DISPLAY_MAX_WIDTH, Math.round(w)))
-    }
-    updateWidth()
-    window.addEventListener('resize', updateWidth)
-    return () => window.removeEventListener('resize', updateWidth)
-  }, [])
 
   const sortedMediaItems = useMemo(() => {
     const items = [...mediaItems]
@@ -140,6 +78,59 @@ export default function AlbumPolaroidLightbox({
     }
     return items
   }, [mediaItems])
+
+  useEffect(() => {
+    if (!postcardId || !sessionId) return
+    const load = async () => {
+      // Load current item reactions
+      const currentItem = sortedMediaItems[selectedIndex]
+      const [reactionsData, userReactionsData] = await Promise.all([
+        getReactions(postcardId, currentItem.id),
+        getUserReactions(postcardId, sessionId, currentItem.id),
+      ])
+
+      setCounts((prev) => ({ ...prev, [`❤️_${currentItem.id}`]: reactionsData.counts['❤️'] || 0 }))
+      setUserReactions((prev) => ({ ...prev, [`❤️_${currentItem.id}`]: !!userReactionsData['❤️'] }))
+    }
+    load()
+  }, [postcardId, sessionId, selectedIndex, sortedMediaItems])
+
+  const handleToggleReaction = async (emoji: string) => {
+    if (!postcardId || !sessionId) return
+    const currentItem = sortedMediaItems[selectedIndex]
+    const key = `${emoji}_${currentItem.id}`
+
+    const wasActive = userReactions[key]
+    const currentCount = counts[key] || 0
+    const newCount = wasActive ? currentCount - 1 : currentCount + 1
+
+    // Optimistic update
+    setCounts((prev) => ({ ...prev, [key]: newCount }))
+    setUserReactions((prev) => ({ ...prev, [key]: !wasActive }))
+
+    try {
+      const result = await toggleReaction(postcardId, emoji, sessionId, currentItem.id)
+      setCounts((prev) => ({ ...prev, [key]: result.newCount }))
+      setUserReactions((prev) => ({ ...prev, [key]: result.added }))
+    } catch {
+      // Revert
+      setCounts((prev) => ({ ...prev, [key]: currentCount }))
+      setUserReactions((prev) => ({ ...prev, [key]: wasActive }))
+    }
+  }
+
+  useEffect(() => {
+    const updateWidth = () => {
+      const w =
+        typeof window !== 'undefined'
+          ? window.innerWidth * (window.devicePixelRatio || 1)
+          : DISPLAY_MAX_WIDTH
+      setDisplayWidth(Math.min(DISPLAY_MAX_WIDTH, Math.round(w)))
+    }
+    updateWidth()
+    window.addEventListener('resize', updateWidth)
+    return () => window.removeEventListener('resize', updateWidth)
+  }, [])
 
   useEffect(() => {
     setIsFlipped(false)
