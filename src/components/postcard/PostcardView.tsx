@@ -401,7 +401,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
   const [isFontMenuOpen, setIsFontMenuOpen] = useState(false)
   // Zoom de la mini-carte au verso (pour que + / - fonctionnent sans déclencher le flip)
   const [backMapZoom, setBackMapZoom] = useState(6)
-  const [showPhotosOnMap, setShowPhotosOnMap] = useState(true)
+  const [showPhotosOnMap, setShowPhotosOnMap] = useState(false)
   const [isActionsOpen, setIsActionsOpen] = useState(defaultActionsOpen)
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false)
@@ -610,7 +610,11 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     const newFlippedState = !isFlipped
     setIsFlipped(newFlippedState)
     setHasBeenFlipped(true)
-    rotateY.set(newFlippedState ? 180 : 0)
+    animate(rotateY, newFlippedState ? 180 : 0, {
+      type: 'spring',
+      stiffness: 40,
+      damping: 15,
+    })
   }
 
   const openAlbum = (e: React.MouseEvent) => {
@@ -1030,25 +1034,6 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         className="flex flex-col items-center gap-2 select-none w-full max-w-full"
         suppressHydrationWarning
       >
-        <AnimatePresence>
-          {isFlipped && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ delay: 0.1 }}
-              className="flex justify-center pointer-events-none z-20 w-full mb-1 sm:mb-2"
-            >
-              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 backdrop-blur-sm border border-stone-200/80 text-teal-700 shadow-sm">
-                <Search size={12} className="shrink-0 text-teal-500/80" strokeWidth={2.5} />
-                <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.1em] whitespace-nowrap">
-                  Cliquez sur le texte ou la carte pour agrandir
-                </span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         <motion.div
           className={cn(
             'perspective-1000 group transition-shadow duration-300 relative z-10 flex-shrink-0', // z-10 for layering; no cursor-grab so card only flips via button
@@ -1462,7 +1447,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             {/* Back of Card — masqué en mode recto (Safari: backface-visibility insuffisant) */}
             <motion.div
               className={cn(
-                'absolute w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#FCF5EB] paper-texture flex flex-col overflow-hidden',
+                'absolute inset-0 w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#FDFBF7] paper-texture flex flex-col overflow-hidden',
                 isLarge ? 'p-3 sm:p-8 pl-5 sm:pl-10' : 'p-3 sm:p-8 pl-4 sm:pl-8',
                 !isFlipped ? 'pointer-events-none' : '',
               )}
@@ -1487,7 +1472,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               <div
                 className={cn(
                   'absolute top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50 transition-opacity duration-300',
-                  isLarge ? 'left-[66%]' : 'left-[60%]',
+                  isLarge ? 'left-[45%]' : 'left-[42%]',
                 )}
               ></div>
 
@@ -1804,7 +1789,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 <div
                   className={cn(
                     'min-w-0 flex flex-col justify-start relative pl-[2px] sm:pl-[2px] pr-2 sm:pr-4 mt-8 sm:mt-10', // Added mt to clear top controls
-                    isLarge ? 'flex-[1.5]' : 'flex-[1.2]',
+                    isLarge ? 'flex-[0.8]' : 'flex-[0.7]',
                   )}
                 >
                   {/* Infos en haut (Lieu & Date) */}
@@ -2100,6 +2085,13 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                       </p>
                     </div>
                   )}
+
+                  {/* Decorative address lines */}
+                  <div className="px-2 sm:px-3 space-y-4 md:space-y-6 mt-4">
+                    <div className="h-px bg-stone-300/30 w-full" />
+                    <div className="h-px bg-stone-300/30 w-full" />
+                    <div className="h-px bg-stone-300/30 w-full" />
+                  </div>
 
                   {/* Mini carte au verso : avec label de lieu et toggle PHOTOS au-dessus */}
                   {!postcard.hideMap && (postcard.coords || postcard.location) && (
