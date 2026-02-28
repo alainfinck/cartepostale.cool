@@ -16,6 +16,7 @@ import {
   Plus,
   RotateCw,
   Heart,
+  MessageCircle,
 } from 'lucide-react'
 import ARButton from '@/components/ar/ARButton'
 import dynamic from 'next/dynamic'
@@ -199,8 +200,21 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
   const messageRef = useRef<HTMLDivElement>(null)
   const albumRef = useRef<HTMLDivElement>(null)
   const mapSectionRef = useRef<HTMLDivElement>(null)
+  const socialRef = useRef<HTMLDivElement>(null)
 
-  const scrollTo = (ref: React.RefObject<HTMLDivElement | null>) => {
+  const scrollTo = (ref: React.RefObject<HTMLDivElement | null> | string) => {
+    if (typeof ref === 'string') {
+      const el = document.getElementById(ref)
+      if (el) {
+        const offset = 20
+        const bodyRect = document.body.getBoundingClientRect().top
+        const elementRect = el.getBoundingClientRect().top
+        const elementPosition = elementRect - bodyRect
+        const offsetPosition = elementPosition - offset
+        window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
+      }
+      return
+    }
     if (!ref.current) return
     const offset = 20
     const bodyRect = document.body.getBoundingClientRect().top
@@ -728,7 +742,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
           />
 
           <button
-            onClick={() => (coords ? scrollTo(mapSectionRef) : setIsMapModalOpen(true))}
+            onClick={() => scrollTo(mapSectionRef)}
             className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-stone-50 active:scale-90 group"
           >
             <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
@@ -736,6 +750,18 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
             </div>
             <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">
               Carte
+            </span>
+          </button>
+
+          <button
+            onClick={() => scrollTo('social-section')}
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-stone-50 active:scale-90 group"
+          >
+            <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <MessageCircle size={16} className="stroke-[2.5]" />
+            </div>
+            <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">
+              Message
             </span>
           </button>
 

@@ -1,11 +1,21 @@
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
+import Link from 'next/link'
+import { Sparkles, Mail } from 'lucide-react'
 import { getPostcardByPublicId } from '@/actions/postcard-actions'
 import { Postcard as PayloadPostcard, Media } from '@/payload-types'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
 import { PostcardTracking } from '@/components/analytics/PostcardTracking'
 import { demoPostcards } from '@/data/demoPostcards'
+import { isCoordinate } from '@/lib/utils'
+import { unstable_cache } from 'next/cache'
+import EnvelopeExperience from '@/components/view/EnvelopeExperience'
+import EnvelopeHero from '@/components/view/EnvelopeHero'
+import ViewPageTitle from '@/components/view/ViewPageTitle'
+import PostcardScrollFlow from '@/components/postcard/PostcardScrollFlow'
+import PostcardEmbedView from '@/components/view/PostcardEmbedView'
+import SocialBar from '@/components/social/SocialBar'
 
 // Showcase postcards extracted from GalerieClient
 const SHOWCASE_POSTCARDS: FrontendPostcard[] = [
@@ -202,8 +212,6 @@ function normalizeMediaUrl(url: string): string {
   return url
 }
 
-import { unstable_cache } from 'next/cache'
-
 // Geocode location string via Nominatim (when postcard has location but no coords)
 // Wrapped in unstable_cache to avoid repeated external API calls
 const cachedGeocodeLocation = unstable_cache(
@@ -245,9 +253,6 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
   if (!frontImageUrl || frontImageUrl.includes('placeholder')) {
     frontImageUrl = 'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg'
   }
-
-  // L'optimisation dynamique est gérée par les composants clients (ex: Next Image avec loader Cloudflare)
-  // frontImageUrl = getOptimizedImageUrl(frontImageUrl, { width: 1920 })
 
   const mediaItems: MediaItem[] = []
   for (const item of (payloadPostcard.mediaItems || []) as any[]) {
@@ -317,8 +322,6 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
     eventType: (payloadPostcard as any).eventType ?? undefined,
   }
 }
-
-import { isCoordinate } from '@/lib/utils'
 
 /** URL d’image Open Graph : utilise Cloudflare cdn-cgi/image pour img.cartepostale.cool */
 function ogImageUrl(url: string): string {
@@ -422,13 +425,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-import EnvelopeExperience from '@/components/view/EnvelopeExperience'
-import EnvelopeHero from '@/components/view/EnvelopeHero'
-import ViewPageTitle from '@/components/view/ViewPageTitle'
-import PostcardScrollFlow from '@/components/postcard/PostcardScrollFlow'
-import PostcardEmbedView from '@/components/view/PostcardEmbedView'
-import SocialBar from '@/components/social/SocialBar'
-
 export default async function PostcardPage({ params, searchParams }: PageProps) {
   const { slug } = await params
   const resolvedSearchParams = (await (searchParams ?? Promise.resolve({}))) as SearchParams
@@ -506,7 +502,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
       <div className="flex flex-col items-center">
         <PostcardScrollFlow postcard={frontendPostcard} postcardId={payloadPostcardId} />
 
-        <div className="w-full mt-12 mb-20">
+        <div id="social-section" className="w-full mt-12 mb-20">
           <SocialBar
             postcardId={payloadPostcardId || 0}
             publicId={slug}
@@ -516,6 +512,41 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
             coords={frontendPostcard.coords}
             isDemo={isDemo}
           />
+        </div>
+
+        <div className="w-full mt-24 pb-32 flex flex-col items-center">
+          <div className="w-full max-w-md mx-auto px-6 py-12 rounded-[2.5rem] bg-gradient-to-br from-teal-500 to-teal-600 shadow-2xl shadow-teal-500/20 text-center relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-700" />
+            <div className="relative z-10">
+              <Sparkles className="mx-auto text-teal-100 mb-4 animate-pulse" size={32} />
+              <h3 className="text-xl sm:text-2xl font-serif font-bold text-white mb-2">
+                Envie d&apos;envoyer un sourire ?
+              </h3>
+              <p className="text-teal-50 text-sm mb-8 opacity-90 max-w-[280px] mx-auto">
+                Créez vous aussi une carte postale magique avec vos photos et vidéos !
+              </p>
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-white text-teal-600 rounded-full font-bold text-sm shadow-xl hover:bg-teal-50 transition-all hover:scale-105 active:scale-95"
+              >
+                Créer ma carte postale
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-20 opacity-40 hover:opacity-100 transition-opacity duration-500">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="bg-stone-800 p-2 rounded-xl">
+                <Mail className="text-white" size={20} />
+              </div>
+              <span className="font-serif font-bold text-xl text-stone-800 tracking-tight">
+                cartepostale.cool
+              </span>
+            </Link>
+            <p className="text-center text-[10px] font-bold text-stone-400 uppercase tracking-[0.3em] mt-3">
+              &copy; 2026 — Des sourires en boîte
+            </p>
+          </div>
         </div>
       </div>
     </EnvelopeExperience>
