@@ -427,6 +427,7 @@ import EnvelopeHero from '@/components/view/EnvelopeHero'
 import ViewPageTitle from '@/components/view/ViewPageTitle'
 import PostcardScrollFlow from '@/components/postcard/PostcardScrollFlow'
 import PostcardEmbedView from '@/components/view/PostcardEmbedView'
+import SocialBar from '@/components/social/SocialBar'
 
 export default async function PostcardPage({ params, searchParams }: PageProps) {
   const { slug } = await params
@@ -443,6 +444,9 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
 
   let frontendPostcard: FrontendPostcard
   let isDemo = false
+  let payloadPostcardId: number | undefined
+  let payloadPostcardViews = 0
+  let payloadPostcardShares = 0
 
   if (demoPostcard) {
     frontendPostcard = { ...demoPostcard }
@@ -453,6 +457,9 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
       notFound()
     }
     frontendPostcard = mapPostcard(payloadPostcard)
+    payloadPostcardId = payloadPostcard.id
+    payloadPostcardViews = payloadPostcard.views || 0
+    payloadPostcardShares = payloadPostcard.shares || 0
   }
 
   // Geocode when we have location but no coords so the back map can display
@@ -466,7 +473,7 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
     return (
       <div className="min-h-screen w-full">
         {!isDemo && <PostcardTracking postcardId={slug} senderName={frontendPostcard.senderName} />}
-        <PostcardEmbedView postcard={frontendPostcard} views={0} />
+        <PostcardEmbedView postcard={frontendPostcard} views={payloadPostcardViews} />
       </div>
     )
   }
@@ -496,7 +503,21 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
       frontImage={frontendPostcard.frontImage}
     >
       {!isDemo && <PostcardTracking postcardId={slug} senderName={frontendPostcard.senderName} />}
-      <PostcardScrollFlow postcard={frontendPostcard} />
+      <div className="flex flex-col items-center">
+        <PostcardScrollFlow postcard={frontendPostcard} postcardId={payloadPostcardId} />
+
+        <div className="w-full mt-12 mb-20">
+          <SocialBar
+            postcardId={payloadPostcardId || 0}
+            publicId={slug}
+            senderName={frontendPostcard.senderName}
+            initialViews={payloadPostcardViews}
+            initialShares={payloadPostcardShares}
+            coords={frontendPostcard.coords}
+            isDemo={isDemo}
+          />
+        </div>
+      </div>
     </EnvelopeExperience>
   )
 }

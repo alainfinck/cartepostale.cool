@@ -3,11 +3,15 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MediaItem } from '@/types'
-import { ChevronLeft, ChevronRight, X, StickyNote, MapPin, RotateCw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X, StickyNote, MapPin, RotateCw, Heart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getOptimizedImageUrl, DISPLAY_MAX_WIDTH } from '@/lib/image-processing'
 
 import dynamic from 'next/dynamic'
+import { useSessionId } from '@/hooks/useSessionId'
+import { getReactions, getUserReactions, toggleReaction } from '@/actions/social-actions'
+import { CoolMode } from '@/components/ui/cool-mode'
+
 const MiniMap = dynamic(() => import('@/components/postcard/MiniMap'), { ssr: false })
 
 export interface AlbumPolaroidLightboxProps {
@@ -15,6 +19,7 @@ export interface AlbumPolaroidLightboxProps {
   senderName: string
   initialIndex?: number
   onClose: () => void
+  postcardId?: number
   /** Contenu optionnel en haut à gauche (ex. bouton "Ajouter une photo") */
   extraTopLeft?: React.ReactNode
 }
@@ -45,6 +50,7 @@ export default function AlbumPolaroidLightbox({
   senderName,
   initialIndex = 0,
   onClose,
+  postcardId,
   extraTopLeft,
 }: AlbumPolaroidLightboxProps) {
   const [selectedIndex, setSelectedIndex] = useState(
@@ -52,6 +58,60 @@ export default function AlbumPolaroidLightbox({
   )
   const [isFlipped, setIsFlipped] = useState(false)
   const [slideDirection, setSlideDirection] = useState(0)
+
+  const sessionId = useSessionId()
+  const [counts, setCounts] = useState<Record<string, number>>({})
+  const [userReactions, setUserReactions] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    if (!postcardId || !sessionId) return
+    const load = async () => {
+      const [reactionsData, userReactionsData] = await Promise.all([
+        getReactions(postcardId),
+        getUserReactions(postcardId, sessionId),
+      ])
+      setCounts(reactionsData.counts)
+      setUserReactions(userReactionsData)
+    }
+    load()
+  }, [postcardId, sessionId])
+
+  const handleToggleReaction = async (emoji: string) => {
+    if (!postcardId || !sessionId) return
+
+    const wasActive = userReactions[emoji]
+    const currentCount = counts[emoji] || 0
+    const newCount = wasActive ? currentCount - 1 : currentCount + 1
+
+    // Optimistic update
+    setCounts((prev) => ({ ...prev, [emoji]: newCount }))
+    setUserReactions((prev) => {
+      const next = { ...prev }
+      if (!wasActive) next[emoji] = true
+      else delete next[emoji]
+      return next
+    })
+
+    try {
+      const result = await toggleReaction(postcardId, emoji, sessionId)
+      setCounts((prev) => ({ ...prev, [emoji]: result.newCount }))
+      setUserReactions((prev) => {
+        const next = { ...prev }
+        if (result.added) next[emoji] = true
+        else delete next[emoji]
+        return next
+      })
+    } catch {
+      // Revert
+      setCounts((prev) => ({ ...prev, [emoji]: currentCount }))
+      setUserReactions((prev) => {
+        const next = { ...prev }
+        if (wasActive) next[emoji] = true
+        else delete next[emoji]
+        return next
+      })
+    }
+  }
   const [viewMode, setViewMode] = useState<'diapo' | 'full'>('full')
   const [displayWidth, setDisplayWidth] = useState(DISPLAY_MAX_WIDTH)
 
@@ -324,6 +384,42 @@ export default function AlbumPolaroidLightbox({
                         </button>
                       </div>
                     )}
+                  </div>
+
+                  {/* Polaroid Like Button */}
+                  <div className="absolute top-4 right-4 z-40">
+                    <CoolMode
+                      options={{
+                        particle: '❤️',
+                        size: 32,
+                        particleCount: 6,
+                        effect: 'balloon',
+                      }}
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleToggleReaction('❤️')
+                        }}
+                        className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-md shadow-xl border border-white/50 flex items-center justify-center transition-all hover:scale-110 active:scale-90 group/heart"
+                      >
+                        <Heart
+                          size={24}
+                          className={cn(
+                            'transition-all duration-300',
+                            userReactions['❤️']
+                              ? 'fill-red-500 text-red-500 scale-110'
+                              : 'text-stone-800',
+                          )}
+                          strokeWidth={userReactions['❤️'] ? 0 : 2}
+                        />
+                        {counts['❤️'] > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md border border-white">
+                            {counts['❤️']}
+                          </span>
+                        )}
+                      </button>
+                    </CoolMode>
                   </div>
                 </div>
               ) : (

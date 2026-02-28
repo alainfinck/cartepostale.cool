@@ -14,14 +14,33 @@ import {
   ChevronRight,
   Minus,
   Plus,
+  RotateCw,
+  Heart,
 } from 'lucide-react'
 import ARButton from '@/components/ar/ARButton'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { CoolMode } from '@/components/ui/cool-mode'
+import { useSessionId } from '@/hooks/useSessionId'
+import { getReactions, getUserReactions, toggleReaction } from '@/actions/social-actions'
 
 // Helper component for smooth image loading in the gallery
-const GalleryImage = ({ item, idx, onClick }: { item: any; idx: number; onClick: () => void }) => {
+const GalleryImage = ({
+  item,
+  idx,
+  onClick,
+  onLike,
+  isLiked,
+  likeCount,
+}: {
+  item: any
+  idx: number
+  onClick: () => void
+  onLike: (e: React.MouseEvent) => void
+  isLiked: boolean
+  likeCount: number
+}) => {
   const [isLoaded, setIsLoaded] = useState(false)
 
   return (
@@ -31,11 +50,11 @@ const GalleryImage = ({ item, idx, onClick }: { item: any; idx: number; onClick:
       whileHover={{ y: -5 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.4, delay: (idx % 2) * 0.05 }}
-      onClick={onClick}
       className="aspect-square rounded-[2.5rem] relative group cursor-pointer active:scale-95 transition-transform"
     >
       {/* The "Card" container only shows when loaded for maximum fluidity */}
       <div
+        onClick={onClick}
         className={cn(
           'w-full h-full p-2 bg-white shadow-md border border-stone-200/30 rounded-[2.5rem] transition-opacity duration-500',
           isLoaded ? 'opacity-100' : 'opacity-0',
@@ -53,6 +72,32 @@ const GalleryImage = ({ item, idx, onClick }: { item: any; idx: number; onClick:
             )}
             onLoad={() => setIsLoaded(true)}
           />
+
+          {/* Individual Photo Like Button */}
+          <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+            <CoolMode
+              options={{
+                particle: '❤️',
+                size: 20,
+                particleCount: 4,
+                effect: 'balloon',
+              }}
+            >
+              <button
+                onClick={onLike}
+                className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center transition-all hover:scale-110 active:scale-90"
+              >
+                <Heart
+                  size={16}
+                  className={cn(
+                    'transition-all duration-300',
+                    isLiked ? 'fill-red-500 text-red-500' : 'text-stone-400',
+                  )}
+                  strokeWidth={isLiked ? 0 : 2.5}
+                />
+              </button>
+            </CoolMode>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -76,9 +121,10 @@ const MapModal = dynamic(() => import('@/components/ui/MapModal'), {
 
 interface PostcardScrollFlowProps {
   postcard: Postcard
+  postcardId?: number
 }
 
-export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps) {
+export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScrollFlowProps) {
   const {
     senderName,
     date,
@@ -89,6 +135,60 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
     frontCaption,
     coords,
   } = postcard
+
+  const sessionId = useSessionId()
+  const [counts, setCounts] = useState<Record<string, number>>({})
+  const [userReactions, setUserReactions] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    if (!postcardId || !sessionId) return
+    const load = async () => {
+      const [reactionsData, userReactionsData] = await Promise.all([
+        getReactions(postcardId),
+        getUserReactions(postcardId, sessionId),
+      ])
+      setCounts(reactionsData.counts)
+      setUserReactions(userReactionsData)
+    }
+    load()
+  }, [postcardId, sessionId])
+
+  const handleToggleReaction = async (emoji: string) => {
+    if (!postcardId || !sessionId) return
+
+    const wasActive = userReactions[emoji]
+    const currentCount = counts[emoji] || 0
+    const newCount = wasActive ? currentCount - 1 : currentCount + 1
+
+    // Optimistic update
+    setCounts((prev) => ({ ...prev, [emoji]: newCount }))
+    setUserReactions((prev) => {
+      const next = { ...prev }
+      if (!wasActive) next[emoji] = true
+      else delete next[emoji]
+      return next
+    })
+
+    try {
+      const result = await toggleReaction(postcardId, emoji, sessionId)
+      setCounts((prev) => ({ ...prev, [emoji]: result.newCount }))
+      setUserReactions((prev) => {
+        const next = { ...prev }
+        if (result.added) next[emoji] = true
+        else delete next[emoji]
+        return next
+      })
+    } catch {
+      // Revert on error
+      setCounts((prev) => ({ ...prev, [emoji]: currentCount }))
+      setUserReactions((prev) => {
+        const next = { ...prev }
+        if (wasActive) next[emoji] = true
+        else delete next[emoji]
+        return next
+      })
+    }
+  }
 
   const [isFlipped, setIsFlipped] = useState(false)
   const [isMapModalOpen, setIsMapModalOpen] = useState(false)
@@ -184,7 +284,7 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
   }, [activePhotoIndex, nextPhoto, prevPhoto])
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f3f4f6] text-stone-900 pb-40">
+    <div className="flex flex-col min-h-screen bg-transparent text-stone-900 pb-40">
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
@@ -250,11 +350,20 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
                   />
 
                   {/* Flip Button Overlay */}
-                  <div className="absolute top-4 right-4">
-                    <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-lg text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-white/20">
-                      <Compass size={14} className="animate-spin-slow" />
-                      Cliquez pour retourner
-                    </div>
+                  <div className="absolute top-4 right-4 z-20">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIsFlipped(!isFlipped)
+                      }}
+                      className="bg-black/60 hover:bg-black/80 backdrop-blur-md px-4 py-2 rounded-xl text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-white/20 transition-all active:scale-95 group/btn shadow-xl"
+                    >
+                      <RotateCw
+                        size={14}
+                        className="group-hover/btn:rotate-180 transition-transform duration-500"
+                      />
+                      <span>Retourner la photo</span>
+                    </button>
                   </div>
 
                   {/* Floating Caption Pill */}
@@ -384,44 +493,106 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
                     </div>
 
                     {/* Back MiniMap in Bottom Right */}
-                    <div
-                      className="flex-1 w-full min-h-0 rounded-xl overflow-hidden border-4 border-white shadow-xl transform rotate-1 z-20 group/map cursor-pointer relative"
-                      onClick={(e) => {
-                        e.stopPropagation() // Prevents flipping the card when interacting with the map
-                        setIsMapModalOpen(true)
-                      }}
-                    >
-                      {coords && (
-                        <div className="w-full h-full relative">
-                          <div className="absolute inset-0 bg-black/0 group-hover/map:bg-black/10 transition-colors z-10 flex items-center justify-center pointer-events-none">
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              whileHover={{ opacity: 1, scale: 1 }}
-                              className="bg-white/90 p-3 rounded-full shadow-lg text-teal-600"
-                            >
-                              <MapIcon size={24} />
-                            </motion.div>
-                          </div>
-                          <MiniMap
-                            coords={coords}
-                            zoom={12}
-                            className="w-full h-full grayscale-[0.3]"
-                            photoLocations={photoLocations}
-                          />
+                    <div className="flex-1 w-full min-h-0 flex flex-col mt-4">
+                      {/* Note / Comment title if any */}
+                      {postcard.mediaItems?.some((m) => m.note) && (
+                        <div className="mb-2">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-stone-400 flex items-center gap-1.5">
+                            <ImageIcon size={10} className="text-teal-500" />
+                            Commentaires & Notes
+                          </p>
                         </div>
                       )}
+
+                      <div
+                        className="flex-1 w-full min-h-0 rounded-xl overflow-hidden border-4 border-white shadow-xl transform rotate-1 z-20 group/map cursor-pointer relative"
+                        onClick={(e) => {
+                          e.stopPropagation() // Prevents flipping the card when interacting with the map
+                          setIsMapModalOpen(true)
+                        }}
+                      >
+                        {coords && (
+                          <div className="w-full h-full relative">
+                            <div className="absolute inset-0 bg-black/0 group-hover/map:bg-black/10 transition-colors z-10 flex items-center justify-center pointer-events-none">
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                whileHover={{ opacity: 1, scale: 1 }}
+                                className="bg-white/90 p-3 rounded-full shadow-lg text-teal-600"
+                              >
+                                <MapIcon size={24} />
+                              </motion.div>
+                            </div>
+                            <MiniMap
+                              coords={coords}
+                              zoom={12}
+                              className="w-full h-full grayscale-[0.3]"
+                              photoLocations={photoLocations}
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Postmark Overlay (Simulated) */}
-                <div className="absolute top-10 right-28 opacity-20 pointer-events-none transform -rotate-12">
-                  <div className="w-20 h-20 md:w-32 md:h-32 rounded-full border-2 border-stone-800 flex items-center justify-center text-center p-2 font-mono text-[8px] md:text-[10px] font-bold uppercase">
-                    POSTE AERIENNE
-                    <br />
-                    {location || 'INCONNU'}
-                    <br />
-                    {date}
+                {/* Flip Button Back */}
+                <div className="absolute top-4 left-4 z-30" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={() => setIsFlipped(!isFlipped)}
+                    className="bg-white/90 hover:bg-white backdrop-blur-md px-3 py-1.5 rounded-lg text-stone-600 text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 border border-stone-200 shadow-sm transition-all active:scale-95 group/back"
+                  >
+                    <RotateCw
+                      size={12}
+                      className="group-hover/back:-rotate-180 transition-transform duration-500"
+                    />
+                    <span>Recto</span>
+                  </button>
+                </div>
+
+                {/* Postmark / Tampon Date — Redesigned as per request */}
+                <div className="absolute top-10 right-28 opacity-60 pointer-events-none transform -rotate-12 z-10">
+                  <div className="relative">
+                    <svg
+                      width="140"
+                      height="140"
+                      viewBox="0 0 140 140"
+                      className="text-stone-800/20 fill-current overflow-visible"
+                    >
+                      <circle
+                        cx="70"
+                        cy="70"
+                        r="55"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeDasharray="2 3"
+                      />
+                      <circle
+                        cx="70"
+                        cy="70"
+                        r="50"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                      <span className="text-[10px] font-black tracking-widest text-stone-600 uppercase mb-0.5">
+                        POSTAL
+                      </span>
+                      <div className="h-px w-8 bg-stone-300 my-1" />
+                      <span className="text-[9px] font-black text-teal-700 uppercase leading-none mb-1 max-w-[80px] truncate">
+                        {location || 'DESTINATION'}
+                      </span>
+                      <span className="text-[11px] font-black text-stone-900 tracking-tighter">
+                        {date?.split(' ').slice(0, 2).join(' ') || 'LE JOUR J'}
+                      </span>
+                      <span className="text-[9px] font-bold text-stone-500 mt-0.5">
+                        {date?.split(' ').slice(2).join(' ') || '2026'}
+                      </span>
+                      <div className="h-px w-8 bg-stone-300 my-1" />
+                      <span className="text-[7px] font-bold text-stone-400">CERTIFIÉ COOL</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -523,6 +694,12 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
                   item={item}
                   idx={idx}
                   onClick={() => setActivePhotoIndex(idx)}
+                  onLike={(e) => {
+                    e.stopPropagation()
+                    handleToggleReaction('❤️')
+                  }}
+                  isLiked={!!userReactions['❤️']}
+                  likeCount={counts['❤️'] || 0}
                 />
               ))}
             </div>
@@ -674,7 +851,7 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
                     }}
                     className="relative bg-white p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] shadow-2xl flex flex-col items-center pointer-events-auto touch-none"
                   >
-                    <div className="overflow-hidden rounded-xl md:rounded-[2rem] bg-stone-100 relative">
+                    <div className="overflow-hidden rounded-xl md:rounded-[2rem] bg-stone-100 relative group/slide">
                       {mediaItems[activePhotoIndex].type === 'video' ? (
                         <video
                           src={mediaItems[activePhotoIndex].url}
@@ -690,6 +867,39 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
                           className="max-h-[60dvh] md:max-h-[70dvh] w-auto h-auto block object-contain"
                         />
                       )}
+
+                      {/* Photo Like Button inside slideshow */}
+                      <div className="absolute bottom-6 right-6 z-[120] pointer-events-auto">
+                        <CoolMode
+                          options={{
+                            particle: '❤️',
+                            size: 32,
+                            particleCount: 6,
+                            effect: 'balloon',
+                          }}
+                        >
+                          <button
+                            onClick={() => handleToggleReaction('❤️')}
+                            className="w-14 h-14 rounded-full bg-white/90 backdrop-blur-md shadow-2xl border border-white/50 flex items-center justify-center transition-all hover:scale-110 active:scale-90 group/heart"
+                          >
+                            <Heart
+                              size={28}
+                              className={cn(
+                                'transition-all duration-300',
+                                userReactions['❤️']
+                                  ? 'fill-red-500 text-red-500 scale-110'
+                                  : 'text-stone-800',
+                              )}
+                              strokeWidth={userReactions['❤️'] ? 0 : 2}
+                            />
+                            {counts['❤️'] > 0 && (
+                              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-6 h-6 rounded-full flex items-center justify-center shadow-md border-2 border-white">
+                                {counts['❤️']}
+                              </span>
+                            )}
+                          </button>
+                        </CoolMode>
+                      </div>
                     </div>
                   </motion.div>
                 </AnimatePresence>

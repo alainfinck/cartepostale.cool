@@ -31,6 +31,8 @@ import {
   Link2,
   Heart,
   Eye,
+  Compass,
+  Image as ImageIcon,
 } from 'lucide-react'
 import { fireSideCannons } from '@/components/ui/confetti'
 import { cn, isCoordinate } from '@/lib/utils'
@@ -79,6 +81,7 @@ const ShareContributionModal = dynamic(
 
 interface PostcardViewProps {
   postcard: Postcard
+  postcardId?: number
   isPreview?: boolean
   flipped?: boolean
   frontTextBgOpacity?: number
@@ -170,6 +173,7 @@ const buildFrontImageFilterCss = (filter?: FrontImageFilter): string => {
 
 const PostcardView: React.FC<PostcardViewProps> = ({
   postcard,
+  postcardId,
   flipped,
   frontTextBgOpacity = 90,
   className,
@@ -904,6 +908,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             senderName={postcard.senderName}
             initialIndex={currentMediaIndex}
             onClose={() => setIsAlbumOpen(false)}
+            postcardId={postcardId}
             extraTopLeft={
               canContribute ? (
                 <>
@@ -1272,24 +1277,43 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </button>
               )}
 
+              {/* Explicit Flip Button (New) */}
+              {!isFullscreen && !onCaptionPositionChange && (
+                <div className="absolute top-4 right-4 z-40">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleFlip()
+                    }}
+                    className="bg-black/60 hover:bg-black/80 backdrop-blur-md px-4 py-2 rounded-xl text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-white/20 transition-all active:scale-95 group/btn shadow-xl"
+                  >
+                    <RotateCw
+                      size={14}
+                      className="group-hover/btn:rotate-180 transition-transform duration-500"
+                    />
+                    <span>Retourner la carte</span>
+                  </button>
+                </div>
+              )}
+
               {/* Message "Cliquer pour retourner" au survol (Front) — masqué en fullscreen, en mode éditeur (pour pouvoir déplacer le texte), ou via prop */}
               {!isFullscreen && !hideFlipHints && !onCaptionPositionChange && (
                 <div
                   className={cn(
-                    'absolute top-3 right-3 z-30 transition-all duration-500 pointer-events-none',
+                    'absolute top-4 left-4 z-30 transition-all duration-500 pointer-events-none',
                     !hasBeenFlipped
                       ? 'opacity-100 translate-y-0'
                       : 'opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0',
                   )}
                 >
-                  <div className="bg-stone-800/95 backdrop-blur-md px-3 py-2.5 rounded-xl border border-stone-600/50 shadow-xl flex items-center gap-2 transform transition-all duration-300">
-                    <RotateCw
-                      size={16}
-                      className={cn('text-white shrink-0', !hasBeenFlipped && 'animate-spin-slow')}
+                  <div className="bg-stone-800/20 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/10 flex items-center gap-2">
+                    <Compass
+                      size={14}
+                      className="text-white/60 animate-spin-slow"
                       strokeWidth={2}
                     />
-                    <span className="text-white font-bold uppercase tracking-wider text-[9px] sm:text-[10px] md:text-xs whitespace-nowrap">
-                      {!hasBeenFlipped ? 'Cliquez pour retourner' : 'Retourner la carte'}
+                    <span className="text-white/60 font-bold uppercase tracking-wider text-[10px]">
+                      {postcard.location || 'DESTINATION'}
                     </span>
                   </div>
                 </div>
@@ -1447,7 +1471,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             {/* Back of Card — masqué en mode recto (Safari: backface-visibility insuffisant) */}
             <motion.div
               className={cn(
-                'absolute inset-0 w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#FDFBF7] paper-texture flex flex-col overflow-hidden',
+                'absolute inset-0 w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#FAF9F6] paper-texture flex flex-col overflow-hidden',
                 isLarge ? 'p-3 sm:p-8 pl-5 sm:pl-10' : 'p-3 sm:p-8 pl-4 sm:pl-8',
                 !isFlipped ? 'pointer-events-none' : '',
               )}
@@ -1472,9 +1496,75 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               <div
                 className={cn(
                   'absolute top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50 transition-opacity duration-300',
-                  isLarge ? 'left-[45%]' : 'left-[42%]',
+                  isLarge ? 'left-[60%]' : 'left-[55%]',
                 )}
               ></div>
+
+              {/* Recto Button (Back) */}
+              <div className="absolute top-4 right-4 z-40">
+                <button
+                  onClick={handleFlip}
+                  className="bg-white hover:bg-stone-50 text-stone-600 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-stone-200 shadow-sm transition-all active:scale-95 group/back"
+                >
+                  <RotateCw
+                    size={14}
+                    className="group-hover/back:-rotate-180 transition-transform duration-500"
+                  />
+                  <span>Recto</span>
+                </button>
+              </div>
+
+              {/* Redesigned Postmark as per request */}
+              <div
+                className={cn(
+                  'absolute opacity-40 pointer-events-none transform -rotate-6 z-10',
+                  isLarge ? 'top-8 right-24' : 'top-2 right-20 scale-75',
+                )}
+              >
+                <div className="relative">
+                  <svg
+                    width="120"
+                    height="120"
+                    viewBox="0 0 120 120"
+                    className="text-stone-800/40 fill-current overflow-visible"
+                  >
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="52"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeDasharray="3 2"
+                    />
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="48"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="0.5"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-3">
+                    <span className="text-[8px] font-black tracking-[0.2em] text-stone-600 uppercase mb-0.5">
+                      POSTAL
+                    </span>
+                    <div className="h-px w-6 bg-stone-300 my-0.5" />
+                    <span className="text-[9px] font-black text-teal-800 uppercase leading-none mb-0.5 max-w-[70px] truncate">
+                      {postcard.location || 'DESTINATION'}
+                    </span>
+                    <span className="text-[10px] font-black text-stone-900 tracking-tighter">
+                      {postcard.date?.split(' ').slice(0, 2).join(' ') || 'LE JOUR J'}
+                    </span>
+                    <span className="text-[8px] font-bold text-stone-500">
+                      {postcard.date?.split(' ').slice(2).join(' ') || '2026'}
+                    </span>
+                    <div className="h-px w-6 bg-stone-300 my-0.5" />
+                    <span className="text-[6px] font-bold text-stone-400">CERTIFIÉ COOL</span>
+                  </div>
+                </div>
+              </div>
 
               {/* Top Controls Bar — boutons plats, larges, icônes plus grandes */}
               <div
@@ -1788,8 +1878,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 {/* Left Side: Message - marge gauche généreuse pour éviter troncature (police manuscrite) */}
                 <div
                   className={cn(
-                    'min-w-0 flex flex-col justify-start relative pl-[2px] sm:pl-[2px] pr-2 sm:pr-4 mt-8 sm:mt-10', // Added mt to clear top controls
-                    isLarge ? 'flex-[0.8]' : 'flex-[0.7]',
+                    'min-w-0 flex flex-col justify-start relative pl-4 sm:pl-8 pr-2 sm:pr-4 mt-8 sm:mt-10',
+                    isLarge ? 'flex-[1]' : 'flex-[0.8]',
                   )}
                 >
                   {/* Infos en haut (Lieu & Date) */}
@@ -2096,6 +2186,15 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   {/* Mini carte au verso : avec label de lieu et toggle PHOTOS au-dessus */}
                   {!postcard.hideMap && (postcard.coords || postcard.location) && (
                     <div className="mt-auto flex flex-col gap-1.5 w-full flex-1 min-h-0">
+                      {/* Note / Comment title if any */}
+                      {postcard.mediaItems?.some((m) => m.note) && (
+                        <div className="px-2 sm:px-4 mb-0.5">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-stone-400 flex items-center gap-1.5">
+                            <ImageIcon size={10} className="text-teal-500" />
+                            Commentaires & Notes
+                          </p>
+                        </div>
+                      )}
                       <div className="px-2 sm:px-4 flex items-center gap-2 text-stone-500 shrink-0">
                         <MapPin size={14} className="text-teal-600" />
                         <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.2em] truncate">

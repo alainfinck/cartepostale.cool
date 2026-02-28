@@ -68,11 +68,12 @@ export default function ReactionBar({
             key={emoji}
             options={{
               particle: emoji,
-              particleCount: 4,
-              size: 28,
+              particleCount: 1,
+              size: 32,
               effect: 'balloon',
-              speed: 0.2,
-              gravity: 0.08,
+              speed: 1,
+              gravity: 0,
+              loop: false,
             }}
           >
             <motion.button
