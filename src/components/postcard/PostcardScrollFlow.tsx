@@ -503,31 +503,33 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                       className="flex items-center gap-2.5 shrink-0 mb-3"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+                      <div className="flex items-center bg-white/95 backdrop-blur-sm rounded-lg border border-stone-200 shadow-sm overflow-hidden">
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation()
                             setBackTextScale((s) => Math.max(0.6, Number((s - 0.08).toFixed(2))))
                           }}
-                          className="w-9 h-9 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-r border-stone-100"
+                          className="w-7 h-7 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-r border-stone-100"
                           title="Réduire la taille du texte"
                           aria-label="Réduire la taille du texte"
                         >
-                          <Minus size={18} strokeWidth={2.5} />
+                          <Minus size={14} strokeWidth={2.5} />
                         </button>
-                        <span className="px-2 text-xs font-bold text-stone-500 select-none">A</span>
+                        <span className="px-1.5 text-[10px] font-bold text-stone-500 select-none">
+                          A
+                        </span>
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation()
                             setBackTextScale((s) => Math.min(1.5, Number((s + 0.08).toFixed(2))))
                           }}
-                          className="w-9 h-9 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-l border-stone-100"
+                          className="w-7 h-7 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-l border-stone-100"
                           title="Agrandir la taille du texte"
                           aria-label="Agrandir la taille du texte"
                         >
-                          <Plus size={18} strokeWidth={2.5} />
+                          <Plus size={14} strokeWidth={2.5} />
                         </button>
                       </div>
 
@@ -540,15 +542,15 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                             setIsFontMenuOpen((o) => !o)
                           }}
                           className={cn(
-                            'h-9 flex items-center justify-center px-4 rounded-xl border shadow-sm transition-all',
+                            'h-7 flex items-center justify-center px-2.5 rounded-lg border shadow-sm transition-all',
                             isFontMenuOpen
                               ? 'bg-teal-50 border-teal-200 text-teal-700'
-                              : 'bg-white/90 backdrop-blur-sm border-stone-200 hover:bg-white text-stone-600',
+                              : 'bg-white/95 backdrop-blur-sm border-stone-200 hover:bg-white text-stone-600',
                           )}
                           title="Changer la police"
                         >
                           <span
-                            className="text-xs font-bold select-none pt-0.5"
+                            className="text-[10px] font-bold select-none pt-0.5"
                             style={{
                               fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)
                                 ?.fontFamily,
@@ -556,7 +558,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                           >
                             Aa
                           </span>
-                          <ChevronDown size={14} className="ml-2 opacity-50" />
+                          <ChevronDown size={12} className="ml-1.5 opacity-50" />
                         </button>
                         <AnimatePresence>
                           {isFontMenuOpen && (
