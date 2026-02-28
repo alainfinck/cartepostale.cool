@@ -722,57 +722,57 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
       </div>
 
       {/* Barre fixe compacte en bas */}
-      <nav className="fixed bottom-3 left-1/2 -translate-x-1/2 w-[calc(100%-1.5rem)] max-w-md z-50">
-        <div className="bg-white/98 backdrop-blur-xl rounded-2xl py-2 px-2 flex items-center justify-around shadow-lg border border-stone-200/60">
+      <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm z-50">
+        <div className="bg-white/70 backdrop-blur-xl rounded-2xl py-1.5 px-2 flex items-center justify-around shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-white/40">
           <button
             onClick={() => scrollTo(messageRef)}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-stone-50 active:scale-90 group"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
           >
-            <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
-              <Mail size={16} className="stroke-[2.5]" />
+            <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <Mail size={14} className="stroke-[2.5]" />
             </div>
-            <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">
+            <span className="text-[7px] font-black uppercase tracking-wider text-stone-500">
               Carte
             </span>
           </button>
 
           <ARButton
             postcard={postcard}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-stone-50 active:scale-90 group"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
           />
 
           <button
             onClick={() => scrollTo(mapSectionRef)}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-stone-50 active:scale-90 group"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
           >
-            <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
-              <MapIcon size={16} className="stroke-[2.5]" />
+            <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <MapIcon size={14} className="stroke-[2.5]" />
             </div>
-            <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">
+            <span className="text-[7px] font-black uppercase tracking-wider text-stone-500">
               Carte
             </span>
           </button>
 
           <button
             onClick={() => scrollTo('social-section')}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-stone-50 active:scale-90 group"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
           >
-            <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
-              <MessageCircle size={16} className="stroke-[2.5]" />
+            <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <MessageCircle size={14} className="stroke-[2.5]" />
             </div>
-            <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">
+            <span className="text-[7px] font-black uppercase tracking-wider text-stone-500">
               Message
             </span>
           </button>
 
           <button
             onClick={() => scrollTo(albumRef)}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-stone-50 active:scale-90 group"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
           >
-            <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
-              <ImageIcon size={16} className="stroke-[2.5]" />
+            <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <ImageIcon size={14} className="stroke-[2.5]" />
             </div>
-            <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">
+            <span className="text-[7px] font-black uppercase tracking-wider text-stone-500">
               Album
             </span>
           </button>
