@@ -17,6 +17,7 @@ import {
   RotateCw,
   Heart,
   MessageCircle,
+  ChevronDown,
 } from 'lucide-react'
 import ARButton from '@/components/ar/ARButton'
 import dynamic from 'next/dynamic'
@@ -120,6 +121,52 @@ const MapModal = dynamic(() => import('@/components/ui/MapModal'), {
   loading: () => null,
 })
 
+/** Polices disponibles pour le message au verso */
+const BACK_MESSAGE_FONTS = [
+  {
+    id: 'dancing' as const,
+    name: 'Dancing Script',
+    fontFamily: "'Dancing Script', cursive",
+    className: 'font-handwriting',
+  },
+  {
+    id: 'greatVibes' as const,
+    name: 'Great Vibes',
+    fontFamily: "'Great Vibes', cursive",
+    className: 'font-handwriting-greatvibes',
+  },
+  {
+    id: 'parisienne' as const,
+    name: 'Parisienne',
+    fontFamily: "'Parisienne', cursive",
+    className: 'font-handwriting-parisienne',
+  },
+  {
+    id: 'sans' as const,
+    name: 'Standard (Sans)',
+    fontFamily: 'var(--font-sans), system-ui, sans-serif',
+    className: 'font-sans',
+  },
+  {
+    id: 'serif' as const,
+    name: 'Classique (Serif)',
+    fontFamily: "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif",
+    className: 'font-serif',
+  },
+  {
+    id: 'indieFlower' as const,
+    name: 'Indie Flower',
+    fontFamily: "'Indie Flower', cursive",
+    className: 'font-handwriting-indieflower',
+  },
+  {
+    id: 'gochiHand' as const,
+    name: 'Gochi Hand',
+    fontFamily: "'Gochi Hand', cursive",
+    className: 'font-handwriting-gochihand',
+  },
+]
+
 interface PostcardScrollFlowProps {
   postcard: Postcard
   postcardId?: number
@@ -196,6 +243,10 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
   const [activePhotoIndex, setActivePhotoIndex] = useState<number | null>(null)
   const [direction, setDirection] = useState(0) // -1 for prev, 1 for next
   const [backTextScale, setBackTextScale] = useState(0.9)
+  const [backMessageFont, setBackMessageFont] = useState<
+    'dancing' | 'greatVibes' | 'parisienne' | 'sans' | 'serif' | 'indieFlower' | 'gochiHand'
+  >('dancing')
+  const [isFontMenuOpen, setIsFontMenuOpen] = useState(false)
 
   const messageRef = useRef<HTMLDivElement>(null)
   const albumRef = useRef<HTMLDivElement>(null)
@@ -413,9 +464,8 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                 <div className="flex flex-1 gap-6 md:gap-10 min-h-0">
                   {/* Left Column: Message — placement et style comme sur la carte, avec -/+ et scrollbar */}
                   <div className="flex-1 flex flex-col pt-4 overflow-hidden min-h-0">
-                    {/* Boutons − / + pour la taille du texte (mobile et desktop) */}
                     <div
-                      className="flex items-center gap-2 shrink-0 mb-2"
+                      className="flex items-center gap-4 shrink-0 mb-2"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl border border-stone-200 shadow-sm overflow-hidden">
@@ -430,7 +480,6 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                           aria-label="Réduire la taille du texte"
                         >
                           <Minus size={18} strokeWidth={2.5} />
-                          <span className="sr-only">−</span>
                         </button>
                         <span className="px-2 text-xs font-bold text-stone-500 select-none">A</span>
                         <button
@@ -444,19 +493,82 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                           aria-label="Agrandir la taille du texte"
                         >
                           <Plus size={18} strokeWidth={2.5} />
-                          <span className="sr-only">+</span>
                         </button>
                       </div>
-                      <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">
-                        Taille
-                      </span>
+
+                      {/* Font Selector for card back */}
+                      <div className="relative flex items-center">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setIsFontMenuOpen((o) => !o)
+                          }}
+                          className={cn(
+                            'h-9 flex items-center justify-center px-4 rounded-xl border shadow-sm transition-all',
+                            isFontMenuOpen
+                              ? 'bg-teal-50 border-teal-200 text-teal-700'
+                              : 'bg-white/90 backdrop-blur-sm border-stone-200 hover:bg-white text-stone-600',
+                          )}
+                          title="Changer la police"
+                        >
+                          <span
+                            className="text-xs font-bold select-none pt-0.5"
+                            style={{
+                              fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)
+                                ?.fontFamily,
+                            }}
+                          >
+                            Aa
+                          </span>
+                          <ChevronDown size={14} className="ml-2 opacity-50" />
+                        </button>
+                        <AnimatePresence>
+                          {isFontMenuOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                              className="absolute bottom-full left-0 mb-2 w-48 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-stone-200 overflow-hidden z-[70] py-1.5"
+                            >
+                              {BACK_MESSAGE_FONTS.map((font) => (
+                                <button
+                                  key={font.id}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setBackMessageFont(font.id)
+                                    setIsFontMenuOpen(false)
+                                  }}
+                                  className={cn(
+                                    'w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-colors',
+                                    backMessageFont === font.id
+                                      ? 'bg-teal-50 text-teal-700'
+                                      : 'hover:bg-stone-50 text-stone-600',
+                                  )}
+                                >
+                                  <span
+                                    className="text-lg font-bold w-6 text-center"
+                                    style={{ fontFamily: font.fontFamily }}
+                                  >
+                                    Aa
+                                  </span>
+                                  <span className="text-xs font-medium truncate">{font.name}</span>
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </div>
                     <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pr-1">
                       <p
                         className="font-handwriting text-stone-700 leading-relaxed italic whitespace-pre-wrap break-words max-w-full"
                         style={{
                           fontSize: `clamp(0.875rem, ${1.15 * backTextScale}rem, 1.75rem)`,
-                          fontFamily: "'Dancing Script', cursive",
+                          fontFamily:
+                            BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily ??
+                            "'Dancing Script', cursive",
                         }}
                       >
                         {message}
@@ -549,8 +661,8 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                   </div>
                 </div>
 
-                {/* Flip Button Back */}
-                <div className="absolute top-4 left-4 z-30" onClick={(e) => e.stopPropagation()}>
+                {/* Flip Button Back - Repositioned to top-right */}
+                <div className="absolute top-4 right-4 z-30" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => setIsFlipped(!isFlipped)}
                     className="bg-white/90 hover:bg-white backdrop-blur-md px-3 py-1.5 rounded-lg text-stone-600 text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 border border-stone-200 shadow-sm transition-all active:scale-95 group/back"

@@ -33,6 +33,7 @@ import {
   Eye,
   Compass,
   Image as ImageIcon,
+  Map as MapIcon,
 } from 'lucide-react'
 import { fireSideCannons } from '@/components/ui/confetti'
 import { cn, isCoordinate } from '@/lib/utils'
@@ -1471,8 +1472,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             {/* Back of Card — masqué en mode recto (Safari: backface-visibility insuffisant) */}
             <motion.div
               className={cn(
-                'absolute inset-0 w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#FAF9F6] paper-texture flex flex-col overflow-hidden',
-                isLarge ? 'p-3 sm:p-8 pl-5 sm:pl-10' : 'p-3 sm:p-8 pl-4 sm:pl-8',
+                'absolute inset-0 w-full h-full backface-hidden rounded-xl shadow-2xl bg-[#fdfaf3] paper-texture flex flex-col overflow-hidden',
                 !isFlipped ? 'pointer-events-none' : '',
               )}
               style={{
@@ -1486,177 +1486,82 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {/* Subtle grain overlay for extra paper feel */}
               <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] z-50"></div>
 
-              {/* Watermark bottom-left (marge pour ne pas être coupé) */}
-              <div className="hidden sm:flex absolute bottom-3 left-7 sm:left-8 items-center gap-1.5 transition-opacity duration-300 opacity-95 bg-white/80 border border-stone-200 rounded-full px-2 py-1 shadow-sm">
-                <Mail size={10} className="text-teal-600 shrink-0" />
-                <span className="text-stone-600 text-[8px] sm:text-[9px] font-semibold tracking-[0.2em] uppercase">
-                  cartepostale.cool
-                </span>
-              </div>
-              <div
-                className={cn(
-                  'absolute top-14 bottom-10 w-px bg-stone-300 hidden sm:block opacity-50 transition-opacity duration-300',
-                  isLarge ? 'left-[60%]' : 'left-[55%]',
-                )}
-              ></div>
-
-              {/* Recto Button (Back) */}
-              <div className="absolute top-4 right-4 z-40">
-                <button
-                  onClick={handleFlip}
-                  className="bg-white hover:bg-stone-50 text-stone-600 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-stone-200 shadow-sm transition-all active:scale-95 group/back"
-                >
-                  <RotateCw
-                    size={14}
-                    className="group-hover/back:-rotate-180 transition-transform duration-500"
-                  />
-                  <span>Recto</span>
-                </button>
-              </div>
-
-              {/* Redesigned Postmark as per request */}
-              <div
-                className={cn(
-                  'absolute opacity-40 pointer-events-none transform -rotate-6 z-10',
-                  isLarge ? 'top-8 right-24' : 'top-2 right-20 scale-75',
-                )}
-              >
-                <div className="relative">
-                  <svg
-                    width="120"
-                    height="120"
-                    viewBox="0 0 120 120"
-                    className="text-stone-800/40 fill-current overflow-visible"
+              <div className="flex flex-1 gap-6 md:gap-10 min-h-0 p-6 md:p-10">
+                {/* Left Column: Message */}
+                <div className="flex-1 flex flex-col pt-4 overflow-hidden min-h-0">
+                  <div
+                    className="flex items-center gap-4 shrink-0 mb-2"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="52"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeDasharray="3 2"
-                    />
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="48"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="0.5"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-3">
-                    <span className="text-[8px] font-black tracking-[0.2em] text-stone-600 uppercase mb-0.5">
-                      POSTAL
-                    </span>
-                    <div className="h-px w-6 bg-stone-300 my-0.5" />
-                    <span className="text-[9px] font-black text-teal-800 uppercase leading-none mb-0.5 max-w-[70px] truncate">
-                      {postcard.location || 'DESTINATION'}
-                    </span>
-                    <span className="text-[10px] font-black text-stone-900 tracking-tighter">
-                      {postcard.date?.split(' ').slice(0, 2).join(' ') || 'LE JOUR J'}
-                    </span>
-                    <span className="text-[8px] font-bold text-stone-500">
-                      {postcard.date?.split(' ').slice(2).join(' ') || '2026'}
-                    </span>
-                    <div className="h-px w-6 bg-stone-300 my-0.5" />
-                    <span className="text-[6px] font-bold text-stone-400">CERTIFIÉ COOL</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Top Controls Bar — boutons plats, larges, icônes plus grandes */}
-              <div
-                className={cn(
-                  'absolute top-2 sm:top-4 z-20 flex items-center justify-start gap-2 w-full px-2 sm:px-4',
-                )}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* All Controls grouped to the left — same height for zoom, font, more */}
-                <div className="flex items-stretch gap-2">
-                  {/* Zoom Controls */}
-                  <div className="h-7 sm:h-9 flex shrink-0 items-center bg-white/80 backdrop-blur-md rounded-xl border border-stone-200 shadow-sm overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setBackTextScale((s) => Math.max(0.7, Number((s - 0.05).toFixed(2))))
-                      }}
-                      className="w-8 sm:w-10 h-full flex items-center justify-center gap-0.5 hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-r border-stone-100"
-                      title="Réduire la taille du texte"
-                      aria-label="Réduire la taille du texte"
-                    >
-                      <Minus size={16} strokeWidth={2.5} />
-                      <span className="text-xs font-bold sm:hidden">−</span>
-                    </button>
-                    <div className="w-8 sm:w-10 h-full flex items-center justify-center bg-white/50">
-                      <span className="text-sm sm:text-base font-bold text-stone-600 select-none">
-                        A
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setBackTextScale((s) => Math.min(2.2, Number((s + 0.05).toFixed(2))))
-                      }}
-                      className="w-8 sm:w-10 h-full flex items-center justify-center gap-0.5 hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-l border-stone-100"
-                      title="Agrandir la taille du texte"
-                      aria-label="Agrandir la taille du texte"
-                    >
-                      <Plus size={16} strokeWidth={2.5} />
-                      <span className="text-xs font-bold sm:hidden">+</span>
-                    </button>
-                  </div>
-
-                  {/* Font selector for message */}
-                  <div className="relative flex">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setIsFontMenuOpen((o) => !o)
-                        setIsTopMenuOpen(false)
-                      }}
-                      className={cn(
-                        'h-full min-h-[1.75rem] sm:min-h-[2.25rem] px-2.5 sm:px-3 flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-stone-200 shadow-sm transition-all backdrop-blur-md',
-                        isFontMenuOpen
-                          ? 'bg-teal-50 border-teal-300 text-teal-700'
-                          : 'bg-white/80 text-stone-600 hover:text-teal-600 hover:border-stone-300',
-                      )}
-                      title="Changer la police du message"
-                    >
-                      <span
-                        className="text-sm font-bold select-none"
-                        style={{
-                          fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)
-                            ?.fontFamily,
+                    <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setBackTextScale((s) => Math.max(0.6, Number((s - 0.08).toFixed(2))))
                         }}
+                        className="w-9 h-9 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-r border-stone-100"
+                        title="Réduire la taille du texte"
+                        aria-label="Réduire la taille du texte"
                       >
-                        Aa
-                      </span>
-                    </button>
-                    <AnimatePresence>
-                      {isFontMenuOpen && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-[64]"
-                            onClick={() => setIsFontMenuOpen(false)}
-                            aria-hidden
-                          />
+                        <Minus size={18} strokeWidth={2.5} />
+                      </button>
+                      <span className="px-2 text-xs font-bold text-stone-500 select-none">A</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setBackTextScale((s) => Math.min(1.5, Number((s + 0.08).toFixed(2))))
+                        }}
+                        className="w-9 h-9 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-l border-stone-100"
+                        title="Agrandir la taille du texte"
+                        aria-label="Agrandir la taille du texte"
+                      >
+                        <Plus size={18} strokeWidth={2.5} />
+                      </button>
+                    </div>
+
+                    {/* Font Selector inside the card back */}
+                    <div className="relative flex items-center">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setIsFontMenuOpen((o) => !o)
+                        }}
+                        className={cn(
+                          'h-9 flex items-center justify-center px-4 rounded-xl border shadow-sm transition-all',
+                          isFontMenuOpen
+                            ? 'bg-teal-50 border-teal-200 text-teal-700'
+                            : 'bg-white/90 backdrop-blur-sm border-stone-200 hover:bg-white text-stone-600',
+                        )}
+                        title="Changer la police"
+                      >
+                        <span
+                          className="text-xs font-bold select-none pt-0.5"
+                          style={{
+                            fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)
+                              ?.fontFamily,
+                          }}
+                        >
+                          Aa
+                        </span>
+                        <ChevronDown size={14} className="ml-2 opacity-50" />
+                      </button>
+                      <AnimatePresence>
+                        {isFontMenuOpen && (
                           <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 4 }}
+                            initial={{ opacity: 0, scale: 0.95, y: -10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 4 }}
-                            className="absolute left-0 mt-2 w-44 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-stone-200 overflow-hidden z-[70] py-1.5"
-                            onClick={(e) => e.stopPropagation()}
+                            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                            className="absolute bottom-full left-0 mb-2 w-48 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-stone-200 overflow-hidden z-[70] py-1.5"
                           >
                             {BACK_MESSAGE_FONTS.map((font) => (
                               <button
                                 key={font.id}
                                 type="button"
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation()
                                   setBackMessageFont(font.id)
                                   setIsFontMenuOpen(false)
                                 }}
@@ -1668,7 +1573,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                                 )}
                               >
                                 <span
-                                  className="text-base font-bold"
+                                  className="text-lg font-bold w-6 text-center"
                                   style={{ fontFamily: font.fontFamily }}
                                 >
                                   Aa
@@ -1677,620 +1582,157 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                               </button>
                             ))}
                           </motion.div>
-                        </>
-                      )}
-                    </AnimatePresence>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
 
-                  {/* Actions Dropdown */}
-                  <div className="relative flex">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setIsFontMenuOpen(false)
-                        setIsTopMenuOpen(!isTopMenuOpen)
+                  <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pr-1">
+                    <p
+                      className="font-handwriting text-stone-700 leading-relaxed italic whitespace-pre-wrap break-words max-w-full"
+                      style={{
+                        fontSize: `clamp(0.875rem, ${1.15 * backTextScale}rem, 1.75rem)`,
+                        fontFamily:
+                          BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily ??
+                          "'Dancing Script', cursive",
                       }}
-                      className={cn(
-                        'h-full min-h-[1.75rem] sm:min-h-[2.25rem] w-7 sm:w-9 flex shrink-0 items-center justify-center rounded-xl backdrop-blur-md border border-stone-200 transition-all shadow-sm',
-                        isTopMenuOpen
-                          ? 'bg-teal-50 border-teal-300 text-teal-600 shadow-inner'
-                          : 'bg-white/80 text-stone-600 hover:text-teal-600',
-                      )}
-                      title="Plus d'actions"
                     >
-                      <MoreHorizontal size={18} strokeWidth={2} />
-                    </button>
-
-                    <AnimatePresence>
-                      {isTopMenuOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                          className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-stone-200 overflow-hidden z-[70] p-1.5"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {/* Fullscreen Option */}
-                          {!hideFullscreenButton && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                setIsTopMenuOpen(false)
-                                if (isInsideFullscreen && onExitFullscreen) onExitFullscreen()
-                                else toggleFullscreen(e)
-                              }}
-                              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-50 text-stone-600 hover:text-teal-600 transition-colors text-left"
-                            >
-                              {isFullscreen || isInsideFullscreen ? (
-                                <>
-                                  <Minimize2 size={16} />
-                                  <span className="text-xs font-bold uppercase tracking-wider">
-                                    Quitter plein écran
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <Maximize2 size={16} />
-                                  <span className="text-xs font-bold uppercase tracking-wider">
-                                    Plein écran
-                                  </span>
-                                </>
-                              )}
-                            </button>
-                          )}
-
-                          {/* Album photos */}
-                          {(hasMedia || canContribute) && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setIsTopMenuOpen(false)
-                                openAlbum(e)
-                              }}
-                              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-50 text-stone-600 hover:text-amber-600 transition-colors text-left"
-                            >
-                              <Camera size={16} />
-                              <span className="text-xs font-bold uppercase tracking-wider">
-                                {hasMedia ? "Voir l'album photos" : 'Ajouter des photos'}
-                              </span>
-                            </button>
-                          )}
-
-                          {/* Flip Option */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsTopMenuOpen(false)
-                              handleFlip()
-                            }}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-50 text-stone-600 hover:text-teal-600 transition-colors text-left"
-                          >
-                            <RotateCw size={16} />
-                            <span className="text-xs font-bold uppercase tracking-wider">
-                              Retourner
-                            </span>
-                          </button>
-
-                          {/* Journal Option */}
-                          {hasMedia && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                setIsTopMenuOpen(false)
-                                openJournal(e)
-                              }}
-                              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-50 text-stone-600 hover:text-amber-600 transition-colors text-left"
-                            >
-                              <BookOpen size={16} />
-                              <span className="text-xs font-bold uppercase tracking-wider">
-                                Carnet de voyage
-                              </span>
-                            </button>
-                          )}
-
-                          {/* Message vocal et Musique d'ambiance côte à côte */}
-                          {(postcard.audioMessage || postcard.backgroundMusic) && (
-                            <div className="flex gap-2 w-full">
-                              {postcard.audioMessage && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    setIsTopMenuOpen(false)
-                                    toggleAudio(e)
-                                  }}
-                                  className={cn(
-                                    'flex-1 min-w-0 flex items-center justify-center gap-2 px-2.5 py-2.5 rounded-xl transition-colors text-left sm:justify-start sm:px-3',
-                                    isPlayingAudio
-                                      ? 'bg-rose-50 text-rose-600'
-                                      : 'hover:bg-stone-50 text-stone-600 hover:text-rose-600',
-                                  )}
-                                >
-                                  {isPlayingAudio ? (
-                                    <Volume2 size={16} className="animate-pulse shrink-0" />
-                                  ) : (
-                                    <Mic size={16} className="shrink-0" />
-                                  )}
-                                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">
-                                    {isPlayingAudio ? "Arrêter l'audio" : 'Message vocal'}
-                                  </span>
-                                </button>
-                              )}
-                              {postcard.backgroundMusic && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    setIsTopMenuOpen(false)
-                                    toggleMusic(e)
-                                  }}
-                                  className={cn(
-                                    'flex-1 min-w-0 flex items-center justify-center gap-2 px-2.5 py-2.5 rounded-xl transition-colors text-left sm:justify-start sm:px-3',
-                                    isPlayingMusic
-                                      ? 'bg-violet-50 text-violet-600'
-                                      : 'hover:bg-stone-50 text-stone-600 hover:text-violet-600',
-                                  )}
-                                >
-                                  {isPlayingMusic ? (
-                                    <Volume2 size={16} className="animate-pulse shrink-0" />
-                                  ) : (
-                                    <Music size={16} className="shrink-0" />
-                                  )}
-                                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">
-                                    {isPlayingMusic ? 'Arrêter la musique' : "Musique d'ambiance"}
-                                  </span>
-                                </button>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Partager le lien pour que d'autres ajoutent des photos */}
-                          {canContribute && postcard.contributionToken && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setIsTopMenuOpen(false)
-                                setIsShareContributionOpen(true)
-                              }}
-                              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-50 text-stone-600 hover:text-teal-600 transition-colors text-left"
-                            >
-                              <Link2 size={16} className="shrink-0" />
-                              <span className="text-xs font-bold uppercase tracking-wider">
-                                Partager le lien pour ajouter des photos
-                              </span>
-                            </button>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-
-                {/* Global Click Handler to close menu */}
-                {isTopMenuOpen && (
-                  <div className="fixed inset-0 z-[65]" onClick={() => setIsTopMenuOpen(false)} />
-                )}
-              </div>
-
-              {/* Contenu (texte + timbre/carte) sous la barre de contrôle — z-10 < z-60 de la barre */}
-              {/* Reduced general padding, added specific margin for Left column to clear controls */}
-              <div className="relative z-10 flex w-full flex-1 min-h-0 gap-2 sm:gap-6 pt-4 sm:pt-4 transition-all duration-300">
-                {/* Left Side: Message - marge gauche généreuse pour éviter troncature (police manuscrite) */}
-                <div
-                  className={cn(
-                    'min-w-0 flex flex-col justify-start relative pl-4 sm:pl-8 pr-2 sm:pr-4 mt-8 sm:mt-10',
-                    isLarge ? 'flex-[1]' : 'flex-[0.8]',
-                  )}
-                >
-                  {/* Infos en haut (Lieu & Date) */}
-                  <div className="px-3 sm:px-5 mb-1 shrink-0">
-                    <p className="text-[10px] sm:text-xs font-bold text-stone-400/80 italic">
-                      {postcard.location && `${postcard.location}, le `}
-                      {postcard.date}
+                      {postcard.message}
                     </p>
                   </div>
-                  <div className="flex flex-1 min-h-0 gap-1.5 sm:gap-2 items-stretch">
-                    {/* Removed individual loupe here */}
-                    <div
-                      ref={messageContainerRef}
-                      className="flex-1 w-full min-h-0 overflow-y-scroll overflow-x-hidden custom-scrollbar mt-2 mb-1 cursor-pointer group/msg relative pr-2 pl-1 sm:pl-2 block"
-                      onClick={openMessage}
-                    >
-                      <p
-                        ref={messageTextRef}
-                        className="text-stone-700 leading-[1.2] text-left whitespace-pre-wrap w-full max-w-full break-words pl-2 sm:pl-3 overflow-x-hidden"
-                        style={{
-                          fontSize: `${autoFontSize * backTextScale}rem`,
-                          fontFamily:
-                            BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily ??
-                            "'Dancing Script', cursive",
-                        }}
-                      >
-                        {postcard.message}
-                      </p>
-
-                      {/* Hint zoom au survol - removed internal message as it's now handled globally below */}
-                    </div>
-                  </div>
-                  {/* Texte explicite sous la zone message : supprimé car unifié ci-dessous */}
                   {postcard.senderName && (
-                    <div className="mt-auto self-start transform -rotate-2 pt-2 pb-4 px-2 sm:px-4 relative shrink-0">
-                      <div className="absolute inset-0 bg-teal-50/40 blur-lg rounded-full -rotate-3"></div>
-                      <p
-                        className="text-teal-700 text-2xl sm:text-4xl relative z-10 font-bold drop-shadow-[0_1.5px_2px_rgba(255,255,255,1)]"
-                        style={{
-                          fontFamily:
-                            BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily ??
-                            "'Dancing Script', cursive",
-                        }}
-                      >
-                        — {postcard.senderName}
-                      </p>
+                    <div className="mt-auto font-handwriting text-2xl md:text-4xl text-teal-700 pt-4 shrink-0">
+                      — {postcard.senderName}
                     </div>
                   )}
                 </div>
 
-                {/* Right Side: Stamp + Map */}
-                <div className="flex-1 h-full flex flex-col relative min-w-0 pt-0 min-h-[8rem] sm:min-h-[10rem]">
-                  {/* Removed individual loupe on map */}
-                  {/* Top Section: Stamp — remonté pour alignement visuel */}
-                  <div className="flex-none flex justify-end items-start mb-0.5 gap-2 min-h-[4.5rem] sm:min-h-[5.5rem] -mt-6 sm:-mt-8 -mr-1 sm:-mr-3">
-                    {/* Stamp - plus petit et plus réaliste */}
-                    {(() => {
-                      const style = postcard.stampStyle || 'classic'
-                      const label =
-                        (postcard.stampLabel || 'Digital Poste').trim() || 'Digital Poste'
-                      const year = (postcard.stampYear || '2024').trim() || '2024'
-                      // Split text for postmark if too long or multiline needed? defaulted to location/date
-                      const pmText =
-                        postcard.postmarkText ||
-                        (postcard.location ? postcard.location.split(',')[0] : 'Digital')
-
-                      return (
-                        <div className="relative group-hover:rotate-2 transition-transform duration-500 ease-out pt-0 pb-2 pr-2">
-                          {/* The Stamp itself - Reduced size (w-20/h-24 on desktop) */}
-                          <div
-                            className={cn(
-                              'relative shadow-[2px_3px_5px_rgba(0,0,0,0.2)] transform rotate-1',
-                              isLarge ? 'w-10 h-13 sm:w-20 sm:h-24' : 'w-8 h-10 sm:w-16 sm:h-20',
-                            )}
-                          >
-                            {/* Classic: perforated edges using radial-gradient mask/clip for realism */}
-                            {style === 'classic' && (
-                              <div
-                                className="w-full h-full bg-[#fdf5e6] p-1.5 relative overflow-hidden"
-                                style={{
-                                  // CSS-only sawtooth wave pattern for edges
-                                  mask: 'conic-gradient(from 45deg, transparent 0deg 90deg, black 90deg 360deg) 0 0/10px 10px round',
-                                  WebkitMask:
-                                    'conic-gradient(from 45deg, transparent 0deg 90deg, black 90deg 360deg) 0 0/10px 10px round',
-                                }}
-                              >
-                                <div className="w-full h-full border-[1.5px] border-orange-300/60 flex flex-col items-center justify-between p-1 bg-white/40">
-                                  <div className="text-[6px] sm:text-[8px] font-bold text-orange-900/80 uppercase tracking-wide text-center w-full truncate px-1">
-                                    {label}
-                                  </div>
-                                  <div className="flex-1 flex items-center justify-center opacity-80 mix-blend-multiply">
-                                    {/* Generic symbol */}
-                                    <div className="w-8 h-8 sm:w-12 sm:h-12 border border-orange-200/50 rounded-full flex items-center justify-center">
-                                      <img
-                                        src="https://i.imgur.com/R21Yw3x.png"
-                                        className="w-6 h-6 sm:w-9 sm:h-9 object-contain grayscale text-orange-900/50 opacity-60"
-                                        alt="stamp"
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="text-[6px] sm:text-[8px] font-serif font-bold text-orange-900/60">
-                                    {year}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Modern: Gradient, rounded */}
-                            {style === 'modern' && (
-                              <div className="w-full h-full rounded-lg bg-gradient-to-tr from-teal-50 to-white border border-teal-200 shadow-sm flex flex-col items-center justify-between p-2 relative overflow-hidden">
-                                <div className="absolute top-0 left-0 w-full h-1 bg-teal-400/30"></div>
-                                <div className="text-[6px] sm:text-[8px] font-bold text-teal-800 uppercase tracking-widest">
-                                  {label}
-                                </div>
-                                <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full border border-teal-200 flex items-center justify-center bg-teal-50/50">
-                                  <span className="text-[8px] sm:text-[10px] font-bold text-teal-600/80">
-                                    POST
-                                  </span>
-                                </div>
-                                <div className="text-[7px] sm:text-[9px] font-semibold text-teal-700/60">
-                                  {year}
-                                </div>
-                                <div className="absolute bottom-0 left-0 w-full h-1 bg-teal-400/30"></div>
-                              </div>
-                            )}
-
-                            {/* Airmail: Stripes */}
-                            {style === 'airmail' && (
-                              <div
-                                className="w-full h-full bg-white p-1 shadow-sm relative overflow-hidden"
-                                style={{
-                                  mask: 'radial-gradient(circle at 2px 2px, transparent 2px, black 0) -2px -2px / 11px 11px repeat-x, radial-gradient(circle at 2px 2px, transparent 2px, black 0) -2px -2px / 11px 11px repeat-y',
-                                  WebkitMask: 'radial-gradient(circle at 50% 50%, white, white)', // Fallback generic because radial zig-zag complex in CSS
-                                }}
-                              >
-                                <div
-                                  className="absolute inset-0 border-4 border-transparent"
-                                  style={{
-                                    backgroundImage:
-                                      'repeating-linear-gradient(135deg, #ef4444 0, #ef4444 10px, transparent 10px, transparent 20px, #3b82f6 20px, #3b82f6 30px, transparent 30px, transparent 40px)',
-                                  }}
-                                ></div>
-                                <div className="absolute inset-2 bg-white flex flex-col items-center justify-center gap-1 shadow-inner">
-                                  <div className="text-[5px] sm:text-[6px] font-black text-blue-800 uppercase tracking-widest">
-                                    AIR MAIL
-                                  </div>
-                                  <div className="text-[6px] sm:text-[8px] font-bold text-stone-600 text-center leading-none">
-                                    {label}
-                                  </div>
-                                  <div className="text-[6px] sm:text-[8px] font-bold text-red-600">
-                                    {year}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Subtle paper texture overlay */}
-                            <div className="absolute inset-0 bg-stone-50 opacity-10 mix-blend-multiply pointer-events-none"></div>
-                          </div>
-
-                          {/* Realistic Postmark (Tampon) - SVG Overlay */}
-                          <div
-                            className={cn(
-                              'absolute -left-6 top-5 pointer-events-none z-20 mix-blend-multiply opacity-85 transform -rotate-12',
-                              isLarge ? 'w-16 h-16 sm:w-24 sm:h-24' : 'w-14 h-14 sm:w-18 sm:h-18',
-                            )}
-                          >
-                            <svg
-                              viewBox="0 0 100 100"
-                              className="w-full h-full drop-shadow-sm text-stone-800/70 fill-current"
-                            >
-                              <defs>
-                                <path
-                                  id="curve"
-                                  d="M 15,50 A 35,35 0 1,1 85,50 A 35,35 0 1,1 15,50"
-                                />
-                                <filter id="roughness">
-                                  <feTurbulence
-                                    type="fractalNoise"
-                                    baseFrequency="0.8"
-                                    numOctaves="3"
-                                    result="noise"
-                                  />
-                                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.5" />
-                                </filter>
-                              </defs>
-                              <g filter="url(#roughness)">
-                                {/* Outer Circle */}
-                                <circle
-                                  cx="50"
-                                  cy="50"
-                                  r="46"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="1.5"
-                                />
-                                {/* Inner Circle */}
-                                <circle
-                                  cx="50"
-                                  cy="50"
-                                  r="32"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="1"
-                                />
-
-                                {/* Wavy lines */}
-                                <path
-                                  d="M10,50 Q30,45 50,50 T90,50"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="0.5"
-                                  opacity="0.6"
-                                />
-                                <path
-                                  d="M12,56 Q32,51 52,56 T88,56"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="0.5"
-                                  opacity="0.6"
-                                />
-                                <path
-                                  d="M12,44 Q32,39 52,44 T88,44"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="0.5"
-                                  opacity="0.6"
-                                />
-
-                                {/* Text on curve */}
-                                <text
-                                  fontSize="7.5"
-                                  fontWeight="bold"
-                                  letterSpacing="1"
-                                  textAnchor="middle"
-                                >
-                                  <textPath href="#curve" startOffset="50%" className="uppercase">
-                                    {pmText.length > 20
-                                      ? pmText.substring(0, 18) + '..'
-                                      : pmText || 'POSTE AERIENNE'}
-                                  </textPath>
-                                </text>
-
-                                {/* Center Date */}
-                                <text
-                                  x="50"
-                                  y="52"
-                                  fontSize="7"
-                                  fontFamily="monospace"
-                                  fontWeight="bold"
-                                  textAnchor="middle"
-                                  className="uppercase"
-                                >
-                                  {postcard.date.split('/').slice(0, 2).join('/')}
-                                </text>
-                                <text
-                                  x="50"
-                                  y="60"
-                                  fontSize="7"
-                                  fontFamily="monospace"
-                                  fontWeight="bold"
-                                  textAnchor="middle"
-                                  className="uppercase"
-                                >
-                                  {postcard.date.split('/')[2] || '2024'}
-                                </text>
-                              </g>
-                            </svg>
-                          </div>
+                {/* Right Column: Stamp & Address */}
+                <div className="w-[45%] flex flex-col border-l border-stone-200/50 pl-6 md:pl-10 relative h-full">
+                  <div className="self-end mb-8 group">
+                    <div className="relative w-16 h-20 md:w-24 md:h-28 bg-[#fdf5e6] p-1 border-[1.5px] border-orange-300/40 transform rotate-2 shadow-md">
+                      <div className="w-full h-full border border-orange-200/50 flex flex-col items-center justify-between p-1 bg-white/40">
+                        <span className="text-[6px] md:text-[8px] font-bold text-orange-900/60 uppercase text-center">
+                          Digital Poste
+                        </span>
+                        <div className="flex-1 flex items-center justify-center opacity-40">
+                          <Compass size={24} className="text-orange-900" />
                         </div>
-                      )
-                    })()}
-                  </div>
-
-                  {/* Destinataire — Placé en haut de la colonne, avec marge négative pour remonter */}
-                  {postcard.recipientName?.trim() && (
-                    <div className="px-2 sm:px-3 mb-4 shrink-0 -mt-2 sm:-mt-4">
-                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-1">
-                        À l&apos;attention de
-                      </p>
-                      <p
-                        className={cn(
-                          'text-stone-700 whitespace-pre-wrap break-words leading-tight',
-                          isLarge ? 'text-sm sm:text-lg' : 'text-xs sm:text-sm',
-                        )}
-                        style={{
-                          fontFamily:
-                            BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily ??
-                            "'Dancing Script', cursive",
-                        }}
-                      >
-                        {postcard.recipientName}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Decorative address lines */}
-                  <div className="px-2 sm:px-3 space-y-4 md:space-y-6 mt-4">
-                    <div className="h-px bg-stone-300/30 w-full" />
-                    <div className="h-px bg-stone-300/30 w-full" />
-                    <div className="h-px bg-stone-300/30 w-full" />
-                  </div>
-
-                  {/* Mini carte au verso : avec label de lieu et toggle PHOTOS au-dessus */}
-                  {!postcard.hideMap && (postcard.coords || postcard.location) && (
-                    <div className="mt-auto flex flex-col gap-1.5 w-full flex-1 min-h-0">
-                      {/* Note / Comment title if any */}
-                      {postcard.mediaItems?.some((m) => m.note) && (
-                        <div className="px-2 sm:px-4 mb-0.5">
-                          <p className="text-[9px] font-bold uppercase tracking-widest text-stone-400 flex items-center gap-1.5">
-                            <ImageIcon size={10} className="text-teal-500" />
-                            Commentaires & Notes
-                          </p>
-                        </div>
-                      )}
-                      <div className="px-2 sm:px-4 flex items-center gap-2 text-stone-500 shrink-0">
-                        <MapPin size={14} className="text-teal-600" />
-                        <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.2em] truncate">
-                          {postcard.location || 'Localisation'}
+                        <span className="text-[6px] md:text-[8px] font-bold text-orange-900/40">
+                          2026
                         </span>
                       </div>
-                      {/* Toggle PHOTOS au-dessus de la carte (en dehors) */}
-                      {postcard.coords && photoLocations.length > 0 && (
-                        <div className="flex justify-end px-1 shrink-0">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setShowPhotosOnMap((v) => !v)
-                            }}
-                            className={cn(
-                              'px-4 py-2.5 rounded-2xl shadow-lg border-2 transition-all active:scale-95 flex items-center gap-3 font-bold text-xs',
-                              showPhotosOnMap
-                                ? 'bg-teal-600 text-white border-teal-400'
-                                : 'bg-white/95 text-stone-600 border-stone-200',
-                            )}
-                          >
-                            <div
-                              className={cn(
-                                'w-8 h-4 rounded-full relative transition-colors duration-200',
-                                showPhotosOnMap ? 'bg-white/30' : 'bg-stone-200',
-                              )}
+                      <div
+                        className="absolute inset-0 border-[3px] border-[#fdfaf3] opacity-30 pointer-events-none"
+                        style={{
+                          mask: 'conic-gradient(from 45deg, transparent 0deg 90deg, black 90deg 360deg) 0 0/8px 8px round',
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-4 mt-2 mb-6">
+                    <div className="font-handwriting text-xl md:text-2xl text-stone-600 border-b border-stone-300/40 pb-1 min-h-[2.5rem] flex items-end">
+                      <span className="opacity-40 text-sm mr-2 font-serif uppercase tracking-widest leading-none">
+                        À :
+                      </span>
+                      {postcard.recipientName || 'Un ami proche'}
+                    </div>
+                    <div className="h-px bg-stone-300/40 w-full" />
+                    <div className="h-px bg-stone-300/40 w-full" />
+                    <div className="h-px bg-stone-300/40 w-full mt-2" />
+                  </div>
+
+                  <div className="flex-1 w-full min-h-0 flex flex-col mt-4">
+                    <div
+                      className="flex-1 w-full min-h-0 rounded-xl overflow-hidden border-4 border-white shadow-xl transform rotate-1 z-20 group/map cursor-pointer relative"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIsMapOpen(true)
+                      }}
+                    >
+                      {postcard.coords && (
+                        <div className="w-full h-full relative">
+                          <div className="absolute inset-0 bg-black/0 group-hover/map:bg-black/10 transition-colors z-10 flex items-center justify-center pointer-events-none">
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              whileHover={{ opacity: 1, scale: 1 }}
+                              className="bg-white/90 p-3 rounded-full shadow-lg text-teal-600"
                             >
-                              <div
-                                className={cn(
-                                  'absolute top-0.5 w-3 h-3 rounded-full transition-all duration-200 shadow-sm',
-                                  showPhotosOnMap ? 'left-4.5 bg-white' : 'left-0.5 bg-white',
-                                )}
-                              />
-                            </div>
-                            <span className="uppercase tracking-widest">Photos</span>
-                          </button>
+                              <MapIcon size={24} />
+                            </motion.div>
+                          </div>
+                          <MiniMap
+                            coords={postcard.coords}
+                            zoom={12}
+                            className="w-full h-full grayscale-[0.3]"
+                            photoLocations={photoLocations}
+                          />
                         </div>
                       )}
-                      <div
-                        className={cn(
-                          'mb-1 sm:mb-2 w-full flex-1 min-h-[220px] sm:min-h-[320px] lg:min-h-[500px] rounded-lg overflow-hidden border border-stone-200/80 bg-stone-50 shadow-inner relative',
-                        )}
-                      >
-                        {postcard.coords ? (
-                          <div
-                            className="group/map relative w-full h-full flex flex-col items-center justify-center cursor-pointer overflow-hidden"
-                            onClick={openMap}
-                            role="button"
-                            tabIndex={0}
-                            title="Agrandir la carte"
-                          >
-                            {/* Leaflet MiniMap */}
-                            <div className="absolute inset-0 overflow-hidden bg-stone-100">
-                              <MiniMap
-                                coords={postcard.coords!}
-                                zoom={backMapZoom}
-                                onClick={openMap}
-                                photoLocations={photoLocations}
-                                toggleOutside={photoLocations.length > 0}
-                                showPhotos={showPhotosOnMap}
-                                onShowPhotosChange={setShowPhotosOnMap}
-                              />
-                            </div>
-                            {/* Loupe dans un coin sans overlay au hover */}
-                            <div className="absolute bottom-2 left-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
-                              <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/95 shadow-lg text-teal-600 border border-stone-100">
-                                <Search size={isLarge ? 20 : 16} strokeWidth={2.5} />
-                              </div>
-                            </div>
-                            <span className="sr-only">Agrandir la carte</span>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={openMap}
-                            className="group/map relative w-full h-full flex flex-col items-center justify-center gap-2 text-stone-500 hover:bg-stone-100/80 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-inset rounded-lg overflow-hidden"
-                            title="Voir la carte"
-                          >
-                            <MapPin
-                              size={isLarge ? 32 : 24}
-                              className="text-teal-500 transition-opacity group-hover/map:opacity-60"
-                            />
-                            <span className="text-xs sm:text-sm font-semibold text-teal-700 uppercase tracking-wide transition-opacity group-hover/map:opacity-60">
-                              Voir la carte
-                            </span>
-                            <div className="absolute bottom-2 left-2 opacity-0 group-hover/map:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
-                              <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/95 shadow-lg text-teal-600 border border-stone-100">
-                                <Search size={isLarge ? 20 : 16} strokeWidth={2.5} />
-                              </div>
-                            </div>
-                          </button>
-                        )}
-                      </div>
                     </div>
-                  )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Flip Button Back - Repositioned to top-right */}
+              <div className="absolute top-4 right-4 z-30" onClick={(e) => e.stopPropagation()}>
+                <button
+                  onClick={handleFlip}
+                  className="bg-white/90 hover:bg-white backdrop-blur-md px-3 py-1.5 rounded-lg text-stone-600 text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 border border-stone-200 shadow-sm transition-all active:scale-95 group/back"
+                >
+                  <RotateCw
+                    size={12}
+                    className="group-hover/back:-rotate-180 transition-transform duration-500"
+                  />
+                  <span>Recto</span>
+                </button>
+              </div>
+
+              {/* Postmark / Tampon Date */}
+              <div className="absolute top-10 right-28 opacity-60 pointer-events-none transform -rotate-12 z-10">
+                <div className="relative">
+                  <svg
+                    width="140"
+                    height="140"
+                    viewBox="0 0 140 140"
+                    className="text-stone-800/20 fill-current overflow-visible"
+                  >
+                    <circle
+                      cx="70"
+                      cy="70"
+                      r="55"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeDasharray="2 3"
+                    />
+                    <circle
+                      cx="70"
+                      cy="70"
+                      r="50"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                    <span className="text-[10px] font-black tracking-widest text-stone-600 uppercase mb-0.5">
+                      POSTAL
+                    </span>
+                    <div className="h-px w-8 bg-stone-300 my-1" />
+                    <span className="text-[9px] font-black text-teal-700 uppercase leading-none mb-1 max-w-[80px] truncate">
+                      {postcard.location || 'DESTINATION'}
+                    </span>
+                    <span className="text-[11px] font-black text-stone-900 tracking-tighter">
+                      {postcard.date?.split(' ').slice(0, 2).join(' ') || 'LE JOUR J'}
+                    </span>
+                    <span className="text-[9px] font-bold text-stone-500 mt-0.5">
+                      {postcard.date?.split(' ').slice(2).join(' ') || '2026'}
+                    </span>
+                    <div className="h-px w-8 bg-stone-300 my-1" />
+                    <span className="text-[7px] font-bold text-stone-400">CERTIFIÉ COOL</span>
+                  </div>
                 </div>
               </div>
             </motion.div>
