@@ -502,7 +502,17 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
       <div className="flex flex-col items-center">
         <PostcardScrollFlow postcard={frontendPostcard} postcardId={payloadPostcardId} />
 
-        <div id="social-section" className="w-full mt-12 mb-20">
+        {frontendPostcard.senderName && (
+          <div className="w-full flex justify-center -mt-4 mb-4">
+            <div className="bg-white/40 backdrop-blur-sm px-6 py-3 rounded-2xl border border-white/20 shadow-sm transform -rotate-1 hover:rotate-0 transition-transform duration-500">
+              <p className="font-handwriting text-stone-800 text-3xl sm:text-5xl font-bold">
+                — {frontendPostcard.senderName}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div id="social-section" className="w-full mt-4 mb-16">
           <SocialBar
             postcardId={payloadPostcardId || 0}
             publicId={slug}
@@ -514,24 +524,54 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
           />
         </div>
 
-        <div className="w-full mt-24 pb-32 flex flex-col items-center">
-          <div className="w-full max-w-md mx-auto px-6 py-12 rounded-[2.5rem] bg-gradient-to-br from-teal-500 to-teal-600 shadow-2xl shadow-teal-500/20 text-center relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-700" />
-            <div className="relative z-10">
-              <Sparkles className="mx-auto text-teal-100 mb-4 animate-pulse" size={32} />
-              <h3 className="text-xl sm:text-2xl font-serif font-bold text-white mb-2">
-                Envie d&apos;envoyer un sourire ?
-              </h3>
-              <p className="text-teal-50 text-sm mb-8 opacity-90 max-w-[280px] mx-auto">
-                Créez vous aussi une carte postale magique avec vos photos et vidéos !
-              </p>
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-white text-teal-600 rounded-full font-bold text-sm shadow-xl hover:bg-teal-50 transition-all hover:scale-105 active:scale-95"
-              >
-                Créer ma carte postale
-              </Link>
+        <div className="w-full mt-24 pb-32 flex flex-col items-center px-4">
+          <div className="w-full max-w-2xl mx-auto bg-[#faf7f0] p-6 sm:p-10 rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-stone-200/60 relative overflow-hidden group">
+            {/* Postcard divider line */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[80%] w-px bg-stone-200/60 hidden sm:block" />
+
+            <div className="flex flex-col sm:flex-row gap-8 sm:gap-12 relative z-10">
+              {/* Left Side: Message */}
+              <div className="flex-1 flex flex-col justify-center text-center sm:text-left">
+                <Sparkles className="text-teal-600 mb-4 mx-auto sm:mx-0" size={32} />
+                <h3 className="text-2xl sm:text-3xl font-serif font-bold text-stone-800 mb-3 leading-tight">
+                  Envie d&apos;envoyer <br /> un sourire ?
+                </h3>
+                <p className="font-handwriting text-lg sm:text-xl text-stone-600 leading-relaxed italic mb-6">
+                  Créez vous aussi une carte postale magique avec vos photos et vidéos !
+                </p>
+                <Link
+                  href="/"
+                  className="sm:hidden inline-flex items-center gap-2 px-8 py-3 bg-teal-600 text-white rounded-full font-bold text-sm shadow-lg hover:bg-teal-700 transition-all active:scale-95 mx-auto"
+                >
+                  C&apos;est parti !
+                </Link>
+              </div>
+
+              {/* Right Side: Button & "Stamp" */}
+              <div className="flex-1 flex flex-col items-center justify-center relative">
+                {/* Decorative Stamp */}
+                <div className="absolute top-0 right-0 w-16 h-20 bg-white p-1 border border-stone-200 shadow-sm rotate-3 hidden sm:block">
+                  <div className="w-full h-full border border-teal-100 flex items-center justify-center bg-teal-50/30">
+                    <Mail size={20} className="text-teal-600 opacity-40 shrink-0" />
+                  </div>
+                </div>
+
+                <div className="hidden sm:flex flex-col items-center">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-300 mb-8 max-w-[120px] text-center">
+                    EXPÉDIÉ AVEC AMOUR DEPUIS CARTEPOSTALE.COOL
+                  </p>
+                  <Link
+                    href="/"
+                    className="inline-flex items-center gap-2 px-10 py-4 bg-teal-600 text-white rounded-full font-bold text-sm shadow-xl hover:bg-teal-700 transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
+                  >
+                    Créer ma carte postale
+                  </Link>
+                </div>
+              </div>
             </div>
+
+            {/* Subtle Texture Overlay */}
+            <div className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')]" />
           </div>
 
           <div className="mt-20 opacity-40 hover:opacity-100 transition-opacity duration-500">

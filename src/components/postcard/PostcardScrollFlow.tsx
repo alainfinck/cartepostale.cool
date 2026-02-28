@@ -693,7 +693,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
 
         {/* Media Album Section */}
         {mediaItems.length > 0 && (
-          <section ref={albumRef} className="mt-16 mb-24">
+          <section ref={albumRef} className="mt-16 mb-4">
             <div className="flex items-center gap-4 mb-10 px-4">
               <div className="w-12 h-px bg-stone-300/50" />
               <h3 className="text-[11px] font-black uppercase tracking-widest text-stone-400">
@@ -774,15 +774,6 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
             </div>
             <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">
               Album
-            </span>
-          </button>
-
-          <button className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all hover:bg-stone-50 active:scale-90 group">
-            <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
-              <Share2 size={16} className="stroke-[2.5]" />
-            </div>
-            <span className="text-[8px] font-bold uppercase tracking-wider text-stone-500">
-              Partage
             </span>
           </button>
         </div>

@@ -1383,7 +1383,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </div>
               )}
 
-              {/* Lieu du souvenir : toujours en bas à gauche, position fixe pour éviter tout décalage */}
+              {/* Lieu du souvenir */}
               {postcard.location && !isCoordinate(postcard.location) && (
                 <div className="absolute left-4 sm:left-6 bottom-4 sm:bottom-6 z-10 bg-white/90 backdrop-blur-md text-teal-900 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-semibold shadow-lg flex items-center gap-1.5">
                   <MapPin size={12} className="text-orange-500 shrink-0" />
@@ -1393,7 +1393,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </div>
               )}
 
-              {/* Bloc caption + emoji (affiché seulement si frontCaption ET frontEmoji) — position fixe ou déplaçable */}
+              {/* Bloc caption + emoji */}
               {postcard.frontCaption?.trim() && postcard.frontEmoji && (
                 <div
                   className={cn(
@@ -1914,17 +1914,17 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                   </div>
                   {/* Texte explicite sous la zone message : supprimé car unifié ci-dessous */}
                   {postcard.senderName && (
-                    <div className="mt-auto -mt-2 self-start transform -rotate-2 pt-2 pb-1 px-2 sm:px-4 relative shrink-0">
-                      <div className="absolute inset-0 bg-teal-50/30 blur-md rounded-full -rotate-3"></div>
+                    <div className="mt-auto self-start transform -rotate-2 pt-2 pb-4 px-2 sm:px-4 relative shrink-0">
+                      <div className="absolute inset-0 bg-teal-50/40 blur-lg rounded-full -rotate-3"></div>
                       <p
-                        className="text-teal-700 text-xl sm:text-3xl relative z-10 font-bold drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]"
+                        className="text-teal-700 text-2xl sm:text-4xl relative z-10 font-bold drop-shadow-[0_1.5px_2px_rgba(255,255,255,1)]"
                         style={{
                           fontFamily:
                             BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily ??
                             "'Dancing Script', cursive",
                         }}
                       >
-                        - {postcard.senderName}
+                        — {postcard.senderName}
                       </p>
                     </div>
                   )}
