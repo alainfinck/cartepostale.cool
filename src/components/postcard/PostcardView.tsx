@@ -1488,36 +1488,38 @@ const PostcardView: React.FC<PostcardViewProps> = ({
 
               <div className="flex flex-1 gap-6 md:gap-10 min-h-0 p-6 md:p-10">
                 {/* Left Column: Message */}
-                <div className="flex-1 flex flex-col pt-4 overflow-hidden min-h-0">
+                <div className="flex-1 flex flex-col pt-1.5 overflow-hidden min-h-0">
                   <div
-                    className="flex items-center gap-4 shrink-0 mb-2"
+                    className="flex items-center gap-2.5 shrink-0 mb-3"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+                    <div className="flex items-center bg-white/95 backdrop-blur-sm rounded-lg border border-stone-200 shadow-sm overflow-hidden">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation()
                           setBackTextScale((s) => Math.max(0.6, Number((s - 0.08).toFixed(2))))
                         }}
-                        className="w-9 h-9 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-r border-stone-100"
+                        className="w-7 h-7 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-r border-stone-100"
                         title="Réduire la taille du texte"
                         aria-label="Réduire la taille du texte"
                       >
-                        <Minus size={18} strokeWidth={2.5} />
+                        <Minus size={14} strokeWidth={2.5} />
                       </button>
-                      <span className="px-2 text-xs font-bold text-stone-500 select-none">A</span>
+                      <span className="px-1.5 text-[10px] font-bold text-stone-500 select-none">
+                        A
+                      </span>
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation()
                           setBackTextScale((s) => Math.min(1.5, Number((s + 0.08).toFixed(2))))
                         }}
-                        className="w-9 h-9 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-l border-stone-100"
+                        className="w-7 h-7 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-l border-stone-100"
                         title="Agrandir la taille du texte"
                         aria-label="Agrandir la taille du texte"
                       >
-                        <Plus size={18} strokeWidth={2.5} />
+                        <Plus size={14} strokeWidth={2.5} />
                       </button>
                     </div>
 
@@ -1530,15 +1532,15 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           setIsFontMenuOpen((o) => !o)
                         }}
                         className={cn(
-                          'h-9 flex items-center justify-center px-4 rounded-xl border shadow-sm transition-all',
+                          'h-7 flex items-center justify-center px-2.5 rounded-lg border shadow-sm transition-all',
                           isFontMenuOpen
                             ? 'bg-teal-50 border-teal-200 text-teal-700'
-                            : 'bg-white/90 backdrop-blur-sm border-stone-200 hover:bg-white text-stone-600',
+                            : 'bg-white/95 backdrop-blur-sm border-stone-200 hover:bg-white text-stone-600',
                         )}
                         title="Changer la police"
                       >
                         <span
-                          className="text-xs font-bold select-none pt-0.5"
+                          className="text-[10px] font-bold select-none pt-0.5"
                           style={{
                             fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)
                               ?.fontFamily,
@@ -1546,7 +1548,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                         >
                           Aa
                         </span>
-                        <ChevronDown size={14} className="ml-2 opacity-50" />
+                        <ChevronDown size={12} className="ml-1.5 opacity-50" />
                       </button>
                       <AnimatePresence>
                         {isFontMenuOpen && (
@@ -1601,49 +1603,94 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     </p>
                   </div>
                   {postcard.senderName && (
-                    <div className="mt-auto font-handwriting text-2xl md:text-4xl text-teal-700 pt-4 shrink-0">
-                      — {postcard.senderName}
+                    <div className="mt-auto font-handwriting text-xl md:text-3xl text-teal-700 pt-2 shrink-0">
+                      {postcard.senderName}
                     </div>
                   )}
                 </div>
 
                 {/* Right Column: Stamp & Address */}
-                <div className="w-[45%] flex flex-col border-l border-stone-200/50 pl-6 md:pl-10 relative h-full">
-                  <div className="self-end mb-8 group">
-                    <div className="relative w-16 h-20 md:w-24 md:h-28 bg-[#fdf5e6] p-1 border-[1.5px] border-orange-300/40 transform rotate-2 shadow-md">
-                      <div className="w-full h-full border border-orange-200/50 flex flex-col items-center justify-between p-1 bg-white/40">
-                        <span className="text-[6px] md:text-[8px] font-bold text-orange-900/60 uppercase text-center">
+                <div className="w-[38%] flex flex-col border-l border-stone-200/50 pl-6 md:pl-10 relative h-full">
+                  {/* Digital Poste Stamp - Smaller */}
+                  <div className="self-end mb-4 group z-20">
+                    <div className="relative w-12 h-16 md:w-16 md:h-20 bg-[#fdf5e6] p-1 border-[1px] border-orange-300/40 transform rotate-2 shadow-sm">
+                      <div className="w-full h-full border border-orange-200/50 flex flex-col items-center justify-between p-0.5 bg-white/40">
+                        <span className="text-[5px] md:text-[6px] font-bold text-orange-900/60 uppercase text-center leading-tight">
                           Digital Poste
                         </span>
                         <div className="flex-1 flex items-center justify-center opacity-40">
-                          <Compass size={24} className="text-orange-900" />
+                          <Compass size={16} className="text-orange-900" />
                         </div>
-                        <span className="text-[6px] md:text-[8px] font-bold text-orange-900/40">
+                        <span className="text-[5px] md:text-[6px] font-bold text-orange-900/40">
                           2026
                         </span>
                       </div>
                       <div
-                        className="absolute inset-0 border-[3px] border-[#fdfaf3] opacity-30 pointer-events-none"
+                        className="absolute inset-0 border-[2px] border-[#fdfaf3] opacity-30 pointer-events-none"
                         style={{
-                          mask: 'conic-gradient(from 45deg, transparent 0deg 90deg, black 90deg 360deg) 0 0/8px 8px round',
+                          mask: 'conic-gradient(from 45deg, transparent 0deg 90deg, black 90deg 360deg) 0 0/6px 6px round',
                         }}
                       />
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-4 mt-2 mb-6">
+                  {/* Circular Postmark (Tampon) - Added and Small */}
+                  <div className="absolute top-4 right-16 md:right-24 opacity-60 pointer-events-none transform -rotate-12 z-10">
+                    <div className="relative">
+                      <svg
+                        width="90"
+                        height="90"
+                        viewBox="0 0 140 140"
+                        className="text-stone-800/20 fill-current overflow-visible"
+                      >
+                        <circle
+                          cx="70"
+                          cy="70"
+                          r="55"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeDasharray="2 3"
+                        />
+                        <circle
+                          cx="70"
+                          cy="70"
+                          r="50"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2">
+                        <span className="text-[7px] font-black tracking-widest text-stone-600 uppercase mb-0.5">
+                          POSTAL
+                        </span>
+                        <div className="h-px w-6 bg-stone-300 my-0.5" />
+                        <span className="text-[6px] font-black text-teal-700 uppercase leading-none mb-0.5 max-w-[60px] truncate">
+                          {postcard.location || 'DESTINATION'}
+                        </span>
+                        <span className="text-[5px] font-serif text-stone-500 italic block">
+                          {postcard.date || 'FÉVRIER 2026'}
+                        </span>
+                        <div className="h-px w-6 bg-stone-300 my-0.5" />
+                        <span className="text-[5px] font-bold tracking-tighter text-stone-400">
+                          CERTIFIÉ COOL
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-4 mt-2 mb-4">
                     <div className="font-handwriting text-xl md:text-2xl text-stone-600 border-b border-stone-300/40 pb-1 min-h-[2.5rem] flex items-end">
                       <span className="opacity-40 text-sm mr-2 font-serif uppercase tracking-widest leading-none">
                         À :
                       </span>
                       {postcard.recipientName || 'Un ami proche'}
                     </div>
-                    <div className="h-px bg-stone-300/40 w-full" />
-                    <div className="h-px bg-stone-300/40 w-full" />
-                    <div className="h-px bg-stone-300/40 w-full mt-2" />
                   </div>
 
-                  <div className="flex-1 w-full min-h-0 flex flex-col mt-4">
+                  {/* Map area - Larger */}
+                  <div className="flex-1 w-full min-h-0 flex flex-col mt-2">
                     <div
                       className="flex-1 w-full min-h-0 rounded-xl overflow-hidden border-4 border-white shadow-xl transform rotate-1 z-20 group/map cursor-pointer relative"
                       onClick={(e) => {

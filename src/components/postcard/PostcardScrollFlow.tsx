@@ -498,9 +498,9 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
               <div className="h-full bg-[#fdfaf3] p-6 md:p-10 rounded-2xl shadow-[0_30px_80px_rgba(0,0,0,0.15)] border border-stone-200/50 flex flex-col">
                 <div className="flex flex-1 gap-6 md:gap-10 min-h-0">
                   {/* Left Column: Message — placement et style comme sur la carte, avec -/+ et scrollbar */}
-                  <div className="flex-1 flex flex-col pt-4 overflow-hidden min-h-0">
+                  <div className="flex-1 flex flex-col pt-1.5 overflow-hidden min-h-0">
                     <div
-                      className="flex items-center gap-4 shrink-0 mb-2"
+                      className="flex items-center gap-2.5 shrink-0 mb-3"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl border border-stone-200 shadow-sm overflow-hidden">
@@ -609,52 +609,49 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                         {message}
                       </p>
                     </div>
-                    <div className="mt-auto font-handwriting text-2xl md:text-4xl text-teal-700 pt-4 shrink-0">
-                      — {senderName}
+                    <div className="mt-auto font-handwriting text-xl md:text-3xl text-teal-700 pt-2 shrink-0">
+                      {senderName}
                     </div>
                   </div>
 
                   {/* Right Column: Stamp & Address Lines */}
-                  <div className="w-[45%] flex flex-col border-l border-stone-200/50 pl-6 md:pl-10 relative h-full">
-                    {/* Stamp Area */}
-                    <div className="self-end mb-8 group">
-                      <div className="relative w-16 h-20 md:w-24 md:h-28 bg-[#fdf5e6] p-1 border-[1.5px] border-orange-300/40 transform rotate-2 shadow-md">
-                        <div className="w-full h-full border border-orange-200/50 flex flex-col items-center justify-between p-1 bg-white/40">
-                          <span className="text-[6px] md:text-[8px] font-bold text-orange-900/60 uppercase text-center">
+                  <div className="w-[38%] flex flex-col border-l border-stone-200/50 pl-6 md:pl-10 relative h-full">
+                    {/* Stamp Area - Smaller */}
+                    <div className="self-end mb-4 group z-20">
+                      <div className="relative w-12 h-16 md:w-16 md:h-20 bg-[#fdf5e6] p-1 border-[1px] border-orange-300/40 transform rotate-2 shadow-sm">
+                        <div className="w-full h-full border border-orange-200/50 flex flex-col items-center justify-between p-0.5 bg-white/40">
+                          <span className="text-[5px] md:text-[6px] font-bold text-orange-900/60 uppercase text-center leading-tight">
                             Digital Poste
                           </span>
                           <div className="flex-1 flex items-center justify-center opacity-40">
-                            <Compass size={24} className="text-orange-900" />
+                            <Compass size={16} className="text-orange-900" />
                           </div>
-                          <span className="text-[6px] md:text-[8px] font-bold text-orange-900/40">
+                          <span className="text-[5px] md:text-[6px] font-bold text-orange-900/40">
                             2026
                           </span>
                         </div>
                         {/* Stamp sawtooth edges mask simulation */}
                         <div
-                          className="absolute inset-0 border-[3px] border-[#fdfaf3] opacity-30 pointer-events-none"
+                          className="absolute inset-0 border-[2px] border-[#fdfaf3] opacity-30 pointer-events-none"
                           style={{
-                            mask: 'conic-gradient(from 45deg, transparent 0deg 90deg, black 90deg 360deg) 0 0/8px 8px round',
+                            mask: 'conic-gradient(from 45deg, transparent 0deg 90deg, black 90deg 360deg) 0 0/6px 6px round',
                           }}
                         />
                       </div>
                     </div>
 
                     {/* Recipient & Address Lines */}
-                    <div className="flex flex-col gap-4 mt-2 mb-6">
-                      <div className="font-handwriting text-xl md:text-2xl text-stone-600 border-b border-stone-300/40 pb-1 min-h-[2.5rem] flex items-end">
-                        <span className="opacity-40 text-sm mr-2 font-serif uppercase tracking-widest leading-none">
+                    <div className="flex flex-col gap-4 mt-2 mb-4">
+                      <div className="font-handwriting text-lg md:text-xl text-stone-600 border-b border-stone-300/40 pb-1 min-h-[2rem] flex items-end">
+                        <span className="opacity-40 text-xs mr-2 font-serif uppercase tracking-widest leading-none">
                           À :
                         </span>
                         {postcard.recipientName || 'Un ami proche'}
                       </div>
-                      <div className="h-px bg-stone-300/40 w-full" />
-                      <div className="h-px bg-stone-300/40 w-full" />
-                      <div className="h-px bg-stone-300/40 w-full mt-2" />
                     </div>
 
-                    {/* Back MiniMap in Bottom Right */}
-                    <div className="flex-1 w-full min-h-0 flex flex-col mt-4">
+                    {/* Back MiniMap in Bottom Right - Larger */}
+                    <div className="flex-1 w-full min-h-0 flex flex-col mt-2">
                       {/* Note / Comment title if any */}
                       {postcard.mediaItems?.some((m) => m.note) && (
                         <div className="mb-2">
@@ -710,12 +707,12 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                   </button>
                 </div>
 
-                {/* Postmark / Tampon Date — Redesigned as per request */}
-                <div className="absolute top-10 right-28 opacity-60 pointer-events-none transform -rotate-12 z-10">
+                {/* Postmark / Tampon Date — Smaller */}
+                <div className="absolute top-6 right-16 md:right-24 opacity-60 pointer-events-none transform -rotate-12 z-10">
                   <div className="relative">
                     <svg
-                      width="140"
-                      height="140"
+                      width="100"
+                      height="100"
                       viewBox="0 0 140 140"
                       className="text-stone-800/20 fill-current overflow-visible"
                     >
