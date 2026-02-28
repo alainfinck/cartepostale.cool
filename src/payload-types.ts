@@ -475,6 +475,7 @@ export interface Reaction {
   id: number;
   postcard: number | Postcard;
   emoji: string;
+  mediaItemId?: string | null;
   sessionId: string;
   updatedAt: string;
   createdAt: string;
@@ -1127,6 +1128,7 @@ export interface TemplatesSelect<T extends boolean = true> {
 export interface ReactionsSelect<T extends boolean = true> {
   postcard?: T;
   emoji?: T;
+  mediaItemId?: T;
   sessionId?: T;
   updatedAt?: T;
   createdAt?: T;

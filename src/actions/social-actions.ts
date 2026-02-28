@@ -5,27 +5,27 @@ import config from '@payload-config'
 import { sendEmail } from '@/lib/email-service'
 
 function escapeHtml(value: string): string {
-    return value
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;')
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
 }
 
 function buildCommentNotificationEmail(params: {
-    postcardUrl: string
-    senderName?: string | null
-    commentAuthor: string
-    commentContent: string
-    isPrivate: boolean
+  postcardUrl: string
+  senderName?: string | null
+  commentAuthor: string
+  commentContent: string
+  isPrivate: boolean
 }) {
-    const sender = params.senderName?.trim() || 'votre carte'
-    const visibility = params.isPrivate
-        ? 'Ce message est privé (visible uniquement par vous).'
-        : 'Ce message est public (visible dans le livre d\'or).'
+  const sender = params.senderName?.trim() || 'votre carte'
+  const visibility = params.isPrivate
+    ? 'Ce message est privé (visible uniquement par vous).'
+    : "Ce message est public (visible dans le livre d'or)."
 
-    return `
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -54,266 +54,324 @@ function buildCommentNotificationEmail(params: {
     `.trim()
 }
 
-export async function getReactions(postcardId: number): Promise<{ counts: Record<string, number>; total: number }> {
-    try {
-        const payload = await getPayload({ config })
-        const result = await payload.find({
-            collection: 'reactions',
-            where: {
-                postcard: { equals: postcardId },
-            },
-            limit: 1000,
-        })
-
-        const counts: Record<string, number> = {}
-        let total = 0
-        for (const doc of result.docs) {
-            const emoji = doc.emoji
-            counts[emoji] = (counts[emoji] || 0) + 1
-            total++
-        }
-
-        return { counts, total }
-    } catch (error) {
-        console.error('Error fetching reactions:', error)
-        return { counts: {}, total: 0 }
+export async function getReactions(
+  postcardId: number,
+  mediaItemId?: string,
+): Promise<{ counts: Record<string, number>; total: number }> {
+  try {
+    const payload = await getPayload({ config })
+    const where: any = {
+      postcard: { equals: postcardId },
     }
+
+    if (mediaItemId) {
+      where.mediaItemId = { equals: mediaItemId }
+    } else {
+      // If no mediaItemId, only get reactions that DON'T have a mediaItemId (postcard-level)
+      where.mediaItemId = { exists: false }
+    }
+
+    const result = await payload.find({
+      collection: 'reactions',
+      where,
+      limit: 1000,
+    })
+
+    const counts: Record<string, number> = {}
+    let total = 0
+    for (const doc of result.docs) {
+      const emoji = doc.emoji
+      counts[emoji] = (counts[emoji] || 0) + 1
+      total++
+    }
+
+    return { counts, total }
+  } catch (error) {
+    console.error('Error fetching reactions:', error)
+    return { counts: {}, total: 0 }
+  }
 }
 
-export async function getUserReactions(postcardId: number, sessionId: string): Promise<Record<string, boolean>> {
-    try {
-        const payload = await getPayload({ config })
-        const result = await payload.find({
-            collection: 'reactions',
-            where: {
-                postcard: { equals: postcardId },
-                sessionId: { equals: sessionId },
-            },
-            limit: 100,
-        })
-
-        const userReactions: Record<string, boolean> = {}
-        for (const doc of result.docs) {
-            userReactions[doc.emoji] = true
-        }
-
-        return userReactions
-    } catch (error) {
-        console.error('Error fetching user reactions:', error)
-        return {}
+export async function getUserReactions(
+  postcardId: number,
+  sessionId: string,
+  mediaItemId?: string,
+): Promise<Record<string, boolean>> {
+  try {
+    const payload = await getPayload({ config })
+    const where: any = {
+      postcard: { equals: postcardId },
+      sessionId: { equals: sessionId },
     }
+
+    if (mediaItemId) {
+      where.mediaItemId = { equals: mediaItemId }
+    } else {
+      where.mediaItemId = { exists: false }
+    }
+
+    const result = await payload.find({
+      collection: 'reactions',
+      where,
+      limit: 100,
+    })
+
+    const userReactions: Record<string, boolean> = {}
+    for (const doc of result.docs) {
+      userReactions[doc.emoji] = true
+    }
+
+    return userReactions
+  } catch (error) {
+    console.error('Error fetching user reactions:', error)
+    return {}
+  }
 }
 
 export async function toggleReaction(
-    postcardId: number,
-    emoji: string,
-    sessionId: string
+  postcardId: number,
+  emoji: string,
+  sessionId: string,
+  mediaItemId?: string,
 ): Promise<{ added: boolean; newCount: number }> {
-    try {
-        const payload = await getPayload({ config })
+  try {
+    const payload = await getPayload({ config })
 
-        // Check if user already reacted with this emoji
-        const existing = await payload.find({
-            collection: 'reactions',
-            where: {
-                postcard: { equals: postcardId },
-                emoji: { equals: emoji },
-                sessionId: { equals: sessionId },
-            },
-            limit: 1,
-        })
-
-        if (existing.totalDocs > 0) {
-            // Remove reaction
-            await payload.delete({
-                collection: 'reactions',
-                id: existing.docs[0].id,
-                overrideAccess: true,
-            })
-
-            // Get updated count
-            const countResult = await payload.find({
-                collection: 'reactions',
-                where: {
-                    postcard: { equals: postcardId },
-                    emoji: { equals: emoji },
-                },
-                limit: 0,
-            })
-
-            return { added: false, newCount: countResult.totalDocs }
-        } else {
-            // Add reaction
-            await payload.create({
-                collection: 'reactions',
-                data: {
-                    postcard: postcardId,
-                    emoji,
-                    sessionId,
-                },
-            })
-
-            // Get updated count
-            const countResult = await payload.find({
-                collection: 'reactions',
-                where: {
-                    postcard: { equals: postcardId },
-                    emoji: { equals: emoji },
-                },
-                limit: 0,
-            })
-
-            return { added: true, newCount: countResult.totalDocs }
-        }
-    } catch (error) {
-        console.error('Error toggling reaction:', error)
-        return { added: false, newCount: 0 }
+    const where: any = {
+      postcard: { equals: postcardId },
+      emoji: { equals: emoji },
+      sessionId: { equals: sessionId },
     }
+
+    if (mediaItemId) {
+      where.mediaItemId = { equals: mediaItemId }
+    } else {
+      where.mediaItemId = { exists: false }
+    }
+
+    // Check if user already reacted
+    const existing = await payload.find({
+      collection: 'reactions',
+      where,
+      limit: 1,
+    })
+
+    if (existing.totalDocs > 0) {
+      // Remove reaction
+      await payload.delete({
+        collection: 'reactions',
+        id: existing.docs[0].id,
+        overrideAccess: true,
+      })
+
+      // Get updated count
+      const countWhere: any = {
+        postcard: { equals: postcardId },
+        emoji: { equals: emoji },
+      }
+      if (mediaItemId) {
+        countWhere.mediaItemId = { equals: mediaItemId }
+      } else {
+        countWhere.mediaItemId = { exists: false }
+      }
+
+      const countResult = await payload.find({
+        collection: 'reactions',
+        where: countWhere,
+        limit: 0,
+      })
+
+      return { added: false, newCount: countResult.totalDocs }
+    } else {
+      // Add reaction
+      await payload.create({
+        collection: 'reactions',
+        data: {
+          postcard: postcardId,
+          emoji,
+          mediaItemId,
+          sessionId,
+        },
+      })
+
+      // Get updated count
+      const countWhere: any = {
+        postcard: { equals: postcardId },
+        emoji: { equals: emoji },
+      }
+      if (mediaItemId) {
+        countWhere.mediaItemId = { equals: mediaItemId }
+      } else {
+        countWhere.mediaItemId = { exists: false }
+      }
+
+      const countResult = await payload.find({
+        collection: 'reactions',
+        where: countWhere,
+        limit: 0,
+      })
+
+      return { added: true, newCount: countResult.totalDocs }
+    }
+  } catch (error) {
+    console.error('Error toggling reaction:', error)
+    return { added: false, newCount: 0 }
+  }
 }
 
 export async function getComments(postcardId: number) {
-    try {
-        const payload = await getPayload({ config })
-        const result = await payload.find({
-            collection: 'comments',
-            where: {
-                postcard: { equals: postcardId },
-                isPrivate: { not_equals: true },
-            },
-            sort: '-createdAt',
-            limit: 100,
-        })
+  try {
+    const payload = await getPayload({ config })
+    const result = await payload.find({
+      collection: 'comments',
+      where: {
+        postcard: { equals: postcardId },
+        isPrivate: { not_equals: true },
+      },
+      sort: '-createdAt',
+      limit: 100,
+    })
 
-        return result.docs.map((doc) => ({
-            id: doc.id,
-            authorName: doc.authorName,
-            content: doc.content,
-            createdAt: doc.createdAt,
-        }))
-    } catch (error) {
-        console.error('Error fetching comments:', error)
-        return []
-    }
+    return result.docs.map((doc) => ({
+      id: doc.id,
+      authorName: doc.authorName,
+      content: doc.content,
+      createdAt: doc.createdAt,
+    }))
+  } catch (error) {
+    console.error('Error fetching comments:', error)
+    return []
+  }
 }
 
 export async function addComment(
-    postcardId: number,
-    authorName: string,
-    content: string,
-    sessionId: string,
-    isPrivate: boolean = false,
-): Promise<{ success: boolean; comment?: { id: number; authorName: string; content: string; createdAt: string; isPrivate: boolean } }> {
-    try {
-        const payload = await getPayload({ config })
-        const sanitizedAuthorName = authorName.trim().slice(0, 50)
-        const sanitizedContent = content.trim().slice(0, 500)
+  postcardId: number,
+  authorName: string,
+  content: string,
+  sessionId: string,
+  isPrivate: boolean = false,
+): Promise<{
+  success: boolean
+  comment?: {
+    id: number
+    authorName: string
+    content: string
+    createdAt: string
+    isPrivate: boolean
+  }
+}> {
+  try {
+    const payload = await getPayload({ config })
+    const sanitizedAuthorName = authorName.trim().slice(0, 50)
+    const sanitizedContent = content.trim().slice(0, 500)
 
-        const doc = await payload.create({
-            collection: 'comments',
-            data: {
-                postcard: postcardId,
-                authorName: sanitizedAuthorName,
-                content: sanitizedContent,
-                sessionId,
-                isPrivate,
-            },
+    const doc = await payload.create({
+      collection: 'comments',
+      data: {
+        postcard: postcardId,
+        authorName: sanitizedAuthorName,
+        content: sanitizedContent,
+        sessionId,
+        isPrivate,
+      },
+    })
+
+    // Non-blocking email notification to postcard owner.
+    try {
+      const postcard = await payload.findByID({
+        collection: 'postcards',
+        id: postcardId,
+        depth: 1,
+      })
+      const authorRelation = postcard.author
+      const authorEmail =
+        typeof authorRelation === 'object' && authorRelation?.email
+          ? authorRelation.email
+          : postcard.senderEmail || null
+
+      if (authorEmail) {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.cartepostale.cool'
+        const postcardUrl = `${siteUrl.replace(/\/$/, '')}/view/${postcard.publicId}`
+        const subject = isPrivate
+          ? 'Nouveau message prive sur votre carte'
+          : 'Nouveau message sur votre carte'
+
+        const html = buildCommentNotificationEmail({
+          postcardUrl,
+          senderName: postcard.senderName,
+          commentAuthor: sanitizedAuthorName,
+          commentContent: sanitizedContent,
+          isPrivate,
         })
 
-        // Non-blocking email notification to postcard owner.
-        try {
-            const postcard = await payload.findByID({
-                collection: 'postcards',
-                id: postcardId,
-                depth: 1,
-            })
-            const authorRelation = postcard.author
-            const authorEmail = typeof authorRelation === 'object' && authorRelation?.email
-                ? authorRelation.email
-                : postcard.senderEmail || null
+        const sent = await sendEmail({
+          to: authorEmail,
+          subject,
+          html,
+        })
 
-            if (authorEmail) {
-                const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.cartepostale.cool'
-                const postcardUrl = `${siteUrl.replace(/\/$/, '')}/view/${postcard.publicId}`
-                const subject = isPrivate
-                    ? 'Nouveau message prive sur votre carte'
-                    : 'Nouveau message sur votre carte'
-
-                const html = buildCommentNotificationEmail({
-                    postcardUrl,
-                    senderName: postcard.senderName,
-                    commentAuthor: sanitizedAuthorName,
-                    commentContent: sanitizedContent,
-                    isPrivate,
-                })
-
-                const sent = await sendEmail({
-                    to: authorEmail,
-                    subject,
-                    html,
-                })
-
-                if (!sent) {
-                    console.error('Comment notification email failed to send')
-                }
-            }
-        } catch (notifyError) {
-            console.error('Error sending comment notification email:', notifyError)
+        if (!sent) {
+          console.error('Comment notification email failed to send')
         }
-
-        return {
-            success: true,
-            comment: {
-                id: doc.id,
-                authorName: doc.authorName,
-                content: doc.content,
-                createdAt: doc.createdAt,
-                isPrivate: doc.isPrivate || false,
-            },
-        }
-    } catch (error) {
-        console.error('Error adding comment:', error)
-        return { success: false }
+      }
+    } catch (notifyError) {
+      console.error('Error sending comment notification email:', notifyError)
     }
+
+    return {
+      success: true,
+      comment: {
+        id: doc.id,
+        authorName: doc.authorName,
+        content: doc.content,
+        createdAt: doc.createdAt,
+        isPrivate: doc.isPrivate || false,
+      },
+    }
+  } catch (error) {
+    console.error('Error adding comment:', error)
+    return { success: false }
+  }
 }
 
 export async function incrementViews(postcardId: number): Promise<void> {
-    try {
-        const payload = await getPayload({ config })
-        const postcard = await payload.findByID({
-            collection: 'postcards',
-            id: postcardId,
-        })
+  try {
+    const payload = await getPayload({ config })
+    const postcard = await payload.findByID({
+      collection: 'postcards',
+      id: postcardId,
+    })
 
-        await payload.update({
-            collection: 'postcards',
-            id: postcardId,
-            data: {
-                views: (postcard.views || 0) + 1,
-            },
-            overrideAccess: true,
-        })
-    } catch (error) {
-        console.error('Error incrementing views:', error)
-    }
+    await payload.update({
+      collection: 'postcards',
+      id: postcardId,
+      data: {
+        views: (postcard.views || 0) + 1,
+      },
+      overrideAccess: true,
+    })
+  } catch (error) {
+    console.error('Error incrementing views:', error)
+  }
 }
 
 export async function incrementShares(postcardId: number): Promise<void> {
-    try {
-        const payload = await getPayload({ config })
-        const postcard = await payload.findByID({
-            collection: 'postcards',
-            id: postcardId,
-        })
+  try {
+    const payload = await getPayload({ config })
+    const postcard = await payload.findByID({
+      collection: 'postcards',
+      id: postcardId,
+    })
 
-        await payload.update({
-            collection: 'postcards',
-            id: postcardId,
-            data: {
-                shares: (postcard.shares || 0) + 1,
-            },
-            overrideAccess: true,
-        })
-    } catch (error) {
-        console.error('Error incrementing shares:', error)
-    }
+    await payload.update({
+      collection: 'postcards',
+      id: postcardId,
+      data: {
+        shares: (postcard.shares || 0) + 1,
+      },
+      overrideAccess: true,
+    })
+  } catch (error) {
+    console.error('Error incrementing shares:', error)
+  }
 }
