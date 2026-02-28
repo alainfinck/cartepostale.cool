@@ -224,7 +224,7 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
           <motion.div
             initial={false}
             animate={{ rotateY: isFlipped ? 180 : 0 }}
-            transition={{ duration: 0.8, type: 'spring', stiffness: 260, damping: 20 }}
+            transition={{ duration: 1.5, type: 'spring', stiffness: 40, damping: 15 }}
             style={{ transformStyle: 'preserve-3d' }}
             className="relative w-full aspect-[4/3] cursor-pointer group"
             onClick={() => setIsFlipped(!isFlipped)}
@@ -345,7 +345,7 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
                   </div>
 
                   {/* Right Column: Stamp & Address Lines */}
-                  <div className="w-[45%] flex flex-col border-l border-stone-200/50 pl-6 md:pl-10 relative">
+                  <div className="w-[45%] flex flex-col border-l border-stone-200/50 pl-6 md:pl-10 relative h-full">
                     {/* Stamp Area */}
                     <div className="self-end mb-8 group">
                       <div className="relative w-16 h-20 md:w-24 md:h-28 bg-[#fdf5e6] p-1 border-[1.5px] border-orange-300/40 transform rotate-2 shadow-md">
@@ -371,7 +371,7 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
                     </div>
 
                     {/* Recipient & Address Lines */}
-                    <div className="flex flex-col gap-4 mt-2 mb-10">
+                    <div className="flex flex-col gap-4 mt-2 mb-6">
                       <div className="font-handwriting text-xl md:text-2xl text-stone-600 border-b border-stone-300/40 pb-1 min-h-[2.5rem] flex items-end">
                         <span className="opacity-40 text-sm mr-2 font-serif uppercase tracking-widest leading-none">
                           À :
@@ -385,7 +385,7 @@ export default function PostcardScrollFlow({ postcard }: PostcardScrollFlowProps
 
                     {/* Back MiniMap in Bottom Right */}
                     <div
-                      className="absolute bottom-2 right-2 w-40 h-40 md:w-64 md:h-64 rounded-xl overflow-hidden border-4 border-white shadow-xl transform rotate-1 z-20 group/map cursor-pointer"
+                      className="flex-1 w-full min-h-0 rounded-xl overflow-hidden border-4 border-white shadow-xl transform rotate-1 z-20 group/map cursor-pointer relative"
                       onClick={(e) => {
                         e.stopPropagation() // Prevents flipping the card when interacting with the map
                         setIsMapModalOpen(true)
