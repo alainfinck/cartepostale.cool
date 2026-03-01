@@ -128,6 +128,8 @@ export interface Postcard {
   puzzleCardEnabled?: boolean
   puzzleCardDifficulty?: '3' | '4' | '5'
   hideMap?: boolean
+  /** Bannière promotionnelle de l'agence (optionnelle) */
+  agencyBanner?: AgencyBanner
 }
 
 export interface Sticker {
@@ -156,6 +158,15 @@ export interface EmojiSticker {
   scale: number // multiplicateur de taille (1 = ~48px)
 }
 
+export interface AgencyBanner {
+  enabled: boolean
+  text?: string
+  subtext?: string
+  color?: string
+  textColor?: string
+  link?: string
+}
+
 export interface AgencyConfig {
   id: string
   name: string
@@ -163,6 +174,7 @@ export interface AgencyConfig {
   primaryColor: string
   imageBank: string[]
   qrCodeUrl: string
+  banner?: AgencyBanner
 }
 
 export interface Lead {

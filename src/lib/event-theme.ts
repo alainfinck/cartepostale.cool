@@ -94,7 +94,7 @@ const EVENT_THEMES: Partial<Record<TemplateCategory, EventTheme>> = {
 }
 
 const DEFAULT_THEME: EventTheme = {
-  heroTitle: 'Vous avez reçu une carte postale de la part de',
+  heroTitle: 'Vous avez reçu\nune carte postale\nde la part de',
   icon: '',
   pageBg: 'bg-[#fdfbf7]',
   signatureColor: 'text-teal-700',

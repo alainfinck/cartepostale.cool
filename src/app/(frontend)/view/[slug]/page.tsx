@@ -141,6 +141,21 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
       : undefined,
     puzzleCardEnabled: payloadPostcard.puzzleCardEnabled || false,
     puzzleCardDifficulty: (payloadPostcard.puzzleCardDifficulty as '3' | '4' | '5') || '3',
+    agencyBanner: (() => {
+      const agencyObj =
+        typeof payloadPostcard.agency === 'object' && payloadPostcard.agency
+          ? (payloadPostcard.agency as any)
+          : null
+      if (!agencyObj?.bannerEnabled || !agencyObj?.bannerText) return undefined
+      return {
+        enabled: true as const,
+        text: agencyObj.bannerText || undefined,
+        subtext: agencyObj.bannerSubtext || undefined,
+        color: agencyObj.bannerColor || '#0d9488',
+        textColor: agencyObj.bannerTextColor || '#ffffff',
+        link: agencyObj.bannerLink || undefined,
+      }
+    })(),
   }
 }
 

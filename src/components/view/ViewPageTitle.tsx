@@ -4,8 +4,8 @@ import React, { useEffect } from 'react'
 import { motion, easeOut } from 'framer-motion'
 import { Heart } from 'lucide-react'
 import { fireSideCannons } from '@/components/ui/confetti'
-import { TextAnimate } from '@/components/ui/text-animate'
 import type { TemplateCategory } from '@/types'
+import { HeroTitleWithBreaks } from '@/components/view/EnvelopeHero'
 import { getEventTheme } from '@/lib/event-theme'
 
 /** Épingle rouge type Google Maps — SVG drop shape */
@@ -51,15 +51,11 @@ export default function ViewPageTitle({ title, senderName, location, date, event
 
   return (
     <div className="text-center mb-4 md:mb-6 px-4 mt-2 md:mt-4 pt-2 landscape:mb-1 landscape:mt-1 landscape:pt-0 relative z-10 flex flex-col items-center gap-2">
-      <TextAnimate
-        animation="fadeIn"
-        by="character"
-        duration={1.5}
-        startOnView={false}
+      <HeroTitleWithBreaks
+        title={theme.heroTitle}
+        icon={theme.icon}
         className="text-xl sm:text-2xl md:text-4xl font-serif font-bold text-stone-800 leading-tight tracking-tight [-webkit-font-smoothing:antialiased] mx-auto max-w-xs sm:max-w-none"
-      >
-        {theme.icon ? `${theme.heroTitle} ${theme.icon}` : theme.heroTitle}
-      </TextAnimate>
+      />
       <motion.div
         className="flex items-center justify-center text-stone-500"
         initial={{ opacity: 0, y: 30, filter: 'blur(10px)' }}

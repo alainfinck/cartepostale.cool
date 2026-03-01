@@ -27,8 +27,14 @@ interface FlipCardProps {
   }
   /** Optional external motion value for rotation (e.g. for keyframe animations) */
   rotation?: MotionValue<number>
+  /** Whether to use a spring for the rotation animation (default: true) */
+  useSpring?: boolean
   /** Whether to enable the opacity fade during flip to prevent ghosting (Safari fix) */
   enableOpacityFade?: boolean
+  /** Optional click handler for the card */
+  onClick?: () => void
+  /** Optional styles for the root container */
+  style?: React.CSSProperties
 }
 
 /**
@@ -45,12 +51,16 @@ const FlipCard: React.FC<FlipCardProps> = ({
   faceClassName,
   springConfig = { stiffness: 20, damping: 20 },
   rotation: externalRotation,
+  useSpring: useSpringProp = true,
   enableOpacityFade = true,
+  onClick,
+  style,
 }) => {
   const rotateValue = isFlipped ? 180 : 0
   const internalRotation = useMotionValue(rotateValue)
   const rotation = externalRotation || internalRotation
-  const springRotation = useSpring(rotation, springConfig)
+  const internalSpringRotation = useSpring(rotation, springConfig)
+  const springRotation = useSpringProp ? internalSpringRotation : rotation
 
   // Opacity transforms to prevent ghosting during the flip
   // These are derived from the spring value to sync perfectly with the movement
@@ -67,7 +77,11 @@ const FlipCard: React.FC<FlipCardProps> = ({
   const isHorizontal = direction === 'horizontal'
 
   return (
-    <div className={cn('perspective-1000 relative', className)} style={{ perspective: 1000 }}>
+    <div
+      className={cn('perspective-1000 relative', className)}
+      style={{ ...style, perspective: 1000 }}
+      onClick={onClick}
+    >
       <motion.div
         className={cn('relative w-full h-full transform-style-3d', innerClassName)}
         style={{

@@ -7,21 +7,36 @@ import { cn } from '@/lib/utils'
 
 export const ScrollToTopButton = () => {
   const [visible, setVisible] = useState(false)
+  const [isSlideshowOpen, setIsSlideshowOpen] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
       setVisible(window.scrollY > 200)
     }
 
+    const checkSlideshow = () => {
+      setIsSlideshowOpen(document.body.classList.contains('slideshow-open'))
+    }
+
     handleScroll()
+    checkSlideshow()
+
     window.addEventListener('scroll', handleScroll, { passive: true })
 
-    return () => window.removeEventListener('scroll', handleScroll)
+    const observer = new MutationObserver(checkSlideshow)
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] })
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      observer.disconnect()
+    }
   }, [])
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
+  if (isSlideshowOpen) return null
 
   return (
     <button

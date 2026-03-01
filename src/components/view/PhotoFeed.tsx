@@ -163,7 +163,7 @@ const InstaCard = ({
                 <Heart
                   size={24}
                   className={cn(
-                    'w-5 h-5 sm:w-6 sm:h-6 transition-all duration-500 ease-out shrink-0',
+                    'w-6 h-6 sm:w-7 sm:h-7 transition-all duration-500 ease-out shrink-0',
                     userReactions['❤️'] ? 'fill-red-500 text-red-500 scale-110' : 'text-stone-900',
                   )}
                   strokeWidth={userReactions['❤️'] ? 0 : 2}
@@ -228,30 +228,39 @@ const InstaCard = ({
         )}
 
         {/* Métadonnées : expéditeur, lieu, date de prise */}
-        <div className="flex flex-col items-center gap-1 text-[9px] sm:text-[10px] uppercase font-black tracking-[0.15em] text-stone-400">
-          <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
-            <span>{senderName}</span>
+        <div className="flex flex-col items-center gap-1.5 text-[9px] sm:text-[10px] uppercase font-black tracking-[0.15em] text-stone-400">
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+            <span className="text-stone-500 font-extrabold">{senderName}</span>
             {item.location != null && String(item.location).trim() !== '' && (
               <>
                 <span className="opacity-30">•</span>
                 <span className="inline-flex items-center gap-1">
-                  <MapPin size={10} className="shrink-0" />
+                  <MapPin size={10} className="shrink-0 text-teal-500/60" />
                   {String(item.location).trim()}
                 </span>
               </>
             )}
-            <span className="opacity-30">•</span>
-            {item.exif?.dateTime != null ? (
-              <span className="inline-flex items-center gap-1" title="Date de prise de vue">
-                <Calendar size={10} className="shrink-0" />
-                {new Date(item.exif.dateTime).toLocaleDateString('fr-FR', {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
-                })}
-              </span>
-            ) : (
-              <span>Album</span>
+            {item.exif?.dateTime != null && (
+              <>
+                <span className="opacity-30">•</span>
+                <span className="inline-flex items-center gap-1" title="Date de prise de vue">
+                  <Calendar size={10} className="shrink-0 text-orange-400/60" />
+                  {new Date(item.exif.dateTime).toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </span>
+              </>
+            )}
+            {canShowReactions && (counts['❤️'] ?? 0) > 0 && (
+              <>
+                <span className="opacity-30">•</span>
+                <span className="inline-flex items-center gap-1">
+                  <Heart size={10} className="shrink-0 text-red-400/60 fill-red-400/20" />
+                  {counts['❤️']}
+                </span>
+              </>
             )}
           </div>
         </div>
@@ -315,6 +324,19 @@ export default function PhotoFeed({
   useEffect(() => {
     setIsFlipped(false)
     setIsImageLoading(true)
+
+    if (selectedIndex !== null) {
+      document.body.style.overflow = 'hidden'
+      document.body.classList.add('slideshow-open')
+    } else {
+      document.body.style.overflow = ''
+      document.body.classList.remove('slideshow-open')
+    }
+
+    return () => {
+      document.body.style.overflow = ''
+      document.body.classList.remove('slideshow-open')
+    }
   }, [selectedIndex, viewMode])
 
   const paginate = useCallback(
@@ -478,7 +500,7 @@ export default function PhotoFeed({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[99999] bg-black/98 backdrop-blur-2xl flex flex-col items-center justify-center overflow-hidden min-h-screen"
+                className="fixed inset-0 z-[99999] bg-black/98 backdrop-blur-2xl flex flex-col items-center justify-center overflow-hidden min-h-screen touch-none overscroll-none"
                 onClick={() => setSelectedIndex(null)}
               >
                 {/* Close button */}
@@ -624,7 +646,7 @@ export default function PhotoFeed({
                         className={cn(
                           'relative transition-transform duration-700 ease-in-out mx-auto',
                           viewMode === 'diapo'
-                            ? 'flex flex-col bg-white shadow-[0_60px_120px_-20px_rgba(0,0,0,0.5)] rounded-sm p-3.5 sm:p-6 pb-24 sm:pb-40 h-full max-h-[85vh] aspect-[3.5/4.5] shrink-0'
+                            ? 'flex flex-col bg-white shadow-[0_60px_120px_-20px_rgba(0,0,0,0.5)] rounded-sm p-1.5 sm:p-3 pb-24 sm:pb-40 h-full max-h-[85vh] aspect-[3.5/4.5] shrink-0'
                             : 'w-full inline-flex max-h-[85vh] max-w-[95vw] items-center justify-center',
                         )}
                         style={{
@@ -661,7 +683,7 @@ export default function PhotoFeed({
                         ) : (
                           /* Mode photo entière : bordure blanche épaisse uniquement autour de la photo */
                           <div
-                            className="relative rounded-sm border-[12px] sm:border-[20px] border-white bg-white shadow-2xl inline-block overflow-hidden"
+                            className="relative rounded-sm border-[4px] sm:border-[8px] border-white bg-white shadow-2xl inline-block overflow-hidden"
                             style={{
                               backfaceVisibility: 'hidden',
                             }}
@@ -686,11 +708,46 @@ export default function PhotoFeed({
                                 onLoad={() => setIsImageLoading(false)}
                               />
                             )}
+                            {/* Metadata overlay for full mode */}
+                            <div className="absolute top-3 left-3 right-3 flex flex-col gap-1 pointer-events-none z-10">
+                              <div className="flex flex-wrap gap-2">
+                                {sortedMediaItems[selectedIndex].location && (
+                                  <div className="bg-black/30 backdrop-blur-md px-2 py-1 rounded-full border border-white/10 flex items-center gap-1.5 shadow-sm">
+                                    <MapPin size={10} className="text-white/80" />
+                                    <span className="text-[9px] font-bold text-white uppercase tracking-wider">
+                                      {String(sortedMediaItems[selectedIndex].location).trim()}
+                                    </span>
+                                  </div>
+                                )}
+                                {sortedMediaItems[selectedIndex].exif?.dateTime && (
+                                  <div className="bg-black/30 backdrop-blur-md px-2 py-1 rounded-full border border-white/10 flex items-center gap-1.5 shadow-sm">
+                                    <Calendar size={10} className="text-white/80" />
+                                    <span className="text-[9px] font-bold text-white uppercase tracking-wider">
+                                      {new Date(
+                                        sortedMediaItems[selectedIndex].exif!.dateTime!,
+                                      ).toLocaleDateString('fr-FR', {
+                                        day: '2-digit',
+                                        month: 'short',
+                                      })}
+                                    </span>
+                                  </div>
+                                )}
+                                {canShowReactions && (counts['❤️'] ?? 0) > 0 && (
+                                  <div className="bg-black/30 backdrop-blur-md px-2 py-1 rounded-full border border-white/10 flex items-center gap-1.5 shadow-sm">
+                                    <Heart size={10} className="text-red-400 fill-red-400/20" />
+                                    <span className="text-[9px] font-bold text-white">
+                                      {counts['❤️']}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
                             {sortedMediaItems[selectedIndex].note && (
                               <div className="absolute bottom-3 right-3 z-10">
                                 <button
                                   onClick={() => setIsFlipped(true)}
-                                  className="flex items-center gap-2 px-4 py-2 bg-black/60 hover:bg-black/80 text-white rounded-full text-xs font-bold transition-all backdrop-blur-sm border border-white/20"
+                                  className="flex items-center gap-2 px-4 py-2 bg-black/60 hover:bg-black/80 text-white rounded-full text-xs font-bold transition-all backdrop-blur-sm border border-white/20 shadow-lg"
                                 >
                                   <StickyNote size={14} />
                                   <span>Lire la note</span>
@@ -707,14 +764,37 @@ export default function PhotoFeed({
                             style={{ backfaceVisibility: 'hidden' }}
                           >
                             {/* Métadonnées style Pola */}
-                            <div className="flex flex-col items-center gap-1 text-[10px] sm:text-[12px] uppercase font-black tracking-[0.2em] text-stone-400 text-center">
+                            <div className="flex flex-col items-center gap-1.5 text-[10px] sm:text-[12px] uppercase font-black tracking-[0.2em] text-stone-400 text-center">
                               <span className="text-stone-500">{senderName}</span>
-                              {sortedMediaItems[selectedIndex].location && (
-                                <span className="flex items-center gap-1.5">
-                                  <MapPin size={12} className="shrink-0" />
-                                  {String(sortedMediaItems[selectedIndex].location).trim()}
-                                </span>
-                              )}
+                              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 mt-0.5">
+                                {sortedMediaItems[selectedIndex].location && (
+                                  <span className="flex items-center gap-1.5">
+                                    <MapPin size={12} className="shrink-0 text-teal-500/60" />
+                                    {String(sortedMediaItems[selectedIndex].location).trim()}
+                                  </span>
+                                )}
+                                {sortedMediaItems[selectedIndex].exif?.dateTime && (
+                                  <span className="flex items-center gap-1.5">
+                                    <Calendar size={12} className="shrink-0 text-orange-400/60" />
+                                    {new Date(
+                                      sortedMediaItems[selectedIndex].exif!.dateTime!,
+                                    ).toLocaleDateString('fr-FR', {
+                                      day: '2-digit',
+                                      month: 'short',
+                                      year: 'numeric',
+                                    })}
+                                  </span>
+                                )}
+                                {canShowReactions && (counts['❤️'] ?? 0) > 0 && (
+                                  <span className="flex items-center gap-1.5">
+                                    <Heart
+                                      size={12}
+                                      className="shrink-0 text-red-500/60 fill-red-500/20"
+                                    />
+                                    {counts['❤️']}
+                                  </span>
+                                )}
+                              </div>
                             </div>
 
                             {sortedMediaItems[selectedIndex].note && (

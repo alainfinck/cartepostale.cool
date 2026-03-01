@@ -22,6 +22,15 @@ export const GalleryCategory: CollectionConfig = {
       type: 'textarea',
     },
     {
+      name: 'parent',
+      type: 'relationship',
+      relationTo: 'gallery-categories',
+      hasMany: false,
+      admin: {
+        description: 'Catégorie parente (laisser vide pour une catégorie de premier niveau)',
+      },
+    },
+    {
       name: 'agency',
       type: 'relationship',
       relationTo: 'agencies',

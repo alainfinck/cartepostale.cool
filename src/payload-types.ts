@@ -237,6 +237,13 @@ export interface Agency {
       }[]
     | null;
   qrCodeUrl?: string | null;
+  bannerEnabled?: boolean | null;
+  bannerText?: string | null;
+  bannerSubtext?: string | null;
+  bannerColor?: string | null;
+  bannerTextColor?: string | null;
+  bannerLink?: string | null;
+  bannerImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -596,6 +603,10 @@ export interface GalleryCategory {
   generateSlug?: boolean | null;
   slug: string;
   description?: string | null;
+  /**
+   * Catégorie parente (laisser vide pour une catégorie de premier niveau)
+   */
+  parent?: (number | null) | GalleryCategory;
   /**
    * Agence propriétaire de cette catégorie (laisser vide pour les catégories globales)
    */
@@ -1028,6 +1039,13 @@ export interface AgenciesSelect<T extends boolean = true> {
         id?: T;
       };
   qrCodeUrl?: T;
+  bannerEnabled?: T;
+  bannerText?: T;
+  bannerSubtext?: T;
+  bannerColor?: T;
+  bannerTextColor?: T;
+  bannerLink?: T;
+  bannerImage?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1194,6 +1212,7 @@ export interface GalleryCategoriesSelect<T extends boolean = true> {
   generateSlug?: T;
   slug?: T;
   description?: T;
+  parent?: T;
   agency?: T;
   updatedAt?: T;
   createdAt?: T;

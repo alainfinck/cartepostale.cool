@@ -76,7 +76,7 @@ export default function EnvelopeExperience({
                 className="flex flex-col items-center gap-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/80 group"
               >
                 <motion.div
-                  className="relative w-[min(600px,95vw)] aspect-[5/3] overflow-visible"
+                  className="relative w-[min(540px,90vw)] aspect-[5/3] overflow-visible"
                   transition={{ type: 'spring', stiffness: 100, damping: 20 }}
                   variants={{
                     rest: {
@@ -84,9 +84,9 @@ export default function EnvelopeExperience({
                       scale: 0.92,
                     },
                     floating: {
-                      y: [0, -10, 0],
+                      y: [0, -8, 0],
                       rotate: [0, 1, -1, 0],
-                      scale: 1,
+                      scale: 0.96,
                       transition: {
                         y: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
                         rotate: { duration: 5, repeat: Infinity, ease: 'easeInOut' },
@@ -94,14 +94,14 @@ export default function EnvelopeExperience({
                       },
                     },
                     hover: {
-                      scale: 1.05,
-                      y: -15,
+                      scale: 1.02,
+                      y: -12,
                       rotate: 0,
                       transition: { type: 'spring', stiffness: 300, damping: 25 },
                     },
                     opening: {
                       y: 0,
-                      scale: 1.1,
+                      scale: 1.05,
                       transition: { duration: 0.6, ease: 'easeInOut' },
                     },
                   }}
@@ -208,7 +208,7 @@ export default function EnvelopeExperience({
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.3 }}
-                  className="px-4"
+                  className="px-4 w-full max-w-2xl"
                 >
                   {isValidElement(hero) ? cloneElement(hero as any, { isOpened: false }) : hero}
                 </motion.div>

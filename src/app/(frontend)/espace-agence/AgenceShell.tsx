@@ -14,6 +14,7 @@ import {
   ArrowLeft,
   Image as ImageIcon,
   Code,
+  ExternalLink,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -37,6 +38,7 @@ export function AgenceShell({ children, agencyId }: Props) {
   const pathname = usePathname()
   const router = useRouter()
   const [agencyName, setAgencyName] = useState<string>('Mon agence')
+  const [agencyCode, setAgencyCode] = useState<string | null>(null)
 
   useEffect(() => {
     if (!agencyId) return
@@ -44,6 +46,7 @@ export function AgenceShell({ children, agencyId }: Props) {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.name) setAgencyName(data.name)
+        if (data?.code) setAgencyCode(data.code)
       })
       .catch(() => {})
   }, [agencyId])
@@ -103,6 +106,17 @@ export function AgenceShell({ children, agencyId }: Props) {
             Retour au site
           </Button>
         </Link>
+        {agencyCode && (
+          <a
+            href={`/agences/${agencyCode}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Ma page publique
+          </a>
+        )}
         <button
           type="button"
           onClick={handleLogout}

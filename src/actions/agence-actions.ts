@@ -6,6 +6,7 @@ import type { Postcard, Agency, PostcardTrackingLink } from '@/payload-types'
 import { getCurrentUser } from '@/lib/auth'
 import { sendEmail, generateTrackingLinkEmail } from '@/lib/email-service'
 import { headers } from 'next/headers'
+import { revalidatePath } from 'next/cache'
 
 // --- Auth helper ---
 
@@ -419,6 +420,45 @@ export async function updateAgencyInfo(
   }
 }
 
+export async function uploadAgencyLogo(
+  base64Data: string,
+  mimeType: string,
+  filename: string,
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  const auth = await requireAgence()
+  if (!auth) return { success: false, error: 'Non autorisé' }
+  const { agencyId } = auth
+  try {
+    const payload = await getPayload({ config })
+    const [, b64] = base64Data.split(',')
+    const buffer = Buffer.from(b64, 'base64')
+    const media = await payload.create({
+      collection: 'media',
+      data: { alt: 'Logo agence' },
+      file: {
+        data: buffer,
+        mimetype: mimeType,
+        name: filename,
+        size: buffer.length,
+      },
+    })
+    const mediaDoc = media as { url?: string | null; filename?: string | null }
+    const url =
+      mediaDoc.url ??
+      (mediaDoc.filename ? `/media/${encodeURIComponent(mediaDoc.filename)}` : undefined)
+    await payload.update({
+      collection: 'agencies',
+      id: agencyId,
+      data: { logo: media.id },
+    })
+    return { success: true, url }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Erreur lors de l'upload du logo."
+    console.error('Error uploading agency logo:', err)
+    return { success: false, error: message }
+  }
+}
+
 // --- Update postcard ---
 
 export async function updateAgencyPostcard(
@@ -678,4 +718,146 @@ export async function sendAgencyTrackingLinkByEmail(
   })
 
   return { success: true }
+}
+
+// --- Create demo postcard ---
+
+export interface CreateAgencyPostcardData {
+  senderName: string
+  recipientName?: string
+  message: string
+  location?: string
+  frontCaption?: string
+  frontEmoji?: string
+  frontImageKey?: string
+  frontImageMimeType?: string
+  frontImageFilesize?: number
+  frontImage?: string // base64 or URL
+  stampStyle?: 'classic' | 'modern' | 'airmail'
+  status?: 'published' | 'draft'
+}
+
+function generatePublicId(length = 4): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  let result = ''
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return result
+}
+
+export async function createAgencyPostcard(
+  data: CreateAgencyPostcardData,
+): Promise<{ success: boolean; postcard?: Postcard; error?: string }> {
+  const auth = await requireAgence()
+  if (!auth) return { success: false, error: 'Non autorisé' }
+  const { userId, agencyId } = auth
+
+  try {
+    const payload = await getPayload({ config })
+
+    // Handle image
+    let frontImageId: number | undefined
+    let frontImageURL: string | undefined
+
+    if (data.frontImageKey) {
+      const existingMedia = await payload.find({
+        collection: 'media',
+        where: { filename: { equals: data.frontImageKey } },
+      })
+      if (existingMedia.totalDocs > 0) {
+        frontImageId = existingMedia.docs[0].id as number
+      } else {
+        const media = await payload.create({
+          collection: 'media',
+          data: {
+            alt: `Carte démo agence - ${data.senderName}`,
+            filename: data.frontImageKey,
+            mimeType: data.frontImageMimeType || 'image/jpeg',
+            filesize: data.frontImageFilesize ?? 0,
+          },
+        })
+        frontImageId = media.id as number
+      }
+      const mediaDoc = frontImageId
+        ? ((await payload.findByID({ collection: 'media', id: frontImageId })) as {
+            url?: string | null
+            filename?: string | null
+          })
+        : {}
+      frontImageURL =
+        mediaDoc.url ??
+        (mediaDoc.filename ? `/media/${encodeURIComponent(mediaDoc.filename)}` : undefined)
+    } else if (data.frontImage) {
+      if (data.frontImage.startsWith('data:image')) {
+        const [meta, base64Data] = data.frontImage.split(',')
+        const mime = meta.match(/:(.*?);/)?.[1] || 'image/png'
+        const extension = mime.split('/')[1] || 'png'
+        const buffer = Buffer.from(base64Data, 'base64')
+        const media = await payload.create({
+          collection: 'media',
+          data: { alt: `Carte démo agence - ${data.senderName}` },
+          file: {
+            data: buffer,
+            mimetype: mime,
+            name: `agency-demo-${Date.now()}.${extension}`,
+            size: buffer.length,
+          },
+        })
+        frontImageId = media.id as number
+        const mediaDoc = media as { url?: string | null; filename?: string | null }
+        frontImageURL =
+          mediaDoc.url ??
+          (mediaDoc.filename ? `/media/${encodeURIComponent(mediaDoc.filename)}` : undefined)
+      } else if (data.frontImage.startsWith('http') || data.frontImage.startsWith('/')) {
+        frontImageURL = data.frontImage
+      }
+    }
+
+    // Generate unique publicId
+    let publicId = generatePublicId()
+    let isUnique = false
+    let retries = 0
+    while (!isUnique && retries < 5) {
+      const existing = await payload.find({
+        collection: 'postcards',
+        where: { publicId: { equals: publicId } },
+      })
+      if (existing.totalDocs === 0) {
+        isUnique = true
+      } else {
+        publicId = generatePublicId()
+        retries++
+      }
+    }
+
+    const newPostcard = await payload.create({
+      collection: 'postcards',
+      data: {
+        publicId,
+        senderName: data.senderName,
+        recipientName: data.recipientName || undefined,
+        message: data.message,
+        location: data.location || undefined,
+        frontCaption: data.frontCaption || undefined,
+        frontEmoji: data.frontEmoji || undefined,
+        frontImage: frontImageId,
+        frontImageURL: frontImageURL,
+        stampStyle: data.stampStyle || 'classic',
+        date: new Date().toISOString(),
+        status: data.status || 'published',
+        isPublic: true,
+        agency: agencyId,
+        author: userId,
+      },
+    })
+
+    revalidatePath('/espace-agence/cartes')
+
+    return { success: true, postcard: newPostcard as Postcard }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erreur lors de la création de la carte.'
+    console.error('Error creating agency postcard:', err)
+    return { success: false, error: message }
+  }
 }

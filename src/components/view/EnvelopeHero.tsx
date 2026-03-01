@@ -44,7 +44,45 @@ function GooglePinIcon({ className }: { className?: string }) {
   )
 }
 
-import { TextAnimate } from '@/components/ui/text-animate'
+/** Affiche le titre héros avec retours à la ligne corrects et "postale" jamais coupé (whitespace-nowrap). Exporté pour ViewPageTitle. */
+export function HeroTitleWithBreaks({
+  title,
+  icon,
+  className = 'text-xl sm:text-2xl md:text-3xl font-serif font-bold text-stone-800 leading-tight mx-auto max-w-xs sm:max-w-none',
+}: {
+  title: string
+  icon: string
+  className?: string
+}) {
+  const lines = title.split('\n')
+  const content: React.ReactNode[] = []
+  lines.forEach((line, i) => {
+    if (i > 0) content.push(<br key={`br-${i}`} />)
+    if (line.includes('postale')) {
+      const before = line.slice(0, line.indexOf('postale'))
+      content.push(
+        <React.Fragment key={i}>
+          {before}
+          <span className="whitespace-nowrap">postale</span>
+        </React.Fragment>,
+      )
+    } else {
+      content.push(<React.Fragment key={i}>{line}</React.Fragment>)
+    }
+  })
+  if (icon) content.push(' ', icon)
+  return (
+    <motion.p
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1, delay: 0.2 }}
+      className={className}
+      aria-label={title.replace(/\n/g, ' ')}
+    >
+      {content}
+    </motion.p>
+  )
+}
 
 export default function EnvelopeHero({
   senderName,
@@ -66,19 +104,19 @@ export default function EnvelopeHero({
 
   return (
     <div
-      className={`flex flex-col items-center gap-2 w-full max-w-2xl mx-auto px-4 ${isOpened ? 'mt-2 md:mt-4 pt-2' : ''}`}
+      className={`flex flex-col items-center gap-3 w-full max-w-[min(540px,90vw)] mx-auto px-2 sm:px-4 ${isOpened ? 'mt-2 md:mt-4 pt-2' : ''}`}
     >
-      {/* Title & Sender */}
-      <div className="text-center space-y-4">
-        <TextAnimate
-          animation="fadeIn"
-          by="character"
-          duration={1.5}
-          startOnView={false}
-          className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-stone-800 leading-tight mx-auto max-w-xs sm:max-w-none"
-        >
-          {theme.icon ? `${theme.heroTitle} ${theme.icon}` : theme.heroTitle}
-        </TextAnimate>
+      {/* Title & Sender — retours à la ligne contrôlés, "postale" jamais coupé */}
+      <div className="text-center space-y-5">
+        <HeroTitleWithBreaks
+          title={theme.heroTitle}
+          icon={theme.icon}
+          className={
+            isOpened
+              ? 'text-xl sm:text-2xl md:text-3xl font-serif font-bold text-stone-800 leading-tight mx-auto max-w-xs sm:max-w-none'
+              : 'text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-stone-800 leading-tight mx-auto max-w-sm sm:max-w-none'
+          }
+        />
 
         <motion.div
           className="flex items-center justify-center text-stone-500"
@@ -86,7 +124,7 @@ export default function EnvelopeHero({
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
           transition={{ delay: 1.5, duration: 1.2 }}
         >
-          <span className="font-handwriting text-teal-600 flex items-center justify-center text-4xl md:text-6xl whitespace-nowrap py-2">
+          <span className="font-handwriting text-teal-600 flex items-center justify-center text-5xl md:text-7xl whitespace-nowrap py-2">
             {senderName}
           </span>
         </motion.div>
@@ -94,7 +132,7 @@ export default function EnvelopeHero({
 
       {/* MiniMap container - Hidden once opened as requested */}
       {!isOpened && (
-        <div className="w-full max-w-sm md:max-w-xl lg:max-w-2xl aspect-video rounded-3xl overflow-hidden shadow-xl border-4 border-white relative mt-2">
+        <div className="w-full max-w-[min(95vw,1400px)] aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border-4 border-white relative mt-3">
           {coords ? (
             <div className="w-full h-full relative">
               <MiniMap coords={coords} zoom={5} className="w-full h-full" />

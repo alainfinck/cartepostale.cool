@@ -8,6 +8,7 @@ import {
   Share2,
   Compass,
   Image as ImageIcon,
+  Images,
   Map as MapIcon,
   Mail,
   X,
@@ -18,8 +19,11 @@ import {
   Heart,
   MessageCircle,
   ChevronDown,
+  Eye,
+  CalendarDays,
 } from 'lucide-react'
 import ARButton from '@/components/ar/ARButton'
+import FlipCard from '@/components/ui/FlipCard'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
@@ -36,6 +40,7 @@ const GalleryImage = ({
   onLike,
   isLiked,
   likeCount,
+  postcardViews,
 }: {
   item: any
   idx: number
@@ -43,6 +48,7 @@ const GalleryImage = ({
   onLike: (e: React.MouseEvent) => void
   isLiked: boolean
   likeCount: number
+  postcardViews?: number
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -53,60 +59,107 @@ const GalleryImage = ({
       whileHover={{ y: -5 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.4, delay: (idx % 2) * 0.05 }}
-      className="aspect-square rounded-[2.5rem] relative group cursor-pointer active:scale-95 transition-transform"
+      className="flex flex-col gap-3 group cursor-pointer"
     >
-      {/* The "Card" container only shows when loaded for maximum fluidity */}
-      <div
-        onClick={onClick}
-        className={cn(
-          'w-full h-full p-2 bg-white shadow-md border border-stone-200/30 rounded-[2.5rem] transition-opacity duration-500',
-          isLoaded ? 'opacity-100' : 'opacity-0',
-        )}
-      >
-        <div className="w-full h-full relative overflow-hidden rounded-[2rem] bg-stone-50/50">
-          <Image
-            src={getOptimizedImageUrl(item.url, { width: 400, fit: 'cover' })}
-            alt=""
-            fill
-            sizes="(max-width: 768px) 50vw, 33vw"
-            className={cn(
-              'object-cover transition-all duration-700 ease-out',
-              isLoaded ? 'scale-100 opacity-100' : 'scale-110 opacity-0',
-            )}
-            onLoad={() => setIsLoaded(true)}
-          />
+      {/* The "Card" container with metadata below */}
+      <div className="flex flex-col gap-2">
+        <div
+          onClick={onClick}
+          className={cn(
+            'aspect-square w-full p-2 bg-white shadow-md border border-stone-200/30 rounded-[2.5rem] transition-all duration-500 active:scale-95 hover:shadow-xl',
+            isLoaded ? 'opacity-100' : 'opacity-0',
+          )}
+        >
+          <div className="w-full h-full relative overflow-hidden rounded-[2rem] bg-stone-50/50">
+            <Image
+              src={getOptimizedImageUrl(item.url, { width: 400, fit: 'cover' })}
+              alt=""
+              fill
+              sizes="(max-width: 768px) 50vw, 33vw"
+              className={cn(
+                'object-cover transition-all duration-700 ease-out',
+                isLoaded ? 'scale-100 opacity-100' : 'scale-110 opacity-0',
+              )}
+              onLoad={() => setIsLoaded(true)}
+            />
 
-          {/* Individual Photo Like Button */}
-          <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-            <CoolMode
-              options={{
-                particle: '❤️',
-                size: 20,
-                particleCount: 4,
-                effect: 'balloon',
-              }}
-            >
-              <button
-                onClick={onLike}
-                className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center transition-all hover:scale-110 active:scale-90"
+            {/* Bouton like en bas à droite, toujours visible, rond plus petit */}
+            <div className="absolute bottom-2 right-2 z-10">
+              <CoolMode
+                options={{
+                  particle: '❤️',
+                  size: 14,
+                  particleCount: 4,
+                  effect: 'balloon',
+                }}
               >
-                <Heart
-                  size={16}
-                  className={cn(
-                    'transition-all duration-300',
-                    isLiked ? 'fill-red-500 text-red-500' : 'text-stone-400',
+                <button
+                  onClick={onLike}
+                  className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center transition-all hover:scale-110 active:scale-90"
+                >
+                  <Heart
+                    size={34}
+                    className={cn(
+                      'transition-all duration-300',
+                      isLiked ? 'fill-red-500 text-red-500' : 'text-stone-400',
+                    )}
+                    strokeWidth={isLiked ? 0 : 2.5}
+                  />
+                  {likeCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[7px] font-bold min-w-[14px] h-3.5 px-0.5 rounded-full flex items-center justify-center shadow-sm border border-white">
+                      {likeCount}
+                    </span>
                   )}
-                  strokeWidth={isLiked ? 0 : 2.5}
-                />
-                {likeCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-sm border border-white">
-                    {likeCount}
-                  </span>
-                )}
-              </button>
-            </CoolMode>
+                </button>
+              </CoolMode>
+            </div>
           </div>
         </div>
+
+        {/* Description uniquement si présente */}
+        {item.note && (
+          <div className="px-5 flex flex-col gap-1.5 transition-all duration-500 group-hover:translate-x-1">
+            <p className="text-xs font-handwriting text-stone-600 leading-tight italic line-clamp-2">
+              {item.note}
+            </p>
+          </div>
+        )}
+
+        {/* Ligne unique : lieu · vues · date */}
+        {(item.location || (postcardViews != null && postcardViews > 0) || item.exif?.dateTime) && (
+          <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-stone-50/90 border border-stone-200/40 text-[10px] text-stone-600 flex-wrap min-h-0">
+            {item.location && (
+              <span className="inline-flex items-center gap-1 truncate max-w-full font-medium">
+                <MapPin size={10} className="shrink-0 text-teal-500" />
+                <span className="truncate">{String(item.location).trim()}</span>
+              </span>
+            )}
+            {item.location && (postcardViews != null || item.exif?.dateTime) && (
+              <span className="text-stone-300 select-none font-light">·</span>
+            )}
+            {postcardViews != null && postcardViews > 0 && (
+              <span className="inline-flex items-center gap-1 shrink-0">
+                <Eye size={10} className="text-amber-600/90 shrink-0" />
+                <span className="font-medium">{postcardViews} {postcardViews === 1 ? 'vue' : 'vues'}</span>
+              </span>
+            )}
+            {postcardViews != null && postcardViews > 0 && item.exif?.dateTime && (
+              <span className="text-stone-300 select-none font-light">·</span>
+            )}
+            {item.exif?.dateTime && (
+              <span className="inline-flex items-center gap-1 shrink-0">
+                <CalendarDays size={10} className="text-stone-500 shrink-0" />
+                <span className="font-medium">
+                  {new Date(item.exif.dateTime).toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </span>
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </motion.div>
   )
@@ -281,6 +334,10 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
     'dancing' | 'greatVibes' | 'parisienne' | 'sans' | 'serif' | 'indieFlower' | 'gochiHand'
   >('dancing')
   const [isFontMenuOpen, setIsFontMenuOpen] = useState(false)
+  const [belowMessageFont, setBelowMessageFont] = useState<
+    'dancing' | 'greatVibes' | 'parisienne' | 'sans' | 'serif' | 'indieFlower' | 'gochiHand'
+  >('dancing')
+  const [isBelowFontMenuOpen, setIsBelowFontMenuOpen] = useState(false)
   const [showMapPhotos, setShowMapPhotos] = useState(true)
 
   const messageRef = useRef<HTMLDivElement>(null)
@@ -420,31 +477,20 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
         </div>
 
         {/* Flippable Hero Postcard Section */}
+        {/* Flippable Hero Postcard Section - Now using the reusable FlipCard component */}
         <section className="relative mb-16" style={{ perspective: '1000px' }}>
-          <motion.div
-            initial={false}
-            animate={{ rotateY: isFlipped ? 180 : 0 }}
-            transition={{ duration: 1.5, type: 'spring', stiffness: 40, damping: 15 }}
-            style={{ transformStyle: 'preserve-3d' }}
-            className="relative w-full aspect-[4/3] cursor-pointer group"
+          <FlipCard
+            isFlipped={isFlipped}
+            className="w-full aspect-[4/3] cursor-pointer group"
+            innerClassName="rounded-2xl shadow-[0_30px_80px_rgba(0,0,0,0.15)]"
+            springConfig={{ stiffness: 40, damping: 15 }}
             onClick={() => setIsFlipped(!isFlipped)}
-          >
-            {/* FRONT SIDE */}
-            <div
-              className="absolute inset-0 w-full h-full z-10"
-              style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
-            >
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-                className="relative h-full bg-white p-2 md:p-3 rounded-2xl shadow-[0_30px_80px_rgba(0,0,0,0.15)] border border-white"
-              >
+            front={
+              <div className="relative h-full w-full bg-white p-2 md:p-3 rounded-2xl border border-white">
                 <div className="w-full h-full overflow-hidden rounded-xl relative bg-stone-100">
                   <Image
                     src={getOptimizedImageUrl(frontImage, { width: 1200 })}
-                    alt="Carte Postale Front"
+                    alt="Postcard Front"
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
@@ -483,126 +529,106 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                     </div>
                   )}
                 </div>
-              </motion.div>
-            </div>
-
-            {/* BACK SIDE (Traditional Postcard) */}
-            <div
-              className="absolute inset-0 w-full h-full"
-              style={{
-                backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden',
-                transform: 'rotateY(180deg)',
-              }}
-            >
-              <div className="h-full bg-[#fdfaf3] p-6 md:p-10 rounded-2xl shadow-[0_30px_80px_rgba(0,0,0,0.15)] border border-stone-200/50 flex flex-col">
-                <div className="flex flex-1 gap-6 md:gap-10 min-h-0">
-                  {/* Left Column: Message — placement et style comme sur la carte, avec -/+ et scrollbar */}
-                  <div className="flex-1 flex flex-col pt-1.5 overflow-hidden min-h-0">
-                    <div
-                      className="flex items-center gap-2.5 shrink-0 mb-3"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="flex items-center bg-white/95 backdrop-blur-sm rounded-lg border border-stone-200 shadow-sm overflow-hidden">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setBackTextScale((s) => Math.max(0.6, Number((s - 0.08).toFixed(2))))
-                          }}
-                          className="w-7 h-7 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-r border-stone-100"
-                          title="Réduire la taille du texte"
-                          aria-label="Réduire la taille du texte"
-                        >
-                          <Minus size={14} strokeWidth={2.5} />
-                        </button>
-                        <span className="px-1.5 text-[10px] font-bold text-stone-500 select-none">
-                          A
-                        </span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setBackTextScale((s) => Math.min(1.5, Number((s + 0.08).toFixed(2))))
-                          }}
-                          className="w-7 h-7 flex items-center justify-center hover:bg-stone-50 text-stone-500 hover:text-teal-600 transition-colors border-l border-stone-100"
-                          title="Agrandir la taille du texte"
-                          aria-label="Agrandir la taille du texte"
-                        >
-                          <Plus size={14} strokeWidth={2.5} />
-                        </button>
-                      </div>
-
-                      {/* Font Selector for card back */}
-                      <div className="relative flex items-center">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setIsFontMenuOpen((o) => !o)
-                          }}
-                          className={cn(
-                            'h-7 flex items-center justify-center px-2.5 rounded-lg border shadow-sm transition-all',
-                            isFontMenuOpen
-                              ? 'bg-teal-50 border-teal-200 text-teal-700'
-                              : 'bg-white/95 backdrop-blur-sm border-stone-200 hover:bg-white text-stone-600',
-                          )}
-                          title="Changer la police"
-                        >
-                          <span
-                            className="text-[10px] font-bold select-none pt-0.5"
-                            style={{
-                              fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)
-                                ?.fontFamily,
+              </div>
+            }
+            back={
+              <div className="relative h-full w-full bg-[#fdfaf3] p-5 md:p-10 rounded-2xl border border-stone-200/50 flex flex-col overflow-hidden">
+                <div className="flex flex-1 gap-4 md:gap-10 min-h-0">
+                  {/* Left Column: Message */}
+                  <div className="flex-1 flex flex-col pt-1 overflow-hidden min-h-0">
+                    {/* Top Control Bar — moins haut, -/+ discrets, pas de A */}
+                    <div className="flex items-center shrink-0 mb-0.5 min-w-0 max-w-full">
+                      <div className="flex items-center gap-0.5 sm:gap-1 bg-white/90 sm:bg-white rounded-md sm:rounded-lg border border-stone-200/40 sm:border-stone-200/60 shadow-sm py-0 px-0.5 sm:px-1 min-w-0 h-6">
+                        {/* Taille : icônes - et + seulement */}
+                        <div className="flex items-center gap-0.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setBackTextScale((s) => Math.max(0.6, Number((s - 0.08).toFixed(2))))
                             }}
+                            className="h-5 w-5 min-h-0 flex items-center justify-center rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100/80 active:bg-stone-100 transition-colors shrink-0"
+                            title="Réduire la taille"
                           >
-                            Aa
-                          </span>
-                          <ChevronDown size={12} className="ml-1.5 opacity-50" />
-                        </button>
-                        <AnimatePresence>
-                          {isFontMenuOpen && (
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                              animate={{ opacity: 1, scale: 1, y: 0 }}
-                              exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                              className="absolute bottom-full left-0 mb-2 w-48 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-stone-200 overflow-hidden z-[70] py-1.5"
-                            >
-                              {BACK_MESSAGE_FONTS.map((font) => (
-                                <button
-                                  key={font.id}
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    setBackMessageFont(font.id)
-                                    setIsFontMenuOpen(false)
-                                  }}
-                                  className={cn(
-                                    'w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-colors',
-                                    backMessageFont === font.id
-                                      ? 'bg-teal-50 text-teal-700'
-                                      : 'hover:bg-stone-50 text-stone-600',
-                                  )}
-                                >
-                                  <span
-                                    className="text-lg font-bold w-6 text-center"
-                                    style={{ fontFamily: font.fontFamily }}
+                            <Minus size={8} strokeWidth={2.5} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setBackTextScale((s) => Math.min(1.5, Number((s + 0.08).toFixed(2))))
+                            }}
+                            className="h-5 w-5 min-h-0 flex items-center justify-center rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100/80 active:bg-stone-100 transition-colors shrink-0"
+                            title="Agrandir la taille"
+                          >
+                            <Plus size={8} strokeWidth={2.5} />
+                          </button>
+                        </div>
+                        <div className="relative flex items-center shrink-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setIsFontMenuOpen((o) => !o)
+                            }}
+                            className={cn(
+                              'h-5 min-h-0 w-7 sm:w-8 flex items-center justify-center px-1 rounded border transition-all shrink-0',
+                              isFontMenuOpen ? 'bg-teal-50 border-teal-200 text-teal-700' : 'bg-white border-stone-200/50 hover:bg-stone-50 text-stone-600',
+                            )}
+                          >
+                            <span className="text-[6px] sm:text-[7px] font-bold select-none uppercase tracking-tighter" style={{ fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily }}>Aa</span>
+                            <ChevronDown size={6} className="ml-0.5 opacity-50" />
+                          </button>
+                          <AnimatePresence>
+                            {isFontMenuOpen && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -4 }}
+                                transition={{ duration: 0.15 }}
+                                className="absolute top-full left-0 mt-1 w-28 bg-white rounded-lg shadow-lg border border-stone-200 overflow-hidden z-[70] py-0.5"
+                              >
+                                {BACK_MESSAGE_FONTS.map((font) => (
+                                  <button
+                                    key={font.id}
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      setBackMessageFont(font.id)
+                                      setIsFontMenuOpen(false)
+                                    }}
+                                    className={cn(
+                                      'w-full flex items-center gap-1.5 px-2 py-1 rounded-md text-left text-[9px] transition-colors',
+                                      backMessageFont === font.id ? 'bg-teal-50 text-teal-700' : 'hover:bg-stone-50 text-stone-600',
+                                    )}
                                   >
-                                    Aa
-                                  </span>
-                                  <span className="text-xs font-medium truncate">{font.name}</span>
-                                </button>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                                    <span className="font-bold w-3.5 text-center" style={{ fontFamily: font.fontFamily }}>Aa</span>
+                                    <span className="truncate">{font.name}</span>
+                                  </button>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setIsFlipped(!isFlipped)
+                          }}
+                          className="h-5 w-5 min-h-0 rounded bg-white border border-stone-200/50 hover:bg-stone-50 text-stone-600 transition-all active:scale-95 flex items-center justify-center shrink-0 group/btn"
+                          title="Retourner la carte"
+                        >
+                          <RotateCw size={8} className="group-hover/btn:rotate-180 transition-transform duration-500" />
+                        </button>
                       </div>
                     </div>
+
+                    {/* Text Area */}
                     <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pr-1">
                       <p
                         className="font-handwriting text-stone-700 leading-relaxed italic whitespace-pre-wrap break-words max-w-full"
                         style={{
-                          fontSize: `clamp(0.875rem, ${1.15 * backTextScale}rem, 1.75rem)`,
+                          fontSize: `clamp(0.8125rem, ${1.15 * backTextScale}rem, 1.75rem)`,
                           fontFamily:
                             BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily ??
                             "'Dancing Script', cursive",
@@ -611,153 +637,144 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                         {message}
                       </p>
                     </div>
-                    <div className="mt-auto font-handwriting text-xl md:text-3xl text-teal-700 pt-2 shrink-0">
+
+                    {/* Signature */}
+                    <div
+                      className="mt-auto font-handwriting text-teal-700 pt-1 shrink-0"
+                      style={{
+                        fontSize: `clamp(1rem, ${1.5 * backTextScale}rem, 2rem)`,
+                      }}
+                    >
                       {senderName}
                     </div>
                   </div>
 
-                  {/* Right Column: Stamp & Address Lines */}
-                  <div className="w-[38%] flex flex-col border-l border-stone-200/50 pl-6 md:pl-10 relative h-full">
-                    {/* Stamp Area - Smaller */}
-                    <div className="self-end mb-4 group z-20">
-                      <div className="relative w-12 h-16 md:w-16 md:h-20 bg-[#fdf5e6] p-1 border-[1px] border-orange-300/40 transform rotate-2 shadow-sm">
+                  {/* Right Column: Stamp & Address (carte plus large, marges réduites) */}
+                  <div className="w-[40%] flex flex-col border-l border-stone-200/50 pl-3 md:pl-6 relative h-full">
+                    {/* Digital Poste Stamp */}
+                    <div className="self-end mb-2 group z-20">
+                      <div className="relative w-10 h-14 md:w-16 md:h-20 bg-[#fdf5e6] p-0.5 md:p-1 border-[1px] border-orange-300/40 transform rotate-2 shadow-sm">
                         <div className="w-full h-full border border-orange-200/50 flex flex-col items-center justify-between p-0.5 bg-white/40">
-                          <span className="text-[5px] md:text-[6px] font-bold text-orange-900/60 uppercase text-center leading-tight">
+                          <span className="text-[4px] md:text-[6px] font-bold text-orange-900/60 uppercase text-center leading-tight">
                             Digital Poste
                           </span>
                           <div className="flex-1 flex items-center justify-center opacity-40">
-                            <Compass size={16} className="text-orange-900" />
+                            <Compass size={12} className="text-orange-900 md:w-4 md:h-4" />
                           </div>
-                          <span className="text-[5px] md:text-[6px] font-bold text-orange-900/40">
+                          <span className="text-[4px] md:text-[6px] font-bold text-orange-900/40">
                             2026
                           </span>
                         </div>
-                        {/* Stamp sawtooth edges mask simulation */}
                         <div
                           className="absolute inset-0 border-[2px] border-[#fdfaf3] opacity-30 pointer-events-none"
                           style={{
-                            mask: 'conic-gradient(from 45deg, transparent 0deg 90deg, black 90deg 360deg) 0 0/6px 6px round',
+                            mask: 'conic-gradient(from 45deg, transparent 0deg 90deg, black 90deg 360deg) 0 0/4px 4px round',
                           }}
                         />
                       </div>
                     </div>
 
-                    {/* Recipient & Address Lines */}
-                    <div className="flex flex-col gap-4 mt-2 mb-4">
-                      <div className="font-handwriting text-lg md:text-xl text-stone-600 border-b border-stone-300/40 pb-1 min-h-[2rem] flex items-end">
-                        <span className="opacity-40 text-xs mr-2 font-serif uppercase tracking-widest leading-none">
-                          À :
-                        </span>
-                        {postcard.recipientName || 'Un ami proche'}
+                    {/* Circular Postmark (Tampon) */}
+                    <div className="absolute top-2 right-12 md:top-4 md:right-24 opacity-60 pointer-events-none transform -rotate-12 z-10">
+                      <div className="relative">
+                        <svg
+                          width="70"
+                          height="70"
+                          viewBox="0 0 140 140"
+                          className="text-stone-800/20 fill-current overflow-visible md:w-[100px] md:h-[100px]"
+                        >
+                          <circle
+                            cx="70"
+                            cy="70"
+                            r="55"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeDasharray="2 3"
+                          />
+                          <circle
+                            cx="70"
+                            cy="70"
+                            r="50"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2">
+                          <span className="text-[5px] md:text-[7px] font-black tracking-widest text-stone-600 uppercase mb-0.5">
+                            POSTAL
+                          </span>
+                          <div className="h-px w-5 md:w-6 bg-stone-300 my-0.5" />
+                          <span className="text-[4px] md:text-[6px] font-black text-teal-700 uppercase leading-none mb-0.5 max-w-[50px] md:max-w-[60px] truncate">
+                            {location || 'DESTINATION'}
+                          </span>
+                          <span className="text-[4px] md:text-[5px] font-serif text-stone-500 italic block">
+                            {date || 'FÉVRIER 2026'}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Back MiniMap in Bottom Right - Larger */}
-                    <div className="flex-1 w-full min-h-0 flex flex-col mt-2">
-                      {/* Note / Comment title if any */}
-                      {postcard.mediaItems?.some((m) => m.note) && (
-                        <div className="mb-2">
-                          <p className="text-[9px] font-bold uppercase tracking-widest text-stone-400 flex items-center gap-1.5">
-                            <ImageIcon size={10} className="text-teal-500" />
-                            Commentaires & Notes
-                          </p>
-                        </div>
-                      )}
+                    {/* Address Lines — texte sur les lignes (compact sur desktop pour laisser place à la carte) */}
+                    <div className="flex-initial flex flex-col justify-center gap-1.5 md:gap-2 py-1.5 md:py-2 max-h-[30%] md:max-h-[none] md:shrink-0">
+                      <div className="border-b border-stone-200/60 pb-0.5 min-h-[1.25em]">
+                        <span className="font-handwriting text-teal-800/80 text-[10px] sm:text-xs md:text-base leading-tight block truncate">
+                          À : {postcard.recipientName || 'Family & Friends'}
+                        </span>
+                      </div>
+                      <div className="border-b border-stone-200/60 pb-0.5 min-h-[1.25em]">
+                        <span className="font-handwriting text-stone-500/60 text-[8px] md:text-sm leading-tight italic block truncate">
+                          {location || 'Quelque part dans le monde'}
+                        </span>
+                      </div>
+                      <div className="border-b border-stone-200/60 pb-0.5 min-h-[1.25em]">
+                        <span className="font-handwriting text-stone-400/40 text-[8px] md:text-sm leading-tight italic block">&nbsp;</span>
+                      </div>
+                    </div>
 
+                    {/* Carte Leaflet (recto) — clic → album, plus large, marges réduites */}
+                    <div className="flex-1 min-h-0 mt-1 md:mt-2 mb-0.5 md:mb-1 flex flex-col">
                       <div
-                        className="flex-1 w-full min-h-0 rounded-xl overflow-hidden border-4 border-white shadow-xl transform rotate-1 z-20 group/map cursor-pointer relative"
+                        className="relative w-full flex-1 min-h-[100px] md:min-h-[160px] aspect-[3/2] sm:aspect-[2/1] rounded-lg overflow-hidden border border-stone-200/60 shadow-md group/map cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98] bg-stone-100"
                         onClick={(e) => {
-                          e.stopPropagation() // Prevents flipping the card when interacting with the map
-                          setIsMapModalOpen(true)
+                          e.stopPropagation()
+                          const albumSection = document.getElementById('postcard-album')
+                          if (albumSection) {
+                            albumSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                          } else {
+                            window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
+                          }
                         }}
                       >
-                        {coords && (
-                          <div className="w-full h-full relative">
-                            <div className="absolute inset-0 bg-black/0 group-hover/map:bg-black/10 transition-colors z-10 flex items-center justify-center pointer-events-none">
-                              <motion.div
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                whileHover={{ opacity: 1, scale: 1 }}
-                                className="bg-white/90 p-3 rounded-full shadow-lg text-teal-600"
-                              >
-                                <MapIcon size={24} />
-                              </motion.div>
-                            </div>
+                        {coords ? (
+                          <div className="absolute inset-0 w-full h-full rounded-lg overflow-hidden z-0">
                             <MiniMap
                               coords={coords}
-                              zoom={12}
-                              className="w-full h-full grayscale-[0.3]"
-                              photoLocations={photoLocations}
+                              zoom={10}
+                              interactive={false}
+                              showScale={false}
+                              className="w-full h-full rounded-lg"
                             />
                           </div>
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center bg-stone-100 text-stone-400 text-[10px] font-bold uppercase tracking-widest">
+                            Pas de localisation
+                          </div>
                         )}
+                        <div className="absolute inset-0 bg-stone-900/5 group-hover/map:bg-transparent transition-colors z-10 pointer-events-none" />
+                        <div className="absolute bottom-1 right-1 bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[7px] font-bold text-stone-500 uppercase tracking-tighter scale-75 origin-bottom-right z-10 pointer-events-none">
+                          Cliquer pour explorer
+                        </div>
+                        {/* Overlay cliquable pour que le clic aille vers l'album (la carte ne capture pas les events) */}
+                        <div className="absolute inset-0 z-20 cursor-pointer" aria-hidden />
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Flip Button Back - Repositioned to top-right */}
-                <div className="absolute top-4 right-4 z-30" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => setIsFlipped(!isFlipped)}
-                    className="bg-white/90 hover:bg-white backdrop-blur-md px-3 py-1.5 rounded-lg text-stone-600 text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 border border-stone-200 shadow-sm transition-all active:scale-95 group/back"
-                  >
-                    <RotateCw
-                      size={12}
-                      className="group-hover/back:-rotate-180 transition-transform duration-500"
-                    />
-                    <span>Recto</span>
-                  </button>
-                </div>
-
-                {/* Postmark / Tampon Date — Smaller */}
-                <div className="absolute top-6 right-16 md:right-24 opacity-60 pointer-events-none transform -rotate-12 z-10">
-                  <div className="relative">
-                    <svg
-                      width="100"
-                      height="100"
-                      viewBox="0 0 140 140"
-                      className="text-stone-800/20 fill-current overflow-visible"
-                    >
-                      <circle
-                        cx="70"
-                        cy="70"
-                        r="55"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeDasharray="2 3"
-                      />
-                      <circle
-                        cx="70"
-                        cy="70"
-                        r="50"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-                      <span className="text-[10px] font-black tracking-widest text-stone-600 uppercase mb-0.5">
-                        POSTAL
-                      </span>
-                      <div className="h-px w-8 bg-stone-300 my-1" />
-                      <span className="text-[9px] font-black text-teal-700 uppercase leading-none mb-1 max-w-[80px] truncate">
-                        {location || 'DESTINATION'}
-                      </span>
-                      <span className="text-[11px] font-black text-stone-900 tracking-tighter">
-                        {date?.split(' ').slice(0, 2).join(' ') || 'LE JOUR J'}
-                      </span>
-                      <span className="text-[9px] font-bold text-stone-500 mt-0.5">
-                        {date?.split(' ').slice(2).join(' ') || '2026'}
-                      </span>
-                      <div className="h-px w-8 bg-stone-300 my-1" />
-                      <span className="text-[7px] font-bold text-stone-400">CERTIFIÉ COOL</span>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            }
+          />{' '}
           {/* Physical shadows */}
           <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-[95%] h-16 bg-black/10 blur-[60px] rounded-full -z-10" />
         </section>
@@ -769,14 +786,16 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 1 }}
-            className="bg-[#fefaf3] rounded-[2.5rem] p-10 md:p-16 shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-stone-200/40 relative overflow-hidden"
+            className="bg-[#fefaf3] rounded-[2.5rem] p-5 sm:p-6 md:p-10 lg:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-stone-200/40 relative overflow-hidden"
           >
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-10 opacity-40">
-              <Mail size={16} className="text-stone-500" />
-              <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-600">
-                Message de {senderName}
-              </h2>
+            {/* Header — stylé, texte plus petit sur mobile */}
+            <div className="flex items-center mb-8 md:mb-10">
+              <div className="inline-flex items-center gap-2 rounded-full bg-stone-100/80 border border-stone-200/60 pl-3 pr-4 py-1.5 md:py-2 border-l-4 border-l-teal-500/60">
+                <Mail size={14} className="text-teal-600/80 shrink-0 md:w-4 md:h-4" />
+                <h2 className="text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-[0.35em] md:tracking-[0.4em] text-stone-800">
+                  Message de {senderName}
+                </h2>
+              </div>
             </div>
 
             {/* Font & Style Controls for main message */}
@@ -806,10 +825,10 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
               <div className="relative">
                 <button
                   type="button"
-                  onClick={() => setIsFontMenuOpen(!isFontMenuOpen)}
+                  onClick={() => setIsBelowFontMenuOpen(!isBelowFontMenuOpen)}
                   className={cn(
                     'h-9 flex items-center justify-center px-4 rounded-xl border shadow-sm transition-all',
-                    isFontMenuOpen
+                    isBelowFontMenuOpen
                       ? 'bg-teal-50 border-teal-200 text-teal-700'
                       : 'bg-white/90 border-stone-200 text-stone-600',
                   )}
@@ -817,7 +836,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                   <span
                     className="text-xs font-bold pt-0.5"
                     style={{
-                      fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)
+                      fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === belowMessageFont)
                         ?.fontFamily,
                     }}
                   >
@@ -826,7 +845,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                   <ChevronDown size={14} className="ml-2 opacity-50" />
                 </button>
                 <AnimatePresence>
-                  {isFontMenuOpen && (
+                  {isBelowFontMenuOpen && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -837,12 +856,12 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                         <button
                           key={font.id}
                           onClick={() => {
-                            setBackMessageFont(font.id)
-                            setIsFontMenuOpen(false)
+                            setBelowMessageFont(font.id)
+                            setIsBelowFontMenuOpen(false)
                           }}
                           className={cn(
                             'w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-stone-50',
-                            backMessageFont === font.id && 'bg-teal-50 text-teal-700',
+                            belowMessageFont === font.id && 'bg-teal-50 text-teal-700',
                           )}
                         >
                           <span
@@ -860,12 +879,12 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
               </div>
             </div>
 
-            {/* Message Body */}
+            {/* Message Body — base plus petite sur mobile */}
             <div
-              className="text-2xl md:text-4xl text-stone-700 leading-[1.8] md:leading-[1.9] mb-12 whitespace-pre-wrap italic transition-all duration-300"
+              className="text-lg sm:text-xl md:text-4xl text-stone-700 leading-[1.75] sm:leading-[1.8] md:leading-[1.9] mb-12 whitespace-pre-wrap italic transition-all duration-300"
               style={{
-                fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily,
-                fontSize: `clamp(1.25rem, ${1.8 * backTextScale}rem, 4rem)`,
+                fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === belowMessageFont)?.fontFamily,
+                fontSize: `clamp(1rem, ${1.8 * backTextScale}rem, 4rem)`,
               }}
             >
               {message}
@@ -875,7 +894,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
             <div
               className="text-5xl md:text-6xl text-teal-700 mb-20 decoration-teal-500/10 transition-all duration-300"
               style={{
-                fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily,
+                fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === belowMessageFont)?.fontFamily,
                 fontSize: `clamp(2rem, ${3 * backTextScale}rem, 6rem)`,
               }}
             >
@@ -905,48 +924,18 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
         {/* Map Section */}
         {coords && (
           <section ref={mapSectionRef} className="mt-16 overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-10 px-0 sm:px-4">
-              <div className="flex items-center gap-4 flex-1">
-                <div className="w-12 h-px bg-stone-300/50" />
-                <h3 className="text-[11px] font-black uppercase tracking-widest text-stone-400 whitespace-nowrap">
-                  Localisation
-                </h3>
-                <div className="flex-1 h-px bg-stone-300/50" />
-              </div>
-
-              {/* Photo Toggle relocated above map */}
-              {photoLocations.length > 0 && (
-                <button
-                  onClick={() => setShowMapPhotos(!showMapPhotos)}
-                  className={cn(
-                    'px-4 py-2 rounded-xl shadow-sm border-2 transition-all active:scale-95 flex items-center gap-2 font-bold text-[10px] uppercase tracking-widest h-fit self-end sm:self-auto',
-                    showMapPhotos
-                      ? 'bg-teal-600 text-white border-teal-400'
-                      : 'bg-white text-stone-600 border-stone-100',
-                  )}
-                >
-                  <div
-                    className={cn(
-                      'w-6 h-3 rounded-full relative transition-colors',
-                      showMapPhotos ? 'bg-white/30' : 'bg-stone-200',
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        'absolute top-0.5 w-2 h-2 rounded-full transition-all',
-                        showMapPhotos ? 'left-3.5 bg-white' : 'left-0.5 bg-white',
-                      )}
-                    />
-                  </div>
-                  Photos
-                </button>
-              )}
+            <div className="flex items-center gap-4 mb-6 sm:mb-10 px-0 sm:px-4">
+              <div className="w-12 h-px bg-stone-300/50" />
+              <h3 className="text-[11px] font-black uppercase tracking-widest text-stone-400 whitespace-nowrap">
+                Localisation
+              </h3>
+              <div className="flex-1 h-px bg-stone-300/50" />
             </div>
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="aspect-[16/9] bg-white p-1 sm:p-2 rounded-xl sm:rounded-[2rem] shadow-xl border border-stone-200/40 relative group"
+              className="aspect-[1/1] sm:aspect-[4/3] bg-white p-1 sm:p-2 rounded-xl sm:rounded-[2rem] shadow-xl border border-stone-200/40 relative group"
             >
               <div className="w-full h-full rounded-lg sm:rounded-3xl overflow-hidden grayscale-[0.2] contrast-[1.1]">
                 <MiniMap
@@ -965,13 +954,18 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
 
         {/* Media Album Section */}
         {mediaItems.length > 0 && (
-          <section ref={albumRef} className="mt-16 mb-4">
-            <div className="flex items-center gap-4 mb-10 px-4">
-              <div className="w-12 h-px bg-stone-300/50" />
-              <h3 className="text-[11px] font-black uppercase tracking-widest text-stone-400">
-                L&apos;album souvenirs
-              </h3>
-              <div className="flex-1 h-px bg-stone-300/50" />
+          <section id="postcard-album" ref={albumRef} className="mt-16 mb-4">
+            <div className="flex items-center gap-4 mb-10 px-4 py-3 rounded-2xl border border-stone-200/80 bg-stone-50/80 shadow-sm">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-stone-300 to-stone-300/60" />
+              <div className="flex items-center gap-2.5 shrink-0">
+                <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-amber-100/90 text-amber-700 border border-amber-200/60">
+                  <Images size={16} strokeWidth={2} className="text-amber-700" />
+                </span>
+                <h3 className="text-xs font-black uppercase tracking-widest text-stone-600">
+                  L&apos;album souvenirs
+                </h3>
+              </div>
+              <div className="flex-1 h-px bg-gradient-to-l from-transparent via-stone-300 to-stone-300/60" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {mediaItems.map((item, idx) => (
@@ -986,6 +980,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                   }}
                   isLiked={!!userReactions[`❤️_${item.id}`]}
                   likeCount={counts[`❤️_${item.id}`] || 0}
+                  postcardViews={postcard.views}
                 />
               ))}
             </div>
@@ -994,57 +989,57 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
       </div>
 
       {/* Barre fixe compacte en bas */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-50">
-        <div className="bg-white/80 backdrop-blur-2xl rounded-2xl py-2 px-3 flex items-center justify-around shadow-[0_12px_40px_rgba(0,0,0,0.15)] border border-white/50">
+      <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-50">
+        <div className="bg-white/80 backdrop-blur-2xl rounded-xl py-1.5 px-2 flex items-center justify-around shadow-[0_12px_40px_rgba(0,0,0,0.15)] border border-white/50">
           <button
             onClick={() => scrollTo(messageRef)}
-            className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all hover:bg-white/50 active:scale-95 group"
           >
-            <div className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
-              <Mail size={18} className="stroke-[2.5]" />
+            <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <Mail size={14} className="stroke-[2.5]" />
             </div>
-            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-stone-500">
+            <span className="text-[8px] font-black uppercase tracking-widest text-stone-500 leading-none">
               Carte
             </span>
           </button>
 
           <ARButton
             postcard={postcard}
-            className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all hover:bg-white/50 active:scale-95 group scale-110"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all hover:bg-white/50 active:scale-95 group"
           />
 
           <button
             onClick={() => scrollTo(mapSectionRef)}
-            className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all hover:bg-white/50 active:scale-95 group"
           >
-            <div className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
-              <MapIcon size={18} className="stroke-[2.5]" />
+            <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <MapIcon size={14} className="stroke-[2.5]" />
             </div>
-            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-stone-500">
+            <span className="text-[8px] font-black uppercase tracking-widest text-stone-500 leading-none">
               Localisation
             </span>
           </button>
 
           <button
             onClick={() => scrollTo('social-section')}
-            className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all hover:bg-white/50 active:scale-95 group"
           >
-            <div className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
-              <MessageCircle size={18} className="stroke-[2.5]" />
+            <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <MessageCircle size={14} className="stroke-[2.5]" />
             </div>
-            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-stone-500">
+            <span className="text-[8px] font-black uppercase tracking-widest text-stone-500 leading-none">
               Message
             </span>
           </button>
 
           <button
             onClick={() => scrollTo(albumRef)}
-            className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all hover:bg-white/50 active:scale-95 group"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all hover:bg-white/50 active:scale-95 group"
           >
-            <div className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
-              <ImageIcon size={18} className="stroke-[2.5]" />
+            <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <ImageIcon size={14} className="stroke-[2.5]" />
             </div>
-            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-stone-500">
+            <span className="text-[8px] font-black uppercase tracking-widest text-stone-500 leading-none">
               Album
             </span>
           </button>
@@ -1071,7 +1066,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/95 backdrop-blur-lg p-4 md:p-8"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/95 backdrop-blur-lg p-3 md:p-8 touch-none overscroll-none"
             onClick={() => setActivePhotoIndex(null)}
           >
             {/* Close Button */}
@@ -1138,12 +1133,12 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                         }
                       }
                     }}
-                    className="relative bg-white p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] shadow-2xl flex flex-col items-center pointer-events-auto touch-none"
+                    className="relative bg-white p-2 md:p-3 rounded-2xl md:rounded-[2.5rem] shadow-2xl flex flex-col items-center pointer-events-auto touch-none"
                   >
                     <div className="overflow-hidden rounded-xl md:rounded-[2rem] bg-stone-100 relative group/slide">
-                      {mediaItems[activePhotoIndex].type === 'video' ? (
+                      {mediaItems[activePhotoIndex]?.type === 'video' ? (
                         <video
-                          src={mediaItems[activePhotoIndex].url}
+                          src={mediaItems[activePhotoIndex]?.url}
                           controls
                           playsInline
                           className="max-h-[60dvh] md:max-h-[70dvh] w-auto h-auto block"
@@ -1151,7 +1146,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                       ) : (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={getOptimizedImageUrl(mediaItems[activePhotoIndex].url, {
+                          src={getOptimizedImageUrl(mediaItems[activePhotoIndex]?.url || '', {
                             width: 1200,
                           })}
                           alt=""
@@ -1171,27 +1166,32 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                         >
                           <button
                             onClick={() =>
-                              handleToggleReaction('❤️', mediaItems[activePhotoIndex].id)
+                              handleToggleReaction('❤️', mediaItems[activePhotoIndex]?.id || '')
                             }
-                            className="w-14 h-14 rounded-full bg-white/90 backdrop-blur-md shadow-2xl border border-white/50 flex items-center justify-center transition-all hover:scale-110 active:scale-90 group/heart"
+                            className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-md shadow-2xl border border-white/50 flex items-center justify-center transition-all hover:scale-110 active:scale-90 group/heart"
                           >
                             <Heart
-                              size={28}
+                              size={32}
                               className={cn(
                                 'transition-all duration-300',
-                                userReactions[`❤️_${mediaItems[activePhotoIndex].id}`]
+                                activePhotoIndex !== null &&
+                                  userReactions[`❤️_${mediaItems[activePhotoIndex].id}`]
                                   ? 'fill-red-500 text-red-500 scale-110'
                                   : 'text-stone-800',
                               )}
                               strokeWidth={
-                                userReactions[`❤️_${mediaItems[activePhotoIndex].id}`] ? 0 : 2
+                                activePhotoIndex !== null &&
+                                userReactions[`❤️_${mediaItems[activePhotoIndex].id}`]
+                                  ? 0
+                                  : 2
                               }
                             />
-                            {counts[`❤️_${mediaItems[activePhotoIndex].id}`] > 0 && (
-                              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-6 h-6 rounded-full flex items-center justify-center shadow-md border-2 border-white">
-                                {counts[`❤️_${mediaItems[activePhotoIndex].id}`]}
-                              </span>
-                            )}
+                            {activePhotoIndex !== null &&
+                              counts[`❤️_${mediaItems[activePhotoIndex].id}`] > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md border-2 border-white">
+                                  {counts[`❤️_${mediaItems[activePhotoIndex].id}`]}
+                                </span>
+                              )}
                           </button>
                         </CoolMode>
                       </div>
@@ -1202,13 +1202,27 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
 
               {/* Slide Context */}
               <div className="absolute -bottom-16 left-0 right-0 flex items-center justify-between w-full px-6 md:px-12 pointer-events-none">
-                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 bg-black/20 backdrop-blur-sm px-4 py-1.5 rounded-full">
-                  {activePhotoIndex + 1} / {mediaItems.length}
-                </span>
-                {(mediaItems[activePhotoIndex] as any).exif?.gps?.city && (
+                <div className="flex items-center gap-3">
+                  <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50 bg-black/20 backdrop-blur-sm px-4 py-1.5 rounded-full">
+                    {activePhotoIndex + 1} / {mediaItems.length}
+                  </span>
+                  {mediaItems[activePhotoIndex].exif?.dateTime && (
+                    <span className="text-[11px] font-bold text-orange-200/80 bg-black/20 backdrop-blur-sm px-4 py-1.5 rounded-full flex items-center gap-2">
+                      {new Date(mediaItems[activePhotoIndex].exif!.dateTime!).toLocaleDateString(
+                        'fr-FR',
+                        {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        },
+                      )}
+                    </span>
+                  )}
+                </div>
+                {mediaItems[activePhotoIndex].location && (
                   <span className="text-[11px] font-bold text-teal-400 flex items-center gap-2 bg-black/20 backdrop-blur-sm px-4 py-1.5 rounded-full">
                     <MapPin size={14} />
-                    {(mediaItems[activePhotoIndex] as any).exif.gps.city}
+                    {String(mediaItems[activePhotoIndex].location).trim()}
                   </span>
                 )}
               </div>

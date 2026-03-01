@@ -6,18 +6,15 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import ScratchCardWrapper from '@/components/view/ScratchCardWrapper'
 import { Button } from '@/components/ui/button'
-import { MapPin, Mail, Share2, Heart, Plus, RotateCw, ArrowRight, Sparkles } from 'lucide-react'
+import { MapPin, Mail, Sparkles } from 'lucide-react'
 import { Postcard as PayloadPostcard, Media } from '@/payload-types'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
 import * as motion from 'motion/react-client'
 import { Postcard as FrontendPostcard, MediaItem } from '@/types'
-import SocialBar from '@/components/social/SocialBar'
-import PhotoFeed from '@/components/view/PhotoFeed'
 import ViewPageTitle from '@/components/view/ViewPageTitle'
 import EnvelopeExperience from '@/components/view/EnvelopeExperience'
 import { getCurrentUser } from '@/lib/auth'
 import { PostcardTracking } from '@/components/analytics/PostcardTracking'
-import { TextAnimate } from '@/components/ui/text-animate'
 import { demoPostcards } from '@/data/demoPostcards'
 
 // Showcase postcards extracted from GalerieClient
@@ -328,6 +325,21 @@ function mapPostcard(payloadPostcard: PayloadPostcard): FrontendPostcard {
     puzzleCardEnabled: payloadPostcard.puzzleCardEnabled || false,
     puzzleCardDifficulty: (payloadPostcard.puzzleCardDifficulty as '3' | '4' | '5') || '3',
     eventType: (payloadPostcard as any).eventType ?? undefined,
+    agencyBanner: (() => {
+      const agencyObj =
+        typeof payloadPostcard.agency === 'object' && payloadPostcard.agency
+          ? (payloadPostcard.agency as any)
+          : null
+      if (!agencyObj?.bannerEnabled || !agencyObj?.bannerText) return undefined
+      return {
+        enabled: true as const,
+        text: agencyObj.bannerText || undefined,
+        subtext: agencyObj.bannerSubtext || undefined,
+        color: agencyObj.bannerColor || '#0d9488',
+        textColor: agencyObj.bannerTextColor || '#ffffff',
+        link: agencyObj.bannerLink || undefined,
+      }
+    })(),
   }
 }
 
@@ -436,7 +448,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 import EnvelopeHero from '@/components/view/EnvelopeHero'
-import PostcardSuccessQRBlock from '@/components/postcard/PostcardSuccessQRBlock'
 import PostcardEmbedView from '@/components/view/PostcardEmbedView'
 import { getEventTheme } from '@/lib/event-theme'
 
@@ -542,154 +553,6 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
       <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-0 px-2 md:px-4 min-h-[70vh] md:min-h-[80vh] justify-center">
         <ScratchCardWrapper postcard={frontendPostcard} views={payloadPostcardViews} />
       </div>
-
-      {frontendPostcard.mediaItems && frontendPostcard.mediaItems.length > 0 && (
-        <PhotoFeed
-          mediaItems={frontendPostcard.mediaItems}
-          senderName={frontendPostcard.senderName}
-          postcardId={payloadPostcardId}
-          postcardDate={frontendPostcard.date}
-        />
-      )}
-
-      {/* Cible pour la barre de réactions (rendue ici par SocialBar via portal) — collée à la carte / languette */}
-      <div id="reactions-under-card" className="w-full" />
-
-      {/* Réactions (affichées sous la carte via portal), partage et livre d'or */}
-      <div className="w-full">
-        <SocialBar
-          postcardId={payloadPostcardId || 0}
-          publicId={slug}
-          senderName={frontendPostcard.senderName}
-          initialViews={payloadPostcardViews}
-          initialShares={payloadPostcardShares}
-          coords={frontendPostcard.coords}
-          reactionsPortalTargetId="reactions-under-card"
-          isDemo={isDemo}
-        />
-      </div>
-
-      {/* Signature de l'expéditeur + lieu et date stylisés */}
-      <div className="w-full pt-4 pb-12 text-center space-y-6">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, ease: 'easeOut' }}
-          className="relative inline-block"
-        >
-          <div className={`flex items-center justify-center gap-3 ${theme.signatureColor} mb-2`}>
-            <span className="text-3xl md:text-4xl opacity-50 font-light">—</span>
-            <TextAnimate
-              by="character"
-              animation="fadeIn"
-              duration={1.5}
-              startOnView
-              once
-              className="font-handwriting text-5xl sm:text-6xl md:text-7xl -rotate-1 drop-shadow-sm tracking-tight"
-            >
-              {frontendPostcard.senderName}
-            </TextAnimate>
-          </div>
-          <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-teal-300/30 to-transparent" />
-        </motion.div>
-      </div>
-
-      {/* QR code en fin de process (après paiement) */}
-      <PostcardSuccessQRBlock slug={slug} show={paymentSuccess && !isDemo} />
-
-      <motion.section
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-100px' }}
-        transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full bg-gradient-to-b from-white to-[#fdfbf7] pt-12 pb-24 md:pt-16 md:pb-40 px-4 relative"
-      >
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-stone-200 to-transparent" />
-
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-white rounded-[3rem] p-10 md:p-20 shadow-[0_50px_120px_rgba(0,0,0,0.06)] border border-stone-100 relative overflow-hidden">
-            <div
-              className={`absolute top-0 right-0 w-80 h-80 ${theme.ctaBlob1} rounded-full blur-3xl -mr-40 -mt-40`}
-            />
-            <div
-              className={`absolute bottom-0 left-0 w-80 h-80 ${theme.ctaBlob2} rounded-full blur-3xl -ml-40 -mb-40`}
-            />
-
-            <div className="relative z-10 text-center">
-              <div
-                className={`inline-flex items-center justify-center w-14 h-14 ${theme.ctaIconBg} ${theme.ctaIconColor} rounded-2xl rotate-6 mb-6 shadow-sm border border-white/50 group hover:rotate-12 transition-transform duration-500`}
-              >
-                <Sparkles size={28} className="group-hover:scale-110 transition-transform" />
-              </div>
-
-              <h3 className="font-serif font-bold text-2xl md:text-3xl text-stone-800 mb-4 tracking-tight leading-tight">
-                Envoyez le <br className="sm:hidden" />
-                même bonheur
-              </h3>
-
-              <p className="text-stone-500 text-base md:text-lg mb-8 leading-relaxed max-w-xl mx-auto font-medium">
-                Créez vos propres cartes postales numériques et partagez vos meilleurs moments avec
-                vos proches.
-              </p>
-
-              <div className="max-w-md mx-auto space-y-10">
-                <Link href="/editor">
-                  <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white font-black h-20 sm:h-28 text-2xl sm:text-3xl rounded-[2rem] shadow-[0_30px_70px_rgba(13,148,136,0.35)] transition-all hover:-translate-y-2 active:scale-[0.98] group flex items-center justify-center gap-5">
-                    <span>Créer ma carte</span>
-                    <ArrowRight
-                      className="group-hover:translate-x-3 transition-transform"
-                      size={32}
-                    />
-                  </Button>
-                </Link>
-
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ delay: 1, duration: 1 }}
-                  className="flex items-center justify-center gap-6"
-                >
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent to-stone-200" />
-                  <p className="text-teal-600 font-black tracking-widest text-sm uppercase px-2 whitespace-nowrap">
-                    Gratuit et instantané ✨
-                  </p>
-                  <div className="h-px flex-1 bg-gradient-to-l from-transparent to-stone-200" />
-                </motion.div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.section>
-
-      <footer className="py-24 border-t border-stone-200/60 bg-white/30">
-        <div className="max-w-4xl mx-auto px-4 text-center space-y-12">
-          {/* Message de remerciement */}
-          <div className="space-y-4">
-            <p className="text-stone-600 text-lg md:text-2xl leading-relaxed max-w-2xl mx-auto font-medium font-serif italic">
-              « Merci de faire vivre les cartes postales numériques. Chaque envoi compte. »
-            </p>
-          </div>
-
-          {/* Logo et Signature */}
-          <div className="pt-4 flex flex-col items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="relative bg-gradient-to-r from-pink-500 to-orange-400 p-2 rounded-xl flex items-center justify-center shadow-lg shadow-pink-500/20">
-                <Mail className="text-white" size={24} />
-                <div className="absolute -top-1 -right-1 rounded-full bg-white p-[2px]">
-                  <Heart className="text-rose-500" size={16} />
-                </div>
-              </div>
-              <span className="font-bold text-stone-800 text-xl md:text-2xl tracking-tighter">
-                cartepostale.cool
-              </span>
-            </div>
-            <p className="text-stone-400 text-xs md:text-sm font-black tracking-[0.4em] uppercase">
-              — L&apos;ÉQUIPE CARTEPOSTALE.COOL
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 

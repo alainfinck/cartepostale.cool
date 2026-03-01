@@ -26,6 +26,8 @@ interface MiniMapProps {
   /** Controlled visibility of photo markers (used when toggleOutside is true). */
   showPhotos?: boolean
   onShowPhotosChange?: (show: boolean) => void
+  /** Afficher l'échelle de distance (désactivé sur la mini-carte au dos). */
+  showScale?: boolean
 }
 
 function InteractionHandler({ isInteractive }: { isInteractive: boolean }) {
@@ -214,12 +216,12 @@ const MiniMap: React.FC<MiniMapProps> = ({
   toggleOutside = false,
   showPhotos: controlledShowPhotos,
   onShowPhotosChange,
+  showScale: showScaleProp = true,
 }) => {
   const [isInteractive, setIsInteractive] = React.useState(false)
   const [internalShowPhotos, setInternalShowPhotos] = React.useState(true)
   const showPhotos = controlledShowPhotos ?? internalShowPhotos
-  const setShowPhotos =
-    onShowPhotosChange != null ? onShowPhotosChange : setInternalShowPhotos
+  const setShowPhotos = onShowPhotosChange != null ? onShowPhotosChange : setInternalShowPhotos
 
   // Auto-lock when scrolling the page
   React.useEffect(() => {
@@ -241,14 +243,14 @@ const MiniMap: React.FC<MiniMapProps> = ({
   )
 
   return (
-    <div className={cn('relative w-full h-full z-0 minimap-controls', className)} onClick={onClick}>
+    <div className={cn('flex flex-col w-full h-full', className)} onClick={onClick}>
       <style jsx global>{`
         .minimap-controls .leaflet-control-zoom {
           border: none !important;
         }
         .minimap-controls .leaflet-bar {
           border: none !important;
-          box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+          box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
           border-radius: 6px;
           overflow: hidden;
         }
@@ -265,8 +267,91 @@ const MiniMap: React.FC<MiniMapProps> = ({
           line-height: 28px !important;
         }
       `}</style>
-      {/* ... comments ... */}
-      <MapContainer
+
+      {/* Ligne 2 cols : Explorer / Verrouiller (toggle) | Toggle Photos (si toggleOutside) */}
+      {interactive || (toggleOutside && photoLocations.length > 0) ? (
+        <div className={cn('shrink-0 grid gap-2 mb-2', toggleOutside && photoLocations.length > 0 ? 'grid-cols-2' : 'grid-cols-1')}>
+          <div className={cn('min-w-0', toggleOutside && photoLocations.length > 0 ? '' : 'col-span-1')}>
+            {interactive && (
+              <>
+                {!isInteractive ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setIsInteractive(true)
+                    }}
+                    className="w-full py-2 px-3 rounded-xl bg-white/95 hover:bg-white border border-stone-200 shadow-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                  >
+                    <div className="bg-teal-50 w-7 h-7 rounded-lg flex items-center justify-center text-teal-600 shrink-0">
+                      <Navigation size={14} className="animate-pulse" />
+                    </div>
+                    <div className="flex flex-col items-start min-w-0">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-stone-800 leading-tight truncate w-full text-left">
+                        Explorer la carte
+                      </span>
+                      <span className="text-[7px] font-bold text-stone-400 uppercase tracking-tighter truncate w-full text-left">
+                        Zoomer et naviguer
+                      </span>
+                    </div>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setIsInteractive(false)
+                    }}
+                    className="w-full py-2 px-3 rounded-xl bg-white/90 hover:bg-white border border-stone-200 shadow-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] font-bold text-[9px] sm:text-[10px] uppercase tracking-widest text-stone-800"
+                  >
+                    <Lock size={14} className="text-teal-600 shrink-0" />
+                    <span>Verrouiller</span>
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+          <div className="min-w-0 flex items-stretch">
+            {toggleOutside && photoLocations.length > 0 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowPhotos(!showPhotos)
+                }}
+                className={cn(
+                  'w-full py-2 px-3 rounded-xl shadow-sm border-2 transition-all active:scale-95 flex items-center justify-center gap-2 font-bold text-[9px] uppercase tracking-widest',
+                  showPhotos
+                    ? 'bg-teal-600 text-white border-teal-400'
+                    : 'bg-white/95 text-stone-600 border-stone-100',
+                )}
+              >
+                <div
+                  className={cn(
+                    'w-5 h-2.5 rounded-full relative transition-colors duration-200 shrink-0',
+                    showPhotos ? 'bg-white/30' : 'bg-stone-200',
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'absolute top-0.5 w-1.5 h-1.5 rounded-full transition-all duration-200 shadow-sm',
+                      showPhotos ? 'left-3 bg-white' : 'left-0.5 bg-white',
+                    )}
+                  />
+                </div>
+                <span className="truncate">Photos</span>
+              </button>
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      <div
+        className={cn(
+          'relative w-full minimap-controls z-0',
+          interactive && !isInteractive ? 'flex-1 min-h-0' : 'h-full',
+        )}
+      >
+        <MapContainer
         center={[20, 0]}
         zoom={1}
         zoomControl={false}
@@ -321,7 +406,7 @@ const MiniMap: React.FC<MiniMapProps> = ({
             </LayersControl>
           </>
         )}
-        <ScaleControl position="bottomleft" />
+        {showScaleProp && <ScaleControl position="bottomleft" />}
         <Marker
           position={position}
           icon={
@@ -340,7 +425,7 @@ const MiniMap: React.FC<MiniMapProps> = ({
         {showPhotos && photoLocations.map((loc) => <PhotoMarker key={loc.id} location={loc} />)}
       </MapContainer>
 
-      {/* Toggle Photos — sous Verrouiller (top-14 pour laisser la place au bouton verrouiller) */}
+        {/* Toggle Photos — sous Verrouiller (top-14 pour laisser la place au bouton verrouiller) */}
       {photoLocations.length > 0 && !toggleOutside && (
         <button
           onClick={(e) => {
@@ -371,50 +456,19 @@ const MiniMap: React.FC<MiniMapProps> = ({
         </button>
       )}
 
-      {/* Activation Overlays */}
-      {interactive && !isInteractive && (
-        <>
-          {/* Full area transparent overlay to catch clicks anywhere on the map */}
+        {/* Overlay cliquable sur la carte pour activer le mode interactif */}
+        {interactive && !isInteractive && (
           <div
             className="absolute inset-0 z-[999] cursor-pointer"
             onClick={(e) => {
               e.stopPropagation()
               setIsInteractive(true)
             }}
+            aria-label="Activer l’exploration de la carte"
           />
+        )}
 
-          {/* Discreet button in corner as visual hint */}
-          <div className="absolute top-4 right-4 z-[1000] pointer-events-none">
-            <div className="bg-white/95 px-4 py-2 rounded-xl shadow-xl border border-stone-200 flex items-center gap-2 transform hover:scale-105 transition-all duration-300">
-              <div className="bg-teal-50 w-8 h-8 rounded-lg flex items-center justify-center text-teal-600">
-                <Navigation size={16} className="animate-pulse" />
-              </div>
-              <div className="flex flex-col">
-                <p className="text-[10px] font-black uppercase tracking-widest text-stone-800 leading-tight">
-                  Explorer
-                </p>
-                <p className="text-[8px] font-bold text-stone-400 uppercase tracking-tighter">
-                  Cliquer pour interagir
-                </p>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Verrouiller — au-dessus du toggle Photos */}
-      {isInteractive && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            setIsInteractive(false)
-          }}
-          className="absolute top-2 right-2 sm:top-4 sm:right-4 z-[1001] bg-white/90 hover:bg-white text-stone-800 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl shadow-lg border border-stone-200 flex items-center gap-1.5 sm:gap-2 font-bold text-[9px] sm:text-[10px] uppercase tracking-widest transition-all active:scale-95"
-        >
-          <Lock size={12} className="sm:w-[14px] sm:h-[14px] text-teal-600 shrink-0" />
-          Verrouiller
-        </button>
-      )}
+      </div>
     </div>
   )
 }
