@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Agency, Media } from '@/payload-types'
 import AgencePublicClient from './AgencePublicClient'
+import { normalizeMediaUrlToImgDomain } from '@/lib/image-processing'
 
 interface PageProps {
   params: Promise<{ code: string }>
@@ -31,7 +32,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const logoUrl =
     typeof agency.logo === 'object' && agency.logo
-      ? (agency.logo as { url?: string | null }).url
+      ? normalizeMediaUrlToImgDomain((agency.logo as { url?: string | null }).url ?? null)
       : null
 
   return {
@@ -52,12 +53,14 @@ export default async function AgencePublicPage({ params }: PageProps) {
 
   const logoUrl =
     typeof agency.logo === 'object' && agency.logo
-      ? ((agency.logo as { url?: string | null }).url ?? null)
+      ? normalizeMediaUrlToImgDomain((agency.logo as { url?: string | null }).url ?? null)
       : null
 
   const bannerImageUrl =
     typeof (agency as any).bannerImage === 'object' && (agency as any).bannerImage
-      ? (((agency as any).bannerImage as { url?: string | null }).url ?? null)
+      ? normalizeMediaUrlToImgDomain(
+          ((agency as any).bannerImage as { url?: string | null }).url ?? null,
+        )
       : null
 
   const agencyData = {

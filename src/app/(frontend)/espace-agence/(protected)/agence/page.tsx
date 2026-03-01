@@ -160,7 +160,7 @@ export default function EspaceAgenceAgencePage() {
   const publicPageUrl = agencyCode ? `/agences/${agencyCode}` : null
 
   return (
-    <div className="space-y-8 max-w-2xl">
+    <div className="w-full space-y-8">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Mon agence</h1>
@@ -179,6 +179,9 @@ export default function EspaceAgenceAgencePage() {
         )}
       </div>
 
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        {/* Colonne gauche : Logo + Informations */}
+        <div className="space-y-8">
       {/* ── Logo ── */}
       <div className="bg-card border border-border rounded-xl p-6 space-y-4">
         <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Logo</h2>
@@ -332,7 +335,10 @@ export default function EspaceAgenceAgencePage() {
           />
         </div>
       </div>
+        </div>
 
+        {/* Colonne droite : Bannière + Banque d'images + Actions */}
+        <div className="space-y-8">
       {/* ── Bannière promotionnelle ── */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         {/* Header */}
@@ -488,6 +494,8 @@ export default function EspaceAgenceAgencePage() {
             {message.text}
           </p>
         )}
+      </div>
+        </div>
       </div>
     </div>
   )

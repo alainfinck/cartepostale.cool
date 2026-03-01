@@ -548,9 +548,9 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
 
   const pageContent = (
     <div
-      className={`w-full ${theme.pageBg} flex flex-col items-center landscape:justify-center landscape:pb-4 relative pt-0`}
+      className={`w-full ${theme.pageBg} flex flex-col items-center landscape:pb-4 relative pt-0`}
     >
-      <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-0 px-2 md:px-4 min-h-[70vh] md:min-h-[80vh] justify-center">
+      <div className="w-full max-w-6xl flex flex-col items-center perspective-[2000px] mb-0 px-2 md:px-4 min-h-[70vh] md:min-h-[80vh] pt-8 md:pt-12">
         <ScratchCardWrapper postcard={frontendPostcard} views={payloadPostcardViews} />
       </div>
     </div>

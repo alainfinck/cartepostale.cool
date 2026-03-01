@@ -1,6 +1,6 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top'
@@ -38,9 +38,12 @@ export function FrontendLayoutWrapper({
     )
   }
 
-  const showExitIntent = !isEspaceClient && !isPostcardView && exitIntentEnabled
+  const searchParams = useSearchParams()
+  const isEditorWhiteLabel =
+    pathname === '/editor' && Boolean(searchParams?.get('agencyCode'))
+  const showExitIntent = !isEspaceClient && !isPostcardView && !isEditorWhiteLabel && exitIntentEnabled
 
-  const hideNavAndFooter = isPostcardView || isDashboard
+  const hideNavAndFooter = isPostcardView || isDashboard || isEditorWhiteLabel
 
   return (
     <>

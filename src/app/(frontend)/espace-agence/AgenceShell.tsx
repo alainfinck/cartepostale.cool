@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { QRCodeSVG } from 'qrcode.react'
 import {
   LayoutDashboard,
   Mail,
@@ -39,6 +40,7 @@ export function AgenceShell({ children, agencyId }: Props) {
   const router = useRouter()
   const [agencyName, setAgencyName] = useState<string>('Mon agence')
   const [agencyCode, setAgencyCode] = useState<string | null>(null)
+  const [origin, setOrigin] = useState<string>('')
 
   useEffect(() => {
     if (!agencyId) return
@@ -50,6 +52,10 @@ export function AgenceShell({ children, agencyId }: Props) {
       })
       .catch(() => {})
   }, [agencyId])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') setOrigin(window.location.origin)
+  }, [])
 
   const handleLogout = async () => {
     await fetch('/api/users/logout', { method: 'POST', credentials: 'include' })
@@ -90,6 +96,24 @@ export function AgenceShell({ children, agencyId }: Props) {
         })}
       </nav>
       <div className="border-t border-border p-3 space-y-1">
+        {pathname?.startsWith('/espace-agence/dev') && agencyCode && origin && (
+          <div className="mb-3 flex flex-col items-center gap-1.5 rounded-lg bg-muted/50 p-3">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              QR page publique
+            </span>
+            <a
+              href={`${origin}/agences/${agencyCode}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-md border border-border bg-white p-1.5"
+            >
+              <QRCodeSVG value={`${origin}/agences/${agencyCode}`} size={100} level="M" />
+            </a>
+            <span className="text-[10px] text-muted-foreground text-center leading-tight">
+              Scannez pour ouvrir la page agence
+            </span>
+          </div>
+        )}
         <Link href="/editor">
           <Button
             variant="default"

@@ -96,13 +96,13 @@ const GalleryImage = ({
               >
                 <button
                   onClick={onLike}
-                  className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center transition-all hover:scale-110 active:scale-90"
+                  className="w-11 h-11 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center transition-all hover:scale-110 active:scale-90"
                 >
                   <Heart
-                    size={18}
+                    size={30}
                     className={cn(
                       'transition-all duration-300',
-                      isLiked ? 'fill-red-500 text-red-500' : 'text-stone-400',
+                      isLiked ? 'fill-red-500 text-red-500 scale-110' : 'text-stone-400',
                     )}
                     strokeWidth={isLiked ? 0 : 2.5}
                   />
@@ -141,7 +141,9 @@ const GalleryImage = ({
             {postcardViews != null && postcardViews > 0 && (
               <span className="inline-flex items-center gap-1 shrink-0">
                 <Eye size={10} className="text-amber-600/90 shrink-0" />
-                <span className="font-medium">{postcardViews} {postcardViews === 1 ? 'vue' : 'vues'}</span>
+                <span className="font-medium">
+                  {postcardViews} {postcardViews === 1 ? 'vue' : 'vues'}
+                </span>
               </span>
             )}
             {postcardViews != null && postcardViews > 0 && item.exif?.dateTime && (
@@ -574,10 +576,20 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                             }}
                             className={cn(
                               'h-5 min-h-0 w-7 sm:w-8 flex items-center justify-center px-1 rounded border transition-all shrink-0',
-                              isFontMenuOpen ? 'bg-teal-50 border-teal-200 text-teal-700' : 'bg-white border-stone-200/50 hover:bg-stone-50 text-stone-600',
+                              isFontMenuOpen
+                                ? 'bg-teal-50 border-teal-200 text-teal-700'
+                                : 'bg-white border-stone-200/50 hover:bg-stone-50 text-stone-600',
                             )}
                           >
-                            <span className="text-[6px] sm:text-[7px] font-bold select-none uppercase tracking-tighter" style={{ fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily }}>Aa</span>
+                            <span
+                              className="text-[6px] sm:text-[7px] font-bold select-none uppercase tracking-tighter"
+                              style={{
+                                fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)
+                                  ?.fontFamily,
+                              }}
+                            >
+                              Aa
+                            </span>
                             <ChevronDown size={6} className="ml-0.5 opacity-50" />
                           </button>
                           <AnimatePresence>
@@ -600,10 +612,17 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                                     }}
                                     className={cn(
                                       'w-full flex items-center gap-1.5 px-2 py-1 rounded-md text-left text-[9px] transition-colors',
-                                      backMessageFont === font.id ? 'bg-teal-50 text-teal-700' : 'hover:bg-stone-50 text-stone-600',
+                                      backMessageFont === font.id
+                                        ? 'bg-teal-50 text-teal-700'
+                                        : 'hover:bg-stone-50 text-stone-600',
                                     )}
                                   >
-                                    <span className="font-bold w-3.5 text-center" style={{ fontFamily: font.fontFamily }}>Aa</span>
+                                    <span
+                                      className="font-bold w-3.5 text-center"
+                                      style={{ fontFamily: font.fontFamily }}
+                                    >
+                                      Aa
+                                    </span>
                                     <span className="truncate">{font.name}</span>
                                   </button>
                                 ))}
@@ -619,7 +638,10 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                           className="h-5 w-5 min-h-0 rounded bg-white border border-stone-200/50 hover:bg-stone-50 text-stone-600 transition-all active:scale-95 flex items-center justify-center shrink-0 group/btn"
                           title="Retourner la carte"
                         >
-                          <RotateCw size={8} className="group-hover/btn:rotate-180 transition-transform duration-500" />
+                          <RotateCw
+                            size={8}
+                            className="group-hover/btn:rotate-180 transition-transform duration-500"
+                          />
                         </button>
                       </div>
                     </div>
@@ -730,7 +752,9 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                         </span>
                       </div>
                       <div className="border-b border-stone-200/60 pb-0.5 min-h-[1.25em]">
-                        <span className="font-handwriting text-stone-400/40 text-[8px] md:text-sm leading-tight italic block">&nbsp;</span>
+                        <span className="font-handwriting text-stone-400/40 text-[8px] md:text-sm leading-tight italic block">
+                          &nbsp;
+                        </span>
                       </div>
                     </div>
 
@@ -1169,7 +1193,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                             onClick={() =>
                               handleToggleReaction('❤️', mediaItems[activePhotoIndex]?.id || '')
                             }
-                            className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-md shadow-2xl border border-white/50 flex items-center justify-center transition-all hover:scale-110 active:scale-90 group/heart"
+                            className="w-11 h-11 rounded-full bg-white/90 backdrop-blur-md shadow-2xl border border-white/50 flex items-center justify-center transition-all hover:scale-110 active:scale-90 group/heart"
                           >
                             <Heart
                               size={32}

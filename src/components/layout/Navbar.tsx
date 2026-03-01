@@ -37,7 +37,7 @@ const dropdownPro = [
     description: 'Pour agences et entreprises',
   },
   {
-    href: '/pricing',
+    href: '/agences#tarifs',
     icon: CreditCard,
     title: 'Tarifs entreprise',
     description: 'Devis et volumes',
@@ -53,7 +53,7 @@ const dropdownPro = [
 const dropdownTarifs = [
   { href: '/pricing', icon: Gift, label: 'Carte gratuite', price: 'Illimitée', desc: '' },
   { href: '/pricing', icon: Mail, label: "À l'unité", price: '2,50 €', desc: '' },
-  { href: '/pricing', icon: Zap, label: 'Pro & Agence', price: 'Devis', desc: '' },
+  { href: '/agences#tarifs', icon: Zap, label: 'Pro & Agence', price: 'Devis', desc: '' },
 ]
 
 const dropdownFonctionnalites = [

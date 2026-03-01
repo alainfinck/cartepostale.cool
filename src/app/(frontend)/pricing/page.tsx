@@ -620,19 +620,29 @@ export default function PricingPage() {
         <div className="border-2 border-dashed border-stone-200 rounded-3xl p-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-stone-100 text-stone-600 text-xs font-bold uppercase tracking-widest mb-4">
             <Zap className="w-3.5 h-3.5" />
-            Pro &amp; Agence
+            Solutions Entreprise
           </div>
           <h2 className="text-2xl font-bold text-stone-800 mb-3">Des volumes importants ?</h2>
           <p className="text-stone-500 mb-6 max-w-xl mx-auto">
-            Tarifs dégressifs, API d&apos;envoi automatisé, white-label et support dédié pour vos
+            Tarifs dégressifs, API d&apos;envoi automatisé, marque blanche et support dédié pour vos
             campagnes marketing.
           </p>
-          <Link href="/contact">
-            <Button className="bg-stone-900 hover:bg-black text-white px-8 py-4 h-auto rounded-2xl font-bold">
-              Contacter l&apos;équipe Pro
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link href="/agences#tarifs">
+              <Button className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-4 h-auto rounded-2xl font-bold w-full sm:w-auto">
+                Consulter les tarifs entreprise
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+            <Link href="/contact">
+              <Button
+                variant="outline"
+                className="border-2 border-stone-200 text-stone-700 hover:bg-stone-50 px-8 py-4 h-auto rounded-2xl font-bold w-full sm:w-auto"
+              >
+                Contacter l&apos;équipe
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 

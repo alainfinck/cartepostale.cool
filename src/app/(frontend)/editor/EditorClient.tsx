@@ -1005,6 +1005,14 @@ export default function EditorPage() {
   const [isLocating, setIsLocating] = useState(false)
   /** Synchronisé avec la Navbar : quand elle se réduit au scroll, on colle la barre d'étapes en dessous. */
   const [navbarScrolled, setNavbarScrolled] = useState(false)
+  /** Mode marque blanche : données agence pour la topbar (logo, nom). */
+  const [agencyBrand, setAgencyBrand] = useState<{
+    code: string
+    name: string
+    logoUrl: string | null
+  } | null>(null)
+  const [agencyBrandLoading, setAgencyBrandLoading] = useState(false)
+  const [agencyBrandError, setAgencyBrandError] = useState<string | null>(null)
 
   // Postcard state
   const [frontImage, setFrontImage] = useState('')
@@ -1256,6 +1264,34 @@ export default function EditorPage() {
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Mode marque blanche : charger les infos agence pour la topbar
+  const agencyCode = searchParams.get('agencyCode')
+  useEffect(() => {
+    if (!agencyCode || typeof agencyCode !== 'string') {
+      setAgencyBrand(null)
+      setAgencyBrandError(null)
+      return
+    }
+    setAgencyBrandLoading(true)
+    setAgencyBrandError(null)
+    fetch(`/api/public/agency/${encodeURIComponent(agencyCode)}`)
+      .then((res) => {
+        if (!res.ok) {
+          if (res.status === 404) throw new Error('Agence introuvable')
+          throw new Error(res.statusText || 'Erreur')
+        }
+        return res.json()
+      })
+      .then((data: { code: string; name: string; logoUrl: string | null }) => {
+        setAgencyBrand({ code: data.code, name: data.name, logoUrl: data.logoUrl ?? null })
+      })
+      .catch((err: Error) => {
+        setAgencyBrand(null)
+        setAgencyBrandError(err.message || 'Agence introuvable')
+      })
+      .finally(() => setAgencyBrandLoading(false))
+  }, [agencyCode])
 
   // Image de couverture depuis la galerie (param ?cover=...)
   useEffect(() => {
@@ -2803,11 +2839,48 @@ export default function EditorPage() {
 
   return (
     <div className="min-h-screen bg-[#fdfbf7]">
-      {/* Step Progress Bar — collé sous la topbar ; top suit la hauteur navbar (réduite au scroll) */}
+      {/* Topbar marque blanche : logo agence uniquement (pas de menu) */}
+      {agencyCode && (
+        <header
+          className="sticky top-0 z-50 h-16 md:h-20 bg-white border-b border-stone-200 flex items-center"
+          aria-label="Marque de l'agence"
+        >
+          <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 flex items-center justify-center">
+            {agencyBrandLoading ? (
+              <div className="flex items-center gap-2 text-stone-400">
+                <Loader2 size={20} className="animate-spin" />
+                <span className="text-sm font-medium">Chargement…</span>
+              </div>
+            ) : agencyBrandError ? (
+              <span className="text-sm text-stone-500">{agencyBrandError}</span>
+            ) : agencyBrand ? (
+              <Link
+                href={`/agences/${agencyBrand.code}`}
+                className="flex items-center gap-3 hover:opacity-90 transition-opacity"
+              >
+                {agencyBrand.logoUrl ? (
+                  <img
+                    src={agencyBrand.logoUrl}
+                    alt={agencyBrand.name}
+                    className="h-10 w-auto max-h-12 object-contain"
+                  />
+                ) : null}
+                <span className="font-semibold text-stone-800">{agencyBrand.name}</span>
+              </Link>
+            ) : null}
+          </div>
+        </header>
+      )}
+
+      {/* Step Progress Bar — collé sous la topbar ; top suit la hauteur navbar (réduite au scroll) ou topbar agence fixe */}
       <div
         className={cn(
           'bg-white border-b border-stone-200 sticky z-40 -mt-1 mb-6 md:mb-8 transition-[top] duration-300',
-          navbarScrolled ? 'top-14 md:top-16' : 'top-16 md:top-20',
+          agencyBrand
+            ? 'top-16 md:top-20'
+            : navbarScrolled
+              ? 'top-14 md:top-16'
+              : 'top-16 md:top-20',
         )}
       >
         <div className="max-w-5xl mx-auto px-3 py-1.5 sm:px-4 sm:py-2 md:py-2.5">

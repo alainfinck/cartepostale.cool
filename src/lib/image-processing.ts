@@ -114,8 +114,10 @@ const IMG_DOMAIN = 'https://img.cartepostale.cool'
  * Normalise une URL média du site principal (cartepostale.cool) vers le domaine CDN (img.cartepostale.cool)
  * pour que getOptimizedImageUrl puisse appliquer cdn-cgi/image.
  */
-export function normalizeMediaUrlToImgDomain(url: string): string {
-  if (!url || !url.startsWith('http')) return url
+export function normalizeMediaUrlToImgDomain<T extends string | null | undefined>(
+  url: T,
+): T | string {
+  if (!url || typeof url !== 'string' || !url.startsWith('http')) return url
   try {
     const u = new URL(url)
     if (u.hostname !== 'cartepostale.cool' && u.hostname !== 'www.cartepostale.cool') return url

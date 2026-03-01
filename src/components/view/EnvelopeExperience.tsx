@@ -46,9 +46,11 @@ export default function EnvelopeExperience({
   useEffect(() => {
     if (overlayActive) {
       document.body.style.overflow = 'hidden'
-      return () => {
-        document.body.style.overflow = ''
-      }
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
     }
   }, [overlayActive])
 
@@ -61,7 +63,7 @@ export default function EnvelopeExperience({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.6, ease: 'easeInOut' } }}
-            className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-br from-[#fffdf7] via-[#f7f2ea] to-[#f1e8d6] backdrop-blur-3xl"
+            className="fixed inset-0 z-[100] overflow-y-scroll overscroll-contain bg-gradient-to-br from-[#fffdf7] via-[#f7f2ea] to-[#f1e8d6] backdrop-blur-3xl"
           >
             <div
               className={`min-h-full w-full flex flex-col items-center justify-start pt-[12vh] pb-12 px-5 transition-opacity duration-500 ${isOpening ? 'opacity-0' : 'opacity-100'}`}
@@ -223,7 +225,7 @@ export default function EnvelopeExperience({
         initial={{ opacity: overlayActive ? 0 : 1 }}
         animate={overlayActive ? contentVariants.hidden : contentVariants.visible}
         transition={{ duration: 0.5 }}
-        className="relative z-0"
+        className="relative z-10 flex flex-col flex-1 min-h-screen"
       >
         {showHeroInContent && (
           <motion.div

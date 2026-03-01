@@ -47,12 +47,12 @@ interface Props {
 }
 
 const DEMO_IMAGES = [
-  'https://img.cartepostale.cool/demo/photo-1507525428034-b723cf961d3e.jpg',
-  'https://img.cartepostale.cool/demo/photo-1570077188670-e3a8d69ac5ff.jpg',
-  'https://img.cartepostale.cool/demo/photo-1499856374031-44e31b8f5d63.jpg',
-  'https://img.cartepostale.cool/demo/photo-1526392060635-9d6019884377.jpg',
-  'https://img.cartepostale.cool/demo/photo-1488646953014-85cb44e25828.jpg',
-  'https://img.cartepostale.cool/demo/photo-1519046904884-53103b34b206.jpg',
+  '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
+  '/images/demo/photo-1476514525535-07fb3b4ae5f1.jpg',
+  '/images/demo/photo-1506929562872-bb421503ef21.jpg',
+  '/images/demo/photo-1501785888041-af3ef285b470.jpg',
+  '/images/demo/photo-1488646953014-85cb44e25828.jpg',
+  '/images/demo/photo-1516426122078-c23e76319801.jpg',
 ]
 
 const STEPS = [
@@ -100,7 +100,11 @@ export default function AgencePublicClient({ agency }: Props) {
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             {agency.logoUrl ? (
-              <img src={agency.logoUrl} alt={agency.name} className="h-10 w-auto object-contain" />
+              <img
+                src={getOptimizedImageUrl(agency.logoUrl, { width: 120 })}
+                alt={agency.name}
+                className="h-10 w-auto object-contain"
+              />
             ) : (
               <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/20">
                 <Building2 size={20} className="text-white" />
@@ -129,13 +133,8 @@ export default function AgencePublicClient({ agency }: Props) {
         style={{ backgroundColor: primary }}
       >
         {/* Motif géométrique subtil en SVG */}
-        <div
-          className="absolute inset-0 opacity-[0.06] pointer-events-none"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
-            backgroundSize: '32px 32px',
-          }}
-        />
+        {/* Fond uni propre comme demandé */}
+        <div className="absolute inset-0 pointer-events-none bg-black/5" />
 
         <div className="relative z-10 flex flex-col items-center text-center max-w-3xl mx-auto">
           <motion.div
@@ -149,20 +148,43 @@ export default function AgencePublicClient({ agency }: Props) {
               <motion.div
                 initial={{ opacity: 0, scale: 0.85 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="mb-10"
+                whileHover={{ scale: 1.03, rotate: 1 }}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.1,
+                }}
+                className="mb-12 cursor-pointer group"
               >
                 <div
-                  className="bg-white rounded-3xl px-10 py-7 shadow-2xl"
-                  style={{ boxShadow: `0 20px 60px -10px ${primary}, 0 8px 20px rgba(0,0,0,0.15)` }}
+                  className="bg-white p-10 md:p-14 relative shadow-[0_20px_60px_rgba(0,0,0,0.4)]"
+                  style={{
+                    WebkitMaskImage:
+                      'radial-gradient(circle at 12px 12px, transparent 10px, black 11px)',
+                    WebkitMaskSize: '24px 24px',
+                    WebkitMaskPosition: '-12px -12px',
+                    maskImage: 'radial-gradient(circle at 12px 12px, transparent 10px, black 11px)',
+                    maskSize: '24px 24px',
+                    maskPosition: '-12px -12px',
+                  }}
                 >
-                  <img
-                    src={agency.logoUrl}
-                    alt={agency.name}
-                    className="h-20 w-auto max-w-[260px] object-contain"
-                    style={{ display: 'block' }}
-                  />
+                  <div className="relative z-10 flex items-center justify-center">
+                    <img
+                      src={getOptimizedImageUrl(agency.logoUrl, { width: 600 })}
+                      alt={agency.name}
+                      className="h-28 md:h-36 w-auto max-w-[280px] md:max-w-[400px] object-contain"
+                      style={{ display: 'block' }}
+                    />
+                  </div>
+
+                  {/* Bordure intérieure fine typique des timbres */}
+                  <div className="absolute inset-5 border border-stone-200/50 pointer-events-none z-20" />
                 </div>
+
+                {/* Glow subtil en arrière-plan (hors du mask pour ne pas être coupé) */}
+                <div
+                  className="absolute inset-0 -z-10 blur-[80px] opacity-40 scale-110"
+                  style={{ backgroundColor: primary }}
+                />
               </motion.div>
             ) : (
               <motion.div
@@ -417,7 +439,7 @@ export default function AgencePublicClient({ agency }: Props) {
                       imageSettings={
                         agency.logoUrl
                           ? {
-                              src: agency.logoUrl,
+                              src: getOptimizedImageUrl(agency.logoUrl, { width: 80 }),
                               x: undefined,
                               y: undefined,
                               height: 36,
@@ -483,7 +505,7 @@ export default function AgencePublicClient({ agency }: Props) {
                 {agency.logoUrl && (
                   <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                     <img
-                      src={agency.logoUrl}
+                      src={getOptimizedImageUrl(agency.logoUrl, { width: 80 })}
                       alt={agency.name}
                       className="h-6 w-auto object-contain filter brightness-0 invert drop-shadow"
                     />
@@ -514,7 +536,7 @@ export default function AgencePublicClient({ agency }: Props) {
         <div className="max-w-2xl mx-auto">
           {agency.logoUrl && (
             <img
-              src={agency.logoUrl}
+              src={getOptimizedImageUrl(agency.logoUrl, { width: 120 })}
               alt={agency.name}
               className="h-12 w-auto object-contain mx-auto mb-6 opacity-80"
             />
@@ -544,7 +566,7 @@ export default function AgencePublicClient({ agency }: Props) {
           <div className="flex items-center gap-3">
             {agency.logoUrl && (
               <img
-                src={agency.logoUrl}
+                src={getOptimizedImageUrl(agency.logoUrl, { width: 80 })}
                 alt={agency.name}
                 className="h-6 w-auto object-contain opacity-60"
               />

@@ -12,6 +12,7 @@ const navLinks = [
   { href: '/galerie', label: 'Découvrir' },
   { href: '/blog', label: 'Blog' },
   { href: '/business', label: 'Solutions Pro' },
+  { href: '/agences#tarifs', label: 'Tarifs Entreprise' },
   { href: '/pricing', label: 'Tarifs' },
   { href: '/a-propos', label: 'À propos' },
   { href: '/contact', label: 'Contact' },
