@@ -1,3 +1,4 @@
+import React, { Suspense } from 'react'
 import { Metadata, Viewport } from 'next'
 
 import '@fontsource/indie-flower'
@@ -86,9 +87,17 @@ export default async function FrontendLayout({ children }: { children: React.Rea
     <>
       <div className="flex flex-col min-h-screen bg-[#faf8f5] font-sans antialiased">
         <NextAuthProvider>
-          <FrontendLayoutWrapper exitIntentEnabled={settings.exitIntentEnabled ?? true}>
-            {children}
-          </FrontendLayoutWrapper>
+          <Suspense
+            fallback={
+              <div className="flex flex-col min-h-screen">
+                <main className="flex-grow">{children}</main>
+              </div>
+            }
+          >
+            <FrontendLayoutWrapper exitIntentEnabled={settings.exitIntentEnabled ?? true}>
+              {children}
+            </FrontendLayoutWrapper>
+          </Suspense>
           <InstallPrompt />
           <FeedbackButton />
           <Toaster position="top-right" richColors />
