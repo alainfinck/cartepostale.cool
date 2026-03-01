@@ -62,7 +62,7 @@ export default function ViewPageTitle({ title, senderName, location, date, event
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
         transition={{ delay: 1.5, duration: 1.2, ease: easeOut }}
       >
-        <span className="font-handwriting text-teal-600 flex items-center justify-center text-5xl md:text-7xl lg:text-8xl whitespace-nowrap py-2">
+        <span className="font-handwriting text-teal-600 flex items-center justify-center text-3xl md:text-5xl lg:text-6xl whitespace-nowrap py-2">
           {senderName}
         </span>
       </motion.div>{' '}

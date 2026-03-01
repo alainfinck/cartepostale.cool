@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useRef, useState, useMemo, useEffect, useCallback } from 'react'
+import { useDragControls } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { Postcard } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -14,6 +15,7 @@ import {
   Mail,
   X,
   Search,
+  ChevronLeft,
   ChevronRight,
   Minus,
   Plus,
@@ -30,7 +32,12 @@ import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { cn, isCoordinate } from '@/lib/utils'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
-import { getCaptionStyle, getCaptionBgColor, getCaptionExtraStyle, captionPresetHidesBg } from '@/lib/caption-style'
+import {
+  getCaptionStyle,
+  getCaptionBgColor,
+  getCaptionExtraStyle,
+  captionPresetHidesBg,
+} from '@/lib/caption-style'
 import { CoolMode } from '@/components/ui/cool-mode'
 import { useSessionId } from '@/hooks/useSessionId'
 import { getReactions, getUserReactions, toggleReaction } from '@/actions/social-actions'
@@ -69,11 +76,11 @@ const GalleryImage = ({
         <div
           onClick={onClick}
           className={cn(
-            'aspect-square w-full p-2 bg-white shadow-md border border-stone-200/30 rounded-[2.5rem] transition-all duration-500 active:scale-95 hover:shadow-xl',
+            'aspect-square w-full p-1 bg-white shadow-md border border-stone-200/30 rounded-3xl transition-all duration-500 active:scale-95 hover:shadow-xl',
             isLoaded ? 'opacity-100' : 'opacity-0',
           )}
         >
-          <div className="w-full h-full relative overflow-hidden rounded-[2rem] bg-stone-50/50">
+          <div className="w-full h-full relative overflow-hidden rounded-2xl bg-stone-50/50">
             <Image
               src={getOptimizedImageUrl(item.url, { width: 400, fit: 'cover' })}
               alt=""
@@ -99,10 +106,10 @@ const GalleryImage = ({
               >
                 <button
                   onClick={onLike}
-                  className="w-11 h-11 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center transition-all hover:scale-110 active:scale-90"
+                  className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center transition-all hover:scale-110 active:scale-90"
                 >
                   <Heart
-                    size={30}
+                    size={20}
                     className={cn(
                       'transition-all duration-300',
                       isLiked ? 'fill-red-500 text-red-500 scale-110' : 'text-stone-400',
@@ -251,7 +258,9 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
     coords,
   } = postcard
   const captionStyle = getCaptionStyle(postcard)
-  const captionBgColor = captionPresetHidesBg(postcard.frontCaptionPreset) ? 'transparent' : getCaptionBgColor(postcard)
+  const captionBgColor = captionPresetHidesBg(postcard.frontCaptionPreset)
+    ? 'transparent'
+    : getCaptionBgColor(postcard)
   const captionExtraStyle = getCaptionExtraStyle(postcard.frontCaptionPreset)
 
   const sessionId = useSessionId()
@@ -370,7 +379,8 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
     const el = fontMenuAnchorRef.current
     if (el) setFontMenuRect(el.getBoundingClientRect())
     const onScrollOrResize = () => {
-      if (fontMenuAnchorRef.current) setFontMenuRect(fontMenuAnchorRef.current.getBoundingClientRect())
+      if (fontMenuAnchorRef.current)
+        setFontMenuRect(fontMenuAnchorRef.current.getBoundingClientRect())
     }
     window.addEventListener('scroll', onScrollOrResize, true)
     window.addEventListener('resize', onScrollOrResize)
@@ -397,6 +407,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
   const [isBelowFontMenuOpen, setIsBelowFontMenuOpen] = useState(false)
   const [showMapPhotos, setShowMapPhotos] = useState(true)
 
+  const dragControls = useDragControls()
   const messageRef = useRef<HTMLDivElement>(null)
   const albumRef = useRef<HTMLDivElement>(null)
   const mapSectionRef = useRef<HTMLDivElement>(null)
@@ -515,7 +526,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
         }
       `}</style>
       {/* Main Content Area */}
-      <div className="max-w-5xl mx-auto w-full pt-12 px-4 md:pt-20">
+      <div className="max-w-5xl mx-auto w-full pt-12 px-2.5 sm:px-4 md:pt-20">
         {/* Navigation Tabs - Removed Redundant header as per user request */}
         <div className="flex justify-center mb-10">
           <div className="flex bg-white rounded-2xl p-1.5 shadow-sm border border-stone-200/50">
@@ -543,7 +554,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
             springConfig={{ stiffness: 40, damping: 15 }}
             onClick={() => setIsFlipped(!isFlipped)}
             front={
-              <div className="relative h-full w-full bg-white p-2 md:p-3 rounded-2xl border border-white">
+              <div className="relative h-full w-full bg-white p-1.5 md:p-2.5 rounded-2xl border border-white">
                 <div className="w-full h-full overflow-hidden rounded-xl relative bg-stone-100">
                   <Image
                     src={getOptimizedImageUrl(frontImage, { width: 1200 })}
@@ -578,12 +589,16 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                         top: `${frontCaptionPosition.y}%`,
                         transform: 'translate(-50%, -50%)',
                         backgroundColor: captionBgColor,
-                        ...(postcard.frontCaptionWidth != null && { width: `${postcard.frontCaptionWidth}%` }),
+                        ...(postcard.frontCaptionWidth != null && {
+                          width: `${postcard.frontCaptionWidth}%`,
+                        }),
                       }}
                     >
                       <div className="flex items-center gap-2 sm:gap-3">
                         {frontEmoji && (
-                          <span className="text-lg sm:text-xl leading-none shrink-0">{frontEmoji}</span>
+                          <span className="text-lg sm:text-xl leading-none shrink-0">
+                            {frontEmoji}
+                          </span>
                         )}
                         <p
                           className="m-0 font-bold leading-tight tracking-tight break-words text-[10px] sm:text-xs line-clamp-2"
@@ -662,7 +677,10 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                             <Plus size={10} strokeWidth={2.5} />
                           </button>
                         </div>
-                        <div className="relative flex items-center shrink-0 h-8 w-8 sm:w-9" ref={fontMenuAnchorRef}>
+                        <div
+                          className="relative flex items-center shrink-0 h-8 w-8 sm:w-9"
+                          ref={fontMenuAnchorRef}
+                        >
                           <button
                             type="button"
                             onClick={(e) => {
@@ -910,6 +928,16 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
           <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-[95%] h-16 bg-black/10 blur-[60px] rounded-full -z-10" />
         </section>
 
+        {/* Location under the postcard */}
+        {location && !isCoordinate(location) && (
+          <div className="flex justify-center -mt-10 mb-16 px-4">
+            <div className="flex items-center gap-1.5 text-stone-500/80 text-[10px] font-bold uppercase tracking-[0.2em]">
+              <MapPin size={10} className="text-teal-500/60" />
+              <span>{location}</span>
+            </div>
+          </div>
+        )}
+
         {/* Message "Paper" Block */}
         <section ref={messageRef} className="mt-4">
           <motion.div
@@ -1054,7 +1082,10 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
 
         {/* Map Section */}
         {coords && (
-          <section ref={mapSectionRef} className="mt-16 overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-0">
+          <section
+            ref={mapSectionRef}
+            className="mt-16 overflow-hidden -mx-2.5 px-2.5 sm:mx-0 sm:px-0"
+          >
             <div className="flex items-center gap-4 mb-6 sm:mb-10 px-0 sm:px-4">
               <div className="w-12 h-px bg-stone-300/50" />
               <h3 className="text-[11px] font-black uppercase tracking-widest text-stone-400 whitespace-nowrap">
@@ -1213,7 +1244,21 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
               className="relative w-full max-w-4xl max-h-[85vh] flex items-center justify-center"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Full-screen swipe listener */}
+              <div
+                className="fixed inset-0 z-0 cursor-grab active:cursor-grabbing"
+                onPointerDown={(e) => dragControls.start(e)}
+              />
+
               {/* Previous Button */}
+              <button
+                onClick={prevPhoto}
+                className="fixed left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors p-4 rounded-full hover:bg-white/5 z-[110]"
+                aria-label="Photo précédente"
+              >
+                <ChevronLeft size={48} strokeWidth={1.5} />
+              </button>
+
               {/* Photo with Adaptive White Border Effect */}
               <div className="relative w-full h-[70dvh] md:h-[80dvh] flex items-center justify-center pointer-events-none">
                 <AnimatePresence initial={false} custom={direction} mode="popLayout">
@@ -1255,7 +1300,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                     dragConstraints={{ left: 0, right: 0 }}
                     dragElastic={1}
                     onDragEnd={(e, { offset, velocity }) => {
-                      const swipe = Math.abs(offset.x) > 50 && Math.abs(velocity.x) > 500
+                      const swipe = Math.abs(offset.x) > 50 && Math.abs(velocity.x) > 300
                       if (swipe) {
                         if (offset.x > 0) {
                           prevPhoto()
@@ -1264,9 +1309,11 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                         }
                       }
                     }}
-                    className="relative bg-white p-2 md:p-3 rounded-2xl md:rounded-[2.5rem] shadow-2xl flex flex-col items-center pointer-events-auto touch-none"
+                    dragControls={dragControls}
+                    dragListener={false}
+                    className="relative bg-white p-0.5 md:p-1 rounded-xl md:rounded-3xl shadow-2xl flex flex-col items-center pointer-events-auto"
                   >
-                    <div className="overflow-hidden rounded-xl md:rounded-[2rem] bg-stone-100 relative group/slide">
+                    <div className="overflow-hidden rounded-lg md:rounded-2xl bg-stone-100 relative group/slide">
                       {mediaItems[activePhotoIndex]?.type === 'video' ? (
                         <video
                           src={mediaItems[activePhotoIndex]?.url}
@@ -1286,11 +1333,11 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                       )}
 
                       {/* Photo Like Button inside slideshow */}
-                      <div className="absolute bottom-6 right-6 z-[120] pointer-events-auto">
+                      <div className="absolute bottom-4 right-4 z-[120] pointer-events-auto">
                         <CoolMode
                           options={{
                             particle: '❤️',
-                            size: 32,
+                            size: 24,
                             particleCount: 6,
                             effect: 'balloon',
                           }}
@@ -1299,27 +1346,27 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                             onClick={() =>
                               handleToggleReaction('❤️', mediaItems[activePhotoIndex]?.id || '')
                             }
-                            className="w-11 h-11 rounded-full bg-white/90 backdrop-blur-md shadow-2xl border border-white/50 flex items-center justify-center transition-all hover:scale-110 active:scale-90 group/heart"
+                            className="w-11 h-11 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-90"
                           >
                             <Heart
-                              size={32}
+                              size={30}
                               className={cn(
                                 'transition-all duration-300',
                                 activePhotoIndex !== null &&
                                   userReactions[`❤️_${mediaItems[activePhotoIndex].id}`]
                                   ? 'fill-red-500 text-red-500 scale-110'
-                                  : 'text-stone-800',
+                                  : 'text-stone-400',
                               )}
                               strokeWidth={
                                 activePhotoIndex !== null &&
                                 userReactions[`❤️_${mediaItems[activePhotoIndex].id}`]
                                   ? 0
-                                  : 2
+                                  : 2.5
                               }
                             />
                             {activePhotoIndex !== null &&
                               counts[`❤️_${mediaItems[activePhotoIndex].id}`] > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md border-2 border-white">
+                                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[7px] font-bold min-w-[14px] h-3.5 px-0.5 rounded-full flex items-center justify-center shadow-sm border border-white">
                                   {counts[`❤️_${mediaItems[activePhotoIndex].id}`]}
                                 </span>
                               )}
@@ -1361,7 +1408,8 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
               {/* Next Button */}
               <button
                 onClick={nextPhoto}
-                className="absolute right-0 md:-right-20 text-white/40 hover:text-white transition-colors p-4 rounded-full hover:bg-white/5 z-[110]"
+                className="fixed right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors p-4 rounded-full hover:bg-white/5 z-[110]"
+                aria-label="Photo suivante"
               >
                 <ChevronRight size={48} strokeWidth={1.5} />
               </button>

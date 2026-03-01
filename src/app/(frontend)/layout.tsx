@@ -73,7 +73,6 @@ export const metadata: Metadata = {
   },
 }
 
-import { FeedbackButton } from '@/components/FeedbackButton'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
@@ -99,7 +98,6 @@ export default async function FrontendLayout({ children }: { children: React.Rea
             </FrontendLayoutWrapper>
           </Suspense>
           <InstallPrompt />
-          <FeedbackButton />
           <Toaster position="top-right" richColors />
         </NextAuthProvider>
       </div>
