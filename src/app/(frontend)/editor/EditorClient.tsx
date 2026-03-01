@@ -103,6 +103,7 @@ import {
   AI_GENERATION_PRICE_EUR,
 } from '@/components/editor/AiImageGeneratorModal'
 import UserGalleryModal from '@/components/editor/UserGalleryModal'
+import AgencyGalleryModal from '@/components/editor/AgencyGalleryModal'
 import StickerGallery from '@/components/editor/StickerGallery'
 import StickerLayer from '@/components/editor/StickerLayer'
 import FrontFaceEditor from '@/components/editor/FrontFaceEditor'
@@ -1016,8 +1017,13 @@ export default function EditorPage() {
   const [agencyBrandError, setAgencyBrandError] = useState<string | null>(null)
   /** Galerie d'images de l'agence (mode marque blanche) — utilisée comme "modèles" */
   const [agencyGalleryImages, setAgencyGalleryImages] = useState<
-    { id: string; title: string; imageUrl: string; caption: string | null }[]
+    { id: string; title: string; imageUrl: string; caption: string | null; categoryId: number | null; categoryName: string | null }[]
   >([])
+  const [agencyGalleryCategories, setAgencyGalleryCategories] = useState<
+    { id: number; name: string; slug: string }[]
+  >([])
+  const [agencyGalleryCategoryId, setAgencyGalleryCategoryId] = useState<number | 'all'>('all')
+  const [showAgencyGalleryModal, setShowAgencyGalleryModal] = useState(false)
 
   // Postcard state
   const [frontImage, setFrontImage] = useState('')
@@ -1305,18 +1311,23 @@ export default function EditorPage() {
       .finally(() => setAgencyBrandLoading(false))
   }, [agencyCode])
 
-  // Galerie agence : charger les images quand on a le code (pour "choisir un modèle")
+  // Galerie agence : charger images + catégories (pour "choisir un modèle")
   useEffect(() => {
     if (!agencyCode || typeof agencyCode !== 'string') {
       setAgencyGalleryImages([])
+      setAgencyGalleryCategories([])
       return
     }
     fetch(`/api/public/agency/${encodeURIComponent(agencyCode)}/gallery`)
-      .then((res) => (res.ok ? res.json() : { items: [] }))
-      .then((data: { items: { id: string; title: string; imageUrl: string; caption: string | null }[] }) =>
+      .then((res) => (res.ok ? res.json() : { items: [], categories: [] }))
+      .then((data: { items: typeof agencyGalleryImages; categories: { id: number; name: string; slug: string }[] }) => {
         setAgencyGalleryImages(data.items ?? [])
-      )
-      .catch(() => setAgencyGalleryImages([]))
+        setAgencyGalleryCategories(data.categories ?? [])
+      })
+      .catch(() => {
+        setAgencyGalleryImages([])
+        setAgencyGalleryCategories([])
+      })
   }, [agencyCode])
 
   // Image de couverture depuis la galerie (param ?cover=...)
@@ -3204,67 +3215,103 @@ export default function EditorPage() {
                 {showTemplateSection && (
                   <div className="space-y-5 mb-8">
                     {agencyCode ? (
-                      /* Mode agence : uniquement les images de la galerie agence */
+                      /* Mode agence : galerie avec filtre par catégorie + modal plein écran */
                       <>
                         <p className="text-sm font-semibold text-stone-700 mb-2.5">
                           Images de l&apos;agence
                         </p>
+                        {agencyGalleryCategories.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            <button
+                              type="button"
+                              onClick={() => setAgencyGalleryCategoryId('all')}
+                              className={cn(
+                                'px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all',
+                                agencyGalleryCategoryId === 'all'
+                                  ? 'bg-teal-500 text-white'
+                                  : 'bg-stone-100 text-stone-600 hover:bg-stone-200',
+                              )}
+                            >
+                              Toutes
+                            </button>
+                            {agencyGalleryCategories.map((cat) => (
+                              <button
+                                key={cat.id}
+                                type="button"
+                                onClick={() => setAgencyGalleryCategoryId(cat.id)}
+                                className={cn(
+                                  'px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all',
+                                  agencyGalleryCategoryId === cat.id
+                                    ? 'bg-teal-500 text-white'
+                                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200',
+                                )}
+                              >
+                                {cat.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                         {agencyGalleryImages.length === 0 ? (
                           <p className="text-stone-500 text-sm py-4">
                             Aucune image dans la galerie pour le moment.
                           </p>
                         ) : (
-                          <>
-                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                              {agencyGalleryImages.slice(0, 8).map((item) => {
-                                const isSelected =
-                                  frontImage === item.imageUrl ||
-                                  (item.imageUrl.startsWith('/') &&
-                                    frontImage === `${typeof window !== 'undefined' ? window.location.origin : ''}${item.imageUrl}`)
-                                return (
-                                  <button
-                                    key={item.id}
-                                    type="button"
-                                    onClick={() => {
-                                      const url = item.imageUrl.startsWith('http')
-                                        ? item.imageUrl
-                                        : `${typeof window !== 'undefined' ? window.location.origin : ''}${item.imageUrl}`
-                                      setFrontImage(url)
-                                      setUploadedFileName(item.title)
-                                    }}
-                                    className={cn(
-                                      'flex flex-col rounded-2xl border overflow-hidden transition-all min-w-0 aspect-[4/3]',
-                                      isSelected
-                                        ? 'border-teal-500 ring-2 ring-teal-200'
-                                        : 'border-stone-200 hover:border-teal-200 hover:shadow-md',
-                                    )}
-                                    title={item.title}
-                                  >
-                                    <div className="flex-1 min-h-0 relative bg-stone-100">
-                                      <img
-                                        src={item.imageUrl.startsWith('http') ? item.imageUrl : `${typeof window !== 'undefined' ? window.location.origin : ''}${item.imageUrl}`}
-                                        alt=""
-                                        className="absolute inset-0 w-full h-full object-cover"
-                                      />
-                                    </div>
-                                    <span className="text-[10px] font-medium text-stone-600 truncate px-1.5 py-1 bg-white">
-                                      {item.title}
-                                    </span>
-                                  </button>
-                                )
-                              })}
-                            </div>
-                            {agencyGalleryImages.length > 8 && (
-                              <button
-                                type="button"
-                                onClick={() => setShowTemplateModal(true)}
-                                className="flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-600 transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-600 w-full justify-center"
-                              >
-                                <MoreHorizontal size={16} />
-                                Toutes les images ({agencyGalleryImages.length})
-                              </button>
-                            )}
-                          </>
+                          (() => {
+                            const filtered =
+                              agencyGalleryCategoryId === 'all'
+                                ? agencyGalleryImages
+                                : agencyGalleryImages.filter(
+                                    (i) => i.categoryId === agencyGalleryCategoryId,
+                                  )
+                            return (
+                              <>
+                                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                  {filtered.slice(0, 8).map((item) => {
+                                    const url = item.imageUrl.startsWith('http')
+                                      ? item.imageUrl
+                                      : `${typeof window !== 'undefined' ? window.location.origin : ''}${item.imageUrl}`
+                                    const isSelected = frontImage === url
+                                    return (
+                                      <button
+                                        key={item.id}
+                                        type="button"
+                                        onClick={() => {
+                                          setFrontImage(url)
+                                          setUploadedFileName(item.title)
+                                        }}
+                                        className={cn(
+                                          'flex flex-col rounded-2xl border overflow-hidden transition-all min-w-0 aspect-[4/3]',
+                                          isSelected
+                                            ? 'border-teal-500 ring-2 ring-teal-200'
+                                            : 'border-stone-200 hover:border-teal-200 hover:shadow-md',
+                                        )}
+                                        title={item.title}
+                                      >
+                                        <div className="flex-1 min-h-0 relative bg-stone-100">
+                                          <img
+                                            src={url}
+                                            alt=""
+                                            className="absolute inset-0 w-full h-full object-cover"
+                                          />
+                                        </div>
+                                        <span className="text-[10px] font-medium text-stone-600 truncate px-1.5 py-1 bg-white">
+                                          {item.title}
+                                        </span>
+                                      </button>
+                                    )
+                                  })}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowAgencyGalleryModal(true)}
+                                  className="flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-600 transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-600 w-full justify-center mt-2"
+                                >
+                                  <MoreHorizontal size={16} />
+                                  Toutes les images ({filtered.length})
+                                </button>
+                              </>
+                            )
+                          })()
                         )}
                       </>
                     ) : (
