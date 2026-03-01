@@ -6665,7 +6665,7 @@ export default function EditorPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal : tous les modèles avec catégories (ou galerie agence en mode agence) */}
+      {/* Modal : tous les modèles (catégories globales) — galerie agence via AgencyGalleryModal */}
       {showTemplateModal && (
         <div
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-8 overflow-auto"
@@ -6675,68 +6675,8 @@ export default function EditorPage() {
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-3xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-stone-200 flex flex-col"
           >
-            {agencyCode ? (
-              /* Modal galerie agence */
-              <>
-                <div className="flex items-center justify-between shrink-0 border-b border-stone-200 px-6 py-4">
-                  <h3 className="text-lg font-bold text-stone-800">Images de l&apos;agence</h3>
-                  <button
-                    type="button"
-                    onClick={() => setShowTemplateModal(false)}
-                    className="p-2 rounded-full text-stone-500 hover:bg-stone-100 hover:text-stone-700 transition"
-                    aria-label="Fermer"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-                <div className="flex-1 overflow-y-auto p-6">
-                  {agencyGalleryImages.length === 0 ? (
-                    <p className="text-stone-500 text-sm py-8 text-center">
-                      Aucune image dans la galerie.
-                    </p>
-                  ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      {agencyGalleryImages.map((item) => {
-                        const fullUrl = item.imageUrl.startsWith('http')
-                          ? item.imageUrl
-                          : `${typeof window !== 'undefined' ? window.location.origin : ''}${item.imageUrl}`
-                        const isSelected = frontImage === fullUrl
-                        return (
-                          <button
-                            key={item.id}
-                            type="button"
-                            onClick={() => {
-                              setFrontImage(fullUrl)
-                              setUploadedFileName(item.title)
-                              setShowTemplateModal(false)
-                            }}
-                            className={cn(
-                              'flex flex-col rounded-2xl border overflow-hidden transition-all aspect-[4/3]',
-                              isSelected
-                                ? 'border-teal-500 ring-2 ring-teal-200'
-                                : 'border-stone-200 hover:border-teal-200 hover:shadow-md',
-                            )}
-                          >
-                            <div className="flex-1 min-h-0 relative bg-stone-100">
-                              <img
-                                src={fullUrl}
-                                alt={item.title}
-                                className="absolute inset-0 w-full h-full object-cover"
-                              />
-                            </div>
-                            <span className="text-xs font-medium text-stone-600 truncate px-2 py-1.5 bg-white text-left">
-                              {item.title}
-                            </span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                {/* Header */}
+            <>
+              {/* Header */}
                 <div className="flex items-center justify-between shrink-0 border-b border-stone-200 px-6 py-4">
                   <div>
                     <h3 className="text-lg font-bold text-stone-800">
@@ -6870,9 +6810,22 @@ export default function EditorPage() {
                   )}
                 </div>
               </>
-            )}
           </div>
         </div>
+      )}
+
+      {/* Modal galerie agence plein écran (filtres, catégories, recherche) */}
+      {agencyCode && (
+        <AgencyGalleryModal
+          isOpen={showAgencyGalleryModal}
+          onClose={() => setShowAgencyGalleryModal(false)}
+          agencyCode={agencyCode}
+          agencyName={agencyBrand?.name}
+          onSelect={(imageUrl, title) => {
+            setFrontImage(imageUrl)
+            setUploadedFileName(title)
+          }}
+        />
       )}
 
       {/* Modal destinataire : iframe de la page réelle */}

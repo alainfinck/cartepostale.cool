@@ -1292,31 +1292,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </div>
               )}
 
-              {/* Message "Cliquer pour retourner" au survol (Front) — masqué en fullscreen, en mode éditeur (pour pouvoir déplacer le texte), ou via prop */}
-              {!isFullscreen && !hideFlipHints && !onCaptionPositionChange && (
-                <div
-                  className={cn(
-                    'absolute top-4 left-4 z-30 transition-all duration-500 pointer-events-none',
-                    !hasBeenFlipped
-                      ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0',
-                  )}
-                >
-                  <div className="bg-stone-800/20 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/10 flex items-center gap-2">
-                    <Compass
-                      size={14}
-                      className="text-white/60 animate-spin-slow"
-                      strokeWidth={2}
-                    />
-                    <span className="text-white/60 font-bold uppercase tracking-wider text-[10px]">
-                      {postcard.location || 'DESTINATION'}
-                    </span>
-                  </div>
-                </div>
-              )}
+              {/* Titre/caption : uniquement à la position encodée (pas de loc en haut à gauche, pas de message en bas à droite) */}
 
-              {/* Message démo au-dessus de la localisation (frontCaption sans frontEmoji) — déplaçable en mode éditeur */}
-              {postcard.frontCaption?.trim() && !postcard.frontEmoji && (
+              {/* Message démo (frontCaption sans frontEmoji) — uniquement si position encodée ou mode éditeur */}
+              {postcard.frontCaption?.trim() && !postcard.frontEmoji && (postcard.frontCaptionPosition != null || onCaptionPositionChange != null) && (
                 <div
                   className={cn(
                     'z-20 w-fit max-w-[calc(100%-1rem)] px-2 py-1.5 sm:px-3 sm:py-2 rounded-md transition-all',
@@ -1389,8 +1368,8 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </div>
               )}
 
-              {/* Bloc caption + emoji */}
-              {postcard.frontCaption?.trim() && postcard.frontEmoji && (
+              {/* Bloc caption + emoji — uniquement si position encodée ou mode éditeur */}
+              {postcard.frontCaption?.trim() && postcard.frontEmoji && (postcard.frontCaptionPosition != null || onCaptionPositionChange != null) && (
                 <div
                   className={cn(
                     'z-20 flex items-center gap-2 sm:gap-3 rounded-xl sm:rounded-2xl px-3 py-2 sm:px-4 sm:py-3 transition-all w-fit max-w-[calc(100%-1rem)]',
@@ -1568,9 +1547,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               <div className="flex flex-1 gap-4 md:gap-10 min-h-0 min-w-0 p-5 md:p-10 overflow-hidden">
                 {/* Left Column: Message */}
                 <div className="flex-1 flex flex-col pt-1 overflow-hidden min-h-0 min-w-0">
-                  {/* Top Control Bar - Tous les boutons dans la même barre (n'influence pas la largeur de la carte) */}
+                  {/* Top Control Bar - Hauteur fixe stricte pour tous les boutons */}
                   <div className="flex items-center shrink-0 mb-1 sm:mb-2 px-0.5 min-w-0 max-w-full">
-                    <div className="flex flex-nowrap items-center gap-0 rounded-md border border-stone-200/50 shadow-sm bg-white/40 backdrop-blur-sm overflow-hidden h-[22px] sm:h-5 min-w-0 max-w-full">
+                    <div className="flex flex-nowrap items-stretch gap-0 rounded-md sm:rounded-lg border border-stone-200/50 shadow-sm bg-white/40 sm:bg-white/90 backdrop-blur-sm overflow-hidden h-8 max-h-8 min-w-0 max-w-full">
                       {/* Scale: − A + */}
                       <button
                         type="button"
@@ -1578,12 +1557,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           e.stopPropagation()
                           setBackTextScale((s) => Math.max(0.6, Number((s - 0.08).toFixed(2))))
                         }}
-                        className="w-[22px] h-[22px] sm:w-5 sm:h-5 flex items-center justify-center hover:bg-white/60 text-stone-500 hover:text-teal-600 transition-colors shrink-0"
+                        className="h-full max-h-8 w-8 min-h-0 flex items-center justify-center rounded-none hover:bg-white/60 text-stone-500 hover:text-teal-600 transition-colors shrink-0 border-0"
                         title="Réduire"
                       >
-                        <Minus size={9} strokeWidth={3} />
+                        <Minus size={10} strokeWidth={3} />
                       </button>
-                      <span className="px-0.5 text-[7px] font-black text-stone-400 select-none shrink-0">
+                      <span className="h-full max-h-8 flex items-center px-0.5 text-[8px] font-black text-stone-400 select-none shrink-0 leading-none">
                         A
                       </span>
                       <button
@@ -1592,15 +1571,15 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           e.stopPropagation()
                           setBackTextScale((s) => Math.min(1.5, Number((s + 0.08).toFixed(2))))
                         }}
-                        className="w-[22px] h-[22px] sm:w-5 sm:h-5 flex items-center justify-center hover:bg-white/60 text-stone-500 hover:text-teal-600 transition-colors shrink-0"
+                        className="h-full max-h-8 w-8 min-h-0 flex items-center justify-center rounded-none hover:bg-white/60 text-stone-500 hover:text-teal-600 transition-colors shrink-0 border-0"
                         title="Agrandir"
                       >
-                        <Plus size={9} strokeWidth={3} />
+                        <Plus size={10} strokeWidth={3} />
                       </button>
                       {/* Séparateur */}
-                      <div className="w-px h-3 bg-stone-200/60 shrink-0" />
+                      <div className="w-px self-stretch bg-stone-200/60 shrink-0 min-h-0" />
                       {/* Police Aa */}
-                      <div className="relative flex items-center shrink-0">
+                      <div className="relative flex items-stretch shrink-0 h-8 max-h-8 w-8 sm:w-9">
                         <button
                           type="button"
                           onClick={(e) => {
@@ -1608,14 +1587,14 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             setIsFontMenuOpen((o) => !o)
                           }}
                           className={cn(
-                            'h-[22px] sm:h-5 flex items-center justify-center px-1 sm:px-1.5 transition-colors min-w-0',
+                            'h-full max-h-8 min-h-0 w-full flex items-center justify-center px-1 sm:px-1.5 rounded-none transition-colors shrink-0 border-0',
                             isFontMenuOpen
                               ? 'bg-teal-50 text-teal-700'
                               : 'hover:bg-white/60 text-stone-600',
                           )}
                         >
                           <span
-                            className="text-[7px] font-bold select-none leading-none"
+                            className="text-[8px] font-bold select-none leading-none"
                             style={{
                               fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)
                                 ?.fontFamily,
@@ -1623,7 +1602,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           >
                             Aa
                           </span>
-                          <ChevronDown size={7} className="ml-0.5 opacity-50 shrink-0" />
+                          <ChevronDown size={8} className="ml-0.5 opacity-50 shrink-0" />
                         </button>
                         <AnimatePresence>
                           {isFontMenuOpen && (
@@ -1667,16 +1646,16 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                       {/* Recto */}
                       {!isFullscreen && !onCaptionPositionChange && (
                         <>
-                          <div className="w-px h-3 bg-stone-200/60 shrink-0" />
+                          <div className="w-px self-stretch bg-stone-200/60 shrink-0 min-h-0" />
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
                               handleFlip()
                             }}
-                            className="h-[22px] sm:h-5 flex items-center justify-center gap-0.5 px-1.5 sm:px-2 bg-stone-800/80 hover:bg-stone-800 text-white text-[6px] sm:text-[7px] font-black uppercase tracking-widest transition-all active:scale-95 group/btn shrink-0"
+                            className="h-full max-h-8 min-h-0 flex items-center justify-center gap-0.5 px-2 rounded-none bg-stone-800/80 hover:bg-stone-800 text-white text-[10px] font-black uppercase tracking-widest leading-none py-0 transition-all active:scale-95 group/btn shrink-0 border-0"
                           >
                             <RotateCw
-                              size={7}
+                              size={10}
                               className="group-hover/btn:rotate-180 transition-transform duration-500 shrink-0"
                             />
                             <span className="truncate">Recto</span>

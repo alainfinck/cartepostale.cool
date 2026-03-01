@@ -48,25 +48,27 @@ export async function GET(
 
     const agencyId = agency.id
 
+    const galleryWhere: { and: Array<Record<string, unknown>> } = {
+      and: [{ agency: { equals: agencyId } }],
+    }
+    if (categoryId && categoryId !== 'all') {
+      const cid = parseInt(categoryId, 10)
+      if (!Number.isNaN(cid)) galleryWhere.and.push({ category: { equals: cid } })
+    }
+    if (search.length > 0) {
+      galleryWhere.and.push({
+        or: [
+          { title: { contains: search } },
+          { caption: { contains: search } },
+        ],
+      })
+    }
+
     const [galleryResult, categoriesResult] = await Promise.all([
       payload.find({
         collection: 'gallery',
-        where: (() => {
-          const and: Record<string, unknown>[] = [{ agency: { equals: agencyId } }]
-          if (categoryId && categoryId !== 'all') {
-            const cid = parseInt(categoryId, 10)
-            if (!Number.isNaN(cid)) and.push({ category: { equals: cid } })
-          }
-          if (search.length > 0) {
-            and.push({
-              or: [
-                { title: { contains: search } },
-                { caption: { contains: search } },
-              ],
-            })
-          }
-          return { and }
-        })(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        where: galleryWhere as any,
         depth: 2,
         limit: 300,
         sort: 'order',

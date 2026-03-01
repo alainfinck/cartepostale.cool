@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useRef, useState, useMemo, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { Postcard } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -12,6 +13,7 @@ import {
   Map as MapIcon,
   Mail,
   X,
+  Search,
   ChevronRight,
   Minus,
   Plus,
@@ -26,8 +28,9 @@ import ARButton from '@/components/ar/ARButton'
 import FlipCard from '@/components/ui/FlipCard'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
-import { cn } from '@/lib/utils'
+import { cn, isCoordinate } from '@/lib/utils'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
+import { getCaptionStyle, getCaptionBgColor, getCaptionExtraStyle, captionPresetHidesBg } from '@/lib/caption-style'
 import { CoolMode } from '@/components/ui/cool-mode'
 import { useSessionId } from '@/hooks/useSessionId'
 import { getReactions, getUserReactions, toggleReaction } from '@/actions/social-actions'
@@ -243,8 +246,13 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
     location,
     mediaItems = [],
     frontCaption,
+    frontCaptionPosition,
+    frontEmoji,
     coords,
   } = postcard
+  const captionStyle = getCaptionStyle(postcard)
+  const captionBgColor = captionPresetHidesBg(postcard.frontCaptionPreset) ? 'transparent' : getCaptionBgColor(postcard)
+  const captionExtraStyle = getCaptionExtraStyle(postcard.frontCaptionPreset)
 
   const sessionId = useSessionId()
   const [counts, setCounts] = useState<Record<string, number>>({}) // Key: "emoji" or "emoji_mediaItemId"
@@ -329,6 +337,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
   }
 
   const [isFlipped, setIsFlipped] = useState(false)
+  const [isFrontImageZoomOpen, setIsFrontImageZoomOpen] = useState(false)
   const [isMapModalOpen, setIsMapModalOpen] = useState(false)
   const [activePhotoIndex, setActivePhotoIndex] = useState<number | null>(null)
   const [direction, setDirection] = useState(0) // -1 for prev, 1 for next
@@ -337,6 +346,51 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
     'dancing' | 'greatVibes' | 'parisienne' | 'sans' | 'serif' | 'indieFlower' | 'gochiHand'
   >('dancing')
   const [isFontMenuOpen, setIsFontMenuOpen] = useState(false)
+  const [fontMenuRect, setFontMenuRect] = useState<DOMRect | null>(null)
+  const fontMenuAnchorRef = useRef<HTMLDivElement>(null)
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null)
+  useEffect(() => {
+    setPortalRoot(typeof document !== 'undefined' ? document.body : null)
+  }, [])
+  useEffect(() => {
+    if (!isFrontImageZoomOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsFrontImageZoomOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [isFrontImageZoomOpen])
+
+  // Position du dropdown polices (pour le portal) et fermeture au clic extérieur
+  useEffect(() => {
+    if (!isFontMenuOpen) {
+      setFontMenuRect(null)
+      return
+    }
+    const el = fontMenuAnchorRef.current
+    if (el) setFontMenuRect(el.getBoundingClientRect())
+    const onScrollOrResize = () => {
+      if (fontMenuAnchorRef.current) setFontMenuRect(fontMenuAnchorRef.current.getBoundingClientRect())
+    }
+    window.addEventListener('scroll', onScrollOrResize, true)
+    window.addEventListener('resize', onScrollOrResize)
+    return () => {
+      window.removeEventListener('scroll', onScrollOrResize, true)
+      window.removeEventListener('resize', onScrollOrResize)
+    }
+  }, [isFontMenuOpen])
+  useEffect(() => {
+    if (!isFontMenuOpen) return
+    const onPointerDown = (e: MouseEvent) => {
+      const anchor = fontMenuAnchorRef.current
+      const target = e.target as Node
+      if (anchor?.contains(target)) return
+      if (document.querySelector('[data-font-dropdown]')?.contains(target)) return
+      setIsFontMenuOpen(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [isFontMenuOpen])
   const [belowMessageFont, setBelowMessageFont] = useState<
     'dancing' | 'greatVibes' | 'parisienne' | 'sans' | 'serif' | 'indieFlower' | 'gochiHand'
   >('dancing')
@@ -498,7 +552,7 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
 
-                  {/* Flip Button Overlay */}
+                  {/* Flip Button Overlay — en haut à droite */}
                   <div className="absolute top-4 right-4 z-20">
                     <button
                       onClick={(e) => {
@@ -515,22 +569,63 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                     </button>
                   </div>
 
-                  {/* Floating Caption Pill */}
-                  {frontCaption && (
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                      <motion.div
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.8, duration: 0.6, type: 'spring' }}
-                        className="bg-white/95 backdrop-blur-md px-8 py-4 rounded-3xl shadow-2xl flex items-center gap-4 border border-white/20 whitespace-nowrap"
-                      >
-                        <span className="text-3xl leading-none">🌴</span>
-                        <span className="font-sans font-bold text-stone-800 text-sm md:text-2xl tracking-tight">
+                  {/* Titre à la position encodée pour la carte (pas de message en bas à droite) */}
+                  {frontCaption?.trim() && frontCaptionPosition != null && (
+                    <div
+                      className="absolute z-10 pointer-events-none w-fit max-w-[calc(100%-2rem)] px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-white/40 shadow-lg"
+                      style={{
+                        left: `${frontCaptionPosition.x}%`,
+                        top: `${frontCaptionPosition.y}%`,
+                        transform: 'translate(-50%, -50%)',
+                        backgroundColor: captionBgColor,
+                        ...(postcard.frontCaptionWidth != null && { width: `${postcard.frontCaptionWidth}%` }),
+                      }}
+                    >
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        {frontEmoji && (
+                          <span className="text-lg sm:text-xl leading-none shrink-0">{frontEmoji}</span>
+                        )}
+                        <p
+                          className="m-0 font-bold leading-tight tracking-tight break-words text-[10px] sm:text-xs line-clamp-2"
+                          style={{
+                            fontFamily: captionStyle.fontFamily,
+                            fontSize: captionStyle.fontSize,
+                            color: captionStyle.color,
+                            textShadow:
+                              captionStyle.color === '#ffffff' || captionStyle.color === '#000000'
+                                ? '0 1px 2px rgba(0,0,0,0.2)'
+                                : '0 1px 2px rgba(255,255,255,0.8)',
+                            ...captionExtraStyle,
+                          }}
+                        >
                           {frontCaption}
-                        </span>
-                      </motion.div>
+                        </p>
+                      </div>
                     </div>
                   )}
+
+                  {/* Localisation en bas à gauche (pas en haut à gauche) */}
+                  {location && !isCoordinate(location) && (
+                    <div className="absolute left-4 sm:left-6 bottom-4 sm:bottom-6 z-10 bg-white/90 backdrop-blur-md text-teal-900 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-semibold shadow-lg flex items-center gap-1.5 pointer-events-none">
+                      <MapPin size={12} className="text-orange-500 shrink-0" />
+                      <span className="normal-case tracking-wide break-words max-w-[160px] sm:max-w-[220px]">
+                        {location}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Loupe en bas à droite : afficher l'image de la carte en grand */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setIsFrontImageZoomOpen(true)
+                    }}
+                    className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/70 backdrop-blur-sm hover:bg-white/90 shadow-md border border-stone-200/50 text-stone-600 hover:text-stone-900 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    aria-label="Voir l'image en grand"
+                  >
+                    <Search size={16} strokeWidth={2} className="sm:w-[18px] sm:h-[18px]" />
+                  </button>
                 </div>
               </div>
             }
@@ -539,21 +634,21 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                 <div className="flex flex-1 gap-4 md:gap-10 min-h-0">
                   {/* Left Column: Message */}
                   <div className="flex-1 flex flex-col pt-1 overflow-hidden min-h-0">
-                    {/* Top Control Bar — moins haut, -/+ discrets, pas de A */}
+                    {/* Top Control Bar — hauteur fixe, icônes centrées verticalement, même style pour tous les boutons */}
                     <div className="flex items-center shrink-0 mb-0.5 min-w-0 max-w-full">
-                      <div className="flex items-center gap-0.5 sm:gap-1 bg-white/90 sm:bg-white rounded-md sm:rounded-lg border border-stone-200/40 sm:border-stone-200/60 shadow-sm py-0 px-0.5 sm:px-1 min-w-0 h-6">
-                        {/* Taille : icônes - et + seulement */}
-                        <div className="flex items-center gap-0.5 shrink-0">
+                      <div className="flex items-center gap-0 h-8 bg-white/90 sm:bg-white rounded-md sm:rounded-lg border border-stone-200/40 sm:border-stone-200/60 shadow-sm min-w-0 overflow-visible">
+                        {/* Taille : icônes - et + */}
+                        <div className="flex items-center shrink-0 h-8">
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation()
                               setBackTextScale((s) => Math.max(0.6, Number((s - 0.08).toFixed(2))))
                             }}
-                            className="h-5 w-5 min-h-0 flex items-center justify-center rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100/80 active:bg-stone-100 transition-colors shrink-0"
+                            className="h-8 w-8 min-h-0 flex items-center justify-center rounded-md text-stone-500 hover:text-stone-700 hover:bg-stone-100/80 active:bg-stone-100 transition-colors shrink-0 border-0"
                             title="Réduire la taille"
                           >
-                            <Minus size={8} strokeWidth={2.5} />
+                            <Minus size={10} strokeWidth={2.5} />
                           </button>
                           <button
                             type="button"
@@ -561,13 +656,13 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                               e.stopPropagation()
                               setBackTextScale((s) => Math.min(1.5, Number((s + 0.08).toFixed(2))))
                             }}
-                            className="h-5 w-5 min-h-0 flex items-center justify-center rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100/80 active:bg-stone-100 transition-colors shrink-0"
+                            className="h-8 w-8 min-h-0 flex items-center justify-center rounded-md text-stone-500 hover:text-stone-700 hover:bg-stone-100/80 active:bg-stone-100 transition-colors shrink-0 border-0"
                             title="Agrandir la taille"
                           >
-                            <Plus size={8} strokeWidth={2.5} />
+                            <Plus size={10} strokeWidth={2.5} />
                           </button>
                         </div>
-                        <div className="relative flex items-center shrink-0">
+                        <div className="relative flex items-center shrink-0 h-8 w-8 sm:w-9" ref={fontMenuAnchorRef}>
                           <button
                             type="button"
                             onClick={(e) => {
@@ -575,14 +670,14 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                               setIsFontMenuOpen((o) => !o)
                             }}
                             className={cn(
-                              'h-5 min-h-0 w-7 sm:w-8 flex items-center justify-center px-1 rounded border transition-all shrink-0',
+                              'h-8 min-h-0 w-full flex items-center justify-center px-1 rounded-md border-0 transition-all shrink-0',
                               isFontMenuOpen
-                                ? 'bg-teal-50 border-teal-200 text-teal-700'
-                                : 'bg-white border-stone-200/50 hover:bg-stone-50 text-stone-600',
+                                ? 'bg-teal-50 text-teal-700'
+                                : 'bg-white hover:bg-stone-50 text-stone-600',
                             )}
                           >
                             <span
-                              className="text-[6px] sm:text-[7px] font-bold select-none uppercase tracking-tighter"
+                              className="text-[7px] sm:text-[8px] font-bold select-none uppercase tracking-tighter leading-none"
                               style={{
                                 fontFamily: BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)
                                   ?.fontFamily,
@@ -590,61 +685,72 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
                             >
                               Aa
                             </span>
-                            <ChevronDown size={6} className="ml-0.5 opacity-50" />
+                            <ChevronDown size={8} className="ml-0.5 opacity-50 shrink-0" />
                           </button>
-                          <AnimatePresence>
-                            {isFontMenuOpen && (
-                              <motion.div
-                                initial={{ opacity: 0, y: -4 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -4 }}
-                                transition={{ duration: 0.15 }}
-                                className="absolute top-full left-0 mt-1 w-28 bg-white rounded-lg shadow-lg border border-stone-200 overflow-hidden z-[70] py-0.5"
-                              >
-                                {BACK_MESSAGE_FONTS.map((font) => (
-                                  <button
-                                    key={font.id}
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      setBackMessageFont(font.id)
-                                      setIsFontMenuOpen(false)
-                                    }}
-                                    className={cn(
-                                      'w-full flex items-center gap-1.5 px-2 py-1 rounded-md text-left text-[9px] transition-colors',
-                                      backMessageFont === font.id
-                                        ? 'bg-teal-50 text-teal-700'
-                                        : 'hover:bg-stone-50 text-stone-600',
-                                    )}
-                                  >
-                                    <span
-                                      className="font-bold w-3.5 text-center"
-                                      style={{ fontFamily: font.fontFamily }}
-                                    >
-                                      Aa
-                                    </span>
-                                    <span className="truncate">{font.name}</span>
-                                  </button>
-                                ))}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
                         </div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
                             setIsFlipped(!isFlipped)
                           }}
-                          className="h-5 w-5 min-h-0 rounded bg-white border border-stone-200/50 hover:bg-stone-50 text-stone-600 transition-all active:scale-95 flex items-center justify-center shrink-0 group/btn"
+                          className="h-8 w-8 flex items-center justify-center rounded-md bg-white hover:bg-stone-50 text-stone-600 border-0 transition-all active:scale-95 shrink-0 group/btn"
                           title="Retourner la carte"
                         >
                           <RotateCw
-                            size={8}
-                            className="group-hover/btn:rotate-180 transition-transform duration-500"
+                            size={12}
+                            className="group-hover/btn:rotate-180 transition-transform duration-500 shrink-0"
                           />
                         </button>
                       </div>
                     </div>
+                    {/* Dropdown polices (portal pour ne pas être coupé par overflow) */}
+                    {portalRoot &&
+                      fontMenuRect != null &&
+                      createPortal(
+                        <AnimatePresence>
+                          {isFontMenuOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -4 }}
+                              transition={{ duration: 0.15 }}
+                              className="fixed w-28 bg-white rounded-lg shadow-xl border border-stone-200 overflow-hidden z-[9998] py-0.5"
+                              style={{
+                                top: fontMenuRect.bottom + 4,
+                                left: fontMenuRect.left,
+                              }}
+                              data-font-dropdown
+                            >
+                              {BACK_MESSAGE_FONTS.map((font) => (
+                                <button
+                                  key={font.id}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setBackMessageFont(font.id)
+                                    setIsFontMenuOpen(false)
+                                  }}
+                                  className={cn(
+                                    'w-full flex items-center gap-1.5 px-2 py-1.5 rounded-md text-left text-[9px] transition-colors',
+                                    backMessageFont === font.id
+                                      ? 'bg-teal-50 text-teal-700'
+                                      : 'hover:bg-stone-50 text-stone-600',
+                                  )}
+                                >
+                                  <span
+                                    className="font-bold w-3.5 text-center"
+                                    style={{ fontFamily: font.fontFamily }}
+                                  >
+                                    Aa
+                                  </span>
+                                  <span className="truncate">{font.name}</span>
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>,
+                        portalRoot,
+                      )}
 
                     {/* Text Area */}
                     <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pr-1">
@@ -1263,6 +1369,54 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Lightbox : image de la face avant en grand */}
+      {portalRoot &&
+        createPortal(
+          <AnimatePresence>
+            {isFrontImageZoomOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[999] bg-black/95 flex items-center justify-center overflow-auto"
+                onClick={() => setIsFrontImageZoomOpen(false)}
+                style={{
+                  padding:
+                    'max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left))',
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setIsFrontImageZoomOpen(false)
+                  }}
+                  className="fixed z-10 flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/95 shadow-xl text-stone-700 hover:bg-white transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-stone-900"
+                  style={{
+                    top: 'max(1rem, env(safe-area-inset-top))',
+                    right: 'max(1rem, env(safe-area-inset-right))',
+                  }}
+                  aria-label="Fermer"
+                >
+                  <X size={24} className="sm:w-7 sm:h-7" strokeWidth={2.5} />
+                </button>
+                <div
+                  className="relative shrink-0 max-w-[min(90vw,1200px)] max-h-[85vh] w-full aspect-[4/3] overflow-hidden rounded-lg shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <img
+                    src={getOptimizedImageUrl(frontImage, { width: 1600 })}
+                    alt="Face avant de la carte postale"
+                    className="w-full h-full object-cover"
+                    draggable={false}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          portalRoot,
+        )}
     </div>
   )
 }
