@@ -91,6 +91,7 @@ const GalleryImage = ({
                   size: 14,
                   particleCount: 4,
                   effect: 'balloon',
+                  loop: false,
                 }}
               >
                 <button
