@@ -2,39 +2,26 @@
 
 import React from 'react'
 import { Postcard } from '@/types'
-import PostcardView from '@/components/postcard/PostcardView'
+import PostcardScrollFlow from '@/components/postcard/PostcardScrollFlow'
 
 interface PostcardEmbedViewProps {
   postcard: Postcard
   views?: number
+  postcardId?: number
 }
 
 /**
- * Vue d’intégration : uniquement le composant postcard avec effet recto/verso.
- * Utilisée quand la carte est embedée sur un site tiers (?embed=1).
+ * Vue d’intégration : utilise désormais le nouveau flux PostcardScrollFlow
+ * pour une expérience cohérente avec la vue principale.
  */
-export default function PostcardEmbedView({ postcard, views = 0 }: PostcardEmbedViewProps) {
-  const CARD_WIDTH = 'min(95vw, 560px)'
-  const CARD_HEIGHT = 'min(71.25vw, 420px)'
-
+export default function PostcardEmbedView({
+  postcard,
+  views = 0,
+  postcardId,
+}: PostcardEmbedViewProps) {
   return (
-    <div className="flex min-h-[100vh] w-full items-center justify-center bg-[#f5f2ed] p-4">
-      <div className="flex flex-col items-center">
-        <PostcardView
-          postcard={postcard}
-          flipped={false}
-          isLarge={true}
-          width={CARD_WIDTH}
-          height={CARD_HEIGHT}
-          views={views}
-          hideFullscreenButton={false}
-          hideFlipHints={false}
-          className="shadow-[0_20px_50px_rgba(0,0,0,0.12)]"
-        />
-        <p className="mt-4 text-center text-xs text-stone-400">
-          Cliquez ou glissez pour retourner la carte
-        </p>
-      </div>
+    <div className="min-h-screen w-full bg-[#f5f2ed]">
+      <PostcardScrollFlow postcard={postcard} postcardId={postcardId} />
     </div>
   )
 }

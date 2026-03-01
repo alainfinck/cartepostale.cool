@@ -23,6 +23,7 @@ import {
   Heart,
   MessageCircle,
   ChevronDown,
+  ChevronUp,
   Eye,
   CalendarDays,
 } from 'lucide-react'
@@ -496,17 +497,37 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
     [activePhotoIndex, mediaItems.length],
   )
 
-  // Listen for keyboard arrows
+  // Listen for keyboard arrows and lock body scroll when slideshow/lightbox is open
   useEffect(() => {
+    const isAnyModalOpen = activePhotoIndex !== null || isFrontImageZoomOpen
+
+    if (isAnyModalOpen) {
+      document.body.style.overflow = 'hidden'
+      document.body.classList.add('slideshow-open')
+    } else {
+      document.body.style.overflow = ''
+      document.body.classList.remove('slideshow-open')
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (activePhotoIndex === null) return
-      if (e.key === 'ArrowRight') nextPhoto()
-      if (e.key === 'ArrowLeft') prevPhoto()
-      if (e.key === 'Escape') setActivePhotoIndex(null)
+      if (activePhotoIndex !== null) {
+        if (e.key === 'ArrowRight') nextPhoto()
+        if (e.key === 'ArrowLeft') prevPhoto()
+        if (e.key === 'Escape') setActivePhotoIndex(null)
+      } else if (isFrontImageZoomOpen) {
+        if (e.key === 'Escape') setIsFrontImageZoomOpen(false)
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [activePhotoIndex, nextPhoto, prevPhoto])
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      if (isAnyModalOpen) {
+        document.body.style.overflow = ''
+        document.body.classList.remove('slideshow-open')
+      }
+    }
+  }, [activePhotoIndex, isFrontImageZoomOpen, nextPhoto, prevPhoto])
 
   return (
     <div className="flex flex-col min-h-screen bg-transparent text-stone-900 pb-40">
@@ -1165,11 +1186,6 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
             </span>
           </button>
 
-          <ARButton
-            postcard={postcard}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all hover:bg-white/50 active:scale-95 group"
-          />
-
           <button
             onClick={() => scrollTo(mapSectionRef)}
             className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all hover:bg-white/50 active:scale-95 group"
@@ -1203,6 +1219,18 @@ export default function PostcardScrollFlow({ postcard, postcardId }: PostcardScr
             </div>
             <span className="text-[8px] font-black uppercase tracking-widest text-stone-500 leading-none">
               Album
+            </span>
+          </button>
+
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-all hover:bg-white/50 active:scale-95 group"
+          >
+            <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+              <ChevronUp size={14} className="stroke-[2.5]" />
+            </div>
+            <span className="text-[8px] font-black uppercase tracking-widest text-stone-500 leading-none">
+              Haut
             </span>
           </button>
         </div>

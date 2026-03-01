@@ -37,6 +37,7 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import PostcardView from '@/components/postcard/PostcardView'
+import PostcardScrollFlow from '@/components/postcard/PostcardScrollFlow'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -147,12 +148,9 @@ export default function Home() {
             {/* Droite : carte postale au format recto/verso, clic ou glisser pour retourner */}
             <div className="order-1 lg:order-2 flex justify-center min-w-0 w-full">
               <div className="animate-float-3d hover-tilt-3d transition-transform duration-500 w-full max-w-full">
-                <PostcardView
-                  postcard={heroPostcard}
-                  isPreview
-                  isLarge={false}
-                  className="rounded-3xl shadow-xl shadow-stone-200/40"
-                />
+                <div className="w-full max-w-2xl">
+                  <PostcardScrollFlow postcard={heroPostcard} />
+                </div>
               </div>
             </div>
           </div>
@@ -194,12 +192,9 @@ export default function Home() {
               </div>
 
               <div className="animate-float-3d hover-tilt-3d transition-all duration-500">
-                <PostcardView
-                  postcard={demoCard}
-                  isPreview={true}
-                  isLarge={true}
-                  className="shadow-[0_20px_50px_rgba(0,0,0,0.15)] group-hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)] max-w-[95vw] md:max-w-5xl lg:max-w-7xl mx-auto"
-                />
+                <div className="w-full">
+                  <PostcardScrollFlow postcard={demoCard} />
+                </div>
               </div>
             </div>
 
@@ -773,13 +768,7 @@ export default function Home() {
 
             <div className="w-full h-full flex items-center justify-center">
               <div className="w-fit h-fit max-w-full max-h-full flex flex-col items-center gap-8">
-                <PostcardView
-                  postcard={fullScreenPostcard}
-                  isLarge={true}
-                  width="min(95vw, 1200px)"
-                  height="min(71.25vw, 900px)"
-                  className="shadow-[0_20px_60px_rgba(0,0,0,0.15)]"
-                />
+                <PostcardScrollFlow postcard={fullScreenPostcard} />
 
                 <div className="bg-white/5 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 flex items-center gap-4 text-white/60">
                   <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest">

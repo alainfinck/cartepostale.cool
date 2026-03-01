@@ -484,7 +484,11 @@ export default async function PostcardPage({ params, searchParams }: PageProps) 
     return (
       <div className="min-h-screen w-full">
         {!isDemo && <PostcardTracking postcardId={slug} senderName={frontendPostcard.senderName} />}
-        <PostcardEmbedView postcard={frontendPostcard} views={payloadPostcardViews} />
+        <PostcardEmbedView
+          postcard={frontendPostcard}
+          views={payloadPostcardViews}
+          postcardId={payloadPostcardId}
+        />
       </div>
     )
   }

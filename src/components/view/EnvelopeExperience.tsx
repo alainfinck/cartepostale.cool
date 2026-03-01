@@ -47,9 +47,13 @@ export default function EnvelopeExperience({
     if (overlayActive) {
       document.body.style.overflow = 'hidden'
     } else {
+      // Uniquement réinitialiser si nous sommes à l'état non-overlay
+      // pour éviter de déverrouiller un modal ouvert par un composant enfant
       document.body.style.overflow = ''
     }
+
     return () => {
+      // Cleanup on unmount
       document.body.style.overflow = ''
     }
   }, [overlayActive])
