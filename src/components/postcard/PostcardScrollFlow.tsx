@@ -98,7 +98,7 @@ const GalleryImage = ({
                   className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center transition-all hover:scale-110 active:scale-90"
                 >
                   <Heart
-                    size={34}
+                    size={18}
                     className={cn(
                       'transition-all duration-300',
                       isLiked ? 'fill-red-500 text-red-500' : 'text-stone-400',

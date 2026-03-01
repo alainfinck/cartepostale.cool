@@ -574,9 +574,9 @@ const PostcardView: React.FC<PostcardViewProps> = ({
     // Sécurité
     const minSize = isLarge ? 1.0 : 0.5
     setAutoFontSize(Math.max(finalSizeRem, minSize))
-  }, [isLarge, backTextScale]) // backTextScale ajouté en dépendance pour recalculer si l'utilisateur bouge le slider
+  }, [isLarge]) // Ne pas dépendre de backTextScale : les boutons -/+ ne doivent modifier que la taille du texte, pas déclencher un recalcul de layout
 
-  // Ajustement automatique : au flip et au changement de message/échelle
+  // Ajustement automatique : au flip et au changement de message (pas au changement de backTextScale)
   useLayoutEffect(() => {
     computeAutoFontSize()
     // Reset scroll au cas où il y a du débordement
@@ -600,7 +600,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         window.clearTimeout(t2)
       }
     }
-  }, [isFlipped, postcard.message, computeAutoFontSize, isLarge, backTextScale])
+  }, [isFlipped, postcard.message, computeAutoFontSize, isLarge])
 
   // En plein écran / redimensionnement : recalculer quand le conteneur change de taille
   useEffect(() => {
@@ -1041,7 +1041,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
         }
       `}</style>
       <div
-        className="flex flex-col items-center gap-2 select-none w-full max-w-full"
+        className="flex flex-col items-center gap-2 select-none w-full max-w-full min-w-0"
         suppressHydrationWarning
       >
         <FlipCard
@@ -1050,7 +1050,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
           useSpring={false}
           onClick={onCaptionPositionChange ? undefined : handleFlip}
           className={cn(
-            'group transition-shadow duration-300 relative z-10 shrink-0',
+            'group transition-shadow duration-300 relative z-10 shrink-0 min-w-0',
             !width &&
               !height &&
               (isLarge
@@ -1531,7 +1531,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
           back={
             <div
               className={cn(
-                'relative w-full h-full bg-[#fdfaf3] paper-texture flex flex-col overflow-hidden',
+                'relative w-full h-full min-w-0 min-h-0 bg-[#fdfaf3] paper-texture flex flex-col overflow-hidden',
                 !isFlipped ? 'pointer-events-none' : '',
               )}
               onClick={(e) => e.stopPropagation()}
@@ -1539,12 +1539,12 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               {/* Subtle grain overlay for extra paper feel */}
               <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] z-50"></div>
 
-              <div className="flex flex-1 gap-4 md:gap-10 min-h-0 p-5 md:p-10">
+              <div className="flex flex-1 gap-4 md:gap-10 min-h-0 min-w-0 p-5 md:p-10 overflow-hidden">
                 {/* Left Column: Message */}
                 <div className="flex-1 flex flex-col pt-1 overflow-hidden min-h-0 min-w-0">
-                  {/* Top Control Bar - Tous les boutons dans la même barre */}
-                  <div className="flex items-center shrink-0 mb-1 sm:mb-2 px-0.5 min-w-0">
-                    <div className="flex flex-nowrap items-center gap-0 rounded-md border border-stone-200/50 shadow-sm bg-white/40 backdrop-blur-sm overflow-hidden h-[22px] sm:h-5 min-w-0">
+                  {/* Top Control Bar - Tous les boutons dans la même barre (n'influence pas la largeur de la carte) */}
+                  <div className="flex items-center shrink-0 mb-1 sm:mb-2 px-0.5 min-w-0 max-w-full">
+                    <div className="flex flex-nowrap items-center gap-0 rounded-md border border-stone-200/50 shadow-sm bg-white/40 backdrop-blur-sm overflow-hidden h-[22px] sm:h-5 min-w-0 max-w-full">
                       {/* Scale: − A + */}
                       <button
                         type="button"
@@ -1660,15 +1660,17 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Text Area */}
-                  <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar pr-1">
+                  {/* Text Area — overflow pour ne jamais élargir la carte ; la taille du texte (backTextScale) n'affecte que ce bloc */}
+                  <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden custom-scrollbar pr-1" ref={messageContainerRef}>
                     <p
-                      className="font-handwriting text-stone-700 leading-relaxed italic whitespace-pre-wrap break-words max-w-full"
+                      ref={messageTextRef}
+                      className="font-handwriting text-stone-700 leading-relaxed italic whitespace-pre-wrap break-words w-full min-w-0 max-w-full overflow-hidden"
                       style={{
                         fontSize: `clamp(0.8125rem, ${1.15 * backTextScale}rem, 1.75rem)`,
                         fontFamily:
                           BACK_MESSAGE_FONTS.find((f) => f.id === backMessageFont)?.fontFamily ??
                           "'Dancing Script', cursive",
+                        boxSizing: 'border-box',
                       }}
                     >
                       {postcard.message}
@@ -1689,7 +1691,7 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </div>
 
                 {/* Right Column: Stamp & Address */}
-                <div className="w-[36%] flex flex-col border-l border-stone-200/50 pl-5 md:pl-10 relative h-full">
+                <div className="w-[36%] min-w-0 shrink-0 flex flex-col border-l border-stone-200/50 pl-5 md:pl-10 relative h-full">
                   {/* Digital Poste Stamp */}
                   <div className="self-end mb-2 group z-20">
                     <div className="relative w-10 h-14 md:w-16 md:h-20 bg-[#fdf5e6] p-0.5 md:p-1 border-[1px] border-orange-300/40 transform rotate-2 shadow-sm">
