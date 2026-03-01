@@ -1542,39 +1542,38 @@ const PostcardView: React.FC<PostcardViewProps> = ({
               <div className="flex flex-1 gap-4 md:gap-10 min-h-0 p-5 md:p-10">
                 {/* Left Column: Message */}
                 <div className="flex-1 flex flex-col pt-1 overflow-hidden min-h-0 min-w-0">
-                  {/* Top Control Bar - Grouped & Transparent */}
-                  <div className="flex items-center justify-between gap-1.5 shrink-0 mb-1 sm:mb-2 px-0.5 min-w-0">
-                    <div className="flex items-center gap-1 sm:gap-1.5 mt-[-2px] sm:mt-[-4px] min-w-0 flex-shrink">
-                      {/* Scale Controls */}
-                      <div className="flex items-center bg-white/40 backdrop-blur-sm rounded-md border border-stone-200/50 shadow-sm overflow-hidden h-[22px] sm:h-5 shrink-0">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setBackTextScale((s) => Math.max(0.6, Number((s - 0.08).toFixed(2))))
-                          }}
-                          className="w-[22px] h-[22px] sm:w-5 sm:h-5 flex items-center justify-center hover:bg-white/60 text-stone-500 hover:text-teal-600 transition-colors border-r border-stone-100/50 shrink-0"
-                          title="Réduire"
-                        >
-                          <Minus size={9} strokeWidth={3} />
-                        </button>
-                        <span className="px-0.5 text-[7px] font-black text-stone-400 select-none shrink-0">
-                          A
-                        </span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setBackTextScale((s) => Math.min(1.5, Number((s + 0.08).toFixed(2))))
-                          }}
-                          className="w-[22px] h-[22px] sm:w-5 sm:h-5 flex items-center justify-center hover:bg-white/60 text-stone-500 hover:text-teal-600 transition-colors border-l border-stone-100/50 shrink-0"
-                          title="Agrandir"
-                        >
-                          <Plus size={9} strokeWidth={3} />
-                        </button>
-                      </div>
-
-                      {/* Font Selector */}
+                  {/* Top Control Bar - Tous les boutons dans la même barre */}
+                  <div className="flex items-center shrink-0 mb-1 sm:mb-2 px-0.5 min-w-0">
+                    <div className="flex flex-nowrap items-center gap-0 rounded-md border border-stone-200/50 shadow-sm bg-white/40 backdrop-blur-sm overflow-hidden h-[22px] sm:h-5 min-w-0">
+                      {/* Scale: − A + */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setBackTextScale((s) => Math.max(0.6, Number((s - 0.08).toFixed(2))))
+                        }}
+                        className="w-[22px] h-[22px] sm:w-5 sm:h-5 flex items-center justify-center hover:bg-white/60 text-stone-500 hover:text-teal-600 transition-colors shrink-0"
+                        title="Réduire"
+                      >
+                        <Minus size={9} strokeWidth={3} />
+                      </button>
+                      <span className="px-0.5 text-[7px] font-black text-stone-400 select-none shrink-0">
+                        A
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setBackTextScale((s) => Math.min(1.5, Number((s + 0.08).toFixed(2))))
+                        }}
+                        className="w-[22px] h-[22px] sm:w-5 sm:h-5 flex items-center justify-center hover:bg-white/60 text-stone-500 hover:text-teal-600 transition-colors shrink-0"
+                        title="Agrandir"
+                      >
+                        <Plus size={9} strokeWidth={3} />
+                      </button>
+                      {/* Séparateur */}
+                      <div className="w-px h-3 bg-stone-200/60 shrink-0" />
+                      {/* Police Aa */}
                       <div className="relative flex items-center shrink-0">
                         <button
                           type="button"
@@ -1583,10 +1582,10 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                             setIsFontMenuOpen((o) => !o)
                           }}
                           className={cn(
-                            'h-[22px] sm:h-5 flex items-center justify-center px-1 sm:px-1.5 rounded-md border shadow-sm transition-all min-w-0',
+                            'h-[22px] sm:h-5 flex items-center justify-center px-1 sm:px-1.5 transition-colors min-w-0',
                             isFontMenuOpen
-                              ? 'bg-teal-50 border-teal-200 text-teal-700'
-                              : 'bg-white/40 backdrop-blur-sm border-stone-200/50 hover:bg-white/60 text-stone-600',
+                              ? 'bg-teal-50 text-teal-700'
+                              : 'hover:bg-white/60 text-stone-600',
                           )}
                         >
                           <span
@@ -1639,22 +1638,24 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                           )}
                         </AnimatePresence>
                       </div>
-
-                      {/* Recto Button (Grouped) */}
+                      {/* Recto */}
                       {!isFullscreen && !onCaptionPositionChange && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleFlip()
-                          }}
-                          className="h-[22px] sm:h-5 bg-stone-800/80 hover:bg-stone-800 backdrop-blur-md px-1.5 sm:px-2 rounded-md text-white text-[6px] sm:text-[7px] font-black uppercase tracking-widest flex items-center gap-0.5 border border-white/10 transition-all active:scale-95 group/btn shadow-sm shrink-0"
-                        >
-                          <RotateCw
-                            size={7}
-                            className="group-hover/btn:rotate-180 transition-transform duration-500 shrink-0"
-                          />
-                          <span className="truncate">Recto</span>
-                        </button>
+                        <>
+                          <div className="w-px h-3 bg-stone-200/60 shrink-0" />
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleFlip()
+                            }}
+                            className="h-[22px] sm:h-5 flex items-center justify-center gap-0.5 px-1.5 sm:px-2 bg-stone-800/80 hover:bg-stone-800 text-white text-[6px] sm:text-[7px] font-black uppercase tracking-widest transition-all active:scale-95 group/btn shrink-0"
+                          >
+                            <RotateCw
+                              size={7}
+                              className="group-hover/btn:rotate-180 transition-transform duration-500 shrink-0"
+                            />
+                            <span className="truncate">Recto</span>
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -1769,36 +1770,46 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Static Map Image / Action - Large & Clickable */}
+                  {/* Carte Leaflet (verso) — clic → album */}
                   <div className="mt-auto mb-1 md:mb-2">
                     <div
-                      className="relative w-full aspect-[3/2] sm:aspect-[2/1] rounded-lg overflow-hidden border border-stone-200/60 shadow-md group/map cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                      className="relative w-full aspect-[3/2] sm:aspect-[2/1] rounded-lg overflow-hidden border border-stone-200/60 shadow-md group/map cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98] bg-stone-100"
                       onClick={(e) => {
                         e.stopPropagation()
                         const albumSection = document.getElementById('postcard-album')
                         if (albumSection) {
                           albumSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
                         } else {
-                          // Fallback scroll
                           window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
                         }
                       }}
                     >
-                      <img
-                        src={`https://api.mapbox.com/styles/v1/mapbox/light-v10/static/${postcard.coords?.lng ?? 2.35},${postcard.coords?.lat ?? 48.85},12,0,0/400x300?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''}`}
-                        alt="Location map"
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover/map:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-stone-900/5 group-hover/map:bg-transparent transition-colors" />
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/map:opacity-100 transition-opacity">
+                      {postcard.coords ? (
+                        <div className="absolute inset-0 w-full h-full rounded-lg overflow-hidden z-0">
+                          <MiniMap
+                            coords={postcard.coords}
+                            zoom={10}
+                            interactive={false}
+                            showScale={false}
+                            className="w-full h-full rounded-lg"
+                          />
+                        </div>
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center bg-stone-100 text-stone-400 text-[10px] font-bold uppercase tracking-widest">
+                          Pas de localisation
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-stone-900/5 group-hover/map:bg-transparent transition-colors z-10 pointer-events-none" />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/map:opacity-100 transition-opacity z-10 pointer-events-none">
                         <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
                           <Compass size={14} className="text-teal-600" />
                           <span className="text-[10px] font-bold text-stone-800">Voir l'album</span>
                         </div>
                       </div>
-                      <div className="absolute bottom-1 right-1 bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[7px] font-bold text-stone-500 uppercase tracking-tighter scale-75 origin-bottom-right">
+                      <div className="absolute bottom-1 right-1 bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[7px] font-bold text-stone-500 uppercase tracking-tighter scale-75 origin-bottom-right z-10 pointer-events-none">
                         Cliquer pour explorer
                       </div>
+                      <div className="absolute inset-0 z-20 cursor-pointer" aria-hidden />
                     </div>
                   </div>
                 </div>
