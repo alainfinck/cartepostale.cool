@@ -16,6 +16,7 @@ import {
   Image as ImageIcon,
   Code,
   ExternalLink,
+  QrCode,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -25,6 +26,7 @@ const nav = [
   { href: '/espace-agence', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/espace-agence/cartes', label: "Cartes de l'agence", icon: Mail },
   { href: '/espace-agence/galerie', label: "Galerie d'images", icon: ImageIcon },
+  { href: '/espace-agence/qr', label: 'QR code & intégration', icon: QrCode },
   { href: '/espace-agence/dev', label: 'Espace Dev', icon: Code },
   { href: '/espace-agence/agence', label: 'Mon agence', icon: Building2 },
   { href: '/espace-agence/compte', label: 'Mon compte', icon: User },
@@ -96,24 +98,24 @@ export function AgenceShell({ children, agencyId }: Props) {
         })}
       </nav>
       <div className="border-t border-border p-3 space-y-1">
-        {pathname?.startsWith('/espace-agence/dev') && agencyCode && origin && (
-          <div className="mb-3 flex flex-col items-center gap-1.5 rounded-lg bg-muted/50 p-3">
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              QR page publique
-            </span>
-            <a
-              href={`${origin}/agences/${agencyCode}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-md border border-border bg-white p-1.5"
-            >
-              <QRCodeSVG value={`${origin}/agences/${agencyCode}`} size={100} level="M" />
-            </a>
-            <span className="text-[10px] text-muted-foreground text-center leading-tight">
-              Scannez pour ouvrir la page agence
-            </span>
-          </div>
-        )}
+        {agencyCode && origin && (
+            <div className="mb-3 flex flex-col items-center gap-1.5 rounded-lg bg-muted/50 p-3">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                QR page publique
+              </span>
+              <a
+                href={`${origin}/agences/${agencyCode}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-md border border-border bg-white p-1.5"
+              >
+                <QRCodeSVG value={`${origin}/agences/${agencyCode}`} size={100} level="M" />
+              </a>
+              <span className="text-[10px] text-muted-foreground text-center leading-tight">
+                Scannez pour ouvrir la page agence
+              </span>
+            </div>
+          )}
         <Link href="/editor">
           <Button
             variant="default"

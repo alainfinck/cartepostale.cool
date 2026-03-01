@@ -1463,6 +1463,19 @@ const PostcardView: React.FC<PostcardViewProps> = ({
                 </div>
               )}
 
+              {/* Logo agence (mode marque blanche) — face avant, coin bas-droit */}
+              {postcard.agencyLogoUrl && (
+                <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 flex items-center justify-end pointer-events-none">
+                  <div className="rounded-xl bg-white/90 backdrop-blur-md px-2 py-1.5 sm:px-2.5 sm:py-2 shadow-lg border border-white/60 overflow-hidden max-w-[28%] min-w-[56px]">
+                    <img
+                      src={getOptimizedImageUrl(postcard.agencyLogoUrl, { width: 120 })}
+                      alt=""
+                      className="h-5 sm:h-6 w-auto max-h-full object-contain object-right"
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Bannière promotionnelle agence */}
               {postcard.agencyBanner?.enabled && postcard.agencyBanner.text && !isPreview && (
                 <div className="absolute bottom-0 left-0 right-0 z-30 pointer-events-none">
@@ -1538,6 +1551,19 @@ const PostcardView: React.FC<PostcardViewProps> = ({
             >
               {/* Subtle grain overlay for extra paper feel */}
               <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] z-50"></div>
+
+              {/* Logo agence au verso — bas droite, discret */}
+              {postcard.agencyLogoUrl && (
+                <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-40 flex items-center justify-end pointer-events-none">
+                  <div className="rounded-lg bg-white/80 backdrop-blur-sm px-2 py-1 sm:px-2.5 sm:py-1.5 shadow-md border border-stone-200/50 overflow-hidden">
+                    <img
+                      src={getOptimizedImageUrl(postcard.agencyLogoUrl, { width: 100 })}
+                      alt=""
+                      className="h-4 sm:h-5 w-auto max-h-full object-contain object-right"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="flex flex-1 gap-4 md:gap-10 min-h-0 min-w-0 p-5 md:p-10 overflow-hidden">
                 {/* Left Column: Message */}

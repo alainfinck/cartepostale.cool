@@ -21,6 +21,8 @@ import {
 import { QRCodeSVG } from 'qrcode.react'
 import { Button } from '@/components/ui/button'
 import { getOptimizedImageUrl } from '@/lib/image-processing'
+import AgencyGallerySection from './AgencyGallerySection'
+import type { GalleryItemPublic, GalleryCategoryPublic } from './types'
 
 interface AgencyPublicData {
   id: number
@@ -44,16 +46,10 @@ interface AgencyPublicData {
 
 interface Props {
   agency: AgencyPublicData
+  galleryItems: GalleryItemPublic[]
+  galleryCategories: GalleryCategoryPublic[]
 }
 
-const DEMO_IMAGES = [
-  '/images/demo/photo-1507525428034-b723cf961d3e.jpg',
-  '/images/demo/photo-1476514525535-07fb3b4ae5f1.jpg',
-  '/images/demo/photo-1506929562872-bb421503ef21.jpg',
-  '/images/demo/photo-1501785888041-af3ef285b470.jpg',
-  '/images/demo/photo-1488646953014-85cb44e25828.jpg',
-  '/images/demo/photo-1516426122078-c23e76319801.jpg',
-]
 
 const STEPS = [
   {
@@ -86,7 +82,11 @@ const STEPS = [
   },
 ]
 
-export default function AgencePublicClient({ agency }: Props) {
+export default function AgencePublicClient({
+  agency,
+  galleryItems,
+  galleryCategories,
+}: Props) {
   const primary = agency.primaryColor || '#0d9488'
   const createUrl = `/editor?agencyCode=${agency.code}`
 
@@ -117,8 +117,7 @@ export default function AgencePublicClient({ agency }: Props) {
           <Link href={createUrl}>
             <Button
               size="sm"
-              className="shrink-0 text-xs font-bold border-0 shadow-md"
-              style={{ backgroundColor: 'white', color: primary }}
+              className="shrink-0 text-xs font-bold border-2 border-white/80 bg-amber-400 text-stone-900 shadow-md hover:bg-amber-300 hover:border-white transition-colors"
             >
               Créer une carte
               <ArrowRight size={14} className="ml-1" />
@@ -143,7 +142,7 @@ export default function AgencePublicClient({ agency }: Props) {
             transition={{ duration: 0.6 }}
             className="flex flex-col items-center"
           >
-            {/* ── LOGO MIS EN AVANT ── */}
+            {/* ── LOGO MIS EN AVANT (effet timbre réaliste : petits ronds en crantelé, fond blanc plein) ── */}
             {agency.logoUrl ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.85 }}
@@ -153,34 +152,57 @@ export default function AgencePublicClient({ agency }: Props) {
                   duration: 0.5,
                   delay: 0.1,
                 }}
-                className="mb-12 cursor-pointer group"
+                className="mb-12 cursor-pointer group relative"
               >
+                {/* Masque SVG : rectangle avec petits ronds (perforations) le long des bords uniquement */}
+                <svg width={0} height={0} className="absolute" aria-hidden>
+                  <defs>
+                    <mask id="stamp-perforations-mask" maskContentUnits="objectBoundingBox">
+                      <rect width="1" height="1" fill="white" />
+                      <g fill="black">
+                        {/* Bord du haut : petits cercles centrés sur le bord */}
+                        {[0.06, 0.18, 0.3, 0.42, 0.54, 0.66, 0.78, 0.9].map((x) => (
+                          <circle key={`t-${x}`} cx={x} cy={0} r={0.028} />
+                        ))}
+                        {/* Bord droit */}
+                        {[0.06, 0.18, 0.3, 0.42, 0.54, 0.66, 0.78, 0.9].map((y) => (
+                          <circle key={`r-${y}`} cx={1} cy={y} r={0.028} />
+                        ))}
+                        {/* Bord du bas */}
+                        {[0.94, 0.82, 0.7, 0.58, 0.46, 0.34, 0.22, 0.1].map((x) => (
+                          <circle key={`b-${x}`} cx={x} cy={1} r={0.028} />
+                        ))}
+                        {/* Bord gauche */}
+                        {[0.94, 0.82, 0.7, 0.58, 0.46, 0.34, 0.22, 0.1].map((y) => (
+                          <circle key={`l-${y}`} cx={0} cy={y} r={0.028} />
+                        ))}
+                      </g>
+                    </mask>
+                  </defs>
+                </svg>
                 <div
-                  className="bg-white p-10 md:p-14 relative shadow-[0_20px_60px_rgba(0,0,0,0.4)]"
+                  className="bg-white p-10 md:p-14 relative z-10 shadow-[0_20px_60px_rgba(0,0,0,0.4)]"
                   style={{
-                    WebkitMaskImage:
-                      'radial-gradient(circle at 12px 12px, transparent 10px, black 11px)',
-                    WebkitMaskSize: '24px 24px',
-                    WebkitMaskPosition: '-12px -12px',
-                    maskImage: 'radial-gradient(circle at 12px 12px, transparent 10px, black 11px)',
-                    maskSize: '24px 24px',
-                    maskPosition: '-12px -12px',
+                    mask: 'url(#stamp-perforations-mask)',
+                    maskSize: '100% 100%',
+                    maskPosition: '0 0',
+                    maskRepeat: 'no-repeat',
+                    WebkitMask: 'url(#stamp-perforations-mask)',
+                    WebkitMaskSize: '100% 100%',
+                    WebkitMaskPosition: '0 0',
+                    WebkitMaskRepeat: 'no-repeat',
                   }}
                 >
                   <div className="relative z-10 flex items-center justify-center">
                     <img
                       src={getOptimizedImageUrl(agency.logoUrl, { width: 600 })}
                       alt={agency.name}
-                      className="h-28 md:h-36 w-auto max-w-[280px] md:max-w-[400px] object-contain"
+                      className="h-36 md:h-48 w-auto max-w-[320px] md:max-w-[520px] object-contain"
                       style={{ display: 'block' }}
                     />
                   </div>
-
-                  {/* Bordure intérieure fine typique des timbres */}
                   <div className="absolute inset-5 border border-stone-200/50 pointer-events-none z-20" />
                 </div>
-
-                {/* Glow subtil en arrière-plan (hors du mask pour ne pas être coupé) */}
                 <div
                   className="absolute inset-0 -z-10 blur-[80px] opacity-40 scale-110"
                   style={{ backgroundColor: primary }}
@@ -249,8 +271,7 @@ export default function AgencePublicClient({ agency }: Props) {
               <Link href={createUrl}>
                 <Button
                   size="lg"
-                  className="text-base font-bold px-8 py-6 rounded-2xl border-0 shadow-xl"
-                  style={{ backgroundColor: 'white', color: primary }}
+                  className="text-base font-bold px-8 py-6 rounded-2xl border-2 border-white/90 bg-amber-400 text-stone-900 shadow-[0_8px_30px_rgba(0,0,0,0.25),0_0_0_1px_rgba(255,255,255,0.5)_inset] hover:bg-amber-300 hover:border-white hover:shadow-[0_12px_40px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.6)_inset] transition-all duration-200"
                 >
                   <Camera size={18} className="mr-2" />
                   Créer ma carte postale
@@ -475,61 +496,15 @@ export default function AgencePublicClient({ agency }: Props) {
         </div>
       </section>
 
-      {/* ── GALERIE ───────────────────────────────── */}
-      <section className="py-20 px-4" style={{ backgroundColor: `${primary}08` }}>
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-900 mb-3">
-              Quelques destinations favorites
-            </h2>
-            <p className="text-stone-500">Choisissez parmi ces photos pour créer votre carte</p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
-            {DEMO_IMAGES.map((url, i) => (
-              <motion.div
-                key={i}
-                className="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all cursor-pointer aspect-[4/3]"
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.06 }}
-              >
-                <img
-                  src={getOptimizedImageUrl(url, { width: 600 })}
-                  alt=""
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                {/* Agency logo watermark */}
-                {agency.logoUrl && (
-                  <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <img
-                      src={getOptimizedImageUrl(agency.logoUrl, { width: 80 })}
-                      alt={agency.name}
-                      className="h-6 w-auto object-contain filter brightness-0 invert drop-shadow"
-                    />
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="text-center">
-            <Link href={createUrl}>
-              <Button
-                size="lg"
-                className="text-white font-bold px-10 py-6 rounded-2xl border-0 shadow-xl text-base"
-                style={{ backgroundColor: primary }}
-              >
-                <Camera size={18} className="mr-2" />
-                Créer ma carte maintenant
-                <ArrowRight size={18} className="ml-2" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* ── GALERIE AGENCE ────────────────────────── */}
+      <AgencyGallerySection
+        galleryItems={galleryItems}
+        galleryCategories={galleryCategories}
+        agencyName={agency.name}
+        agencyLogoUrl={agency.logoUrl}
+        primaryColor={primary}
+        createUrl={createUrl}
+      />
 
       {/* ── CTA FINAL ─────────────────────────────── */}
       <section className="py-20 px-4 bg-stone-900 text-white text-center">

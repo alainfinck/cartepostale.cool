@@ -2,9 +2,10 @@ import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import type { Agency, Media } from '@/payload-types'
+import type { Agency, Media, Gallery, GalleryCategory } from '@/payload-types'
 import AgencePublicClient from './AgencePublicClient'
 import { normalizeMediaUrlToImgDomain } from '@/lib/image-processing'
+import type { GalleryItemPublic, GalleryCategoryPublic } from './types'
 
 interface PageProps {
   params: Promise<{ code: string }>
@@ -63,6 +64,55 @@ export default async function AgencePublicPage({ params }: PageProps) {
         )
       : null
 
+  const payload = await getPayload({ config })
+
+  const [galleryResult, categoriesResult] = await Promise.all([
+    payload.find({
+      collection: 'gallery',
+      where: { agency: { equals: agency.id } },
+      depth: 2,
+      limit: 300,
+      sort: 'order',
+    }),
+    payload.find({
+      collection: 'gallery-categories',
+      where: {
+        or: [{ agency: { equals: agency.id } }, { agency: { exists: false } }],
+      },
+      depth: 0,
+      limit: 50,
+    }),
+  ])
+
+  const galleryItems = (galleryResult.docs as Gallery[]).map((doc): GalleryItemPublic => {
+    const img = doc.image
+    let imageUrl = ''
+    if (typeof img === 'object' && img !== null && 'url' in img) {
+      const raw = (img as Media).url ?? ''
+      imageUrl = raw.startsWith('http') ? normalizeMediaUrlToImgDomain(raw) : raw
+    }
+    if (!imageUrl && typeof img === 'object' && img !== null && 'filename' in img) {
+      imageUrl = `/media/${encodeURIComponent((img as Media).filename ?? '')}`
+    }
+    const cat = doc.category
+    const categoryId =
+      typeof cat === 'object' && cat !== null && 'id' in cat ? (cat as GalleryCategory).id : null
+    const categoryName =
+      typeof cat === 'object' && cat !== null && 'name' in cat ? (cat as GalleryCategory).name ?? null : null
+    return {
+      id: String(doc.id),
+      title: doc.title,
+      imageUrl,
+      caption: doc.caption ?? null,
+      categoryId,
+      categoryName,
+    }
+  })
+
+  const galleryCategories: GalleryCategoryPublic[] = (categoriesResult.docs as GalleryCategory[]).map(
+    (c) => ({ id: c.id, name: c.name, slug: c.slug ?? String(c.id) }),
+  )
+
   const agencyData = {
     id: agency.id,
     code: agency.code || code,
@@ -83,5 +133,11 @@ export default async function AgencePublicPage({ params }: PageProps) {
     bannerImageUrl,
   }
 
-  return <AgencePublicClient agency={agencyData} />
+  return (
+    <AgencePublicClient
+      agency={agencyData}
+      galleryItems={galleryItems}
+      galleryCategories={galleryCategories}
+    />
+  )
 }

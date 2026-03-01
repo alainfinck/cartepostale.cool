@@ -1005,14 +1005,19 @@ export default function EditorPage() {
   const [isLocating, setIsLocating] = useState(false)
   /** Synchronisé avec la Navbar : quand elle se réduit au scroll, on colle la barre d'étapes en dessous. */
   const [navbarScrolled, setNavbarScrolled] = useState(false)
-  /** Mode marque blanche : données agence pour la topbar (logo, nom). */
+  /** Mode marque blanche : données agence pour la topbar (logo, nom) et pour associer la carte (id). */
   const [agencyBrand, setAgencyBrand] = useState<{
+    id: number
     code: string
     name: string
     logoUrl: string | null
   } | null>(null)
   const [agencyBrandLoading, setAgencyBrandLoading] = useState(false)
   const [agencyBrandError, setAgencyBrandError] = useState<string | null>(null)
+  /** Galerie d'images de l'agence (mode marque blanche) — utilisée comme "modèles" */
+  const [agencyGalleryImages, setAgencyGalleryImages] = useState<
+    { id: string; title: string; imageUrl: string; caption: string | null }[]
+  >([])
 
   // Postcard state
   const [frontImage, setFrontImage] = useState('')
@@ -1245,7 +1250,9 @@ export default function EditorPage() {
     [createdPostcardId, router],
   )
 
-  const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep)
+  /** En mode agence (marque blanche), on masque l'étape Paiement : c'est l'agence qui paie. */
+  const effectiveSteps = agencyBrand ? STEPS.filter((s) => s.id !== 'payment') : STEPS
+  const currentStepIndex = effectiveSteps.findIndex((s) => s.id === currentStep)
   const [showBack, setShowBack] = useState(currentStep === 'redaction')
 
   // Sync showBack when step changes + scroll to top
@@ -1283,14 +1290,33 @@ export default function EditorPage() {
         }
         return res.json()
       })
-      .then((data: { code: string; name: string; logoUrl: string | null }) => {
-        setAgencyBrand({ code: data.code, name: data.name, logoUrl: data.logoUrl ?? null })
+      .then((data: { id: number; code: string; name: string; logoUrl: string | null }) => {
+        setAgencyBrand({
+          id: data.id,
+          code: data.code,
+          name: data.name,
+          logoUrl: data.logoUrl ?? null,
+        })
       })
       .catch((err: Error) => {
         setAgencyBrand(null)
         setAgencyBrandError(err.message || 'Agence introuvable')
       })
       .finally(() => setAgencyBrandLoading(false))
+  }, [agencyCode])
+
+  // Galerie agence : charger les images quand on a le code (pour "choisir un modèle")
+  useEffect(() => {
+    if (!agencyCode || typeof agencyCode !== 'string') {
+      setAgencyGalleryImages([])
+      return
+    }
+    fetch(`/api/public/agency/${encodeURIComponent(agencyCode)}/gallery`)
+      .then((res) => (res.ok ? res.json() : { items: [] }))
+      .then((data: { items: { id: string; title: string; imageUrl: string; caption: string | null }[] }) =>
+        setAgencyGalleryImages(data.items ?? [])
+      )
+      .catch(() => setAgencyGalleryImages([]))
   }, [agencyCode])
 
   // Image de couverture depuis la galerie (param ?cover=...)
@@ -1700,15 +1726,15 @@ export default function EditorPage() {
   }
 
   const goNext = () => {
-    if (currentStepIndex < STEPS.length - 1 && canGoNext()) {
-      const nextStep = STEPS[currentStepIndex + 1].id
+    if (currentStepIndex < effectiveSteps.length - 1 && canGoNext()) {
+      const nextStep = effectiveSteps[currentStepIndex + 1].id
       setCurrentStep(nextStep)
     }
   }
 
   const goPrev = () => {
     if (currentStepIndex > 0) {
-      const prevStep = STEPS[currentStepIndex - 1].id
+      const prevStep = effectiveSteps[currentStepIndex - 1].id
       setCurrentStep(prevStep)
     }
   }
@@ -2289,6 +2315,7 @@ export default function EditorPage() {
       backgroundMusic,
       backgroundMusicTitle,
       eventType: eventType ?? undefined,
+      agencyLogoUrl: agencyBrand?.logoUrl ?? undefined,
     }),
     [
       createdPostcardId,
@@ -2324,6 +2351,7 @@ export default function EditorPage() {
       backgroundMusic,
       backgroundMusicTitle,
       eventType,
+      agencyBrand?.logoUrl,
     ],
   )
 
@@ -2559,6 +2587,7 @@ export default function EditorPage() {
       const result = await createPostcard({
         ...currentPostcard,
         ...(editingPublicId && { id: editingPublicId }),
+        ...(agencyBrand?.id != null && { agency: agencyBrand.id }),
         frontImage: sendKey ? undefined : finalFrontImage,
         mediaItems: currentPostcard.mediaItems?.map((item) => ({
           ...item,
@@ -2708,6 +2737,7 @@ export default function EditorPage() {
         const result = await createPostcard({
           ...currentPostcard,
           ...(editingPublicId && { id: editingPublicId }),
+          ...(agencyBrand?.id != null && { agency: agencyBrand.id }),
           frontImage: frontImageKey ? undefined : finalFrontImage,
           mediaItems: currentPostcard.mediaItems?.map((item) => ({
             ...item,
@@ -2885,7 +2915,7 @@ export default function EditorPage() {
       >
         <div className="max-w-5xl mx-auto px-3 py-1.5 sm:px-4 sm:py-2 md:py-2.5">
           <div className="flex items-center gap-0">
-            {STEPS.map((step, index) => {
+            {effectiveSteps.map((step, index) => {
               const Icon = step.icon
               const isActive = step.id === currentStep
               const isCompleted = index < currentStepIndex
@@ -2915,7 +2945,7 @@ export default function EditorPage() {
                     )}
                     <span className="hidden sm:inline">{step.label}</span>
                   </button>
-                  {index < STEPS.length - 1 && (
+                  {index < effectiveSteps.length - 1 && (
                     <div
                       className={cn(
                         'flex-1 min-w-0 h-0.5 mx-1 sm:mx-2 rounded-full transition-colors shrink',
@@ -3098,7 +3128,7 @@ export default function EditorPage() {
 
                 {/* Desktop: 2 buttons side by side; mobile: stacked */}
                 <div className="flex flex-col sm:flex-row gap-3 mt-3 mb-4 w-full">
-                  {currentUser && (
+                  {currentUser && !agencyCode && (
                     <Button
                       type="button"
                       variant="outline"
@@ -3113,7 +3143,7 @@ export default function EditorPage() {
                     onClick={() => setShowTemplateSection(!showTemplateSection)}
                     className={cn(
                       'flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-stone-300 bg-stone-50/50 px-4 py-3 text-stone-600 hover:border-teal-300 hover:bg-teal-50/30 hover:text-teal-600 transition-all group',
-                      currentUser ? 'flex-1 w-full' : 'w-full',
+                      currentUser && !agencyCode ? 'flex-1 w-full' : 'w-full',
                     )}
                   >
                     <ImageIcon
@@ -3121,7 +3151,11 @@ export default function EditorPage() {
                       className="text-stone-400 group-hover:text-teal-500 transition-colors"
                     />
                     <span className="text-sm font-semibold">
-                      {showTemplateSection ? 'Masquer les modèles' : 'Ou choisir un modèle'}
+                      {showTemplateSection
+                        ? 'Masquer les modèles'
+                        : agencyCode
+                          ? 'Choisir un modèle'
+                          : 'Ou choisir un modèle'}
                     </span>
                     <ChevronRight
                       size={16}
@@ -3133,178 +3167,248 @@ export default function EditorPage() {
                   </button>
                 </div>
 
-                {/* Recherche d'image : ouvre le modal banque d'images avec la recherche */}
-                <div className="flex gap-2 mb-8">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
-                    <Input
-                      type="text"
-                      placeholder="Recherche d'image (ex: plage, montagne, Paris…)"
-                      value={imageSearchQuery}
-                      onChange={(e) => setImageSearchQuery(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          setUnsplashInitialQuery(imageSearchQuery.trim() || null)
-                          setShowUnsplashModal(true)
-                        }
+                {/* Recherche d'image : ouvre le modal banque d'images (masqué en mode agence) */}
+                {!agencyCode && (
+                  <div className="flex gap-2 mb-8">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
+                      <Input
+                        type="text"
+                        placeholder="Recherche d'image (ex: plage, montagne, Paris…)"
+                        value={imageSearchQuery}
+                        onChange={(e) => setImageSearchQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            setUnsplashInitialQuery(imageSearchQuery.trim() || null)
+                            setShowUnsplashModal(true)
+                          }
+                        }}
+                        className="pl-9 h-10 rounded-xl border-stone-200 bg-stone-50/50"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setUnsplashInitialQuery(imageSearchQuery.trim() || null)
+                        setShowUnsplashModal(true)
                       }}
-                      className="pl-9 h-10 rounded-xl border-stone-200 bg-stone-50/50"
-                    />
+                      className="shrink-0 rounded-xl bg-teal-500 hover:bg-teal-600 text-white gap-2 px-4"
+                    >
+                      <Search size={18} /> Chercher
+                    </Button>
                   </div>
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      setUnsplashInitialQuery(imageSearchQuery.trim() || null)
-                      setShowUnsplashModal(true)
-                    }}
-                    className="shrink-0 rounded-xl bg-teal-500 hover:bg-teal-600 text-white gap-2 px-4"
-                  >
-                    <Search size={18} /> Chercher
-                  </Button>
-                </div>
+                )}
 
                 {/* Template Selection - Collapsible */}
                 {showTemplateSection && (
                   <div className="space-y-5 mb-8">
-                    {/* Raccourcis occasions */}
-                    <div>
-                      <p className="text-sm font-semibold text-stone-700 mb-2.5">
-                        Choisir par occasion
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {OCCASION_SHORTCUTS.map((occ) => (
-                          <button
-                            key={occ.key}
-                            type="button"
-                            onClick={() => {
-                              setTemplateModalCategory(occ.key)
-                              setShowTemplateModal(true)
-                            }}
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-stone-200 hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700 text-stone-600 transition-all shadow-sm"
-                          >
-                            <span className="text-base leading-none">{occ.icon}</span>
-                            <span>{occ.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Thèmes visuels avec images IA */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2.5">
-                        <p className="text-sm font-semibold text-stone-700">Explorer par Thèmes</p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setTemplateModalCategory('all')
-                            setShowTemplateModal(true)
-                          }}
-                          className="text-[10px] font-bold text-teal-600 uppercase tracking-widest hover:underline"
-                        >
-                          Tout voir
-                        </button>
-                      </div>
-                      <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-1 px-1">
-                        {TEMPLATE_CATEGORIES.filter((c) => c.key !== 'all').map((cat) => (
-                          <button
-                            key={cat.key}
-                            type="button"
-                            onClick={() => {
-                              setTemplateModalCategory(cat.key)
-                              setShowTemplateModal(true)
-                            }}
-                            className="flex-shrink-0 group relative w-28 h-20 rounded-2xl overflow-hidden border border-stone-100 shadow-sm transition-all hover:shadow-md hover:border-teal-200"
-                          >
-                            {cat.imageUrl && (
-                              <img
-                                src={cat.imageUrl}
-                                alt=""
-                                className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
-                              />
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end p-2">
-                              <span className="text-[10px] font-bold text-white truncate w-full">
-                                {cat.label}
-                              </span>
+                    {agencyCode ? (
+                      /* Mode agence : uniquement les images de la galerie agence */
+                      <>
+                        <p className="text-sm font-semibold text-stone-700 mb-2.5">
+                          Images de l&apos;agence
+                        </p>
+                        {agencyGalleryImages.length === 0 ? (
+                          <p className="text-stone-500 text-sm py-4">
+                            Aucune image dans la galerie pour le moment.
+                          </p>
+                        ) : (
+                          <>
+                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                              {agencyGalleryImages.slice(0, 8).map((item) => {
+                                const isSelected =
+                                  frontImage === item.imageUrl ||
+                                  (item.imageUrl.startsWith('/') &&
+                                    frontImage === `${typeof window !== 'undefined' ? window.location.origin : ''}${item.imageUrl}`)
+                                return (
+                                  <button
+                                    key={item.id}
+                                    type="button"
+                                    onClick={() => {
+                                      const url = item.imageUrl.startsWith('http')
+                                        ? item.imageUrl
+                                        : `${typeof window !== 'undefined' ? window.location.origin : ''}${item.imageUrl}`
+                                      setFrontImage(url)
+                                      setUploadedFileName(item.title)
+                                    }}
+                                    className={cn(
+                                      'flex flex-col rounded-2xl border overflow-hidden transition-all min-w-0 aspect-[4/3]',
+                                      isSelected
+                                        ? 'border-teal-500 ring-2 ring-teal-200'
+                                        : 'border-stone-200 hover:border-teal-200 hover:shadow-md',
+                                    )}
+                                    title={item.title}
+                                  >
+                                    <div className="flex-1 min-h-0 relative bg-stone-100">
+                                      <img
+                                        src={item.imageUrl.startsWith('http') ? item.imageUrl : `${typeof window !== 'undefined' ? window.location.origin : ''}${item.imageUrl}`}
+                                        alt=""
+                                        className="absolute inset-0 w-full h-full object-cover"
+                                      />
+                                    </div>
+                                    <span className="text-[10px] font-medium text-stone-600 truncate px-1.5 py-1 bg-white">
+                                      {item.title}
+                                    </span>
+                                  </button>
+                                )
+                              })}
                             </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                            {agencyGalleryImages.length > 8 && (
+                              <button
+                                type="button"
+                                onClick={() => setShowTemplateModal(true)}
+                                className="flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-600 transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-600 w-full justify-center"
+                              >
+                                <MoreHorizontal size={16} />
+                                Toutes les images ({agencyGalleryImages.length})
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {/* Raccourcis occasions */}
+                        <div>
+                          <p className="text-sm font-semibold text-stone-700 mb-2.5">
+                            Choisir par occasion
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {OCCASION_SHORTCUTS.map((occ) => (
+                              <button
+                                key={occ.key}
+                                type="button"
+                                onClick={() => {
+                                  setTemplateModalCategory(occ.key)
+                                  setShowTemplateModal(true)
+                                }}
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-stone-200 hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700 text-stone-600 transition-all shadow-sm"
+                              >
+                                <span className="text-base leading-none">{occ.icon}</span>
+                                <span>{occ.label}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
 
-                    {/* Modèles sélectionnés */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2.5">
-                        <p className="text-sm font-semibold text-stone-700">Modèles sélectionnés</p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setTemplateModalCategory('all')
-                            setShowTemplateModal(true)
-                          }}
-                          className="flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-600 transition hover:border-teal-300 hover:bg-stone-50 hover:text-teal-600"
-                          aria-label="Voir tous les modèles"
-                        >
-                          <MoreHorizontal size={16} />
-                          Tous les modèles
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {BASE_TEMPLATE_IDS.map((id) => {
-                          const tpl = SAMPLE_TEMPLATES.find((t) => t.id === id)
-                          if (!tpl) return null
-                          const cat = TEMPLATE_CATEGORIES.find((c) => c.key === tpl.category)
-                          const isSelected = selectedTemplateId === tpl.id
-                          return (
+                        {/* Thèmes visuels avec images IA */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2.5">
+                            <p className="text-sm font-semibold text-stone-700">Explorer par Thèmes</p>
                             <button
-                              key={tpl.id}
                               type="button"
-                              onClick={() => handleSelectTemplate(tpl)}
-                              className={cn(
-                                'flex items-center gap-2 rounded-2xl border p-2.5 text-left transition-all min-w-0 max-w-full',
-                                isSelected
-                                  ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-200'
-                                  : 'border-stone-200 bg-white hover:border-teal-200 hover:bg-stone-50',
-                              )}
-                              title={
-                                tpl.description ? `${tpl.name} – ${tpl.description}` : tpl.name
-                              }
+                              onClick={() => {
+                                setTemplateModalCategory('all')
+                                setShowTemplateModal(true)
+                              }}
+                              className="text-[10px] font-bold text-teal-600 uppercase tracking-widest hover:underline"
                             >
-                              <div className="h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-stone-100">
-                                <img
-                                  src={tpl.imageUrl}
-                                  alt=""
-                                  className="h-full w-full object-cover"
-                                />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="text-xs font-semibold text-stone-800 truncate">
-                                  {tpl.name}
-                                </p>
-                                <p className="flex items-center gap-0.5 text-[0.65rem] uppercase tracking-wider text-stone-400">
-                                  {cat?.icon && <span>{cat.icon}</span>}
-                                  <span className="truncate">{cat?.label ?? tpl.category}</span>
-                                </p>
-                              </div>
+                              Tout voir
                             </button>
-                          )
-                        })}
-                      </div>
-                    </div>
+                          </div>
+                          <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-1 px-1">
+                            {TEMPLATE_CATEGORIES.filter((c) => c.key !== 'all').map((cat) => (
+                              <button
+                                key={cat.key}
+                                type="button"
+                                onClick={() => {
+                                  setTemplateModalCategory(cat.key)
+                                  setShowTemplateModal(true)
+                                }}
+                                className="flex-shrink-0 group relative w-28 h-20 rounded-2xl overflow-hidden border border-stone-100 shadow-sm transition-all hover:shadow-md hover:border-teal-200"
+                              >
+                                {cat.imageUrl && (
+                                  <img
+                                    src={cat.imageUrl}
+                                    alt=""
+                                    className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+                                  />
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end p-2">
+                                  <span className="text-[10px] font-bold text-white truncate w-full">
+                                    {cat.label}
+                                  </span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
 
-                    <Button
-                      type="button"
-                      onClick={() => setShowUnsplashModal(true)}
-                      variant="outline"
-                      className="w-full h-12 rounded-2xl border-2 border-stone-200 hover:border-teal-400 hover:bg-teal-50/50 flex items-center justify-center gap-3 text-stone-700 font-semibold transition-all group"
-                    >
-                      <ImageIcon
-                        size={20}
-                        className="text-stone-400 group-hover:text-teal-600 transition-colors"
-                      />
-                      <span>Chercher une image sur la banque d&apos;images ou similaire</span>
-                    </Button>
+                        {/* Modèles sélectionnés */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2.5">
+                            <p className="text-sm font-semibold text-stone-700">Modèles sélectionnés</p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setTemplateModalCategory('all')
+                                setShowTemplateModal(true)
+                              }}
+                              className="flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-600 transition hover:border-teal-300 hover:bg-stone-50 hover:text-teal-600"
+                              aria-label="Voir tous les modèles"
+                            >
+                              <MoreHorizontal size={16} />
+                              Tous les modèles
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {BASE_TEMPLATE_IDS.map((id) => {
+                              const tpl = SAMPLE_TEMPLATES.find((t) => t.id === id)
+                              if (!tpl) return null
+                              const cat = TEMPLATE_CATEGORIES.find((c) => c.key === tpl.category)
+                              const isSelected = selectedTemplateId === tpl.id
+                              return (
+                                <button
+                                  key={tpl.id}
+                                  type="button"
+                                  onClick={() => handleSelectTemplate(tpl)}
+                                  className={cn(
+                                    'flex items-center gap-2 rounded-2xl border p-2.5 text-left transition-all min-w-0 max-w-full',
+                                    isSelected
+                                      ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-200'
+                                      : 'border-stone-200 bg-white hover:border-teal-200 hover:bg-stone-50',
+                                  )}
+                                  title={
+                                    tpl.description ? `${tpl.name} – ${tpl.description}` : tpl.name
+                                  }
+                                >
+                                  <div className="h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-stone-100">
+                                    <img
+                                      src={tpl.imageUrl}
+                                      alt=""
+                                      className="h-full w-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-semibold text-stone-800 truncate">
+                                      {tpl.name}
+                                    </p>
+                                    <p className="flex items-center gap-0.5 text-[0.65rem] uppercase tracking-wider text-stone-400">
+                                      {cat?.icon && <span>{cat.icon}</span>}
+                                      <span className="truncate">{cat?.label ?? tpl.category}</span>
+                                    </p>
+                                  </div>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+
+                        <Button
+                          type="button"
+                          onClick={() => setShowUnsplashModal(true)}
+                          variant="outline"
+                          className="w-full h-12 rounded-2xl border-2 border-stone-200 hover:border-teal-400 hover:bg-teal-50/50 flex items-center justify-center gap-3 text-stone-700 font-semibold transition-all group"
+                        >
+                          <ImageIcon
+                            size={20}
+                            className="text-stone-400 group-hover:text-teal-600 transition-colors"
+                          />
+                          <span>Chercher une image sur la banque d&apos;images ou similaire</span>
+                        </Button>
+                      </>
+                    )}
                   </div>
                 )}
 
@@ -5287,10 +5391,11 @@ export default function EditorPage() {
                         {/* Decorative background element */}
                         <div className="absolute -top-12 -right-12 w-32 h-32 bg-teal-200/20 rounded-full blur-3xl pointer-events-none" />
 
-                        {/* Paiement Revolut Section (fallback si non payé) */}
+                        {/* Paiement Revolut Section (fallback si non payé) — masqué en mode agence (c'est l'agence qui paie) */}
                         {!hasPaid &&
                           !codeSuccess &&
                           currentUser?.role !== 'admin' &&
+                          !agencyBrand &&
                           getAlbumPrice() > 0 && (
                             <div className="mb-10 p-6 rounded-2xl bg-stone-900 text-white text-left shadow-2xl relative z-10">
                               <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
@@ -5316,13 +5421,15 @@ export default function EditorPage() {
                         {hasPaid ||
                         codeSuccess ||
                         selectedPlan === 'ephemere' ||
-                        currentUser?.role === 'admin' ? (
+                        currentUser?.role === 'admin' ||
+                        agencyBrand ? (
                           <>
-                            {/* Upsell banner for free plan */}
+                            {/* Upsell banner for free plan — masqué en mode agence */}
                             {selectedPlan === 'ephemere' &&
                               !hasPaid &&
                               !codeSuccess &&
-                              currentUser?.role !== 'admin' && (
+                              currentUser?.role !== 'admin' &&
+                              !agencyBrand && (
                                 <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-teal-500 to-teal-600 text-white text-left relative z-10">
                                   <div className="flex items-start gap-3">
                                     <Sparkles size={20} className="shrink-0 mt-0.5" />
@@ -6511,7 +6618,7 @@ export default function EditorPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal : tous les modèles avec catégories */}
+      {/* Modal : tous les modèles avec catégories (ou galerie agence en mode agence) */}
       {showTemplateModal && (
         <div
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-8 overflow-auto"
@@ -6521,138 +6628,202 @@ export default function EditorPage() {
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-3xl max-h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-stone-200 flex flex-col"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between shrink-0 border-b border-stone-200 px-6 py-4">
-              <div>
-                <h3 className="text-lg font-bold text-stone-800">
-                  {templateModalCategory === 'all'
-                    ? 'Tous les modèles'
-                    : (TEMPLATE_CATEGORIES.find((c) => c.key === templateModalCategory)?.icon ??
-                        '') +
-                      ' ' +
-                      (TEMPLATE_CATEGORIES.find((c) => c.key === templateModalCategory)?.label ??
-                        '')}
-                </h3>
-                <p className="text-xs text-stone-400 mt-0.5">
-                  {filteredTemplates.length} modèle{filteredTemplates.length > 1 ? 's' : ''}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowTemplateModal(false)}
-                className="p-2 rounded-full text-stone-500 hover:bg-stone-100 hover:text-stone-700 transition"
-                aria-label="Fermer"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Category selection */}
-            <div className="shrink-0 border-b border-stone-100 bg-stone-50/30 px-4 py-4 overflow-x-auto">
-              <div className="flex gap-2.5 flex-nowrap min-w-max">
-                {TEMPLATE_CATEGORIES.map((cat) => {
-                  const isActive = templateModalCategory === cat.key
-                  return (
-                    <button
-                      key={cat.key}
-                      type="button"
-                      onClick={() => setTemplateModalCategory(cat.key)}
-                      className={cn(
-                        'group flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all border shadow-sm',
-                        isActive
-                          ? 'bg-teal-500 text-white border-teal-600 shadow-teal-100'
-                          : 'bg-white text-stone-600 border-stone-200 hover:border-teal-300 hover:bg-teal-50/50',
-                      )}
-                    >
-                      {cat.imageUrl ? (
-                        <div
-                          className={cn(
-                            'w-6 h-6 rounded-lg overflow-hidden border transition-all',
-                            isActive
-                              ? 'border-white/30'
-                              : 'border-stone-100 group-hover:border-teal-200',
-                          )}
-                        >
-                          <img src={cat.imageUrl} alt="" className="w-full h-full object-cover" />
-                        </div>
-                      ) : (
-                        cat.icon && <span className="text-sm">{cat.icon}</span>
-                      )}
-                      {cat.label}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Template grid */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {filteredTemplates.map((template) => {
-                  const cat = TEMPLATE_CATEGORIES.find((c) => c.key === template.category)
-                  const isSelected = selectedTemplateId === template.id
-                  return (
-                    <button
-                      key={template.id}
-                      type="button"
-                      onClick={() => {
-                        handleSelectTemplate(template)
-                        setShowTemplateModal(false)
-                      }}
-                      className={cn(
-                        'flex items-center gap-3 rounded-2xl border p-3 text-left transition-all w-full',
-                        isSelected
-                          ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-200'
-                          : 'border-stone-200 bg-white hover:border-teal-200 hover:bg-stone-50',
-                      )}
-                    >
-                      <div className="h-14 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-stone-100">
-                        <img
-                          src={template.imageUrl}
-                          alt=""
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-stone-900">{template.name}</p>
-                        {template.description && (
-                          <p className="text-xs text-stone-500 line-clamp-1">
-                            {template.description}
-                          </p>
-                        )}
-                        <p className="text-[0.65rem] uppercase tracking-wider text-stone-400 mt-0.5">
-                          {cat?.icon
-                            ? `${cat.icon} ${cat.label}`
-                            : (cat?.label ?? template.category)}
-                        </p>
-                      </div>
-                      {isSelected && (
-                        <div className="shrink-0 w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center">
-                          <Check size={12} className="text-white" />
-                        </div>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-              {filteredTemplates.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-2xl mb-2">
-                    {TEMPLATE_CATEGORIES.find((c) => c.key === templateModalCategory)?.icon ?? '📋'}
-                  </p>
-                  <p className="text-sm font-semibold text-stone-600">
-                    Aucun modèle dans cette catégorie pour le moment.
-                  </p>
+            {agencyCode ? (
+              /* Modal galerie agence */
+              <>
+                <div className="flex items-center justify-between shrink-0 border-b border-stone-200 px-6 py-4">
+                  <h3 className="text-lg font-bold text-stone-800">Images de l&apos;agence</h3>
                   <button
                     type="button"
-                    onClick={() => setTemplateModalCategory('all')}
-                    className="mt-3 text-xs text-teal-600 hover:text-teal-700 font-semibold underline"
+                    onClick={() => setShowTemplateModal(false)}
+                    className="p-2 rounded-full text-stone-500 hover:bg-stone-100 hover:text-stone-700 transition"
+                    aria-label="Fermer"
                   >
-                    Voir tous les modèles
+                    <X size={20} />
                   </button>
                 </div>
-              )}
-            </div>
+                <div className="flex-1 overflow-y-auto p-6">
+                  {agencyGalleryImages.length === 0 ? (
+                    <p className="text-stone-500 text-sm py-8 text-center">
+                      Aucune image dans la galerie.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {agencyGalleryImages.map((item) => {
+                        const fullUrl = item.imageUrl.startsWith('http')
+                          ? item.imageUrl
+                          : `${typeof window !== 'undefined' ? window.location.origin : ''}${item.imageUrl}`
+                        const isSelected = frontImage === fullUrl
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => {
+                              setFrontImage(fullUrl)
+                              setUploadedFileName(item.title)
+                              setShowTemplateModal(false)
+                            }}
+                            className={cn(
+                              'flex flex-col rounded-2xl border overflow-hidden transition-all aspect-[4/3]',
+                              isSelected
+                                ? 'border-teal-500 ring-2 ring-teal-200'
+                                : 'border-stone-200 hover:border-teal-200 hover:shadow-md',
+                            )}
+                          >
+                            <div className="flex-1 min-h-0 relative bg-stone-100">
+                              <img
+                                src={fullUrl}
+                                alt={item.title}
+                                className="absolute inset-0 w-full h-full object-cover"
+                              />
+                            </div>
+                            <span className="text-xs font-medium text-stone-600 truncate px-2 py-1.5 bg-white text-left">
+                              {item.title}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Header */}
+                <div className="flex items-center justify-between shrink-0 border-b border-stone-200 px-6 py-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-stone-800">
+                      {templateModalCategory === 'all'
+                        ? 'Tous les modèles'
+                        : (TEMPLATE_CATEGORIES.find((c) => c.key === templateModalCategory)?.icon ??
+                            '') +
+                          ' ' +
+                          (TEMPLATE_CATEGORIES.find((c) => c.key === templateModalCategory)?.label ??
+                            '')}
+                    </h3>
+                    <p className="text-xs text-stone-400 mt-0.5">
+                      {filteredTemplates.length} modèle{filteredTemplates.length > 1 ? 's' : ''}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowTemplateModal(false)}
+                    className="p-2 rounded-full text-stone-500 hover:bg-stone-100 hover:text-stone-700 transition"
+                    aria-label="Fermer"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* Category selection */}
+                <div className="shrink-0 border-b border-stone-100 bg-stone-50/30 px-4 py-4 overflow-x-auto">
+                  <div className="flex gap-2.5 flex-nowrap min-w-max">
+                    {TEMPLATE_CATEGORIES.map((cat) => {
+                      const isActive = templateModalCategory === cat.key
+                      return (
+                        <button
+                          key={cat.key}
+                          type="button"
+                          onClick={() => setTemplateModalCategory(cat.key)}
+                          className={cn(
+                            'group flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all border shadow-sm',
+                            isActive
+                              ? 'bg-teal-500 text-white border-teal-600 shadow-teal-100'
+                              : 'bg-white text-stone-600 border-stone-200 hover:border-teal-300 hover:bg-teal-50/50',
+                          )}
+                        >
+                          {cat.imageUrl ? (
+                            <div
+                              className={cn(
+                                'w-6 h-6 rounded-lg overflow-hidden border transition-all',
+                                isActive
+                                  ? 'border-white/30'
+                                  : 'border-stone-100 group-hover:border-teal-200',
+                              )}
+                            >
+                              <img src={cat.imageUrl} alt="" className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            cat.icon && <span className="text-sm">{cat.icon}</span>
+                          )}
+                          {cat.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Template grid */}
+                <div className="flex-1 overflow-y-auto p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {filteredTemplates.map((template) => {
+                      const cat = TEMPLATE_CATEGORIES.find((c) => c.key === template.category)
+                      const isSelected = selectedTemplateId === template.id
+                      return (
+                        <button
+                          key={template.id}
+                          type="button"
+                          onClick={() => {
+                            handleSelectTemplate(template)
+                            setShowTemplateModal(false)
+                          }}
+                          className={cn(
+                            'flex items-center gap-3 rounded-2xl border p-3 text-left transition-all w-full',
+                            isSelected
+                              ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-200'
+                              : 'border-stone-200 bg-white hover:border-teal-200 hover:bg-stone-50',
+                          )}
+                        >
+                          <div className="h-14 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-stone-100">
+                            <img
+                              src={template.imageUrl}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-stone-900">{template.name}</p>
+                            {template.description && (
+                              <p className="text-xs text-stone-500 line-clamp-1">
+                                {template.description}
+                              </p>
+                            )}
+                            <p className="text-[0.65rem] uppercase tracking-wider text-stone-400 mt-0.5">
+                              {cat?.icon
+                                ? `${cat.icon} ${cat.label}`
+                                : (cat?.label ?? template.category)}
+                            </p>
+                          </div>
+                          {isSelected && (
+                            <div className="shrink-0 w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center">
+                              <Check size={12} className="text-white" />
+                            </div>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {filteredTemplates.length === 0 && (
+                    <div className="text-center py-12">
+                      <p className="text-2xl mb-2">
+                        {TEMPLATE_CATEGORIES.find((c) => c.key === templateModalCategory)?.icon ??
+                          '📋'}
+                      </p>
+                      <p className="text-sm font-semibold text-stone-600">
+                        Aucun modèle dans cette catégorie pour le moment.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setTemplateModalCategory('all')}
+                        className="mt-3 text-xs text-teal-600 hover:text-teal-700 font-semibold underline"
+                      >
+                        Voir tous les modèles
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

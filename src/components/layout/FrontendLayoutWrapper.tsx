@@ -8,7 +8,9 @@ import { ExitIntentPopup } from '@/components/ExitIntentPopup'
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration'
 
 /**
- * On /manager* routes we don't show the public Navbar/Footer (admin has its own shell).
+ * Routes that use their own shell (no main Navbar/Footer):
+ * - /manager*, /espace-agence: admin/agency back-office
+ * - /agences/[code]: page agence marque blanche (menu = header agence uniquement)
  */
 export function FrontendLayoutWrapper({
   children,
@@ -26,8 +28,21 @@ export function FrontendLayoutWrapper({
     pathname?.startsWith('/carte/') ||
     pathname?.startsWith('/carte2/') ||
     pathname?.startsWith('/view-scroll/')
+  const isAgencyPage =
+    pathname?.startsWith('/agences/') && pathname !== '/agences/demo'
 
-  // On /manager and /espace-agence we don't show the public Navbar/Footer
+  // Template marque blanche agence : pas de Navbar/Footer site principal, menu = header agence
+  if (isAgencyPage) {
+    return (
+      <>
+        <ServiceWorkerRegistration />
+        <main className="flex-grow">{children}</main>
+        <ScrollToTopButton />
+      </>
+    )
+  }
+
+  // Back-office : pas de Navbar/Footer
   if (isManager || isEspaceAgence) {
     return (
       <>
@@ -41,7 +56,12 @@ export function FrontendLayoutWrapper({
   const searchParams = useSearchParams()
   const isEditorWhiteLabel =
     pathname === '/editor' && Boolean(searchParams?.get('agencyCode'))
-  const showExitIntent = !isEspaceClient && !isPostcardView && !isEditorWhiteLabel && exitIntentEnabled
+  const showExitIntent =
+    !isEspaceClient &&
+    !isPostcardView &&
+    !isEditorWhiteLabel &&
+    !isAgencyPage &&
+    exitIntentEnabled
 
   const hideNavAndFooter = isPostcardView || isDashboard || isEditorWhiteLabel
 

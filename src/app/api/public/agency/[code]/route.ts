@@ -33,6 +33,7 @@ export async function GET(
         : null
 
     return NextResponse.json({
+      id: agency.id,
       code: agency.code ?? code,
       name: agency.name,
       logoUrl,

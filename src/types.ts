@@ -130,6 +130,8 @@ export interface Postcard {
   hideMap?: boolean
   /** Bannière promotionnelle de l'agence (optionnelle) */
   agencyBanner?: AgencyBanner
+  /** URL du logo agence pour affichage recto/verso (mode marque blanche) */
+  agencyLogoUrl?: string
 }
 
 export interface Sticker {
