@@ -36,8 +36,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import PostcardView from '@/components/postcard/PostcardView'
-import PostcardScrollFlow from '@/components/postcard/PostcardScrollFlow'
+import PostcardFlipCard from '@/components/postcard/PostcardFlipCard'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -147,10 +146,11 @@ export default function Home() {
 
             {/* Droite : carte postale au format recto/verso, clic ou glisser pour retourner */}
             <div className="order-1 lg:order-2 flex justify-center min-w-0 w-full">
-              <div className="animate-float-3d hover-tilt-3d transition-transform duration-500 w-full max-w-full">
-                <div className="w-full max-w-2xl">
-                  <PostcardScrollFlow postcard={heroPostcard} />
-                </div>
+              <div className="w-full max-w-2xl">
+                <PostcardFlipCard
+                  postcard={heroPostcard}
+                  className="shadow-xl shadow-stone-200/40"
+                />
               </div>
             </div>
           </div>
@@ -191,10 +191,11 @@ export default function Home() {
                 <div className="w-px h-4 bg-stone-300" />
               </div>
 
-              <div className="animate-float-3d hover-tilt-3d transition-all duration-500">
-                <div className="w-full">
-                  <PostcardScrollFlow postcard={demoCard} />
-                </div>
+              <div className="w-full max-w-3xl mx-auto">
+                <PostcardFlipCard
+                  postcard={demoCard}
+                  className="shadow-[0_20px_50px_rgba(0,0,0,0.12)]"
+                />
               </div>
             </div>
 
@@ -399,7 +400,7 @@ export default function Home() {
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-stone-800">Inspirations Voyage</h2>
             <p className="text-stone-500 mt-2">
-              Découvrez les fonctionnalités Premium (Album & Vidéo) à travers ces exemples.
+              Découvrez les fonctionnalités Premium (Album &amp; Vidéo) à travers ces exemples.
             </p>
           </div>
           <div className="flex gap-2">
@@ -411,8 +412,8 @@ export default function Home() {
 
         <div className="flex flex-wrap justify-center gap-x-12 gap-y-24">
           {savedPostcards.map((card) => (
-            <div key={card.id} className="flex flex-col items-center group">
-              <PostcardView postcard={card} />
+            <div key={card.id} className="flex flex-col items-center group w-full sm:w-[552px]">
+              <PostcardFlipCard postcard={card} />
               <div className="mt-2 text-center">
                 <p className="text-stone-500 text-sm">
                   par <span className="text-stone-600 font-semibold">{card.senderName}</span>
@@ -768,7 +769,7 @@ export default function Home() {
 
             <div className="w-full h-full flex items-center justify-center">
               <div className="w-fit h-fit max-w-full max-h-full flex flex-col items-center gap-8">
-                <PostcardScrollFlow postcard={fullScreenPostcard} />
+                <PostcardFlipCard postcard={fullScreenPostcard} className="w-full max-w-5xl" />
 
                 <div className="bg-white/5 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 flex items-center gap-4 text-white/60">
                   <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest">
